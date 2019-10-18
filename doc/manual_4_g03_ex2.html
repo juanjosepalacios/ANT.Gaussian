@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=ISO-8859-1">
+  <meta name="Keywords" content="Misty Grey template">
+  <meta name="Description" content="Misty Grey template">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" type="text/css" href="layout.css">
+<!-- 
+
+      Design: Daniel Kocherscheidt, Jens Wolters
+
+      Open Source: This template is free to use for personal and commercial projects.
+
+	  It is not allowed to remove the footer link though !						
+
+-->
+  <title>ANT-G03</title>
+</head>
+<body>
+<div id="center">
+<div id="banner">
+<div style="text-align: left;"> </div>
+<p
+ style="margin-bottom: -1in; text-decoration: none; background-color: rgb(51, 102, 102); font-weight: bold; font-family: Helvetica,Arial,sans-serif; text-align: left; margin-top: 22px; height: 90px;"><font
+ color="#198a8a"><font style="font-size: 25pt;" size="6"><span
+ style="background: transparent none repeat scroll 0% 50%; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;"><big><big><span
+ style="color: rgb(153, 153, 153);">AL</span><font
+ style="color: rgb(204, 153, 51);" color="#99284c">A</font><span
+ style="color: rgb(153, 153, 153);">C</span><font
+ style="color: rgb(204, 153, 51);" color="#99284c">A</font><span
+ style="color: rgb(153, 153, 153);">NT</span></big></big></span></font></font></p>
+<big><big><big><big><big> </big></big></big></big></big> <big><big><big><big><big><small
+ style="color: rgb(204, 153, 51); font-family: sans-serif;"><small><small><span
+ style="color: rgb(153, 153, 153); font-weight: bold;">AL</span>icante <span
+ style="font-weight: bold; color: rgb(204, 153, 51);">A</span>tomistic <span
+ style="font-weight: bold; color: rgb(153, 153, 153);">C</span>omputation
+<span style="font-weight: bold; color: rgb(204, 153, 51);">A</span>pplied
+to
+<span style="font-weight: bold; color: rgb(153, 153, 153);">N</span>ano<span
+ style="font-weight: bold; color: rgb(153, 153, 153);">T</span>ransport</small></small></small></big></big></big></big></big>
+</div>
+<div id="navigation">
+<ul>
+  <li><a href="index.html">HOME</a></li>
+  <li><a class="current" href="ant_g03.html">ANT.G</a></li>
+  <li><a href="ant_1D.html">ANT.1D</a></li>
+  <li><a href="ant_U.html">ANT.U</a></li>
+</ul>
+</div>
+<div id="main">
+<div id="subnavigation">
+<ul>
+  <li class="normal"><a href="ant_g03.html">Basics</a></li>
+  <li class="active"><a href="manual_g03.html">Manual</a></li>
+  <li class="normal"><a href="distribution_g03.html">Distribution</a></li>
+  <li class="normal"><a href="people_g03.html">People</a></li>
+  <li class="normal"><a href="technical_g03.html">Technical
+Especifications</a></li>
+  <li class="normal"><a href="publications_g03.html">Publications</a></li>
+  <li class="normal"><a href="examples_g03.html">Examples</a></li>
+</ul>
+</div>
+<div id="content">
+<img style="width: 45px; height: 38px;" alt="" src="ant_45_45.gif"
+ class="thumbnail"> <br>
+<strong><big><big><big><big>.G</big></big></big></big></strong>
+<br>
+<br>
+<ul>
+  <li><a href="manual_1_g03.html"><strong>Installing ANT.G</strong></a></li>
+  <br>
+  <li><a href="manual_2_g03.html"><strong>GAUSSIAN03/09 input file</strong></a></li>
+  <br>
+  <li><a href="manual_3_g03.html"><strong>ANT.G input file</strong></a></li>
+  <br>
+  <li><a href="manual_4_g03.html"><strong>Bethe lattice input file</strong></a></li>
+  <br>
+</ul>
+<hr><strong>BL028.dat</strong>: This file contains two sets of <span
+ style="font-style: italic;">s p d</span> tight-binding parameters for
+Ni with and
+without overlap. Notice the duplication in each case to account for
+magnetic splitting.<br>
+<br>
+! ***************************<br>
+! Ni Bethe Lattice parameters<br>
+! ***************************<br>
+!<br>
+! *****************************************<br>
+! *** Papacon orthogonal TB parameters&nbsp; ***<br>
+! *****************************************<br>
+!&nbsp; <br>
+BEGINSET<br>
+Papacon-ortho<br>
+9 2 10 0<br>
+s<br>
+p<br>
+d<br>
+!<br>
+! *** 1. Spin-up parameters in Ryd (!) ***<br>
+!<br>
+RYD<br>
+ISPIN = 1<br>
+es&nbsp; = 1.00243<br>
+ep&nbsp; = 1.42873<br>
+edd = 0.48986<br>
+edt = 0.49574<br>
+!<br>
+sss = -0.09034<br>
+sps =&nbsp; 0.14060<br>
+sds = -0.03958<br>
+pps =&nbsp; 0.23271<br>
+ppp =&nbsp; 0.02788<br>
+pds = -0.05056<br>
+pdp =&nbsp; 0.02550<br>
+dds = -0.03128<br>
+ddp =&nbsp; 0.02215<br>
+ddd = -0.00660<br>
+!<br>
+! *** 2. Spin-down parameters in Ryd (!) ***<br>
+!<br>
+ISPIN = 2<br>
+es&nbsp; = 0.99207<br>
+ep&nbsp; = 1.39786<br>
+edd = 0.54495<br>
+edt = 0.54881<br>
+!<br>
+sss = -0.08866<br>
+sps =&nbsp; 0.13251<br>
+sds = -0.04149<br>
+pps =&nbsp; 0.22424<br>
+ppp =&nbsp; 0.03210<br>
+pds = -0.05295<br>
+pdp =&nbsp; 0.02850<br>
+dds = -0.03310<br>
+ddp =&nbsp; 0.02284<br>
+ddd = -0.00665<br>
+ENDSET<br>
+!<br>
+! *********************************************<br>
+! *** Papacon non-orthogonal TB parameters&nbsp; ***<br>
+! *********************************************<br>
+!<br>
+BEGINSET<br>
+Papacon<br>
+9 2 10 0<br>
+s<br>
+p<br>
+d<br>
+RYD<br>
+ISPIN
+=&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1<br>
+!<br>
+! On-site enrgies in Ryd<br>
+!<br>
+es =&nbsp;&nbsp;&nbsp; 0.1056093448686473&nbsp;&nbsp;&nbsp;&nbsp; <br>
+ep =&nbsp;&nbsp;&nbsp; 0.9105458345776812&nbsp;&nbsp;&nbsp;&nbsp; <br>
+edd =&nbsp;&nbsp; -12.4333420050839312E-002<br>
+edt =&nbsp;&nbsp; -12.4333420050839312E-002<br>
+!<br>
+! Hoppings in Ryd<br>
+!<br>
+sss =&nbsp;&nbsp; -0.1030332419052912&nbsp;&nbsp;&nbsp;&nbsp; <br>
+sps =&nbsp;&nbsp; -8.3352517514460338E-002<br>
+pps =&nbsp;&nbsp;&nbsp; 0.2547689359497468&nbsp;&nbsp;&nbsp;&nbsp; <br>
+ppp =&nbsp;&nbsp;&nbsp; 5.3884809349807323E-003<br>
+sds =&nbsp;&nbsp; -3.7607911533326481E-002<br>
+pds =&nbsp;&nbsp;&nbsp; 5.5496810342579250E-002<br>
+pdp =&nbsp;&nbsp; -2.3485409083813549E-002<br>
+dds =&nbsp;&nbsp; -3.4820425342845902E-002<br>
+ddp =&nbsp;&nbsp;&nbsp; 2.5599190083128160E-002<br>
+ddd =&nbsp;&nbsp; -5.6870005292460890E-003<br>
+ISPIN
+=&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2<br>
+!<br>
+! On-site energies in Ryd<br>
+!<br>
+es =&nbsp;&nbsp;&nbsp; 0.1350694887335478&nbsp;&nbsp;&nbsp;&nbsp; <br>
+ep =&nbsp;&nbsp;&nbsp; 0.9292122342500587&nbsp;&nbsp;&nbsp;&nbsp; <br>
+edd =&nbsp;&nbsp; -1.9697235493986081E-002<br>
+edt =&nbsp;&nbsp; -1.9697235493986081E-002<br>
+!<br>
+! Hoppings in Ryd<br>
+!<br>
+sss =&nbsp;&nbsp; -0.1030332419052912&nbsp;&nbsp;&nbsp;&nbsp; <br>
+sps =&nbsp;&nbsp; -8.3352517514460338E-002<br>
+pps =&nbsp;&nbsp;&nbsp; 0.2547689359497468&nbsp;&nbsp;&nbsp;&nbsp; <br>
+ppp =&nbsp;&nbsp;&nbsp; 5.3884809349807323E-003<br>
+sds =&nbsp;&nbsp; -3.7607911533326481E-002<br>
+pds =&nbsp;&nbsp;&nbsp; 5.5496810342579250E-002<br>
+pdp =&nbsp;&nbsp; -2.3485409083813549E-002<br>
+dds =&nbsp;&nbsp; -3.4820425342845902E-002<br>
+ddp =&nbsp;&nbsp;&nbsp; 2.5599190083128160E-002<br>
+ddd =&nbsp;&nbsp; -5.6870005292460890E-003<br>
+! <br>
+! Overlap parameters<br>
+! <br>
+S_sss =&nbsp;&nbsp;&nbsp; 0.1817704879067281&nbsp;&nbsp;&nbsp;&nbsp; <br>
+S_sps =&nbsp;&nbsp;&nbsp; 3.0471350185594841E-002<br>
+S_pps =&nbsp;&nbsp; -0.2113661658526804&nbsp;&nbsp;&nbsp;&nbsp; <br>
+S_ppp =&nbsp;&nbsp;&nbsp; 8.9658546077930623E-002<br>
+S_sds =&nbsp;&nbsp;&nbsp; 8.1324419773221734E-004<br>
+S_pds =&nbsp;&nbsp;&nbsp; 2.9995797509112254E-002<br>
+S_pdp =&nbsp;&nbsp;&nbsp; 9.9776143600185812E-003<br>
+S_dds =&nbsp;&nbsp;&nbsp; 2.4512922333620475E-003<br>
+S_ddp =&nbsp;&nbsp; -2.2269541560923778E-002<br>
+S_ddd =&nbsp;&nbsp;&nbsp; 6.7977240753691373E-003<br>
+ENDSET<br>
+<br>
+<div class="cleaner"> &nbsp;</div>
+</div>
+<!-- This template ist Open Source as long as the footer links to the authors are included ! -->
+<div class="cleaner"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em><em>&nbsp;</em></em></em></em></em></div>
+</div>
+</div>
+<div style="margin-top: 0px; height: 0px;" id="footer"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em><em><a href="http://www.gebaeude7.de">Webdesign</a>
+by <a href="http://www.busreisen24.de/">Jens Wolters</a></em></em></em></em></em></div>
+<div
+ style="font-size: 0.8em; text-align: center; margin-top: 1em; margin-bottom: 1em;"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em><em>Design
+provided by <a href="http://www.freewebtemplates.com/">Free Web
+Templates</a> - your source for free website templates
+</em></em></em></em></em></div>
+</body>
+</html>

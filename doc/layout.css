@@ -1,0 +1,52 @@
+/* CSS Document */
+
+body  {margin:0;padding:0;}
+
+html {margin:0;padding:0;font-family:Verdana, Arial, Helvetica, sans-serif;font-size:11px;background-color: rgb(51, 102, 102);}
+
+ul, li {list-style:none;margin:0;padding:0;}
+li a {text-decoration:none;color:black;}
+h1 {font-size:19px;font-weight:normal;}
+img {display: block;border:none;}
+img p {margin:0;padding:0;}
+
+#navigation {background-image:url(images/navi.gif);background-repeat:no-repeat;width:756px;height:42px;}
+#navigation ul {padding-left:20px;}
+#navigation ul li {float:left;font-size:11px;padding-right:15px;background-image:url(images/divider.gif);background-position:right;background-repeat:no-repeat;height:30px;}
+#navigation ul li a {padding-right:15px;position:relative;top:9px;}
+#banner {background-position: 7px 5px;width:756px;height:100px;background-repeat:no-repeat;}
+/* #banner {background-image:url(images/nanotube.jpg);background-position: 7px 5px;width:756px;height:110px;background-repeat:no-repeat;} */
+#center {background-color:white;width:755px;margin:auto;margin-bottom:15px;}
+
+.active {background-image:url(images/subnavi_active.jpg);width:185px;padding:0;margin:0;}
+.current {font-weight:bold;}
+.normal {background-image:url(images/border.gif);background-repeat:no-repeat;padding:0;margin:0;}
+
+#subnavigation {float:left;}
+#subnavigation ul li {margin-left:9px;padding-top:9px;padding-bottom:7px;}
+#subnavigation ul li a {padding-left:25px;}
+
+#content {background-image:url(images/line_vert.gif);background-repeat:repeat-y;float:left;width:480px;margin-left:24px;padding-left:24px;line-height:16px;margin-top:12px;padding-bottom:45px;}
+
+#footer {font-size:9px;text-align:center;margin-right:14px;padding-bottom:10px;text-decoration:none;color:#BBBEC7;}
+#footer a {text-decoration:none;color:#BBBEC7;}
+
+.float-left {float:left;width:230px;padding-right:10px;margin:0;}
+.float-none {clear:left;display:block;}
+
+.cleaner
+{
+	clear:both;
+	height:1px;
+	Font-size:1px;
+	border:0px none;
+	margin:0;padding:0;
+	background:transparent;
+}
+.thumbnail 
+{
+float:left;
+width:110px;
+height:90px;
+margin:5px;
+}

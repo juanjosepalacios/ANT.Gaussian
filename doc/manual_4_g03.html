@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="Keywords" content="Misty Grey template">
+    <meta name="Description" content="Misty Grey template">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <!-- 
+      Design: Daniel Kocherscheidt, Jens Wolters
+      Open Source: This template is free to use for personal and commercial projects.
+          It is not allowed to remove the footer link though !                                          
+-->
+    <title>ANT</title>
+  </head>
+  <body>
+    <div id="center">
+      <div id="banner">
+        <div style="text-align: left;"> </div>
+        <p style="margin-bottom: -1in; text-decoration: none;
+          background-color: rgb(51, 102, 102); font-weight: bold;
+          font-family: Helvetica,Arial,sans-serif; text-align: left;
+          margin-top: 22px; height: 89px;"><font color="#FFFFFF"><span
+              style="font-size: larger;"><span style="font-size:
+                larger;"><span style="font-size: larger;"><big><big><big><big>ANT</big><br>
+                        <small><small>Atomistic NanoTransport</small></small><br>
+                      </big></big></big> </span></span></span></font></p>
+      </div>
+<div id="navigation">
+<ul>
+  <li><a href="index.html">HOME</a></li>
+  <li><a class="current" href="ant_g03.html">ANT.G</a></li>
+  <li><a href="ant_1D.html">ANT.1D</a></li>
+  <li><a href="ant_U.html">ANT.U</a></li>
+</ul>
+</div>
+<div id="main">
+<div id="subnavigation">
+<ul>
+  <li class="normal"><a href="ant_g03.html">Basics</a></li>
+  <li class="active"><a href="manual_g03.html">Manual</a></li>
+  <li class="normal"><a href="distribution_g03.html">Distribution</a></li>
+  <li class="normal"><a href="people_g03.html">People</a></li>
+  <li class="normal"><a href="technical_g03.html">Technical
+Especifications</a></li>
+  <li class="normal"><a href="publications_g03.html">Publications</a></li>
+  <li class="normal"><a href="examples_g03.html">Examples</a></li>
+</ul>
+</div>
+<div id="content">
+<img style="width: 45px; height: 38px;" alt="" src="ant_45_45.gif"
+ class="thumbnail"> <br>
+<strong><big><big><big><big>.Gaussian</big></big></big></big></strong>
+<br>
+<br>
+<ul>
+  <li class="normal"><a href="manual_1_g03.html"><strong>Installing ANT.G</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_2_g03.html"><strong>GAUSSIAN03/09 input file</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_3_g03.html"><strong>ANT.G input file</strong></a></li>
+  <br>
+  <li class="active"><a href="manual_4_g03.html"><strong>Bethe lattice input file</strong></a></li>
+  <br>
+</ul>
+<hr>The tight-binding parameters for the Bethe Lattice are read from
+files which are stored in the subdirectory BLDAT. The file names
+are <em>BLnnn.dat</em> where <em>nnn</em> specifies the atomic number
+of the electrode's material, i.e. 028 for Ni,
+013 for Al etc. So far only parameter files for H, C, Al, Ni, Co, Fe,
+Mn, Cu, Pt, Pd,
+Au, and Pb exist, but feel free to add the ones you need. <br>
+<br>
+Each file may
+contain
+several sets
+of parameters specified by a given name (see examples below) which you
+pass to the keyword
+BLPAR1(2) in the input file <em>&lt;job_name&gt;.ini</em>.
+The notation used is the standard Slater-Koster notation and the
+default units are Hartrees. When Rydbergs are used instead, one should
+add the word RYD in the parameters set. Parameters
+sets can be obtained, for
+instance, from http://cst-www.nrl.navy.mil/bind. <br>
+<br>
+The number of orbitals
+and order of the shells used for the atoms belonging to the crystalline
+region in the electrodes, at least for those to be connected to
+branches of the Bethe lattice (see GAUSSIAN03/09 input file), should
+match
+that of the parameters set chosen. Typically a minimal
+basis set<span style="font-style: italic;"> s p d</span> is used,
+although larger basis sets can also be used if a
+larger set of parameters is defined). No need to say that a good match
+between these parameters and the functional used in the calculation is
+desirable.
+When a set of parameters is non-orthogonal, i.e., it contains overlap
+parameters, some care must be exercised (see keyword <em>OVERLAP</em>
+in <em>&lt;job_name&gt;.ini</em> input file).<br>
+<br>
+<strong>Examples: <br>
+<a href="manual_4_g03_ex1.html"> Gold: BL079.dat</a> <br>
+<a href="manual_4_g03_ex2.html"> Nickel: BL028.dat</a></strong><br>
+<br>
+<div class="cleaner"> &nbsp;</div>
+</div>
+<!-- This template ist Open Source as long as the footer links to the authors are included ! -->
+<div class="cleaner"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em><em>&nbsp;</em></em></em></em></em></div>
+</div>
+</div>
+<div style="margin-top: 0px; height: 0px;" id="footer"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em><em><a href="http://www.gebaeude7.de">Webdesign</a>
+by <a href="http://www.busreisen24.de/">Jens Wolters</a></em></em></em></em></em></div>
+<div
+ style="font-size: 0.8em; text-align: center; margin-top: 1em; margin-bottom: 1em;"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em><em>Design
+provided by <a href="http://www.freewebtemplates.com/">Free Web
+Templates</a> - your source for free website templates
+</em></em></em></em></em></div>
+</body>
+</html>

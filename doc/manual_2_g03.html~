@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="Keywords" content="Misty Grey template">
+    <meta name="Description" content="Misty Grey template">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <!-- 
+      Design: Daniel Kocherscheidt, Jens Wolters
+      Open Source: This template is free to use for personal and commercial projects.
+          It is not allowed to remove the footer link though !                                          
+-->
+    <title>ANT</title>
+  </head>
+  <body>
+    <div id="center">
+      <div id="banner">
+        <div style="text-align: left;"> </div>
+        <p style="margin-bottom: -1in; text-decoration: none;
+          background-color: rgb(51, 102, 102); font-weight: bold;
+          font-family: Helvetica,Arial,sans-serif; text-align: left;
+          margin-top: 22px; height: 89px;"><font color="#FFFFFF"><span
+              style="font-size: larger;"><span style="font-size:
+                larger;"><span style="font-size: larger;"><big><big><big><big>ANT</big><br>
+                        <small><small>Atomistic NanoTransport</small></small><br>
+                      </big></big></big> </span></span></span></font></p>
+      </div>
+<div id="navigation">
+<ul>
+  <li><a href="index.html">HOME</a></li>
+  <li><a class="current" href="ant_g03.html">ANT.G</a></li>
+  <li><a href="ant_1D.html">ANT.1D</a></li>
+  <li><a href="ant_U.html">ANT.U</a></li>
+</ul>
+</div>
+<div id="main">
+<div id="subnavigation">
+<ul>
+  <li class="normal"><a href="ant_g03.html">Basics</a></li>
+  <li class="active"><a href="manual_g03.html">Manual</a></li>
+  <li class="normal"><a href="distribution_g03.html">Distribution</a></li>
+  <li class="normal"><a href="people_g03.html">People</a></li>
+  <li class="normal"><a href="technical_g03.html">Technical
+Especifications</a></li>
+  <li class="normal"><a href="publications_g03.html">Publications</a></li>
+  <li class="normal"><a href="examples_g03.html">Examples</a></li>
+</ul>
+</div>
+<div id="content">
+<img style="width: 45px; height: 38px;" alt="" src="ant_45_45.gif"
+ class="thumbnail"> <br>
+<strong><big><big><big><big>.Gaussian</big></big></big></big></strong>
+<br>
+<br>
+<ul>
+  <li class="normal"><a href="manual_1_g03.html"><strong>Installing ANT.G</strong></a></li>
+  <br>
+  <li class="active"><a href="manual_2_g03.html"><strong>GAUSSIAN03/09 input file</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_3_g03.html"><strong>ANT.G input file</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_4_g03.html"><strong>Bethe lattice input file</strong></a></li>
+  <br>
+</ul>
+<hr>
+1) The GAUSSIAN03/09 standard links <span style="font-style: italic;">L101</span>
+and <span style="font-style: italic;">L502 </span>(<span
+ style="font-style: italic;">l101.exe</span> and <span
+ style="font-style: italic;">l502.exe</span>) have to be replaced by
+the
+modified links. This can be done
+simply by adding the following lines before the section
+that starts with # in the GAUSSIAN03/09 input file (<em>job_name.com</em>):<br>
+<br>
+<em>%Subst L101 $home/ANT.G-x.x.x/bin</em><br>
+<span style="font-style: italic;">%Subst L502 $home/ANT.G-x.x.x/bin</span><br>
+<br>
+where <span style="font-style: italic;">$home</span> may be
+substituted by the appropriate directory containing <strong> ANT.G.<br>
+<br>
+</strong>2) Set the character string in the title line of the gaussian
+input file <em>job_name.com </em> or  <em>job_name.gjf </em>
+to whatever you like the output files to be named after. You may use the same
+name as that of the input file (<em>job_name</em>). This should
+also be the name of the parameters file (<em>job_name.ant</em>)
+if you want to modify default calculation parameters (and you probably
+want to). <br>
+<br>
+3) In order to perform standard
+transport calculations, part of the two metal electrodes has to be
+included in the atomic description of the cluster.
+To this end, a special convention for the coordinates specification
+section in the <em>job_name.com</em> input file is used so
+that <strong> ANT.G </strong>
+can identify
+the atoms to which the infinite electrodes (Bethe lattices) are
+attached.<br>
+<br>
+Now follow these rules:<br>
+<ol type="disc">
+  <li>1) 3D electrodes: The first and last set of atoms in the input
+file should correspond to the outermost regions of the electrodes,
+i.e., to the ones farthest from the scattering region and should have
+perfect crystalline order. These
+should be composed of at least 2 planes each, keeping the outermost
+planes first and last in the input file. By
+default all the atoms in the outermost planes are connected to the
+Bethe lattice (see Figure). </li>
+  <br>
+  <img src="scheme.jpg" width="440" height="412" alt="">
+ <br>
+ The order and atomic structure of the remaining atoms in the
+metallic electrodes and the
+molecule or rest of the system connected to the crystalline regions
+is not important although a standard metal-molecule-metal structure is
+recommended for a better analysis of the results.<br><br>
+
+  <li>2) 2D electrodes: As in the 3D case, the first and last set of
+atoms should have perfect crystalline order. In this case, it is
+recommended to specify the number of atoms to be connected to the Bethe
+lattice in the <em>job_name.ant</em> file since, by default,
+it considers all the atoms in the electrodes (see below).</li>
+  <li>&nbsp;<br>
+  </li>
+
+</ol>
+With this convention <strong> ANT.G </strong>
+is able to identify
+the lattice
+directions and the atoms to which attach the Bethe lattice describing
+the semi-infinite electrodes. The number of atoms in the crystalline
+regions to be considered for connection to the Bethe lattice can be
+especified
+using the keyword <em>NEMBED</em>.
+You can check whether the contact to the Bethe lattice has been
+successful
+by looking at the generated <i>job_name<big><big>.</big></big>xyz</i>
+file which
+contains the
+coordinates of the original
+atoms and
+those of the ones representing the first atom of an added Bethe
+lattice branch.
+Any crystallographic directions of an fcc, hcp, or bcc structure can be
+used
+for the crystalline part of the electrodes. 2D electrodes such as
+graphene and 6-fold or 4-fold coordinated crystals are also accepted.<br>
+<br>
+Note:<br>
+If one of the electrodes is missing you need to state this in the <em>job_name.ant
+</em> file using the electrode type GHOST (see <strong> ANT.G</strong>
+input file). The transmission is not evaluated, but the calculation is
+carried out similarly. If both electrodes are missing the calculation
+is completely equivalent to that of GAUSSIAN03/09, but using the
+Green's
+function formalism. This presents several advantages over the standard
+calculation.<br>
+<br>
+</div>
+</div>
+<div class="cleaner"><em>&nbsp;</em></div>
+</div>
+<div style="margin-top: 0px; height: 0px;" id="footer"><em><a
+ href="http://www.gebaeude7.de">Webdesign</a>
+by <a href="http://www.busreisen24.de/">Jens Wolters</a></em></div>
+<div
+ style="font-size: 0.8em; text-align: center; margin-top: 1em; margin-bottom: 1em;"><em>Design
+provided
+by
+<a href="http://www.freewebtemplates.com/">Free Web
+Templates</a> - your source for free website templates
+</em></div>
+</body>
+</html>

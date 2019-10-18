@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="Keywords" content="Misty Grey template">
+    <meta name="Description" content="Misty Grey template">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <!-- 
+      Design: Daniel Kocherscheidt, Jens Wolters
+      Open Source: This template is free to use for personal and commercial projects.
+	  It is not allowed to remove the footer link though !						
+-->
+    <title>ANT</title>
+  </head>
+  <body>
+    <div id="center">
+      <div id="banner">
+        <div style="text-align: left;"> </div>
+        <p style="margin-bottom: -1in; text-decoration: none;
+          background-color: rgb(51, 102, 102); font-weight: bold;
+          font-family: Helvetica,Arial,sans-serif; text-align: left;
+          margin-top: 22px; height: 89px;"><font color="#FFFFFF"><span
+              style="font-size: larger;"><span style="font-size:
+                larger;"><span style="font-size: larger;"><big><big><big><big>ANT</big><br>
+                        <small><small>Atomistic NanoTransport</small></small><br>
+                      </big></big></big> </span></span></span></font></p>
+      </div>
+      <div id="navigation">
+        <ul>
+          <li><a class="current" href="index.html">HOME</a></li>
+          <li><a href="ant_g03.html">ANT.G</a></li>
+          <li><a href="ant_1D.html">ANT.1D</a></li>
+          <li><a href="ant_U.html">ANT.U</a></li>
+        </ul>
+      </div>
+      <div id="main">
+        <blockquote><small><font color="#198a8a"><font style="font-size:
+                10pt;" size="5"><small><span style="background:
+                    transparent none repeat scroll 0% 50%;
+                    -moz-background-clip: border;
+                    -moz-background-origin: padding;
+                    -moz-background-inline-policy: continuous;"><big><big><span
+                          style="color: rgb(153, 153, 153);"><font
+                            color="#198a8a"> <b>ANT</b> </font></span><span
+                          style="color: rgb(153, 153, 153);"></span><span
+                          style="color: rgb(153, 153, 153);"></span></big></big></span></small></font></font></small>
+          is a long-term project started in the year 2000 at the Physics
+          Department of the University <br>
+          of Alicante with the aim to compute the electrical current in
+          atomically-defined nanostructures <br>
+          combining self-consistent field electronic structure
+          calculations (typically Density Functional Theory), <br>
+          Landauer&nbsp; transport formalism, and the (non-equilibrium)
+          Green's functions formalism. At present, <br>
+          the <small><b><font color="#198a8a"><font style="font-size:
+                  10pt;" size="5"><small><span style="background:
+                      transparent none repeat scroll 0% 50%;
+                      -moz-background-clip: border;
+                      -moz-background-origin: padding;
+                      -moz-background-inline-policy: continuous;"><big><big><span
+                            style="color: rgb(153, 153, 153);"><font
+                              color="#198a8a">ANT</font></span></big></big></span></small></font></font></b>
+          </small>software package is composed of the following
+          independent codes<strong>:</strong> <br>
+        </blockquote>
+        <div id="content"> <br>
+          <ul>
+            <li><strong>ANT.G</strong>: This code has been designed as a
+              generic computational tool with application in
+              nanoelectronics. It relies on the GAUSSIAN03/09 code with
+              which interfaces in a seamless manner. Straightforwad use
+              of <span style="font-weight: bold;">ANT.G</span> include
+              the computation of the zero-bias conductance (or,
+              alternatively, the electrical current under an applied
+              bias voltage) of a variety of nanoscale systems such as
+              molecular bridges or simply metallic atomic contacts as
+              those created with scanning tunneling microscope or break
+              junction techniques. The use of <span style="font-weight:
+                bold;">ANT.G</span> may also be naturally extended to
+              the computation of scanning tunneling spectroscopy and the
+              simulation of scanning tunneling and electrostatic force
+              microscopy.</li>
+            <li>
+              <p> <img class="thumbnail" style="width: 254px; height:
+                  136px;" alt="" src="images/emb_au.jpg"><img
+                  style="width: 190px; height: 150px;" alt=""
+                  src="images/Al-nanocontact.jpg"> <span
+                  style="font-weight: bold;"></span></p>
+            </li>
+          </ul>
+          <strong>ANT.1D</strong>: This code has been specifically
+          designed for the computation of the conductance at zero bias
+          voltage in quasi-one-dimensional systems such as atomic
+          chains, nanowires, carbon nanotubes, graphene nanoribbons,
+          etc., which may present a disordered central region where
+          scattering takes place.&nbsp; Other systems without an
+          underlying one-dimensional symmetry such as molecular bridges
+          can also be computed with <strong> ANT.1D </strong> by
+          modeling the electrodes as finite-section
+          quasi-one-dimensional wires. The use of <strong> ANT.G </strong>
+          may be, however, more appropriate in these cases. <br>
+          <ul style="width: 526px;">
+            <strong> <br>
+            </strong>
+          </ul>
+          <img style="width: 452px; height: 103px;" alt=""
+            src="images/cnt.jpg">
+          <ul>
+            <br>
+            <span style="font-weight: bold;">ANT.U</span>: This code is
+            specifically designed for the computation of the conductance
+            at zero bias voltage in, e.g., graphene-based systems using
+            a one-orbital minimal model and on-site interactions
+            (Hubbard model).
+          </ul>
+        </div>
+        <div class="cleaner"><strong> &nbsp;</strong></div>
+      </div>
+    </div>
+    <div id="footer"><a href="http://www.gebaeude7.de">Webdesign</a> by
+      <a href="http://www.busreisen24.de/">Jens Wolters</a></div>
+    <div style="font-size: 0.8em; text-align: center; margin-top: 1em;
+      margin-bottom: 1em;">Design provided by <a
+        href="http://www.freewebtemplates.com/">Free Web Templates</a> -
+      your source for free website templates </div>
+  </body>
+</html>
