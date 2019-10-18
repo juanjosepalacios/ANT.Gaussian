@@ -1,0 +1,51 @@
+! **************************
+! H Bethe Lattice parameters
+! **************************
+!
+! ***********************************************************
+! *** Papacon TB parameters for valence minimal basis set ***
+! ***********************************************************
+!
+BEGINSET
+Papacon
+1 1 1 0
+s
+!
+es = 0.0d0
+!
+sss = -0.1
+!
+ENDSET
+!
+BEGINSET
+hydrophene1
+1 1 1 0
+s
+es = 0.0d0
+!
+sss = -0.1
+!
+S_sss = 0.2
+ENDSET
+!
+BEGINSET
+hydrophene2
+1 1 1 0
+s
+es = -0.1d0
+!
+sss = -0.1
+!
+S_sss = 0.2
+ENDSET
+!
+BEGINSET
+hydrophene3
+1 1 1 0
+s
+es = 0.0d0
+!
+sss = -0.2
+!
+S_sss = 0.2
+ENDSET

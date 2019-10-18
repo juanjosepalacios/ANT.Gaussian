@@ -1,0 +1,562 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="Keywords" content="Misty Grey template">
+    <meta name="Description" content="Misty Grey template">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <!-- 
+      Design: Daniel Kocherscheidt, Jens Wolters
+      Open Source: This template is free to use for personal and commercial projects.
+          It is not allowed to remove the footer link though !                                          
+-->
+    <title>ANT</title>
+  </head>
+  <body>
+    <div id="center">
+      <div id="banner">
+        <div style="text-align: left;"> </div>
+        <p style="margin-bottom: -1in; text-decoration: none;
+          background-color: rgb(51, 102, 102); font-weight: bold;
+          font-family: Helvetica,Arial,sans-serif; text-align: left;
+          margin-top: 22px; height: 89px;"><font color="#FFFFFF"><span
+              style="font-size: larger;"><span style="font-size:
+                larger;"><span style="font-size: larger;"><big><big><big><big>ANT</big><br>
+                        <small><small>Atomistic NanoTransport</small></small><br>
+                      </big></big></big> </span></span></span></font></p>
+      </div>
+<div id="navigation">
+<ul>
+  <li><a href="index.html">HOME</a></li>
+  <li><a class="current" href="ant_g03.html">ANT.G</a></li>
+  <li><a href="ant_1D.html">ANT.1D</a></li>
+  <li><a href="ant_U.html">ANT.U</a></li>
+</ul>
+</div>
+<div id="main">
+<div id="subnavigation">
+<ul>
+  <li class="normal"><a href="ant_g03.html">Basics</a></li>
+  <li class="active"><a href="manual_g03.html">Manual</a></li>
+  <li class="normal"><a href="distribution_g03.html">Distribution</a></li>
+  <li class="normal"><a href="people_g03.html">People</a></li>
+  <li class="normal"><a href="technical_g03.html">Technical
+Especifications</a></li>
+  <li class="normal"><a href="publications_g03.html">Publications</a></li>
+  <li class="normal"><a href="examples_g03.html">Examples</a></li>
+</ul>
+</div>
+<div id="content"> <img style="width: 45px; height: 38px;" alt=""
+ src="ant_45_45.gif" class="thumbnail"><br>
+<strong><big><big><big><big>.Gaussian</big></big></big></big></strong> <br>
+<br>
+<ul>
+  <li class="normal"><a href="manual_1_g03.html"><strong>Installing ANT.G</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_2_g03.html"><strong>GAUSSIAN03/09 input file</strong></a></li>
+  <br>
+  <li class="active"><a href="manual_3_g03.html"><strong>ANT.G input file</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_4_g03.html"><strong>Bethe lattice input file</strong></a></li>
+  <br>
+</ul>
+<hr>
+<div style="text-align: justify;"> Various options and parameters of
+the <span style="font-weight: bold;">ANT.G</span> code are
+user-controlled through the <em>job_name.ant</em> input file.
+This file must be in the same directory as that of the GAUSSIAN03 input
+file (<span style="font-style: italic;">job_name.com</span>).
+If there is no parameter file the program will run with the default
+values, which are given here. The same holds true for an empty file or
+a file only containing comments and/or blank lines. Remember that
+<i>job_name;</i> is specified in the title line of the
+<i>job_name.com</i> or <i>job_name.gjf</i> file, it does not take it from the command line!!.
+<br>
+</div>
+<br>
+<strong>Syntax rules:</strong><br>
+<ol>
+  <li>The order of statements is arbitrary.</li>
+  <br>
+  <li>Comment lines start with the symbol "!". </li>
+  <br>
+  <li>Empty lines are ignored.</li>
+  <br>
+  <li>General syntax for real and integer variable assignment:<br>
+    <em>KEYWORD</em> = (value) <br>
+    <div style="text-align: justify;"> where <em>KEYWORD</em> is
+always in uppercase. All allowed keywords are listed below along with
+the default value assigned to them.</div>
+  </li>
+  <br>
+  <li>Logical variable syntax: <br>
+    <span style="font-style: italic;">KEYWORD</span><br>
+    <div style="text-align: justify;"> If the keyword is specified, the
+variable is given the value .TRUE. The default value is .FALSE. Thus
+the logical variables act as switches turning on a specific feature.
+For example, the keyword <span style="font-style: italic;">MULLIKEN</span>
+dumps the Mulliken population analysis into a file.<span
+ style="font-style: italic;"></span><em></em><span
+ style="font-style: italic;"></span></div>
+  </li>
+</ol>
+<strong> Calculation parameters:</strong>
+<ol>
+  <li><em>ALPHA</em> (real)<br>
+Mixing parameter for density matrix (typically 0.01 &lt; <em>ALPHA</em>
+&lt; 0.1).<br>
+Default: <em>ALPHA</em> = 5.0D-2</li>
+  <li><br>
+  </li>
+  <li><span style="font-style: italic;">NPULAY</span> (integer)</li>
+  <li style="text-align: justify;">DIIS convergence parameter (typically<span
+ style="font-style: italic;"> 1 &lt; NPULAY</span> &gt; 10). Every <span
+ style="font-style: italic;">NPULAY</span> normal convergence steps a
+Pulay extrapolation kicks in.<br>
+  </li>
+  <li>Default:<span style="font-style: italic;"> NPULAY = 4</span><br>
+  </li>
+</ol>
+<ol>
+  <li><span style="font-style: italic;">PACC </span>(real)</li>
+  <li>Numerical integration maximum accuracy for density matrix.</li>
+  <li>Default: <span style="font-style: italic;">PACC </span>= 1.0D-5</li>
+  <li><br>
+  </li>
+  <li><em>CHARGEACC</em> (real) <br>
+Total charge maximum accuracy. <br>
+Default: <em>CHARGEACC</em> = 1.0D-3</li>
+  <br>
+  <li> <em>FERMIACC</em> (real)<br>
+Fermi level maximum accuracy (in eV). <br>
+Default: <em>FERMIACC</em> = 1.0D-3</li>
+</ol>
+<div style="margin-left: 40px;"><span style="font-style: italic;">SMALL,
+SMALLD
+</span>(real)<br>
+Parameters used for the identification of the crystallographic
+structure of the electrodes and for determining the Bethe lattice
+directions. The smaller, the more stringent on the
+atomic structure.&nbsp; Increase their values if your electrodes are
+slightly disordered.<br>
+Default: <span style="font-style: italic;">SMALL </span>= 0.1<br>
+Default: <span style="font-style: italic;">SMALLD </span>= 0.1
+(Angstrom)<br>
+</div>
+<ol>
+  <li><em>FULLACC </em>(logical)</li>
+  <li>Turns on full accuracy from the first cycle.<br>
+  </li>
+  <li><br>
+  </li>
+  <li><em>ETA</em> (real)<br>
+    <div style="text-align: justify;"> Small imaginary part of the
+Green's function. When both electrodes are set to GHOST this number
+might need to be no so small.<br>
+    </div>
+  </li>
+  <li> Default: <em>ETA</em> = 1.0D-10</li>
+  <br>
+  <li> <em>SL</em> (real)<br>
+    <div style="text-align: justify;"> Convergence criterion for when
+to switch the infinite electrodes (Bethe lattice) on. These are
+connected when the standard GAUSSIAN03/09 SCF convergence for the
+density matrix (RMSDP) reaches RMSDP &lt; <em>SL</em>, where the
+overall convergence criterion is set in the GAUSSIAN03/09 input file
+with the SCF option "scf(conver=n)".<br>
+    </div>
+Remark: If <em>SL</em> = 0, the leads are only connected after the
+GAUSSIAN03/09 SCF calculation has converged (cycle=1000). This is only
+recommended for quick and dirty calculations.<br>
+Default: <em>SL</em> = 1.0D-2</li>
+  <br>
+  <li> <em>FERMISTART</em> (real) <br>
+    <div style="text-align: justify;"> Starting value for Fermi level
+search (in eV). When reinitializing a calculation from a
+P.job_name.dat file it is overruled by the existing value in
+P.job_name;.dat.<br>
+    </div>
+Default: <em>FERMISTART</em> = -5.0D0</li>
+  <li><br>
+  </li>
+</ol>
+<div style="margin-left: 40px;"><span style="font-style: italic;">TYPE1
+and TYPE2 </span>(string)<br>
+<div style="text-align: justify;"> Type of model for the semiinfinite
+electrode. When set to BETHE the effective selfenergy is connected to
+the electrode. When set to GHOST, nothing is connected. When both
+electrodes are set to GHOST the calculation is similar to the one
+performed by the original GAUSSIAN03/09 code on the input&nbsp;
+cluster, but with all the convergence advantages of <span
+ style="font-weight: bold;">ANT.G</span>.<br>
+</div>
+Default: <span style="font-style: italic;">TYPE1 </span>= BETHE and <span
+ style="font-style: italic;">TYPE2 = </span>BETHE<br>
+</div>
+<ol>
+  <li> <em>BLPAR1</em> and <em>BLPAR2</em> (string)<br>
+    <div style="text-align: justify;"> Parameters sets of the Bethe
+lattice for the first and second electrode, respectively (see available
+options in files BLxxx.dat).<br>
+    </div>
+Default: <em>BLPAR1</em> = Papacon and <em>BLPAR2</em> = Papacon</li>
+  <br>
+  <li><em>OVERLAP</em> (real)<br>
+    <div style="text-align: justify;"> Factor by which the overlap
+parameters of the Bethe lattice (when specified in the parameters set)
+are multiplied (0.0 =&lt; <em>OVERLAP</em> =&lt; 1.0).&nbsp; When set
+to a negative value, an automatic procedure to include the overlap
+(even if not specified in the parameters set) is used. This is the
+best option although it slows down the calculation with the PGI compiler. 
+Set it to 0.0 for faster calculations and compare. This
+parameter may need to be smaller than 1.0 to avoid unphysical density
+of states for the Bethe lattice when the overlap parameters are &gt;
+0.2.<br>
+    </div>
+Default: <span style="font-style: italic;">OVERLAP</span> = 0.0</li>
+  <br>
+  <li> <em>GLUE (real)</em></li>
+  <li style="text-align: justify;">Factor by which to multiply the
+selfenergy. Useful to detach in a controled way the system from the
+Bethe lattice.<br>
+  </li>
+  <li>Default: <span style="font-style: italic;">GLUE</span> = 1.0</li>
+  <li><br>
+  </li>
+  <li><em>NEMBED1</em> and <em>NEMBED2</em> (integer)<br>
+    <div style="text-align: justify;"> Number of atoms to be connected
+to a Bethe lattice branch. These atoms are not taken into account on
+computing the charge of the system when <span
+ style="font-style: italic;">OVERLAP</span> &gt; 0.<br>
+    </div>
+    <div style="text-align: justify;"> 3D Default: <em>NEMBED1</em> =
+All atoms in the outermost plane of first electrode and <em>NEMBED2</em>
+= All atoms in the outermost plane of second electrode (this is
+typically a good choice). 2D Default:&nbsp; <em>NEMBED1</em> = All
+atoms in the electrode 1 and <em>NEMBED2</em> = All atoms in electrode
+2 (since you do probably not want this default, you should specify
+these).<br>
+    </div>
+  </li>
+</ol>
+<div style="margin-left: 40px;"><span style="font-style: italic;">NATOMEL1
+</span>and<span style="font-style: italic;"> NATOMEL2</span> (integer)<br>
+<div style="text-align: justify;"> Number of atoms in first and second
+electrode. Only useful when the system is composed of a single element
+or one wants to select especific regions for analysis.<br>
+</div>
+Default: <span style="font-style: italic;">NATOMEL1 = </span>Number
+of atoms in first metallic electrode and <br>
+<span style="font-style: italic;">NATOMEL2</span> = Number of atoms in
+second metallic electrode.<br>
+</div>
+<ol>
+</ol>
+<strong><br>
+Reinitialization options:</strong> <br>
+<ol>
+  <li style="text-align: justify;">When the file <span
+ style="font-style: italic;">P.job_name.dat<big> </big></span><big>i<small>s
+presen</small></big><big><small>t</small></big>, the calculation is
+initialized from the density matrix stored in <em>P.job_name.dat</em>.
+It
+is advisable to include the keyword <em>nodamp</em> in the SCF
+options of the GAUSSIAN03 input line "scf=(nodamp)" and <span
+ style="font-weight: bold;">make sure</span> that the standard
+orientation of the system is the same as the one of the density matrix
+stored in <i>P.job_name.dat</i>. You also need to add "nosymm"
+to the input file <i>job_name.com</i> as "scf(nodamp,nosymm)" if you
+want to start with an educated guess for magnetic systems with an
+unusual spin texture or apply a finite bias voltage. The "nosymm"
+keyword placed alone on the SCF
+especifications line (not in the scf brackets) is useful to prevent
+GAUSSIAN03/09 from rotating the system and is usually necessary for
+optimizations since GAUSSIAN03/09 likes to change the standard
+orientation from step to step.<br>
+  </li>
+  <li><em><br>
+    </em></li>
+  <em> </em>
+  <li><em>PFIX</em> (logical)</li>
+  <em> </em>
+  <li>When present, part of a previously computed density matrix can be
+used.</li>
+  <em> </em>
+  <li>Syntax:</li>
+  <em> </em>
+  <li style="font-style: italic;"><em>PFIX</em></li>
+  <em> </em>
+  <li style="font-style: italic;"><em>'P.old_job_name.dat'</em></li>
+  <em> </em>
+  <li style="text-align: justify;">where <span
+ style="font-style: italic;">'<i>P.old_job_name.dat'</i></span> is the
+file containing the density matrix you want to use. This is useful,
+.e.g., to change the basis set on a restricted set of atoms while
+preserving the convergency already achieved in the rest of the system
+(see <span style="font-style: italic;">NFIX</span>).</li>
+  <li>Default: .false. (no supplementary matrix provided).<br>
+  </li>
+  <li><br>
+  </li>
+  <span style="font-style: italic;">NFIX</span> (integer)<br>
+Number of atoms NOT to be touched when using PFIX. <br>
+Syntax:<br>
+  <span style="font-style: italic;">NFIX = N</span><br>
+#atom1, #atom2, ...<br>
+where the second line indicates the atoms to be preserved.<br>
+</ol>
+<strong>Bias and gate voltage related parameters:</strong>
+<ol>
+  <li><em>BIASVOLT</em> (real)<br>
+    <div style="text-align: justify;"> Bias voltage (in eV). It is
+recommended to perfom first a calculation at zero bias and then
+reinitialize from <i>P.job_name.dat</i><em></em>. Succesive
+calculations at different bias voltages can be perfomed starting from a
+previous calculation in the same way. You need to add "nosymm" to the
+SCF specifications line in&nbsp; the GAUSSIAN03 input file as
+"scf(nosymm)". The potential drop profile can be finally read from the
+file<i> V.job_name.dat</i> where the atom on-site energies (averaged
+to all orbitals in the atom) are stored. <br>
+    </div>
+Default: <em>BIASVOLT</em> = 0.0</li>
+  <br>
+  <li><em>QEXCESS</em> (real)<br>
+    <div style="text-align: justify;"> The effect of a gate voltage can be simulated
+through the addition of positive charges in the GAUSSIAN03/09 input file. To compensate
+and keep overall charge neutrality, an equal number of electrons should be added. This can be acomplished
+with this keyword. (Of course one is free to violate charge neutrality
+if physically required.) It overrules the initial charge given to GAUSSIAN03/09 through its input
+file, but it is recommended these two quantities to be equal for a more efficient calculation.<br>
+    </div>
+Default: <em>QEXCESS</em> = 0.0</li>
+</ol>
+<strong>Spin related parameters:</strong>
+<ol>
+  <li><em>SWOFFSPL</em> (real)<br>
+    <div style="text-align: justify;"> Convergence criterion for
+switching off spin locking in a spin unrestricted calculation
+(default). Thus in a spin-unrestricted calculation the total spin of
+the device is kept fixed to the value $(M-1)/2$ given by the
+multiplicity $M$ in the GAUSSIAN03/09 input file until a certain
+convergence is reached: RMSDP &lt; <em>SWOFFSPL</em>. (See also
+NSPINLOCK below)<br>
+    </div>
+Advice: <em>SWOFFSPL</em> &lt; <em>SL</em> <br>
+Default: <em>SWOFFSPL</em> = 1.0D-3<br>
+  </li>
+  <em> <br>
+  </em>
+  <li><em>NSPINLOCK</em> (integer)<br>
+    <div style="text-align: justify;"> Number of steps with spin
+locking on. It supercedes the <em>SWOFFSPL</em> criterion&nbsp; when
+&gt;= 0 (see keyword <em>SWOFFSPL</em> above)<br>
+    </div>
+Default: <em>NSPINLOCK</em> = 0.</li>
+  <em> <br>
+  </em>
+  <li><em>UD, DU, DD </em>(logical)<br>
+    <div style="text-align: justify;"> Magnetization direction of the
+Bethe lattice electrodes when these are magnetic. U stands for&nbsp;
+"up" and and&nbsp; D for "down". Useful after editing the density
+matrix to create an educated guess for a new calculation.<br>
+    </div>
+Default: .false. (both electrodes "up").</li>
+  <em> <br>
+  </em>
+  <li> <em>MRSTART</em> (integer)<br>
+    <div style="text-align: justify;"> Useful to create an educated
+guess for a new calculation with an unusual spin texture starting from
+a precomputed density matrix. In particular, it reverses the
+magnetization direction for all atoms with numbers &gt;= <em>MRSTART</em>.
+You
+need to add "nosymm" to the SCF specifications line in&nbsp; the
+GAUSSIAN03/09 input file as "scf(nosymm)".<br>
+    </div>
+Default: <em>MRSTART</em> = 0 (No effect).</li>
+  <em> <br>
+  </em>
+  <li><em>SPINEDIT</em> (logical) <br>
+    <div style="text-align: justify;"> Useful to create an educated
+guess for a new calculation with an unusual spin texture starting from
+a precomputed density matrix. In particular, it manipulates the
+magnetization direction (spin) of individual atoms. You need to add
+"nosymm" to the SCF specifications line in&nbsp; the GAUSSIAN03/09
+input file as "scf(nosymm)".<br>
+    </div>
+Syntax: <br>
+    <em>SPINEDIT</em><br>
+#natoms<br>
+#atom1, #atomspin1, #atom2, #atomspin2, ...<br>
+    <div style="text-align: justify;"> where #natoms is the number of
+atoms where the spin is altered. The list below gives the atom numbers
+and the atom spins for the atoms to be altered where the atom spin can
+either be maintained (1), reversed (-1), or erased (0). <br></div>
+Default: .false. (off) <br>
+  </li>
+<br>
+  <li><em>SOC</em> (real)<br>
+    <div style="text-align: justify;"> Atomic spin-orbit coupling parameter. When
+different from zero, the transmission and DOS are computed adding the spin-orbit coupling to 
+the converged solution in the absence of spin-orbit coupling (this is obviously not justified for large
+values). As expected, in magnetic systems the spatial orientation determines the result.
+<br>
+    </div>
+Default: <em>SOC</em> = 0.0<br>
+  </li>
+  <br>
+
+</ol>
+<strong>Evaluation parameters</strong>
+<ol>
+  <em> </em>
+  <li> <em>ESTEP</em> (real)<br>
+Energy step (in eV) for printing out transmission and DOS.<br>
+Default: <em>ESTEP</em> = 1.0D-2</li>
+  <em> <br>
+  </em>
+  <li> <em>EW1</em> and <em>EW2</em> (real)<br>
+Define an energy window for printing out transmission and DOS.<br>
+Default: <em>EW1</em> = -3.0D0 and <em>EW2</em> = 3.0D0.</li>
+  <em> <br>
+DOSENERGY </em> (real)<br>
+Energy at which to evaluate the DOS projected on atoms when keyword MULLIKEN
+on.<br>
+Default: 0.0 (Fermi Energy).<br>
+  <br>
+  <li><em>LDOS_BEG</em> and <em>LDOS_END</em> (integer)<br>
+Atoms numbers onto which the local density of states is evaluated.<br>
+    <div style="text-align: justify;"> Default: <em>LDOS_BEG</em> = 1
+and <em>LDOS_END</em> = 0 (LDOS evaluation off).</div>
+  </li>
+  <em> <br>
+  </em>
+  <li> <em>NCHANNELS</em> (integer)<br>
+    <div style="text-align: justify;"> Number of eigenchannles to print
+out in <i>T.job_name.dat</i>. If <em>NCHANNELS</em> &gt; 0 then the
+tranmission matrix (calculated in the non-hermitian or hermitian form,
+see keyword <em>HTRANSM</em>) is diagonalized and the <em>NCHANNELS</em>
+largest eigenvalues (i.e. the eigenchannel transmissions) are printed.<br>
+    </div>
+Default: <em>NCHANNELS</em> = 0 (eigenchannel calculation off).</li>
+  <em> <br>
+  </em>
+  <li><em>LEADDOS</em> (logical)<br>
+    <div style="text-align: justify;"> Prints out the DOS of the Bethe
+lattice. Output files: Lead1DOS.dat, Lead2DOS.dat<br>
+    </div>
+Default: .false. (off).</li>
+  <em> <br>
+  </em>
+  <li><em>HTRANSM</em> (logical)<br>
+    <div style="text-align: justify;"> Compute Transmision matrix in
+hermitian form T = \Gamma_L^{1/2} G^\dagger \Gamma_R G \Gamma_L^{1/2}.
+The default is the easier non-hermitian form \Gamma_L G^\dagger
+\Gamma_R G which is considerably faster for large clusters. The
+diagonalization of both forms yield the same eigenvalues.<br>
+    </div>
+Default: .false. (transmission matrix in non-hermitian form).</li>
+  <em> <br>
+  </em>
+  <li><em>RTM_BEG</em> and <em>RTM_END</em> (integer)<br>
+    <div style="text-align: justify;"> Perform eigenchannel analysis
+with reduced transmission matrix [see PRB <strong>73</strong>, 075429
+(2006)] on atoms from atom <em>RTM_BEG</em> to atom <em>RTM_END</em>
+Default: <em>RTM_BEG</em> = 1 and <em>RTM_END</em> = 0 (eigenchannel
+analysis off).</div>
+  </li><br>
+<li>
+ <i>MULLIKEN</i> (logical)<br>
+<div style="text-align: justify;">Dumps the Mulliken population analysis
+in the file <span style="font-style: italic;">Q.job_name.dat</span>.
+The
+DOS projected on atoms at the Fermi energy (or at the energy
+selected by DOSENERGY) is also dumped when<span
+ style="font-style: italic;"> LDOS_BEG &lt; LDOS_END</span>.<br>
+</div>
+<div style="text-align: justify;">Default: .false. (not print).<br>
+<br></li>
+<li>
+<span style="font-style: italic;">ANT1D</span> (logical)<br>
+<div style="text-align: justify;"> Requests to write all the necessary input files to be used with the <a
+ href="ant_1D.html">ANT1D transport program</a>. <br>
+</div>
+</li>
+</ol>
+<br>
+<b>Options for electronic correlations </b>
+<ol>
+<div style="text-align: justify;">
+<span style="font-style: italic;">CORRBLOCKS</span><br>
+<div style="text-align: justify;">This keyword specifies a block of
+atomic orbitals (usually a d- or f-shell of an atom) for further
+treatment beyond DFT taking into account local electronic correlations.
+<br>
+</div>
+Syntax:<br>
+&lt;num_corrblocks&gt;<br>
+&lt;ao_beg&gt; &lt;ao_end&gt; &lt;U&gt; &lt;J&gt;<br>
+...<br>
+<div style="text-align: justify;">where &lt;num_corrblocks&gt; is the
+number of correlated blocks within the device region. For each
+correlated block a line "&lt;ao_beg&gt; &lt;ao_end&gt; &lt;U&gt;
+&lt;J&gt;" has to be specified where &lt;ao_beg&gt; ist the number of
+the first atomic orbital and &lt;ao_end&gt; is the last atomic orbital
+of the correlated block. &lt;U&gt; is the direct Coulomb repulsion and
+&lt;J&gt; Hund's rule coupling for the correlated block.<br>
+</div>
+<br>
+<span style="font-style: italic;">DFT+U</span> (logical)<br>
+<div style="text-align: justify;">Requests a DFT+U calculation where a
+Hubbard interaction term (U and J) is put onto each correlated block
+which is treated within Hartree-Fock.<br>
+</div>
+<br>
+<span style="font-style: italic;">HYBFUNC</span> (logical)<br>
+<div style="text-align: justify;">Requests the calculation of the
+hybridization function for each correlated block which serves as an
+input for an impurity solver calculation. A mesh file "mesh.dat" needs
+to be present specifiying the energy points for which to calculate the
+hybridization function.<br>
+</div>
+<br>
+<span style="font-style: italic;">PORTHO</span> (logical)<br>
+<div style="text-align: justify;">Requests to perform a "projective
+orthogonalization" prior to calculation of the hybridization function.
+Thereby the device region is orthogonalized in a Gram-Schmidt like
+manner that preserves the original correlated subspace composed of all
+correlated blocks.<br>
+<br>
+<span style="font-style: italic;">DIAGCORRBL</span> (logical)<br>
+Prior to calculation of the hybridization function the Hamiltonian of
+each correlated subspace is diagonalized. This is useful in case of
+strong crystal-field splitting leading to large off-diagonal elements
+in the hybridization function. Using this option the crystal-field
+basis is found, and hence off-diagonal elements of the hybridization
+function are minimized. This option is also useful in case that the
+correlated subspace is described by more than one set of orbitals (e.g.
+double-zeta basis). In this case, the diagonalization yields the
+low-energy subspace of the correlated shell.<br>
+</div>
+<br>
+</div>
+<div class="cleaner"><em> &nbsp;</em></div>
+</div>
+<!-- This template ist Open Source as long as the footer links to the authors are included ! -->
+<div class="cleaner"><em><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em><em>&nbsp;</em></em></em></em></em></em></div>
+</div>
+</div>
+<div style="margin-top: 0px; height: 0px;" id="footer"><em><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em><em><a href="http://www.gebaeude7.de">Webdesign</a>
+by <a href="http://www.busreisen24.de/">Jens Wolters</a></em></em></em></em></em></em></div>
+<div
+ style="font-size: 0.8em; text-align: center; margin-top: 1em; margin-bottom: 1em;"><em><em
+ style="font-weight: normal;"><em style="font-weight: normal;"><em
+ style="font-weight: normal;"><em><em>Design provided by <a
+ href="http://www.freewebtemplates.com/">Free Web Templates</a> - your
+source for free website templates </em></em></em></em></em></em></div>
+</body>
+</html>

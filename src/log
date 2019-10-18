@@ -1,0 +1,639 @@
+gau-cpp -DG09ROOT device.F90 device.f90
+pgf90 -Bstatic_pgi -i8 -r8 '-mcmodel=medium' -mp=nonuma -tp nehalem-64 -Mreentrant -Mrecursive -Mnosave -Minfo -Mneginfo -time -fast -O2 -Munroll -Mvect=assoc,recog,cachesize:1572864 -c -o ../obj/device.o device.f90
+initdevice:
+    277, Memory copy idiom, array assignment replaced by call to pgf90_mcopy8
+    289, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+    337, Loop not vectorized/parallelized: contains call
+    350, Loop not vectorized/parallelized: contains call
+    357, Loop not vectorized/parallelized: contains call
+readdensmat:
+    389, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+    390, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+    395, Loop not vectorized/parallelized: potential early exits
+    409, Loop not vectorized/parallelized: too deeply nested
+    411, Loop not vectorized/parallelized: too deeply nested
+    413, Loop not vectorized/parallelized: too deeply nested
+    414, Loop not vectorized/parallelized: potential early exits
+    424, Loop not vectorized/parallelized: potential early exits
+    430, Invariant if transformation
+    471, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+    477, Generated an alternate version of the loop
+         Generated vector sse code for the loop
+    482, Memory copy idiom, array assignment replaced by call to pgf90_mcopy8
+    483, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+    485, Loop not vectorized/parallelized: too deeply nested
+    488, Loop not vectorized/parallelized: contains call
+    489, Loop not vectorized: may not be beneficial
+    495, Loop not vectorized/parallelized: contains call
+    496, Loop not vectorized: may not be beneficial
+    502, Loop not vectorized/parallelized: contains call
+    503, Loop not vectorized: may not be beneficial
+    517, Loop not vectorized/parallelized: contains call
+    519, Generated vector sse code for the loop
+    526, Generated 4 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+    528, Memory copy idiom, array assignment replaced by call to pgf90_mcopy8
+    533, Generated 4 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+    535, Memory copy idiom, array assignment replaced by call to pgf90_mcopy8
+readfockmat:
+    564, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+    565, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+    570, Loop not vectorized/parallelized: potential early exits
+    584, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+    590, Generated an alternate version of the loop
+         Generated vector sse code for the loop
+    595, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+    597, Loop not vectorized/parallelized: too deeply nested
+    600, Loop not vectorized/parallelized: contains call
+    601, Loop not vectorized: may not be beneficial
+    607, Loop not vectorized/parallelized: contains call
+    608, Loop not vectorized: may not be beneficial
+    614, Loop not vectorized/parallelized: contains call
+    615, Loop not vectorized: may not be beneficial
+    624, Memory copy idiom, array assignment replaced by call to pgf90_mcopy8
+cleanupdevice:
+    644, Loop not vectorized/parallelized: contains call
+initelectrodes:
+    664, Loop not vectorized/parallelized: contains call
+transport:
+    709, Memory copy idiom, array assignment replaced by call to pgf90_mcopy8
+    713, sum reduction inlined
+         maxval reduction inlined
+         Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+    714, sum reduction inlined
+         maxval reduction inlined
+         Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+    749, Loop not vectorized/parallelized: contains call
+    750, Loop unrolled 8 times
+    755, Loop not vectorized/parallelized: contains call
+    756, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+    757, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+         Loop unrolled 8 times
+    778, Loop not vectorized/parallelized: too deeply nested
+    784, Loop not vectorized/parallelized: contains call
+    785, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+         Loop unrolled 8 times
+    788, Loop not vectorized/parallelized: contains call
+    789, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+         Loop unrolled 8 times
+writeant1dinput:
+    833, Loop not vectorized/parallelized: contains call
+    842, Loop not vectorized/parallelized: contains call
+compdensmat:
+    881, Loop not vectorized/parallelized: contains call
+compdensmat2:
+   1011, Loop not vectorized/parallelized: contains call
+comppd:
+   1143, Loop not vectorized/parallelized: too deeply nested
+   1148, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   1154, Loop not vectorized/parallelized: too deeply nested
+   1155, Parallel region activated
+   1157, Parallel loop activated with static block schedule
+   1164, Begin critical section (__cs_unspc)
+   1165, Loop not vectorized/parallelized: not countable
+   1171, End critical section (__cs_unspc)
+   1174, Barrier
+   1175, Barrier
+         Parallel region terminated
+compspinpd:
+   1227, Loop not vectorized/parallelized: too deeply nested
+   1232, Loop unrolled 4 times
+   1237, Parallel region activated
+   1239, Parallel loop activated with static block schedule
+   1246, Begin critical section (__cs_unspc)
+   1247, Loop not vectorized/parallelized: not countable
+   1252, End critical section (__cs_unspc)
+   1255, Barrier
+   1256, Barrier
+         Parallel region terminated
+gplus0:
+   1294, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1295, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1299, Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   1305, Loop interchange produces reordered loop nest: 1306,1305
+         Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+gplus:
+   1338, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1339, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1340, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1341, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1345, Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   1352, Loop not vectorized: may not be beneficial
+         Unrolled inner loop 4 times
+         Generated 2 prefetch instructions for the loop
+   1358, Loop interchange produces reordered loop nest: 1359,1358
+         Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+glesser:
+   1402, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1403, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1404, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1405, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1408, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1409, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1414, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1415, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1420, Loop interchange produces reordered loop nest: 1421,1420
+         Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+   1442, Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+glesser_soc:
+   1490, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1491, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1492, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1493, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1494, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   1497, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1505, Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   1514, Loop interchange produces reordered loop nest: 1515,1514
+         Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   1523, Loop interchange produces reordered loop nest: 1524,1523
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   1533, Loop not vectorized: may not be beneficial
+         Unrolled inner loop 4 times
+         Generated 2 prefetch instructions for the loop
+   1540, Loop interchange produces reordered loop nest: 1541,1540
+         Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   1563, Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+f:
+   1618, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   1625, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+qxtot:
+   1654, Loop not vectorized/parallelized: too deeply nested
+   1674, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   1680, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+qxtot_soc:
+   1723, Memory copy idiom, array assignment replaced by call to pgf90_mcopyz16
+   1729, Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   1734, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   1739, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+hamiltonian:
+   1792, Invariant if transformation
+         Generated vector sse code for the loop
+   1801, Loop not vectorized/parallelized: contains call
+   1802, Loop not vectorized/parallelized: contains call
+   1814, Invariant if transformation
+         Generated vector sse code for the loop
+   1823, Loop not vectorized/parallelized: contains call
+   1824, Loop not vectorized/parallelized: contains call
+   1836, Invariant if transformation
+         Generated vector sse code for the loop
+   1846, Loop not vectorized/parallelized: contains call
+   1847, Loop not vectorized/parallelized: contains call
+mullpop:
+   1888, Invariant if transformation
+         Generated vector sse code for the loop
+   1895, Loop not vectorized/parallelized: contains call
+   1896, Loop not vectorized/parallelized: contains call
+   1899, Loop not vectorized/parallelized: contains call
+   1900, Loop not vectorized/parallelized: contains call
+   1921, Invariant if transformation
+         Generated vector sse code for the loop
+   1928, Loop not vectorized/parallelized: contains call
+   1929, Loop not vectorized/parallelized: contains call
+   1932, Loop not vectorized/parallelized: contains call
+   1933, Loop not vectorized/parallelized: contains call
+   1954, Invariant if transformation
+         Generated vector sse code for the loop
+   1962, Loop not vectorized/parallelized: contains call
+   1963, Loop not vectorized/parallelized: contains call
+   1966, Loop not vectorized/parallelized: contains call
+   1967, Loop not vectorized/parallelized: contains call
+mullpop_soc:
+   2001, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2002, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2003, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2004, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2005, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2006, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2007, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2008, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2009, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2010, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2011, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2012, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2013, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2014, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2015, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2016, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2020, Loop not vectorized: may not be beneficial
+   2037, Generated 4 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   2039, Generated 4 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   2041, Generated 4 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   2043, Generated 4 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   2060, Invariant if transformation
+         Loop not vectorized: may not be beneficial
+         Generated vector sse code for the loop
+   2076, Loop not vectorized/parallelized: contains call
+   2077, Loop not vectorized/parallelized: contains call
+   2080, Loop not vectorized/parallelized: contains call
+   2081, Loop not vectorized/parallelized: contains call
+   2107, Invariant if transformation
+         Loop not vectorized: may not be beneficial
+         Generated vector sse code for the loop
+   2123, Loop not vectorized/parallelized: contains call
+   2124, Loop not vectorized/parallelized: contains call
+   2127, Loop not vectorized/parallelized: contains call
+   2128, Loop not vectorized/parallelized: contains call
+   2154, Invariant if transformation
+         Loop not vectorized: may not be beneficial
+         Generated vector sse code for the loop
+   2171, Loop not vectorized/parallelized: contains call
+   2172, Loop not vectorized/parallelized: contains call
+   2175, Loop not vectorized/parallelized: contains call
+   2176, Loop not vectorized/parallelized: contains call
+ldos:
+   2221, Loop not vectorized/parallelized: too deeply nested
+   2224, Parallel region activated
+   2226, Parallel loop activated with static block-cyclic schedule
+         Loop not vectorized/parallelized: too deeply nested
+   2237, Begin critical section (__cs_unspc)
+         Loop not vectorized/parallelized: not countable
+   2240, Loop not vectorized/parallelized: not countable
+   2242, Loop not vectorized/parallelized: not countable
+   2248, Loop not vectorized/parallelized: not countable
+   2256, End critical section (__cs_unspc)
+         Loop not vectorized/parallelized: contains call
+   2262, Barrier
+         Parallel region terminated
+   2269, Loop not vectorized/parallelized: potential early exits
+transmission:
+   2354, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   2355, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   2356, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   2357, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   2414, Loop not vectorized/parallelized: too deeply nested
+   2422, Parallel region activated
+   2424, Parallel loop activated with static block-cyclic schedule
+         Loop not vectorized/parallelized: too deeply nested
+   2448, Memory copy idiom, array assignment replaced by call to pgf90_mcopyz16
+   2457, Begin critical section (__cs_unspc)
+   2458, Loop not vectorized/parallelized: not countable
+   2461, Loop not vectorized/parallelized: not countable
+   2463, Loop not vectorized/parallelized: not countable
+   2469, Loop not vectorized/parallelized: not countable
+   2477, Loop not vectorized/parallelized: contains call
+   2482, Loop not vectorized/parallelized: not countable
+   2499, Loop not vectorized/parallelized: not countable
+   2506, Loop not vectorized/parallelized: not countable
+   2507, Loop not vectorized/parallelized: not countable
+   2510, End critical section (__cs_unspc)
+         Loop not vectorized/parallelized: not countable
+   2514, Barrier
+         Parallel region terminated
+   2519, Parallel region activated
+   2521, Parallel loop activated with static block-cyclic schedule
+         Loop not vectorized/parallelized: too deeply nested
+   2535, Begin critical section (__cs_unspc)
+   2536, Loop not vectorized/parallelized: not countable
+   2538, Loop not vectorized/parallelized: not countable
+   2540, Loop not vectorized/parallelized: not countable
+   2546, Loop not vectorized/parallelized: not countable
+   2554, Loop not vectorized/parallelized: contains call
+   2559, Loop not vectorized/parallelized: not countable
+   2576, Loop not vectorized/parallelized: not countable
+   2583, Loop not vectorized/parallelized: not countable
+   2584, Loop not vectorized/parallelized: not countable
+   2589, End critical section (__cs_unspc)
+   2593, Barrier
+         Parallel region terminated
+   2603, Loop not vectorized/parallelized: potential early exits
+   2621, Loop not vectorized/parallelized: potential early exits
+comphybfunc:
+   2712, Loop not vectorized/parallelized: potential early exits
+   2723, Loop not vectorized/parallelized: potential early exits
+   2732, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   2734, Loop not vectorized/parallelized: too deeply nested
+   2735, Parallel region activated
+   2737, Parallel loop activated with static block schedule
+         Loop not vectorized/parallelized: too deeply nested
+   2742, Copy in and copy out of delta in call to compdelta
+         Begin critical section (__cs_unspc)
+         End critical section (__cs_unspc)
+         Loop not vectorized/parallelized: not countable
+   2745, Barrier
+         Parallel region terminated
+   2751, Loop not vectorized/parallelized: too deeply nested
+   2765, Loop not vectorized/parallelized: contains call
+         Generated vector sse code for the loop
+         Loop unrolled 8 times
+   2771, Loop not vectorized/parallelized: contains call
+eigenchannelanalysis:
+   2837, Loop not vectorized/parallelized: too deeply nested
+   2852, Loop interchange produces reordered loop nest: 2853,2852
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   2858, Loop interchange produces reordered loop nest: 2859,2858
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   2867, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2868, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2870, Loop interchange produces reordered loop nest: 2870,2870
+         Loop unrolled 8 times
+   2871, Loop interchange produces reordered loop nest: 2871,2871
+         Loop unrolled 8 times
+   2873, Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+   2878, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2879, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2884, Loop interchange produces reordered loop nest: 2884,2884
+         Loop unrolled 8 times
+   2885, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2886, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2887, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2897, Memory copy idiom, loop replaced by call to __c_mcopy8
+   2898, Memory copy idiom, loop replaced by call to __c_mcopy8
+   2900, Generated 3 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   2907, Loop not vectorized/parallelized: contains call
+separatespaghettis:
+   2972, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+compselfenergies:
+   3021, Possible copy in and copy out of sigma1 in call to zgemm
+   3022, Possible copy in and copy out of sigma1 in call to zgemm
+   3044, Possible copy in and copy out of sigma2 in call to zgemm
+   3045, Possible copy in and copy out of sigma2 in call to zgemm
+ddos:
+   3069, Loop not vectorized/parallelized: contains call
+   3073, Loop unrolled 2 times
+totcharge:
+   3110, Loop not vectorized/parallelized: contains call
+findenergybounds:
+   3145, Loop not vectorized/parallelized: contains call
+intrealaxis:
+   3195, Loop interchange produces reordered loop nest: 3196,3195
+         Unrolled inner loop 4 times
+         Generated a prefetch instruction for the loop
+   3203, Loop not vectorized/parallelized: too deeply nested
+   3204, Loop interchange produces reordered loop nest: 3205,3204
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3218, Loop not vectorized: data dependency
+         Loop unrolled 4 times
+   3223, Parallel region activated
+   3224, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3226, Parallel loop activated with static cyclic schedule
+         Loop not vectorized/parallelized: contains call
+   3238, Loop interchange produces reordered loop nest: 3239,3238
+         Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+   3244, Barrier
+   3246, Begin critical section (__cs_unspc)
+   3247, Loop not vectorized/parallelized: not countable
+   3250, End critical section (__cs_unspc)
+   3251, Parallel region terminated
+   3258, Loop not vectorized/parallelized: potential early exits
+   3270, Loop not vectorized: may not be beneficial
+intrealaxis_soc:
+   3315, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3325, Loop interchange produces reordered loop nest: 3326,3325
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3333, Loop not vectorized/parallelized: too deeply nested
+   3334, Loop interchange produces reordered loop nest: 3335,3334
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   3348, Loop not vectorized: data dependency
+         Loop unrolled 4 times
+   3353, Parallel region activated
+   3354, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3356, Parallel loop activated with static cyclic schedule
+         Loop not vectorized/parallelized: contains call
+   3368, Loop interchange produces reordered loop nest: 3369,3368
+         Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+   3374, Barrier
+   3376, Begin critical section (__cs_unspc)
+   3377, Loop not vectorized/parallelized: not countable
+   3380, End critical section (__cs_unspc)
+   3381, Parallel region terminated
+   3388, Loop not vectorized/parallelized: potential early exits
+   3400, Loop not vectorized: may not be beneficial
+intcompplane:
+   3457, Loop unrolled 4 times
+   3469, Loop not vectorized/parallelized: contains call
+   3476, Loop not vectorized/parallelized: too deeply nested
+   3484, Loop not vectorized: data dependency
+         Loop unrolled 4 times
+   3492, Parallel region activated
+   3493, Memory zero idiom, array assignment replaced by call to pgf90_mzero8
+   3497, Parallel loop activated with static block-cyclic schedule
+         Loop not vectorized/parallelized: too deeply nested
+   3505, Parallel region activated
+   3507, Loop not vectorized/parallelized: contains call
+   3509, Copy in and copy out of greenn in call to gplus0
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3511, Barrier
+         Parallel region terminated
+   3514, Loop not vectorized/parallelized: contains call
+   3520, Barrier
+   3522, Begin critical section (__cs_unspc)
+   3523, Loop not vectorized/parallelized: not countable
+   3526, End critical section (__cs_unspc)
+   3527, Parallel region terminated
+   3532, Generated 2 alternate versions of the loop
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3547, Loop unrolled 4 times
+gplus_soc:
+   3580, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3581, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3582, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3583, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3584, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3587, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3595, Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   3604, Loop interchange produces reordered loop nest: 3605,3604
+         Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   3613, Loop interchange produces reordered loop nest: 3614,3613
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   3623, Loop not vectorized: may not be beneficial
+         Unrolled inner loop 4 times
+         Generated 2 prefetch instructions for the loop
+   3630, Loop interchange produces reordered loop nest: 3631,3630
+         Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+gplus0_soc:
+   3664, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3665, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3666, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3667, Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3675, Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   3684, Loop interchange produces reordered loop nest: 3685,3684
+         Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+   3693, Loop interchange produces reordered loop nest: 3694,3693
+         Generated vector sse code for the loop
+         Generated 2 prefetch instructions for the loop
+   3707, Loop interchange produces reordered loop nest: 3708,3707
+         Generated vector sse code for the loop
+         Generated 4 prefetch instructions for the loop
+spin_orbit:
+   3736, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3737, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3738, Memory zero idiom, array assignment replaced by call to pgf90_mzeroz16
+   3745, Loop interchange produces reordered loop nest: 3746,3745
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3754, Loop interchange produces reordered loop nest: 3755,3754
+         Generated vector sse code for the loop
+         Generated a prefetch instruction for the loop
+   3832, Loop not vectorized/parallelized: contains call
+   3836, Loop not vectorized/parallelized: contains call
+   3840, Loop not vectorized/parallelized: contains call
+   3844, Loop not vectorized/parallelized: contains call
+   3847, Loop interchange produces reordered loop nest: 3848,3847
+         Generated vector sse code for the loop
+         Generated 3 prefetch instructions for the loop
+  Timing stats:
+    init                   118 millisecs     3%
+    import                  82 millisecs     2%
+    expand                  50 millisecs     1%
+    vectorize              566 millisecs    18%
+    optimize               482 millisecs    15%
+    schedule              1551 millisecs    50%
+    unroll                 201 millisecs     6%
+    Total time            3050 millisecs
+echo ../obj/system.o preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 ../obj/lapack_blas.o numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c ../obj/preproc.o util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c preproc.F ../obj/util.o ../obj/parameters.o ../obj/antcommon.o ../obj/g09Common.o ../obj/constants.o lapack_blas.f ../obj/numeric.o ../obj/cluster.o ../obj/ortho.o ../obj/correlation.o ../obj/OneDLead.o ../obj/BetheLattice.o ../obj/SpinOrbit.o ../obj/device.o ../obj/ANT.o 
+../obj/system.o preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 ../obj/lapack_blas.o numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c ../obj/preproc.o util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c preproc.F ../obj/util.o ../obj/parameters.o ../obj/antcommon.o ../obj/g09Common.o ../obj/constants.o lapack_blas.f ../obj/numeric.o ../obj/cluster.o ../obj/ortho.o ../obj/correlation.o ../obj/OneDLead.o ../obj/BetheLattice.o ../obj/SpinOrbit.o ../obj/device.o ../obj/ANT.o
+rm  ../lib/ANT.G-2.5.0.a
+ar crv ../lib/ANT.G-2.5.0.a ../obj/system.o preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 ../obj/lapack_blas.o numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c ../obj/preproc.o util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 device.f90 ANT.f90 system.c preproc.F ../obj/util.o ../obj/parameters.o ../obj/antcommon.o ../obj/g09Common.o ../obj/constants.o lapack_blas.f ../obj/numeric.o ../obj/cluster.o ../obj/ortho.o ../obj/correlation.o ../obj/OneDLead.o ../obj/BetheLattice.o ../obj/SpinOrbit.o ../obj/device.o ../obj/ANT.o 
+a - ../obj/system.o
+a - preproc.F
+a - util.f90
+a - parameters.f90
+a - antcommon.f90
+a - g09Common.f90
+a - constants.f90
+a - lapack_blas.f
+a - numeric.f90
+a - cluster.f90
+a - ortho.f90
+a - correlation.f90
+a - OneDLead.f90
+a - BetheLattice.f90
+a - SpinOrbit.f90
+a - device.f90
+a - ANT.f90
+a - system.c
+a - preproc.F
+a - util.f90
+a - parameters.f90
+a - antcommon.f90
+a - g09Common.f90
+a - constants.f90
+a - ../obj/lapack_blas.o
+a - numeric.f90
+a - cluster.f90
+a - ortho.f90
+a - correlation.f90
+a - OneDLead.f90
+a - BetheLattice.f90
+a - SpinOrbit.f90
+a - device.f90
+a - ANT.f90
+a - system.c
+a - ../obj/preproc.o
+a - util.f90
+a - parameters.f90
+a - antcommon.f90
+a - g09Common.f90
+a - constants.f90
+a - lapack_blas.f
+a - numeric.f90
+a - cluster.f90
+a - ortho.f90
+a - correlation.f90
+a - OneDLead.f90
+a - BetheLattice.f90
+a - SpinOrbit.f90
+a - device.f90
+a - ANT.f90
+a - system.c
+a - preproc.F
+a - ../obj/util.o
+a - ../obj/parameters.o
+a - ../obj/antcommon.o
+a - ../obj/g09Common.o
+a - ../obj/constants.o
+a - lapack_blas.f
+a - ../obj/numeric.o
+a - ../obj/cluster.o
+a - ../obj/ortho.o
+a - ../obj/correlation.o
+a - ../obj/OneDLead.o
+a - ../obj/BetheLattice.o
+a - ../obj/SpinOrbit.o
+a - ../obj/device.o
+a - ../obj/ANT.o
+pgf90 -Bstatic_pgi -i8 -r8 '-mcmodel=medium' -mp=nonuma -tp nehalem-64 -Mreentrant -Mrecursive -Mnosave -Minfo -Mneginfo -time -fast -O2 -Munroll -Mvect=assoc,recog,cachesize:1572864 -o ../bin/l502.exe  ../bin/ml502.o ../bin/l502.a ../bin/bdam1.o ../bin/caldsu.o /home/palacios/gaussian/g09/util.a /home/palacios/gaussian/g09/bsd/libf77blas-corei764sse3.a /home/palacios/gaussian/g09/bsd/libatlas-corei764sse3.a ../lib/ANT.G-2.5.0.a -Bstatic_pgi -lpthread -lm -lc 
+chmod o-rwx ../bin/l502.exe 

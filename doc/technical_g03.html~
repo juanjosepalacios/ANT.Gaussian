@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="Keywords" content="Misty Grey template">
+    <meta name="Description" content="Misty Grey template">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <!-- 
+      Design: Daniel Kocherscheidt, Jens Wolters
+      Open Source: This template is free to use for personal and commercial projects.
+          It is not allowed to remove the footer link though !                                          
+-->
+    <title>ANT</title>
+  </head>
+  <body>
+    <div id="center">
+      <div id="banner">
+        <div style="text-align: left;"> </div>
+        <p style="margin-bottom: -1in; text-decoration: none;
+          background-color: rgb(51, 102, 102); font-weight: bold;
+          font-family: Helvetica,Arial,sans-serif; text-align: left;
+          margin-top: 22px; height: 89px;"><font color="#FFFFFF"><span
+              style="font-size: larger;"><span style="font-size:
+                larger;"><span style="font-size: larger;"><big><big><big><big>ANT</big><br>
+                        <small><small>Atomistic NanoTransport</small></small><br>
+                      </big></big></big> </span></span></span></font></p>
+      </div>
+<div id="navigation">
+<ul>
+  <li><a href="index.html">HOME</a></li>
+  <li><a class="current" href="ant_g03.html">ANT.G</a></li>
+  <li><a href="ant_1D.html">ANT.1D</a></li>
+  <li><a href="ant_U.html">ANT.U</a></li>
+</ul>
+</div>
+<div id="main">
+<div id="subnavigation">
+<ul>
+  <li class="norma"><a href="ant_g03.html">Basics</a></li>
+  <li class="normal"><a href="manual_g03.html">Manual</a></li>
+  <li class="normal"><a href="distribution_g03.html">Distribution</a></li>
+  <li class="normal"><a href="people_g03.html">People</a></li>
+  <li class="active"><a href="technical_g03.html">Technical
+Especifications</a></li>
+  <li class="normal"><a href="publications_g03.html">Publications</a></li>
+  <li class="normal"><a href="examples_g03.html">Examples</a></li>
+</ul>
+</div>
+<div id="content"> <img style="width: 45px; height: 38px;" alt=""
+ src="ant_45_45.gif" class="thumbnail"> <br>
+<strong><big><big><big><big> .Gaussian
+<br>
+<br>
+</big></big></big></big></strong><br>
+<span style="font-weight: bold;">Current version: 2.4.1<br>
+<br>
+ANT.G</span> is written in
+FORTRAN90 and uses
+OpenMP directives to take full advantage of multiprocessor nodes.
+<br>
+<br>
+<span style="font-weight: bold;">ANT.G</span> has been thoroughly
+tested with PGI and Intel compilers on
+various 32-
+and 64-bit platforms.<br>
+<br>
+<ul>
+  <strong> Performance test <br>
+  <br>
+  <br>
+  <img style="width: 500px; height: 300px;" src="scaling.jpg" alt="">
+  <br>
+  </strong>
+</ul>
+Triangles: OVERLAP < 0.0, Circles: OVERLAP = 0.0
+</div>
+<div class="cleaner"><strong> &nbsp;</strong></div>
+</div>
+</div>
+<div id="footer"><strong><a href="http://www.gebaeude7.de">Webdesign</a>
+by <a href="http://www.busreisen24.de/">Jens Wolters</a></strong></div>
+<div
+ style="font-size: 0.8em; text-align: center; margin-top: 1em; margin-bottom: 1em;"><strong>Design
+provided
+by
+<a href="http://www.freewebtemplates.com/">Free Web
+Templates</a> - your source for free website templates
+</strong></div>
+</body>
+</html>

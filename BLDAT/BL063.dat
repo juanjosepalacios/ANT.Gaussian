@@ -1,0 +1,62 @@
+! ***************************
+! Eu Bethe Lattice parameters
+! ***************************
+!
+! ***********************************************************
+! *** Papacon TB parameters for valence minimal basis set ***
+! ***********************************************************
+!
+BEGINSET
+Papacon
+16 2 9 0
+s
+p
+d
+f
+EV
+!
+! *** 1. On-site energies in Ryd
+!
+ISPIN = 1
+es  =  0.0
+ep  =  5.0
+edd =  5.0
+edt =  5.0
+ef  = -0.0
+!
+! *** 2. hoppings in Ryd
+!
+sss = -1.0
+sps =  0.8543
+pps =  0.7166
+ppp = -0.1084
+sds = -0.5282
+pds = -0.9305
+pdp =  0.1008
+dds = -0.4872
+ddp =  0.2494
+ddd = -0.0462
+vf  = -0.1000
+!
+ISPIN = 2
+es  =  0.0
+ep  =  5.0
+edd =  5.0
+edt =  5.0
+ef  =  0.0
+!
+! *** 2. hoppings in Ryd
+!
+sss = -1.0
+sps =  0.8543
+pps =  0.7166
+ppp = -0.1084
+sds = -0.5282
+pds = -0.9305
+pdp =  0.1008
+dds = -0.4872
+ddp =  0.2494
+ddd = -0.0462
+vf  = -0.1000
+ENDSET
+!

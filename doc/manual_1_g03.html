@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="Keywords" content="Misty Grey template">
+    <meta name="Description" content="Misty Grey template">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <!-- 
+      Design: Daniel Kocherscheidt, Jens Wolters
+      Open Source: This template is free to use for personal and commercial projects.
+          It is not allowed to remove the footer link though !                                          
+-->
+    <title>ANT</title>
+  </head>
+  <body>
+    <div id="center">
+      <div id="banner">
+        <div style="text-align: left;"> </div>
+        <p style="margin-bottom: -1in; text-decoration: none;
+          background-color: rgb(51, 102, 102); font-weight: bold;
+          font-family: Helvetica,Arial,sans-serif; text-align: left;
+          margin-top: 22px; height: 89px;"><font color="#FFFFFF"><span
+              style="font-size: larger;"><span style="font-size:
+                larger;"><span style="font-size: larger;"><big><big><big><big>ANT</big><br>
+                        <small><small>Atomistic NanoTransport</small></small><br>
+                      </big></big></big> </span></span></span></font></p>
+      </div>
+<div id="navigation">
+<ul>
+  <li><a href="index.html">HOME</a></li>
+  <li><a class="current" href="ant_g03.html">ANT.G</a></li>
+  <li><a href="ant_1D.html">ANT.1D</a></li>
+  <li><a href="ant_U.html">ANT.U</a></li>
+</ul>
+</div>
+<div id="main">
+<div id="subnavigation">
+<ul>
+  <li class="normal"><a href="ant_g03.html">Basics</a></li>
+  <li class="active"><a href="manual_g03.html">Manual</a></li>
+  <li class="normal"><a href="distribution_g03.html">Distribution</a></li>
+  <li class="normal"><a href="people_g03.html">People</a></li>
+  <li class="normal"><a href="technical_g03.html">Technical
+Especifications</a></li>
+  <li class="normal"><a href="publications_g03.html">Publications</a></li>
+  <li class="normal"><a href="examples_g03.html">Examples</a></li>
+</ul>
+</div>
+<div id="content">
+<img style="width: 45px; height: 38px;" alt="" src="ant_45_45.gif"
+ class="thumbnail"><br>
+<strong><big><big><big><big>.Gaussian</big></big></big></big></strong>
+<br>
+<br>
+<ul>
+<li class="active"><a href="manual_1_g03.html"><strong>Installing ANT.G</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_2_g03.html"><strong>GAUSSIAN03/09 input file</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_3_g03.html"><strong>ANT.G input file</strong></a></li>
+  <br>
+  <li class="normal"><a href="manual_4_g03.html"><strong>Bethe lattice input file</strong></a></li>
+  <br>
+</ul>
+<hr><span style="text-decoration: underline;">Basic requirements:</span><br>
+A UNIX or LINUX system.<br>
+The GAUSSIAN03/09 package (source code).<br>
+A FORTRAN90 compiler.<br>
+<br>
+<span style="text-decoration: underline;">Installation:</span><br>
+Before installing <strong> ANT.G </strong>, the GAUSSIAN03/09 package
+must have been
+compiled using the standard
+procedure as described in its installation instructions. Once the
+installation
+log file <em> make.log</em> has been
+generated in the GAUSSIAN03/09
+installation directory, the
+installation
+script <span style="font-style: italic;">install.g03/g09</span> can
+read the
+preprocessor (PFLAGS) and compilation
+flags (CFLAGS) GAUSSIAN03/09 has been
+compiled with.
+If you don't have the <em style="font-weight: normal;">make.log</em>
+file available or the
+automatic installation does not work for some reason, you have to find
+out the flags yourself and edit the installation script <span
+ style="font-style: italic;">install.g03/g09</span>
+accordingly, i.e., you
+have to edit the variables <em style="font-weight: normal;">PFLAGS,
+CFLAGS, EXTRALIBS, LFLAGS</em>
+(see below for further explanations). Now follow these steps to install
+<span style="font-weight: bold;">ANT.G</span> on your computer:<br>
+<br>
+<ul>
+Untar
+the <span style="font-weight: bold;">ANT.G</span>
+package in a directory of your choice:<br>
+  <br>
+&gt; <em>tar -xvf ANT.G-x.x.x.tar</em><br>
+  <br>
+This
+creates a
+directory <em> ANT.G-x.x.x </em> with
+the
+directory tree containing all files necessary for the installation of <strong>
+ANT.G</strong>. Change to the installation directory:<br>
+  <span style="font-style: italic;"><br>
+&gt; cd ANT.G-x.x.x/install </span><br>
+  <br>
+Edit
+the installation script <em>install.g03/g09</em> (choose the
+appropriate
+one according the version of GAUSSIAN you are using).
+This
+script automatically reads the GAUSSIAN03/09 source files <em>l101.F
+and l502.F</em>
+and creates modified versions.&nbsp; The subroutine <em>caldsu.f</em>
+is also extracted from
+the file <em>utilam.F</em> and a modified version is generated which
+does not abort when the charge density does not integrate exactly to
+the number of electrons of the cluster. You must change the system
+dependent variables <em> g03root/g09root </em> and <em>F90</em>
+which hold information on the path of the GAUSSIAN03/09 package and the
+path
+of the FORTRAN90 compiler. Now run the script:<br>
+  <br>
+  <span style="font-style: italic;">&gt;
+./install.g03<br>
+or<br>
+  </span>
+</ul>
+<span style="font-style: italic;">&gt;
+./install.g09</span><br>
+<ul>
+  <br>
+</ul>
+This creates a new link: <em>l101.exe,</em>
+which reads the string <em>job_name</em> from the title line in the
+GAUSSIAN input file to be used to name all files
+</span>.It also creates the
+library <em>l502.a</em>. Do not
+worry
+about the error messages towards the end as long as the library <em>l502.a</em>
+has been created in the directory<span style="font-style: italic;"> lib</span>.
+The
+include
+file
+<em>make.in</em> is also created
+and moved to the <em>src</em> directory. The file <em>make.in</em>
+holds the preprocessor (<em>PREPROC</em>), compilation (<em>CFLAGS</em>),
+and
+linking
+flags
+(<em>LFLAGS</em>), and the library paths (<em>GAUSSLIBS</em>)
+that
+are necessary to compile <strong> ANT.G </strong> and link it
+with GAUSSIAN03/09.
+Change now to the <em>src</em>
+directory: <br>
+<ul>
+  <br>
+&gt; <em> cd ../src</em> <br>
+  <br>
+Compile
+and link <strong> ANT.G </strong> by
+executing the
+make file:<br>
+  <br>
+&gt; <em>make -f Makefile.g03/g09</em><em></em><br>
+  <br>
+</ul>
+This creates the main new link <span style="font-style: italic;">l502.exe</span>
+which calls <strong> ANT.G
+</strong>for the
+calculation of the density matrix in the NEGF formalism during the
+self-consistency and evaluates the transmission function, DOS, etc.
+after
+convergence. <br>
+<br>
+If some error
+occurs during compilation or
+linking or if
+the program does not work properly, edit the include file <em>make.in</em>:
+You
+might
+need
+to
+get rid of some compilation flags (<em>CFLAGS</em>).
+Taking away almost all the compilation flags normally solves the
+problem. But don't take away the target processor flag (<em>e.g., -tp</em>
+for Portland compiler). You should also check that the preprocessor
+flags <span style="font-style: italic;">(PFLAGS)</span> are the ones
+needed. You can check all this in the <span style="font-style: italic;">make.log</span>
+file generated in the GAUSSIAN compilaton. Then try to compile and link
+again by executing: <br>
+<br>
+<em>&gt; make -f Makefile.g03/g09 clean</em><em><br>
+<br>
+</em>If
+the
+installation was successful the modified
+links <em>l101.exe</em> and <em>l502.exe</em> should have
+been generated in
+the directory <em>ANT.G-x.x.x/bin</em>. You might have to change
+permissions.
+<ul>
+  <br>
+After the installation is completed set an environment variable <em>ANT
+
+
+
+
+  </em>in your shell script (<em>.bashrc .tcshrc </em>, etc.) which
+holds the directory path where <strong> ANT.G </strong> has been
+installed as, e.g., for
+bash:<br>
+  <br>
+&gt;<em> export ANT=$HOME/.../ANT.G-x.x.x.<br>
+  <br>
+  </em>And you are all set.
+</ul>
+</div>
+<div class="cleaner"><em><em>&nbsp;</em></em></div>
+</div>
+</div>
+<div style="margin-top: 0px; height: 0px;" id="footer"><em><em><a
+ href="http://www.gebaeude7.de">Webdesign</a>
+by <a href="http://www.busreisen24.de/">Jens Wolters</a></em></em></div>
+<div
+ style="font-size: 0.8em; text-align: center; margin-top: 1em; margin-bottom: 1em;"><em><em>Design
+provided
+by
+<a href="http://www.freewebtemplates.com/">Free Web
+Templates</a> - your source for free website templates
+</em></em></div>
+</body>
+</html>

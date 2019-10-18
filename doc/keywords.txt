@@ -1,0 +1,289 @@
+This is the complete list of keywords to be specified in the <job_name>.ini file
+for controlling the ANT.G calculation.
+
+---------------------------------
+1) General calculation parameters
+---------------------------------
+
+* ALPHA (real)
+Mixing parameter for density matrix (typically 0.01 < ALPHA < 0.1).
+Default: ALPHA = 5.0D-2
+   
+* NPULAY (integer)
+DIIS convergence parameter (typically 1 < NPULAY < 10). 
+Every NPULAY normal convergence steps a Pulay extrapolation kicks in.
+Default: NPULAY = 4
+
+* PACC (real)
+Numerical integration maximum accuracy for density matrix.
+Default: PACC = 1.0D-5
+
+* CHARGEACC (real)
+Total charge maximum accuracy.
+Default: CHARGEACC = 1.0D-3
+
+* FERMIACC (real)
+Fermi level maximum accuracy (in eV).
+Default: FERMIACC = 1.0D-3
+
+* SELFACC (real)
+Selfenergy accuracy.
+Default: SELFACC = 1.0D-6
+
+* FULLACC (logical)
+Turns on full accuracy from the first cycle.
+
+* SMALL, SMALLD (real)
+Parameters used for the identification of the crystallographic structure of the electrodes and for determining the Bethe lattice directions. The smaller, the more stringent on the atomic structure. Increase their values if your electrodes are slightly disordered.
+Default: SMALL = 0.1
+Default: SMALLD = 0.1 (Angstrom)
+
+* ETA (real)
+Small imaginary part of the Green's function. When both electrodes are
+set to GHOST it might be necessary to increase this number considerably.
+Default: ETA = 1.0D-10
+
+* SL (real)
+Convergence criterion for switching on the infinite electrodes (Bethe lattice). These are connected when the standard GAUSSIAN03 SCF convergence for the density matrix (RMSDP) reaches RMSDP < SL, where the overall convergence criterion is set in the GAUSSIAN03 input file with the SCF option "scf(conver=n)".
+Remark: If SL = 0, the leads are only connected after the GAUSSIAN03 SCF calculation has converged (cycle=1000). 
+This is only recommended for quick and dirty calculations.
+Default: SL = 1.0D-2
+
+* FERMISTART (real)
+Starting value for Fermi level search (in eV). When reinitializing a calculation this number is 
+overruled by the existing value in P.<job_name>.dat.
+Default: FERMISTART = -5.0D0
+
+* SSM (real)
+Convergence criterion for switching on the faster Secant method (superceding the standard Muller method) for Fermi level search. The Secant method is activated when RMSDP < SSM.
+Default: SSM = 1.0D-3
+
+* TYPE1 and TYPE2 (string)
+Type of model for the semiinfinite electrode. When set to BETHE the effective selfenergy 
+is connected to the electrode. When set to GHOST, nothing is connected. When both electrodes 
+are set to GHOST the calculation is similar to the one performed by the original GAUSSIAN03/09
+code on the input  cluster, but with all the convergence advantages of ANT.G.
+Default: TYPE1 = BETHE and TYPE2 = BETHE
+
+* BLPAR1 and BLPAR2 (string)
+Parameters sets of the Bethe lattice for the first and second electrode, respectively 
+(see available options in files BLxxx.dat).
+Default: BLPAR1 = Papacon and BLPAR2 = Papacon
+
+* OVERLAP (real)
+Factor by which the overlap parameters of the Bethe lattice (when specified in the parameters 
+set) are multiplied (0.0 =< OVERLAP =< 1.0).  When set to a negative value, an automatic 
+procedure to include the overlap (even if not specified in the parameters set) is used. This is 
+the safest option although it slows down the calculation. Set it to 0.0 for faster calculations 
+and compare. Otherwise use it with caution. This parameter may need to be smaller than 1.0 to 
+avoid unphysical density of states for the Bethe lattice when the overlap parameters are > 0.2.
+Default: OVERLAP = -1.0
+
+* GLUE (real)
+Factor by which to multiply the selfenergy. Useful to detach in a controled way the system from 
+the Bethe lattice.
+Default: GLUE = 1.0
+
+* NEMBED1 and NEMBED2 (integer)
+Number of atoms of the electrodes to be connected to a Bethe lattice branch. (These atoms are not taken into account 
+on computing the charge of the system when OVERLAP > 1.) 3D: NEMBED1 = All atoms in the outermost plane 
+of first electrode and NEMBED2 = All atoms in the outermost plane of second electrode. 2D: NEMBED1 = All atoms in
+electrode 1 and  NEMBED2 = All atoms in electrode 2. In 2D cases it is recommended to especify these numbers
+according to the specific calculation.
+
+* NATOMEL1 and NATOMEL2 (integer)
+Number of atoms in first and second electrode. Only useful when the system is composed of a single 
+element or when one wants to select especific regions for analysis.
+Default: 
+NATOMEL1 = Number of atoms in first metallic electrode and
+NATOMEL2 = Number of atoms in second metallic electrode.
+
+* FMIXING (logical)
+Requests that the damping of the self-consitency be done for the Fock (Kohn-Sham) matrix instead of the density 
+matrix (default). In this case ALPHA refers to the amount of mixing with the newly calculated Fock matrix.
+Default: FMIXING = .false.
+
+DMIMAG (logical)
+Requests that the Density matrix is calculated by integration of the Green's function along the imaginary axis 
+instead of the complex contour (default).
+Default: DMIMAG = .false.
+
+---------------------------
+2) Reinitialization options
+---------------------------
+
+* When the file P.<job_name>.dat is present, the calculation is initialized from the density matrix stored in 
+P.<job_name>.dat. It is advisable to include the keyword nodamp in the SCF options of the GAUSSIAN03/09 input 
+line "scf=(nodamp)" and make sure that the standard orientation of the system is the same as that of 
+the calculation stored in  P.<job_name>.dat. You might also need to add "nosymm" as in "scf(nodamp,nosymm)" if you want 
+to start with an educated guess for magnetic systems with an unusual spin texture.
+
+* PFIX (logical)
+When present, part of a previously computed density matrix can be used.
+Syntax: PFIX 
+'P.old.dat'
+where 'P.<old_job_name>.dat' is the file containing the density matrix you want to use. This is useful, .e.g., 
+to change the basis set on a restricted set of atoms while preserving the convergency already achieved 
+in the rest of the system (see NFIX).
+Default: .false. (no supplementary matrix provided).
+
+* NFIX (integer)
+Number of atoms NOT to be touched when using PFIX.
+Syntax:
+NFIX = N
+#atom1, #atom2, ...
+where the second line indicates the atoms to be preserved.
+
+
+-------------------------------------------
+3) Bias and gate voltage related parameters
+-------------------------------------------
+
+* BIASVOLT (real)
+Bias voltage (in eV). It is recommended to perfom first a calculation at zero bias and then reinitialize 
+from P.<job_name>.dat (see FINIT). Succesive calculations at different bias voltages can be perfomed starting from 
+a previous calculation in the same way. You need to add "nosymm" to the SCF specifications line in  the 
+GAUSSIAN03/09 input file as "scf(nosymm)". The potential drop profile can be read from the file V.<job_name>.dat where 
+the atom on-site energies (averaged to all orbitals in the atom) are stored.
+Default: BIASVOLT = 0.0
+
+* QEXCESS (real)
+Charge excess to effectively change the chemical potential or Fermi level. This simulates the action of a 
+gate voltage. It is recommended to perfom first a calculation at charge neutrality and then reinitialize 
+from P.<job_name>.dat. Succesive calculations at different values of the excess charge can be perfomed 
+starting from a previous calculation in the same way. It overrules the charge given to GAUSSIAN03/09 through 
+its input file.
+Default: QEXCESS = 0.0
+
+--------------------------
+4) Spin related parameters
+--------------------------
+
+* SWOFFSPL (real)
+Convergence criterion for switching off spin locking in a spin unrestricted calculation (default). Thus 
+in a spin-unrestricted calculation the total spin of the device is kept fixed to the value $(M-1)/2$ 
+given by the multiplicity $M$ in the GAUSSIAN03 input file until a certain convergence is reached: 
+RMSDP < SWOFFSPL. (See also NSPINLOCK below)
+Advice: SWOFFSPL < SL
+Default: SWOFFSPL = 1.0D-3
+
+* NSPINLOCK (integer)
+Number of steps with spin locking on. It supercedes the SWOFFSPL criterion  when >= 0 (see keyword 
+SWOFFSPL above)
+Default: NSPINLOCK = 0.
+
+* UD, DU, DD (logical)
+Magnetization direction of the Bethe lattice electrodes when these are magnetic. U stands for  "up" and 
+D for "down". Useful after editing the density matrix to create an educated guess for a new calculation.
+Default: .false. (both electrodes "up").
+
+* MRSTART (integer)
+Useful to create an educated guess for a new calculation with an unusual spin texture starting from a 
+precomputed density matrix. In particular, it reverses the magnetization direction for all atoms with 
+numbers >= MRSTART. You need to add "nosymm" to the SCF specifications line in  the GAUSSIAN03/09 input 
+file as "scf(nosymm)".
+Default: MRSTART = 0 (No effect).
+
+* SPINDEL (logical)
+Erases spin density of a spin-polarized initial guess in order to achieve a non-magnetic solution,
+i.e. initial guess becomes average of spin-up and spin-down densities
+Default: SPINDEL = .false. 
+
+* SPINEDIT (logical)
+Useful to create an educated guess for a new calculation with an unusual spin texture starting from 
+a precomputed density matrix. In particular, it manipulates the magnetization direction (spin) of 
+individual atoms. You need to add "nosymm" to the SCF specifications line in the GAUSSIAN03/09 input file 
+as "scf(nosymm)".
+Syntax:
+SPINEDIT
+#natoms
+#atom1, #atomspin1, #atom2, #atomspin2, ...
+where #natoms is the number of atoms where the spin is altered. The list below gives the atom numbers 
+and the atom spins for the atoms to be altered where the atom spin can either be maintained (1), 
+reversed (-1), or erased (0).
+Default: .false. (off)
+
+* NALPHA and NBETA (integer)
+Number of alpha(up) and beta(down) electrons. It overrules the numbers determined by the multiplicity 
+given in the GAUSSIAN03/09 input file. Any number is possible as long as is >= 0. Useful after editing 
+the density matrix to create an educated guess for a new calculation  (see SPINEDIT and MRSTART).
+Default: NALPHA = NBETA = -1 (not used).
+
+
+------------------------
+5) Evaluation parameters
+------------------------
+
+* ESTEP (real)
+Energy step (in eV) for printing out transmission and DOS.
+Default: ESTEP = 1.0D-2
+
+* EW1 and EW2 (real)
+Define an energy window for printing out transmission and DOS.
+Default: EW1 = -3.0D0 and EW2 = 3.0D0.
+
+* DOSENERGY (real)
+Energy at which the DOS projected on atoms is evaluated when MULLIKEN present.
+Default = 0.0 (Fermi energy)
+
+* LDOS_BEG and LDOS_END (integer)
+Atoms numbers onto which the local density of states is evaluated.
+Default: LDOS_BEG = 1 and LDOS_END = 0 (LDOS evaluation off).
+
+* NCHANNELS (integer)
+Number of eigenchannles to print out in T.dat. If NCHANNELS > 0 then the tranmission matrix (calculated 
+in the non-hermitian or hermitian form, see keyword HTRANSM) is diagonalized and the NCHANNELS largest 
+eigenvalues (i.e. the eigenchannel transmissions) are printed.
+Default: NCHANNELS = 0 (eigenchannel calculation off).
+
+* LEADDOS (logical)
+Prints out the DOS of the Bethe lattice. Output files: Lead1DOS.dat, Lead2DOS.dat
+Default: .false. (off).
+
+* HTRANSM (logical)
+Compute Transmision matrix in hermitian form T = \Gamma_L^{1/2} G^\dagger \Gamma_R G \Gamma_L^{1/2}. 
+The default is the easier non-hermitian form \Gamma_L G^\dagger \Gamma_R G which is considerably faster 
+for large clusters. The diagonalization of both forms yield the same eigenvalues.
+Default: .false. (transmission matrix in non-hermitian form).
+
+* RTM_BEG and RTM_END (integer)
+Perform eigenchannel analysis with reduced transmission matrix [see PRB 73, 075429 (2006)] on atoms from 
+atom RTM_BEG to atom RTM_END
+Default: RTM_BEG = 1 and RTM_END = 0 (eigenchannel analysis off).
+
+* MULLIKEN (logical)
+Print out the Mulliken population analysis in the file Q.<job_name>.dat.
+Default: .false. (not print).
+
+
+-------------------------------------
+6) Options for electronic correlation 
+-------------------------------------
+
+* CORRBLOCKS
+This keyword specifies a block of atomic orbitals (usually a d- or f-shell of an atom) for
+further treatment beyond DFT taking into account local electronic correlations. 
+Syntax:
+<num_corrblocks>
+<ao_beg> <ao_end> <U> <J>
+...
+where <num_corrblocks> is the number of correlated blocks within the device region. For each correlated 
+block a line "<ao_beg> <ao_end> <U> <J>" has to be specified where <ao_beg> ist the number of the first 
+atomic orbital and <ao_end> is the last atomic orbital of the correlated block. <U> is the direct Coulomb 
+repulsion and <J> Hund's rule coupling for the correlated block.
+
+* DFT+U (logical)
+Requests a DFT+U calculation where a Hubbard interaction term (U and J) is put onto each correlated block
+which is treated within Hartree-Fock.
+
+* HYBFUNC (logical)
+Requests the calculation of the hybridization function for each correlated block which serves as an input
+for an impurity solver calculation. A mesh file "mesh.dat" needs to be present specifiying the energy 
+points for which to calculate the hybridization function.
+
+* PORTHO (logical)
+Requests to perform a "projective orthogonalization" prior to calculation of the hybridization function.
+Thereby the device region is orthogonalized in a Gram-Schmidt like manner that preserves the original
+correlated subspace composed of all correlated blocks. 
+ 
+

@@ -1,0 +1,26 @@
+! ***************************
+! Sb Bethe Lattice parameters
+! ***************************
+!
+! ***********************************************************
+! *** Papacon TB parameters for valence minimal basis set ***
+! ***********************************************************
+!
+BEGINSET
+Papacon
+4 1 5 0
+s
+p
+EV
+!
+! On-site enrgies in Har
+!
+es =   -10.068                 
+ep =   -0.926  
+!
+!
+sss =   -0.608  
+sps =    1.554                       
+pps =    2.34                       
+ppp =   -0.582   
+ENDSET

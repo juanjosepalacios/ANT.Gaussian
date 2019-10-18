@@ -1,0 +1,16 @@
+
+#
+# Important flags for ANT Make file 
+#
+
+# Preprocessor flags. Must be the same value as in Gaussian
+PREPROC= -DDEFMAXSHL=250000 -DDEFMAXATM=250000 -DDEFMAXTIT=100 -DDEFMAXRTE=4000
+
+# Compilation flags.
+CFLAGS= -Bstatic_pgi -i8 -r8 '-mcmodel=medium' -mp=nonuma -tp nehalem-64 -Mreentrant -Mrecursive -Mnosave -Minfo -Mneginfo -time -fast -O2 -Munroll -Mvect=assoc,recog,cachesize:1572864
+
+# Extra libs from Gaussian needed for compiling/linking ANT
+GAUSSLIBS= /home/palacios/gaussian/g09/util.a /home/palacios/gaussian/g09/bsd/libf77blas-corei764sse3.a /home/palacios/gaussian/g09/bsd/libatlas-corei764sse3.a
+
+# Linking flags
+LFLAGS= -Bstatic_pgi -lpthread -lm -lc

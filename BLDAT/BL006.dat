@@ -1,0 +1,47 @@
+! ***************************
+! C Bethe Lattice parameters
+! ***************************
+!
+! ***********************************************************
+! *** Papacon TB parameters for valence minimal basis set ***
+! ***********************************************************
+!
+BEGINSET
+Papacon
+4 1 4 0
+s
+p
+RYD
+!
+! Energies in Ryd 
+!
+es =   5.66921471
+ep =   0.689908911
+sss =  -0.321201228
+sps =   0.24134568
+pps =   0.249996945
+ppp =  -0.202868624
+ENDSET
+! *******************************************
+! *** TB parameters suitable for graphene ***
+! *******************************************
+BEGINSET
+graphene
+4 1 4 0
+s
+p
+RYD
+!
+es =    0.1
+ep =    0.0
+!
+sss =  -0.3
+sps =   0.2 
+pps =   0.2 
+ppp =  -0.1
+!
+S_sss =  0.2
+S_sps = -0.2
+S_pps = -0.2
+S_ppp =  0.2
+ENDSET
