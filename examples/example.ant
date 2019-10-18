@@ -1,0 +1,232 @@
+! *********************************
+! * Parameter initialization file *
+! *********************************
+!
+! This example file contains all parameters and options
+! which can be user-defined. Just uncomment the one you
+! want to modify or switch on.
+! 
+! This file must have the name xxx.ini
+! where xxx is the character string given in the title line of 
+! the input file (.com). Both must be in the same directory.
+!
+! If there is no parameter file the program will run with
+! the default values, which are given here in this example.
+! The same holds true for an empty file or a file only
+! containing comments and/or blank lines.
+!
+! Syntax rules:
+!
+! 1) comment lines start with a !
+!
+! 2) empty lines are ignored
+!
+! 3) Syntax for real and integer variable assignment
+!    	
+!	KEYWORD = value
+!    
+!    where KEYWORD is always in uppercase. All allowed
+!    keywords are listed below with the default value 
+!    assigned to it.
+!
+! 4) Logical variable syntax:
+!
+!	KEYWORD
+!    
+!    If the Keyword is specified, the variable
+!    is given the value .TRUE.
+!    The default value is .FALSE. 
+!    Thus the logical varibles act as switches turning
+!    on a specific feature. For example, the keyword ALPHA
+!    controls the mixing in the selfconsistency
+!
+! 5) The order of statements is arbitrary.
+!
+! ********************************
+! * Basic calculation parameters *
+! ********************************
+!
+! *** Mixing parameter for density matrix (0.0 < alpha < 0.1)
+!
+!  ALPHA      =    0.02
+!
+! *** Pauly parameter for density matrix (1 < NPauly < 10)
+!
+!  NPULAY      =    5
+!
+! *** Maximum accuracy in numerical integration of density matrix (%)
+!
+!  PACC  =    1.0D-6
+!
+! *** Maximum accuracy of total charge in the system (%)
+!
+!  CHARGEACC  =    1.0D-4
+!
+! *** Maximum accuracy of the Fermi level (%)
+!
+!  FERMIACC   =    1.0D-4
+!
+! *** Setting full accuracy  
+!
+!  FULLACC
+!
+! *** Maximum number of search steps for Fermi energy
+!
+!  MAX = 15
+!
+! *** Accuracy for the selfenergy
+!
+!  SELFACC   =    1.0D-5
+!
+! *** Parameters for determining Bethe lattice directions
+!
+!  SMALL   =    0.1   
+!  SMALLD   =    0.1   
+!
+! *** Bias Voltage (V)
+!
+!  BIASVOLT  =    0.0
+!
+! *** Excess charge   
+!
+!  QEXCESS  =    0.0
+!
+! *** Small imaginary part for Green's function
+!
+!  ETA        =    1.0D-10
+!
+! *** Switching on leads
+!
+!  SL         =    1.0d-2
+!
+! *** Start value for Fermi level search
+!
+!  FERMISTART =   -5.0D0
+!
+! *** Type of electrode
+!
+!  TYPE1 = BETHE
+!  TYPE2 = GHOST
+!
+! *** Coupling strength of Bethe lattice
+!
+!  GLUE = 1.0
+!
+! *** Type of electrode parameters
+!
+!  BLPAR1 = Papacon-sd
+!  BLPAR2 = Papacon-sd
+!
+! *** Overlap parameter                      
+!
+!  OVERLAP = -1.0
+!
+! *** Number of atoms to be considered for connection to the Bethe lattice
+!
+!  NEMBED1 = 13
+!  NEMBED2 = 5
+!
+! *** Number of atoms in each electrode (useful for single-element systems)
+!
+!  NATOMEL1 = 13
+!  NATOMEL2 = 13
+!
+! *******************************
+! * Reinitialization parameters * 
+! *******************************
+!
+! *** Name of the file containing a previously computed density matrix to be partially used
+!
+! PFIX
+! 'P.file_with_density_matrix.dat'
+!
+! *** Number of atoms (and their labels) to be kept in the new calculation
+!
+! NFIX = 3
+! 1 2 3
+!
+! *****************************
+! * Spin transport parameters *
+! *****************************
+!
+! *** Fix spin multiplicity for the given number of steps
+!
+!  NSPINLOCK = 0
+!
+! *** Or fix spin state until a given covergence 
+!
+!  SWOFFSPL = 1.0d-3
+!
+! *** Manipulate the direction of atomic spins in initial guess
+! 
+!  SPINEDIT 
+!  10         ! Manipulate three atoms
+!  1,-1
+!  1,1       ! Leave the spin as is (not really useful)
+!  2,-1      ! Reverse this spin: Spin-up occupation becomes Spin-down occupation and vice versa
+!  3,0       ! Erase this spin: Spin-up and Spin-down occupation become equal  
+!
+! *** Reverse magnetization of cluster in initial guess
+!     for all atoms starting from the atom given by MRSTART. 
+!     If MRSTART=0 (default) do not reverse magnetization
+!     Useful for starting antiparallel calculation from a converged ferromagnetic calculation 
+!
+!  MRSTART = 1
+!
+! *** Change magnetic boundary conditions, e.g., UD: Up (first electrode)-Down (second electrode)
+!     Useful con starting with a modified density matrix as initial guess. The default is UU.
+!
+!  UD      !Up-Down
+!  DU      !Down-Up
+!  DD      !Down-Down
+!
+! *** Number of Alpha and Beta Electrons (useful to overrule multiplicity given in the GAUSSIAN input file)
+!
+!  NALPHA = 56
+!  NBETA = 44
+!
+! *********************
+! * Output parameters *
+! *********************
+!
+! *** Print out Mulliken population analysis to a file 
+!
+!  MULLIKEN
+!
+! *** Print out converged Kohn-Sham Hamiltonian to a file 
+!
+!  HAMILTON
+!
+! *** Compute Transmision matrix in HERMITIAN Form
+!     T = Gamma_L^1/2 G^a Gamma_R G Gamma_L^1/2
+!
+!  HTRANSM
+!
+! *** Energy step
+! 
+!  ESTEP     =    1.0D-1
+!
+! *** Energy window for transmission function and DOS calcualtion from EW1 to EW2
+!
+!  EW1 = -2.0D0
+!  EW2 =  2.0D0
+!
+! *** On which atoms to evaluate local density of states 
+!
+!  LDOS_BEG   =    1
+!  LDOS_END   =    0
+! 
+! *** Number of eigenchannels to print out in T.dat
+!
+!  NCHANNELS  =    5
+!
+! *** Printout Bulk DOS of Leads
+!     Output files: Lead1DOS.dat, Lead2DOS.dat
+!
+!  LEADDOS
+!
+! *** Perform eigenchannel analysis with Reduced Transmission Matrix 
+!     from atom# REDTRANSMB to atom# REDTRANSME
+!
+!  RTM_BEG = 14
+!  RTM_END = 14

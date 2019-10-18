@@ -1,0 +1,7 @@
+ALPHA = 0.020
+NPULAY = 4
+FERMIACC = 1.0d-5
+CHARGEACC = 1.0d-5
+PACC = 1.0d-8
+SL = 2.0d-2
+MAX = 5

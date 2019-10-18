@@ -1,0 +1,38 @@
+ALPHA = 0.01
+NPULAY = 5
+ETA = 0.01
+NSPINLOCK = 0
+FERMIACC = 1.0d-5
+CHARGEACC = 1.0d-5
+PACC = 1.0d-8
+SL = 1.0d-3
+BLPAR1 = Papacon-sd
+BLPAR2 = Papacon-sd
+LDOS_BEG = 5
+LDOS_END = 6
+SOC   
+SOCFAC = 0           
+SPINROT         
+10              
+1,  0.0, 0.0 
+2,  0.0, 0.0 
+3,  0.0, 0.0 
+4,  0.0, 0.0 
+5,  90.0, 90.0   
+6,  0.0, 0.0   
+7,  0.0, 0.0 
+8,  0.0, 0.0 
+9,  0.0, 0.0 
+10, 0.0, 0.0
+!SPINEDIT     
+!10          
+!1,  1
+!2,  1
+!3,  1
+!4,  1
+!5,  -1
+!6,  -1
+!7,  1
+!8,  1
+!9,  1
+!10, 1
