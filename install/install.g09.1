@@ -1,0 +1,548 @@
+#!/bin/bash
+#
+echo "**********************************************************"
+echo "*                                                        *" 
+echo "*      ANT.G09-2.4.1 - install                           *"
+echo "*                                                        *"
+echo "**********************************************************"
+echo "*                                                        *"
+echo "*  Copyright (c) by                                      *"
+echo "*                                                        *"
+echo "*  David Jacob (1)                                       *"
+echo "*  Juan Jose Palacios (2)                                *"
+echo "*  Maria Soriano (2)                                     *"
+echo "*                                                        *"
+echo "* (1) Theory Department                                  *"
+echo "*     Max-Planck-Institute for Microstructure Physics    *"
+echo "*     Halle, 06120 (GERMANY)                             *"
+echo "* (2) Departamento de Fisica de la Materia Condensada    *"
+echo "*     Universidad Autonoma de Madrid                     *"
+echo "*     28049 Madrid (SPAIN)                               *"
+echo "*                                                        *" 
+echo "**********************************************************"
+
+##########################################################
+#                                                        #
+# Change these variables according to your configuration #
+#                                                        #
+##########################################################
+
+### Root directory of Gaussian
+export g09root=/home/palacios/gaussian
+  
+### Portland compiler path or any other compiler GAUSSIAN has been compiled with
+export F90=pgf90
+#export F90=/opt/intel/fce/10.1.012/bin/ifort
+#export F90=ifort
+
+###
+### The script will try to guess the correct flags from make.log of Gaussian
+### If it does not work edit these by hand (see make.log)
+###
+#PFLAGS="-DDEFMAXSHL=20000 -DDEFMAXATM=20000 -DDEFMAXTIT=100 -DDEFMAXRTE=4000 -DDEFMAXOP=384 -DDEFLMAX=13"
+#PFLAGS="-DI64 -DP64 -DPACK64 -DUSE_I2 -DGAUSS_PAR -DGAUSS_THPAR -D_OPENMP_ -D_OPENMP_MM_  -DDEFMAXSHL=20000 -DDEFMAXATM=20000 -D_EM64T_ -DNO_SBRK -DDEFMAXNZ=20000 -DDEFNVDIM=257 -DDEFARCREC=1024 -DMERGE_LOOPS -D_I386_ -DLITTLE_END -DUSING_F2C -DDEFMAXIOP=200 -DDEFMAXSUB=80 -DDEFMAXCHR=1024 -DDEFLMAX=13 -DDEFN3MIN=10 -DDEFGGN3MIN=1 -DDEFISEC=16  -DDEFNBOMAXBAS=10000 -DDEFMAXHEV=2000 -DDEFCACHE=512 -DDEFMAXLECP=10 -DDEFMAXFUNIT=5 -DDEFMAXFFILE=10000 -DDEFMAXFPS=1300 -DDEFMAXINFO=200 -DDEFMAXOP=384 -DDEFMAXTIT=100 -DDEFMAXRTE=4000 -DDEFMAXOV=500 -D_ALIGN_CORE_ -DINIT_SCM -DCA1_DGEMM -DCA2_DGEMM -DCAB_DGEMM -DLV_DSP -DO_BKSPEF -DSETCORE_OK -DDEFMXTS=2500 -DDEFMXBOND=12 -DDEFMXSPH=250 -DDEFMXINV=2500  -DDEFMXSLPAR=100 -DDEFMXSATYP=4 -DGCONJG=DCONJG -DGCMPLX=DCmplx -DGREAL=DREAL -DGIMAG=DIMAG"
+PFLAGS=""
+#CFLAGS="-L/opt/intel/fc/10.1.012/lib -WB -i8 -w -ftz -IPF_fp_relaxed -i-static -IPF_fp_speculationsafe -openmp -fpp2 -auto -O3"
+CFLAGS=""
+EXTRALIBS=""
+LFLAGS=""
+
+##############################################
+#                                            #
+# Find out whether we have util.a or util.so #
+#                                            #
+##############################################
+UTILLIB=""
+if [[ -e $g09root/g09/util.a ]]
+then
+  UTILLIB=util.a
+fi
+if [[ -e $g09root/g09/util.so ]]
+then
+  UTILLIB=util.so
+fi
+if [[ $UTILLIB == "" ]]
+then
+  echo "Warning: did not find neither util.a nor util.so"
+  echo "Will try to continue anyway."
+fi
+echo $UTILLIB
+
+########################################
+#                                      #
+# Get Preprocessor flags from make.log #
+#                                      #
+########################################
+if [[ $PFLAGS == "" ]] 
+then
+ALLFLAGS=`grep "gau-cpp" $g09root/g09/make.log -m3`
+if [ ${#ALLFLAGS} -eq 0 ]
+then
+   echo "Error: No preprocessor flags found in $g09root/g09/make.log."
+   echo "Abort installation."
+   exit
+fi
+# Only take preprocessor flags
+for aflag in $ALLFLAGS
+do
+  if [ ${aflag:0:2} = "-D" ]
+  then
+    PFLAGS="$PFLAGS $aflag"
+  fi
+done
+echo
+echo "PFLAGS="$PFLAGS
+echo
+fi
+
+############################################################
+#                                                          #
+# Get compilation flags and extra libraries from make.log  #
+#                                                          #
+############################################################
+
+###
+### Find linking command for l502.exe in make.log
+###
+ALLFLAGS=`grep "\-o l502.exe" $g09root/g09/make.log -m1`
+if [ ${#ALLFLAGS} -eq 0 ]
+then
+   echo "Error l502: No preprocessor flags found in $g09root/g09/make.log."
+   echo "Abort installation."
+   exit
+fi
+if [[ $CFLAGS == "" ]] 
+then
+###
+### Get compilation flags
+### 
+count=0
+for aflag in $ALLFLAGS
+do
+  count=$[$count+1]
+  ### skip compiler name
+  if [ $count -le 1 ]
+  then
+    continue
+  fi
+  ### All flags read when reaching -o l502.exe
+  if [ ${aflag:0:2} = "-o" ]
+  then
+    break
+  fi
+  CFLAGS="$CFLAGS $aflag"
+done
+echo
+echo "CFLAGS="$CFLAGS
+echo
+fi
+###
+### Get extra libs and object files
+###
+if [[ $EXTRALIBS == "" ]]
+then
+lflags=0
+for aflag in $ALLFLAGS
+do
+  if [ ${aflag:0:8} = "l502.exe" ]
+  then
+    lflags=1 
+    continue
+  fi
+  if [ ${aflag:0:2} = "-l" ]
+  then
+    break
+  fi
+  if [ $lflags -eq 1 ]
+  then
+    file=$g09root/g09/$aflag
+    if [[ -e $file && $aflag != l502.a && $aflag != bdam1.o && $aflag != ml502.o ]]
+    then
+      EXTRALIBS="$EXTRALIBS $file"
+    fi
+  fi
+done
+echo
+echo "EXTRALIBS="$EXTRALIBS
+echo
+fi
+
+###
+### Get linking flags
+###
+if [[ $LFLAGS == "" ]]
+then
+  for aflag in $ALLFLAGS
+  do
+    if [[ ${aflag:0:2} == "-l" ]]
+    then
+      LFLAGS="$LFLAGS $aflag"
+    fi
+    if [[ ${aflag:0:2} == "-B" ]]
+    then
+      LFLAGS="$LFLAGS $aflag"
+    fi
+  done  
+  echo 
+  echo "LFLAGS="$LFLAGS
+  echo 
+fi
+
+########################################
+#                                      #
+# Write flags to include file for make #
+#                                      #
+########################################
+MK_PFLAGS=""
+# List of necessary preprocessor flags for compiling ANT
+AL_PFLAGS="-DDEFMAXSHL -DDEFMAXATM -DDEFMAXTIT -DDEFMAXRTE"
+for g09flag in $PFLAGS
+do
+  for alflag in $AL_PFLAGS
+  do
+    length=${#alflag} 
+    if [ ${alflag:0:$length} = ${g09flag:0:$length} ]
+    then
+      #echo $g09flag
+      MK_PFLAGS="$MK_PFLAGS $g09flag"
+      continue
+    fi
+  done
+done
+
+echo > make.in
+echo "#" >> make.in
+echo "# Important flags for ANT Make file "  >> make.in
+echo "#" >> make.in
+echo  >> make.in
+echo "# Preprocessor flags. Must be the same value as in Gaussian" >> make.in
+echo "PREPROC="$MK_PFLAGS >>  make.in
+echo >> make.in
+echo "# Compilation flags." >> make.in
+echo "CFLAGS="$CFLAGS >> make.in
+echo >> make.in
+echo "# Extra libs from Gaussian needed for compiling/linking ANT" >> make.in
+echo "GAUSSLIBS="$EXTRALIBS >> make.in
+echo >> make.in
+echo "# Linking flags" >> make.in
+echo "LFLAGS="$LFLAGS >> make.in
+mv make.in ../src
+
+########################################################
+#                                                      #
+# auxiliary function to cut middle part of a text file #
+# specified by a starting line and an end line         #
+#                                                      #
+########################################################
+
+function body { head -$3 $1 | tail -$[$3-$2+1]; }
+
+###############################
+#                             #
+#  Copy and modify l502.F     #
+#                             #
+###############################
+echo
+echo " --> Extracting and modifying l502.F ..." 
+echo
+
+nlines=`wc -l $g09root/g09/l502.F | cut --delimiter='l' -f1`
+
+ncut1=`grep -n "Call FileIO(1,-IRwGen,LenGen,DGen,0)" $g09root/g09/l502.F | cut --delimiter=':' -f1`
+
+ncut2=`grep -n "C     Convergence criterion met ... exit" $g09root/g09/l502.F | cut --delimiter=':' -f1`
+
+ncut3=`grep -n "C     IAftrF = pointer to free memory after Fock matrices" $g09root/g09/l502.F | cut --delimiter=':' -f1`
+ncut3=$[$ncut3+2]
+
+ncut33=`grep -n "SCF is confused" $g09root/g09/l502.F | cut -c1-4`
+ncut33=$[$ncut33-7]
+
+ncut4=`grep -n "C     molecular symmetry." $g09root/g09/l502.F | cut -c1-4`
+ncut4=$[$ncut4+1]
+
+ncut44=`grep -n "Call AScale(NTTX,GFloat(NAEX)/TrA,DA,DA)" $g09root/g09/l502.F | cut -c1-4`
+ncut44=$[$ncut44-1]
+
+ncut5=`grep -n "C     Generate gamma point Fock matrices for extrapolation." $g09root/g09/l502.F | cut --delimiter=':' -f1`
+ncut5=$[$ncut5-2]
+ 
+ncut6=`grep -n "C     Now apply the level shift and diagonalize either one (ROHF) or" $g09root/g09/l502.F | cut --delimiter=':' -f1`
+ncut6=$[$ncut6+2]
+
+ncut7=`grep -n "      Call TStamp(1,'End of iteration.')" $g09root/g09/l502.F | cut --delimiter=':' -f1`
+
+cat<<EOF > l502.F
+`body $g09root/g09/l502.F 1 $ncut1`
+C
+C ANT BEGIN modification
+C
+C         Perform the conductance calculation at end of scf (1000)
+C
+      call ANT (.NOT.RHF,1000,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,
+     $                IRwS,IRwEig,Acurcy,Crit,.true.,NBasis)
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut1+1] $ncut2`
+C
+C ANT BEGIN modification
+C
+C         Only converge on density matrix criterions
+C
+C     If(RMSDP.lt.Crit.and.DPMax.lt.CritM.and.
+C    $  (DelEn.le.SmalEn.or.IPass.eq.0).and.
+C    $  (Abs(DelEn).lt.CritE.or.CritE.eq.Zero)) then
+      If(RMSDP.lt.Crit) then
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut2+4] $ncut3`
+C
+C ANT BEGIN modification
+C
+      Parameter (IRwGen=501,LenGen=55)
+      Dimension DGen(LenGen)
+C
+C     Status variable for switching on ANT
+C
+      Logical ANTOn
+      SAVE ANTOn
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut3+1] $ncut33`
+C
+C ANT BEGIN modification
+C
+C         Done = .False.
+C         Exit = .False.
+C         IDITyp = 1
+C         IFSelI = 1
+C         IPass = 1
+C         Goto 110
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut33+7] $ncut4`
+C
+C ANT BEGIN modification
+C
+C         Call ANT before SCF begins for initialization (Cycle "0")
+C
+      IF(jcycle.eq.1) call ANT (UHF,0,IRwH,IRwPA,IRwPB,IRwFA,
+     $                IRwFB,IRwS1,IRwEig,Acurcy,Crit,ANTOn,NBasis)
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut4+1] $ncut44`
+C
+C ANT BEGIN modification
+C
+C         Allows for personal control of NAE and NBE (ignores multiplicity)
+C
+      if (ANTOn.or.jcycle.eq.1) goto 666
+       Call AScale(NTTX,GFloat(NAEX)/TrA,DA,DA)
+         If(NBE.gt.0.and..not.RComp) 
+     $       Call AScale(NTTX,GFloat(NBE)/TrB,DB,DB)
+ 666   continue
+      endif
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut44+5] $ncut5`
+C
+C ANT BEGIN modification
+C
+C         Call ANT for evaluating density matrix
+C
+      call ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,
+     $                IRwS1,IRwEig,Acurcy,Crit,ANTOn,NBasis)
+
+      if(ANTOn) DIIS=.false.
+      if(ANTOn) IncFoc=.false.
+      if(ANTOn) IDIIS=1
+      if(ANTOn) Damp=.false.
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut5+1] $ncut6`
+C
+C ANT BEGIN modification
+C
+C         Only diagonalize Fock matrix when leads not yet connected
+C
+      if (.NOT.ANTOn) then
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut6+1] $ncut7`
+C
+C ANT BEGIN modification
+C
+      Call FileIO(2,-IRwGen,LenGen,DGen,0)
+C
+      end if
+C
+C ANT END modification
+C
+`body $g09root/g09/l502.F $[$ncut7+1] $nlines`
+EOF
+
+####################################
+#                                  #
+# Extrancting and modifying l101.F #
+#                                  #
+####################################
+echo
+echo " --> Extracting and modifying l101.F ..." 
+echo
+
+l101nlines=`wc -l $g09root/g09/l101.F | cut --delimiter='l' -f1`
+
+l101ncut1=`grep -n "Call SetLnL(70)" $g09root/g09/l101.F | cut --delimiter=':' -f1`
+
+cat<<EOF > l101.F
+`body $g09root/g09/l101.F 1 $l101ncut1`
+*
+* ANT BEGIN modification
+*
+*        READ NAME FROM GAussian
+*
+       open(unit=10,file='name',status='unknown')
+       Call StrOut(10,ITitle,Len,1)
+       close(10)
+*
+* ANT END modification
+*
+`body $g09root/g09/l101.F $[$l101ncut1+1] $l101nlines`
+EOF
+
+####################################
+#                                  #
+# Extracting and modifying l103.F  #
+#                                  #
+####################################
+echo
+echo " --> Extracting and modifying l103.F ..." 
+echo
+
+l103nlines=`wc -l $g09root/g09/l103.F | cut --delimiter='l' -f1`
+
+l103ncut1=`grep -n "If(NPt.eq.NPStar) then" $g09root/g09/l103.F | cut --delimiter=':' -f1`
+
+cat<<EOF > l103.F
+`body $g09root/g09/l103.F 1 $l103ncut1`
+*
+* ANT BEGIN modification
+*
+*        Avoiding to stop on forces
+*
+                If(FRMS.gt.ConvF.or.FMax.gt.T1) then
+                 !Ifinish = Ifinish - 1
+                 !IConv(NPt) = 0
+                  endIf
+                endIf
+              If(NPt.eq.1.and.DoReac) then
+                If(FRMS.gt.ConvF.or.FMax.gt.T1) then
+                 !Ifinish = Ifinish - 1
+                 !IConv(NPt) = 0
+                  endIf
+                endIf
+              If(NPt.eq.NPath.and.DoProd) then
+                If(FRMS.gt.ConvF.or.FMax.gt.T1) then
+                 !Ifinish = Ifinish - 1
+                 !IConv(NPt) = 0
+*
+* ANT END modification
+*
+`body $g09root/g09/l103.F $[$l103ncut1+15] $l103nlines`
+EOF
+
+rm -r tmp
+mkdir tmp
+mv l101.F tmp/
+mv l103.F tmp/
+mv l502.F tmp/
+cd tmp
+######################################################
+#                                                    #
+#  Make library l502.a with modified l502.F          #
+#  Make executable l101.exe with modified l101.F     #
+#  Make executable l103.exe with modified l103.F     #
+#                                                    #
+######################################################
+ln -s $g09root/g09/utilam.F 
+ln -s $g09root/g09/bsd
+ln -s $g09root/g09/commonb.inc
+ln -s $g09root/g09/repall.inc
+ln -s $g09root/g09/$UTILLIB
+ln -s $g09root/g09 ..
+echo
+echo " --> Creating l101.exe ..."
+echo
+`set-mflags x` -f bsd/g09.make `set-mflags` l101.exe
+echo
+echo " --> Creating l103.exe ..."
+echo
+`set-mflags x` -f bsd/g09.make `set-mflags` l103.exe
+echo
+echo " --> Creating library l502.a ..."
+echo
+`set-mflags x` -f bsd/g09.make `set-mflags` l502.exe
+################################################
+#                                              #
+# 1. Extract and modify caldsu.F from utilam.F #
+#                                              #
+################################################
+echo
+echo " --> Extracting caldsu.F from $g09root/g09/utilam.F ..." 
+echo
+gau-fsplit -e caldsu $g09root/g09/utilam.F
+echo
+echo " --> Modifying caldsu.F for ANT ..." 
+echo
+ncut=`grep -in "fail.and.fatal" caldsu.F | cut --delimiter=':' -f1`
+nend=`wc -l caldsu.F | cut --delimiter='c' -f1`
+cat<<EOF  > caldsu.F
+`head -$[$ncut-1] caldsu.F`
+*
+* ANT BEGIN modification
+*
+*         Do not abort after inaccurate quadrature of density
+*
+* `body caldsu.F $ncut $ncut`
+* `body caldsu.F $[$ncut+1] $[$ncut+1]`
+*
+* ANT END modification
+*
+`tail -$[$nend-$ncut-1] caldsu.F`
+EOF
+
+############################################
+#                                          #
+#  Compile modified caldsu.F               #
+#                                          #
+############################################
+echo
+echo ' --> Compiling modified caldsu.F ...'
+echo
+
+gau-cpp -I$g09root/g09 $PFLAGS caldsu.F caldsu.f
+
+$F90 $CFLAGS -c caldsu.f
+
+mv bdam1.o ../../bin
+mv ml502.o ../../bin
+mv caldsu.o ../../bin
+mv l502.a ../../bin
+
+chmod o-rx l101.exe
+chmod o-rx l103.exe
+
+mv l101.exe ../../bin
+mv l103.exe ../../bin
+
+cd ..
+#rm -r tmp
+############################################
