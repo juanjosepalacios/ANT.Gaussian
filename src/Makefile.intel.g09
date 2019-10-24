@@ -1,6 +1,6 @@
 #*********************************************************
 #*                                                        *
-#*      ANT.G09-2.4.1 - Makefile                          *
+#*      ANT.G09-2.5.0 - Makefile                          *
 #*                                                        *
 #**********************************************************
 #*                                                        *
@@ -50,7 +50,7 @@ L502=$(BIN)/l502.exe
 
 # prepocessing 
 %.f90: %.F90
-	gau-cpp -DG09ROOT $< $@
+	gau-cpp -DG09ROOT -DINTEL $< $@
 
 # rule for object generation
 ../obj/%.o: %.c 

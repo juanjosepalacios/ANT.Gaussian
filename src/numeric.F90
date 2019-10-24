@@ -49,9 +49,9 @@
   ! Inversion of complex matrix based on LAPACK routines zgetrf, zgetri 
   ! *******************************************************************
   integer function CInv( Z )
+#ifdef PGI
      USE lapack_blas, ONLY: zgetri,zgetrf
-    !USE lapack95, ONLY: zgetri,zgetrf
-    !USE lapack95
+#endif
     IMPLICIT NONE
     external zgetri,zgetrf
     COMPLEX*16, DIMENSION(:,:),INTENT(inout) :: Z
@@ -347,9 +347,9 @@
   ! ****************************************************
   SUBROUTINE CMatPow( Z, a , X )
     USE constants, ONLY: c_zero, c_one
+#ifdef PGI
     USE lapack_blas, ONLY: zheev,zgemm
-    !USE blas95, ONLY: zheev,zgemm
-    !USE blas95
+#endif
     use ANTCommon
     IMPLICIT NONE
     external zheev,zgemm
@@ -395,9 +395,9 @@
   ! ****************************************************
   SUBROUTINE RMatPow( Z, a , X )
      USE constants, ONLY: d_zero, d_one
-    !USE lapack_blas, ONLY: dsyev,dgemm
-    !USE blas95, ONLY: dsyev,dgemm
-    !USE blas95
+#ifdef PGI
+    USE lapack_blas, ONLY: dsyev,dgemm
+#endif
     use ANTCommon
     IMPLICIT NONE
     external dsyev,dgemm
@@ -443,9 +443,9 @@
   !* 'Wrapper' for LAPACK routine DSYEV *
   !**************************************
   SUBROUTINE RSDiag( A, w, info )
+#ifdef PGI
     USE lapack_blas, ONLY: dsyev
-    !USE blas95, ONLY: dsyev
-    !USE blas95
+#endif
     IMPLICIT NONE
     external dsyev
     !
@@ -478,9 +478,9 @@
   !* 'Wrapper' for LAPACK routine ZHEEV   *
   !****************************************
   SUBROUTINE CHDiag( A, w, info )
+#ifdef PGI
     USE lapack_blas, ONLY: zheev
-    !USE blas95, ONLY: zheev
-    !USE blas95
+#endif
     IMPLICIT NONE
     external zheev
     !
@@ -515,9 +515,9 @@
   !* 'Wrapper' for LAPACK routine ZGEEV   *
   !****************************************
   SUBROUTINE CDiag( A, w, info )
+#ifdef PGI
     USE lapack_blas, ONLY: zgeev
-    !USE blas95, ONLY: zgeev
-    !USE blas95
+#endif
     IMPLICIT NONE
     external zgeev
     !

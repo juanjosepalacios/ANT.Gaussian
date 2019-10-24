@@ -1320,8 +1320,9 @@
   subroutine gplus0(z,green)
     use PARAMETERS, only: eta,glue
     use constants, only: c_zero, ui
-     use lapack_blas, only: zgetri, zgetrf
-!   use lapack95, only: zgetri, zgetrf
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif 
     implicit none
     external zgetrf, zgetri    
 
@@ -1365,8 +1366,9 @@
   subroutine gplus(z,green,gammar,gammal)
     use PARAMETERS, only: eta, glue
     use constants, only: c_zero, ui
-     use lapack_blas, only: zgetri, zgetrf
-!   use lapack95, only: zgetri, zgetrf
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif
 
     implicit none
     external zgetrf, zgetri 
@@ -1418,8 +1420,9 @@
   subroutine glesser(z,gless)
     use parameters, only: eta, biasvoltage, glue
     use constants, only: c_zero, ui, c_one
-     use lapack_blas, only: zgetri, zgetrf, zgemm
-!   use lapack95, only: zgetri, zgetrf, zgemm
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif
 
     implicit none
     external zgetrf, zgetri, zgemm     
@@ -1500,8 +1503,9 @@
   subroutine glesser_SOC(z,gless)
     use parameters, only: eta, glue, biasvoltage
     use constants, only: c_zero, ui, c_one
-     use lapack_blas, only: zgetri, zgetrf, zgemm
-!   use lapack95, only: zgetri, zgetrf
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf, zgemm
+#endif
 
     implicit none
     external zgetrf, zgetri, zgemm     
@@ -2375,9 +2379,10 @@
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, FermiAcc, QExcess, ChargeAcc
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER
-     use lapack_blas, only: zgemm
-!   use lapack95, only: zgemm
     use preproc, only: MaxAtm
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
 !   USE IFLPORT
     use omp_lib
 #ifdef G03ROOT
@@ -3074,8 +3079,9 @@
     use BetheLattice, only: CompSelfEnergyBL, LeadBL 
     use OneDLead, only: CompSelfEnergy1D, Lead1D
     use constants
-     use lapack_blas, only: zgemm
-!   use lapack95, only: zgemm
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
     implicit none
     external zgemm
     
@@ -3645,8 +3651,9 @@
   subroutine gplus_SOC(z,green,gammar,gammal)
     use parameters, only: eta, glue
     use constants, only: c_zero, ui
-     use lapack_blas, only: zgetri, zgetrf
-!   use lapack95, only: zgetri, zgetrf
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif
 
     implicit none
     external zgetri, zgetrf     
@@ -3730,8 +3737,9 @@
   subroutine gplus0_SOC(z,green)
     use parameters, only: eta, glue
     use constants, only: c_zero, ui
-     use lapack_blas, only: zgetri, zgetrf
-!   use lapack95, only: zgetri, zgetrf
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif
 
     implicit none
     external zgetri, zgetrf 

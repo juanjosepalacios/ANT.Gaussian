@@ -715,11 +715,9 @@ contains
   subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk )
     use constants, only: c_zero, ui, c_one
     use parameters, only: eta,selfacc
+#ifdef PGI
     use lapack_blas, only: zgemm,zgetri,zgetrf
-   !use lapack95, only: zgetri,zgetrf
-   !use blas95, only: zgemm
-   !use lapack95
-   !use blas95
+#endif
     use ANTCommon
     use G09Common, only: GetNAtoms, GetAN
     implicit none
@@ -924,10 +922,9 @@ contains
   subroutine CompGreensFunc( BL, Spin, energy, G0 )
     use constants, only: c_zero, ui
     use parameters, only: eta, DD, UD, DU
+#ifdef PGI
     use lapack_blas, only: zgetri,zgetrf
-   !use lapack95, only: zgetri,zgetrf
-   !use lapack95
-   !use blas95
+#endif
     implicit none
 
     external  zgetri,zgetrf
@@ -988,10 +985,9 @@ contains
   subroutine CompG0X( BL, Spin, energy, G0X )
     use constants, only: c_zero, ui
     use parameters, only: eta, DU, UD, DD
+#ifdef PGI
     use lapack_blas, only: zgetri,zgetrf
-   !use lapack95, only: zgetri,zgetrf
-   !use lapack95
-   !use blas95  
+#endif
     implicit none
 
     external  zgetri,zgetrf
@@ -1337,15 +1333,21 @@ contains
     character(LEN=50) :: SetName
     character :: ChAOT
     
+#ifdef PGI
     ! Obtain environment variable containing path for Bethe lattice parameters
-     call cgetenv( bl_dir_name, dname_len, "ANT\0" )
-    !call getenv( "ANT", bl_dir_name)
-     if( dname_len == 0 )then
-        print *, "ERROR: Environment variable ANT is undefined. Abort."
-        stop
-     end if
-     write (UNIT=FName,FMT='(A,A,I3.3,A)'), bl_dir_name(1:dname_len), "/BLDAT/BL", BL%AtmNo, ".dat"
-     !write (UNIT=FName,FMT='(A,A,I3.3,A)'), trim(bl_dir_name), "/BLDAT/BL", BL%AtmNo, ".dat"
+    call cgetenv( bl_dir_name, dname_len, "ANT\0" )
+    if( dname_len == 0 )then
+       print *, "ERROR: Environment variable ANT is undefined. Abort."
+       stop
+    end if
+    write (UNIT=FName,FMT='(A,A,I3.3,A)'), bl_dir_name(1:dname_len), "/BLDAT/BL", BL%AtmNo, ".dat"
+#endif
+
+#ifdef INTEL
+    call getenv( "ANT", bl_dir_name)
+    write (UNIT=FName,FMT='(A,A,I3.3,A)'), trim(bl_dir_name), "/BLDAT/BL", BL%AtmNo, ".dat"
+#endif
+
      print *, "Open file ", fname, " to read Bethe lattice parameters."
 
      open( UNIT=ifu_bl, FILE=FName, IOSTAT=ios, STATUS='OLD')

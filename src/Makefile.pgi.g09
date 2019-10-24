@@ -41,7 +41,7 @@ L502=$(BIN)/l502.exe
 
 # prepocessing 
 %.f90: %.F90
-	gau-cpp -DG09ROOT $< $@
+	gau-cpp -DG09ROOT -DPGI $< $@
 
 # rule for object generation
 ../obj/%.o: %.c 
