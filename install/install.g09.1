@@ -248,7 +248,7 @@ echo
 
 nlines=`wc -l $g09root/g09/l502.F | cut --delimiter='l' -f1`
 
-ncut1=`grep -n "Call FileIO(1,-IRwGen,LenGen,DGen,0)" $g09root/g09/l502.F | cut --delimiter=':' -f1`
+ncut1=`grep -n "Call FileIO(1,-IRwGen,LRwGen,DGen,0)" $g09root/g09/l502.F | cut --delimiter=':' -f1`
 
 ncut2=`grep -n "C     Convergence criterion met ... exit" $g09root/g09/l502.F | cut --delimiter=':' -f1`
 
