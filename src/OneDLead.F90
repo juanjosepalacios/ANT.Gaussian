@@ -305,7 +305,9 @@ CONTAINS
   SUBROUTINE SolveDyson1D( Sigma, E, S0, H0, V, S1 )
     USE constants
     USE parameters
-    USE lapack_blas, ONLY: zgetri,zgetrf
+#ifdef PGI
+     USE lapack_blas, ONLY: zgetri,zgetrf
+#endif
     IMPLICIT NONE
     external zgetri,zgetrf
 
@@ -661,7 +663,11 @@ CONTAINS
   SUBROUTINE CompGreensFunc( L1D, Spin, energy, G0 )
     USE constants
     USE parameters
+#ifdef PGI
     USE lapack_blas, ONLY: zgetri,zgetrf
+#endif    
+    external zgetri,zgetrf
+    !USE lapack_blas, ONLY: zgetri,zgetrf
 
     TYPE(T1DLead), INTENT(inout) :: L1D
     INTEGER, INTENT(in) :: Spin
