@@ -220,7 +220,7 @@
   
   ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
   INTEGER :: NSocFacAtom = 0
-  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 0.0d0
+  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 1.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFacAtom_keyw = "SOCFACATOM"   
 
   ! Atom SOC definition
