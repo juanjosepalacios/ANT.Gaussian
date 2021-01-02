@@ -813,7 +813,7 @@ CONTAINS
     END DO
     WRITE(unit=logfile,fmt=*) SOCFacAtom_keyw, " = ", NSOCFacAtom
     DO i=1,MaxAtm
-       IF( SOCFacAtom(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
+       IF( SOCFacAtom(i) > 1.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
     END DO        
     WRITE(unit=logfile,fmt=*) SpinRot_keyw, " = ", NSpinRot
     DO i=1,MaxAtm
