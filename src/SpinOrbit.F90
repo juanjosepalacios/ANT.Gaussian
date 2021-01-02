@@ -549,7 +549,7 @@ CONTAINS
   !*** Compute matrix of SO Hamiltonian for a given basis set ***
   !**************************************************************
   SUBROUTINE CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOs,Nshell)
-    USE parameters, ONLY: theta, phi, soc_cff_p, soc_cff_d, soc_cff_f, NSpinRot, SpinRotTheta, SpinRotPhi, socfac
+    USE parameters, ONLY: theta, phi, soc_cff_p, soc_cff_d, soc_cff_f, NSpinRot, SpinRotTheta, SpinRotPhi, socfac, NSOCFacAtom, SOCFacAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh, GetShellN, GetShellA, GetShlADF, GetEXX, GetC1, GetC2, GetC3, GetC4, GetAN, GetAtmCo
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -571,7 +571,7 @@ CONTAINS
     REAL*8, DIMENSION(NAOs,NAOs), INTENT(IN) :: SD
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin, Z, acount
-    REAL*8 :: theta_atom, phi_atom, result, A, B, x, zz
+    REAL*8 :: theta_atom, phi_atom, result, A, B, x, zz, socfac_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
 
     COMPLEX*16 :: u, v, ustar, vstar, HROT1temp11, HROT1temp12, HROT1temp21, HROT1temp22, SROT1temp11, SROT1temp12, SROT1temp21, SROT1temp22
     COMPLEX*16 :: HROT2temp11, HROT2temp12, HROT2temp21, HROT2temp22, SROT2temp11, SROT2temp12, SROT2temp21, SROT2temp22
@@ -682,15 +682,29 @@ CONTAINS
            AtomID2 = GetAtm4Sh(k)
            IF (AtomID1 == AtomID2) THEN
               Z = GetAN(AtomID2)  ! Atomic number of atom AtomID2
-              IF (soc_cff_p == 0.0 .and. soc_cff_d == 0.0 .and. soc_cff_f == 0.0) THEN
+              IF( NSOCFacAtom > 0) THEN  ! User-defined multiplicative SOC factor of atom AtomID2
+                socfac_atom = SOCFacAtom(AtomID2)
+              ELSE
+                socfac_atom = socfac
+              END IF              
+              IF( NSOCEdit > 0) THEN  ! User-defined SOC coefficients of atom AtomID2
+                soc_cff_p_atom = SOCEditP(AtomID2)
+                soc_cff_d_atom = SOCEditD(AtomID2)
+                soc_cff_f_atom = SOCEditF(AtomID2)
+              ELSE
+                soc_cff_p_atom = soc_cff_p
+                soc_cff_d_atom = soc_cff_d
+                soc_cff_f_atom = soc_cff_f
+              END IF	               
+              IF (socfac_atom > 0.0d0) THEN
                   CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1)                
-                  Xi(i,k) = socfac*zz*Z*result      
+                  Xi(i,k) = socfac_atom*zz*Z*result       
               ELSE IF (ShellT1 == 1 .and. ShellT2 == 1) THEN
-                  Xi(i,k) = soc_cff_p
+                  Xi(i,k) = soc_cff_p_atom
               ELSE IF (ShellT1 == 2 .and. ShellT2 == 2) THEN                
-                  Xi(i,k) = soc_cff_d
+                  Xi(i,k) = soc_cff_d_atom
               ELSE IF (ShellT1 == 3 .and. ShellT2 == 3) THEN 
-                  Xi(i,k) = soc_cff_f
+                  Xi(i,k) = soc_cff_f_atom
               ELSE 
                   Xi(i,k) = 0.0 
               END IF
@@ -765,7 +779,7 @@ CONTAINS
                     ELSE
                       theta_atom = theta
                       phi_atom = phi	
-                    END IF	    
+                    END IF                   	    
                     CALL Pauli_Matrices( theta_atom, phi_atom, sigma_z, sigma_p, sigma_m, u, v, ustar, vstar )                     	        
           	        DO s1 = 1,2        
           	            DO s2 = 1,2
