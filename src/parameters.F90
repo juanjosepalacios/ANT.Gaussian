@@ -194,19 +194,19 @@
   ! REAL*8 :: soc = 0.0d0           
   ! CHARACTER(len=10), PARAMETER :: SOC_keyw = "SOC"
   
-  ! Global SOC multiplicative factor due to lack of nodal structure in basis set
+  ! SOC multiplicative factor due to lack of nodal structure in basis set
   INTEGER :: socfac = 1
   CHARACTER(LEN=10), PARAMETER :: SOCFAC_keyw = "SOCFAC"  
 
-  ! Global SOC_COEFF_P
+  ! SOC_COEFF_P
   REAL*8 :: soc_cff_p = 0.0d0                           
   CHARACTER(len=10), PARAMETER :: SOC_CFF_P_keyw = "SOC_CFF_P"
   
-  ! Global SOC_COEFF_D                                             
+  ! SOC_COEFF_D                                             
   REAL*8 :: soc_cff_d = 0.0d0                             
   CHARACTER(len=10), PARAMETER :: SOC_CFF_D_keyw = "SOC_CFF_D"    
 
-  ! Global SOC_COEFF_F                                             
+  ! SOC_COEFF_F                                             
   REAL*8 :: soc_cff_f = 0.0d0                             
   CHARACTER(len=10), PARAMETER :: SOC_CFF_F_keyw = "SOC_CFF_F"   
     
@@ -217,19 +217,10 @@
   ! PHI                                             
   REAL*8 :: phi = 0.0d0                             
   CHARACTER(len=10), PARAMETER :: PHI_keyw = "PHI"
-  
-  ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
-  INTEGER :: NSocFacAtom = 0
-  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 1.0d0
-  CHARACTER(LEN=10), PARAMETER :: SOCFacAtom_keyw = "SOCFACATOM"   
 
   ! Atom SOC definition
-  !INTEGER :: NSOCEdit = 0
-  !INTEGER, DIMENSION( MaxAtm ) :: SOCEdit = 1
-  !CHARACTER(LEN=10), PARAMETER :: SOCEdit_keyw = "SOCEDIT"
-  
-  INTEGER :: NSOCEdit = 0 
-  REAL*8, DIMENSION( MaxAtm ) :: SOCEditP = 0.0d0, SOCEditD = 0.0d0,  SOCEditF = 0.0d0
+  INTEGER :: NSOCEdit = 0
+  INTEGER, DIMENSION( MaxAtm ) :: SOCEdit = 1
   CHARACTER(LEN=10), PARAMETER :: SOCEdit_keyw = "SOCEDIT"
   
   ! Atom spin orientation manipulation of initial guess
@@ -313,7 +304,7 @@ CONTAINS
     CHARACTER          :: eqsign, comment
     CHARACTER(len=10)  :: keyword
     CHARACTER(LEN=100) :: strval
-    REAL*8             :: rval,rvall,rvalll
+    REAL*8             :: rval,rvall
     INTEGER            :: ival, index, i, imax
     
     ! Jump comment lines
@@ -547,26 +538,26 @@ CONTAINS
           SpinEdit( index ) = ival
        END DO
        
-     !CASE ( SOCEDIT_keyw )
-     !  READ (unit=inpfile,fmt=*,iostat=ios), NSOCEdit
-     !  IF( ios /= 0 ) RETURN 
-     !  DO i=1,NSOCEdit
-     !     READ (unit=inpfile,fmt=*,iostat=ios), index, ival
-     !     IF( ios /= 0 ) RETURN 
-     !     IF( abs(ival) > 1 )THEN
-     !        WRITE( unit=logfile, fmt=* ) "ERROR - Illegal soc value in SOCEDIT field"
-     !        WRITE( unit=logfile, fmt=* ) "Allowed values: 0, 1"
-     !        ios = 1
-     !        RETURN
-     !     END IF
-     !     IF( index > MaxAtm .OR. index < 1 )THEN
-     !        WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCEDIT field"
-     !        WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
-     !        ios = 1
-     !        RETURN
-     !     END IF
-     !     SOCEdit( index ) = ival
-     !  END DO
+     CASE ( SOCEDIT_keyw )
+       READ (unit=inpfile,fmt=*,iostat=ios), NSOCEdit
+       IF( ios /= 0 ) RETURN 
+       DO i=1,NSOCEdit
+          READ (unit=inpfile,fmt=*,iostat=ios), index, ival
+          IF( ios /= 0 ) RETURN 
+          IF( abs(ival) > 1 )THEN
+             WRITE( unit=logfile, fmt=* ) "ERROR - Illegal soc value in SOCEDIT field"
+             WRITE( unit=logfile, fmt=* ) "Allowed values: 0, 1"
+             ios = 1
+             RETURN
+          END IF
+          IF( index > MaxAtm .OR. index < 1 )THEN
+             WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCEDIT field"
+             WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
+             ios = 1
+             RETURN
+          END IF
+          SOCEdit( index ) = ival
+       END DO
 
     CASE ( CorrBl_keyw )
        READ (unit=inpfile,fmt=*,iostat=ios), NCorrBl
@@ -606,27 +597,7 @@ CONTAINS
        END DO      
        !                  
        ! 5. Real arrays
-       !
-    CASE ( SOCFACATOM_keyw )
-      READ (unit=inpfile,fmt=*,iostat=ios), NSOCFacAtom
-      IF( ios /= 0 ) RETURN 
-      DO i=1,NSOCFacAtom
-         READ (unit=inpfile,fmt=*,iostat=ios), index, rval
-         IF( ios /= 0 ) RETURN 
-         IF( rval < 0.0d0)THEN
-            WRITE( unit=logfile, fmt=* ) "ERROR - Negative value not allowed in SOCFACATOM Field"
-            ios = 1
-            RETURN
-         END IF 
-         IF( index > MaxAtm .OR. index < 1 )THEN
-            WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCFACATOM field"
-            WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
-            ios = 1
-            RETURN
-         END IF
-         SOCFacAtom( index ) = rval
-      END DO       
-                         
+       !                  
     CASE ( SPINROT_keyw )
            READ (unit=inpfile,fmt=*,iostat=ios), NSpinRot
            IF( ios /= 0 ) RETURN 
@@ -653,29 +624,7 @@ CONTAINS
               END IF
               SpinRotTheta( index ) = rval
               SpinRotPhi( index ) = rvall
-           END DO
-
-    CASE ( SOCEDIT_keyw )
-      READ (unit=inpfile,fmt=*,iostat=ios), NSOCEdit
-      IF( ios /= 0 ) RETURN 
-      DO i=1,NSOCEdit
-         READ (unit=inpfile,fmt=*,iostat=ios), index, rval, rvall, rvalll
-         IF( ios /= 0 ) RETURN 
-         IF( rval < 0.0d0 .OR. rvall < 0.0d0 .OR. rvalll < 0.0d0)THEN
-            WRITE( unit=logfile, fmt=* ) "ERROR - Negative value not allowed in SOCEDIT Field"
-            ios = 1
-            RETURN
-         END IF 
-         IF( index > MaxAtm .OR. index < 1 )THEN
-            WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCEDIT field"
-            WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
-            ios = 1
-            RETURN
-         END IF
-         SOCEditP( index ) = rval
-         SOCEditD( index ) = rvall
-         SOCEditF( index ) = rvalll
-      END DO
+           END DO              
 
     CASE default
        WRITE( unit=logfile, fmt=* ) "ERROR - Undefined keyword: ", keyword
@@ -811,18 +760,10 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SpinEdit(i) .NE. 1 ) WRITE(unit=logfile,fmt=*) i, SpinEdit(i)
     END DO
-    WRITE(unit=logfile,fmt=*) SOCFacAtom_keyw, " = ", NSOCFacAtom
-    DO i=1,MaxAtm
-       IF( SOCFacAtom(i) > 1.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
-    END DO        
     WRITE(unit=logfile,fmt=*) SpinRot_keyw, " = ", NSpinRot
-    DO i=1,MaxAtm
-       IF( SpinRotTheta(i) > 0.0d0 .OR. SpinRotPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotTheta(i), SpinRotPhi(i)
-    END DO                                                                  
-    WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
-    DO i=1,MaxAtm
-       IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
-    END DO            
+    DO i=1,NSpinRot
+       WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotTheta(i), SpinRotPhi(i)
+    END DO                                                              
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"
     WRITE(unit=logfile,fmt=*) "***********************"
