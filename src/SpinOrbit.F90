@@ -213,18 +213,18 @@ CONTAINS
         END DO        
     END IF
 
-    PRINT *, " Lz in spherical harmonic basis = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )  
-    END DO
-    PRINT *, " Lp in spherical harmonic basis = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
-    END DO
-    PRINT *, " Lm in spherical harmonic basis = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
-    END DO    
+    !PRINT *, " Lz in spherical harmonic basis = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )  
+    !END DO
+    !PRINT *, " Lp in spherical harmonic basis = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
+    !END DO
+    !PRINT *, " Lm in spherical harmonic basis = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
+    !END DO    
     
     
     !
@@ -263,10 +263,10 @@ CONTAINS
     !    
     
     IF( L == 1 ) THEN
-      PRINT *, " Up = "
-      DO n1=1,2*L+1
-         PRINT '(100(F11.5))', ( REAL(Up(n1,n2)), n2=1,2*L+1 )
-      END DO      
+      !PRINT *, " Up = "
+      !DO n1=1,2*L+1
+      !   PRINT '(100(F11.5))', ( REAL(Up(n1,n2)), n2=1,2*L+1 )
+      !END DO      
       temp = MATMUL( Lz, CONJG(TRANSPOSE(Up)))
       Lz = MATMUL( Up, temp )
       
@@ -276,10 +276,10 @@ CONTAINS
       temp = MATMUL( Lm, CONJG(TRANSPOSE(Up)))
       Lm = MATMUL( Up, temp )
     ELSE IF (L == 2) THEN         
-      PRINT *, " Ud = "
-      DO n1=1,2*L+1
-         PRINT '(100(F11.5))', ( REAL(Ud(n1,n2)), n2=1,2*L+1 ) 
-      END DO         
+      !PRINT *, " Ud = "
+      !DO n1=1,2*L+1
+      !   PRINT '(100(F11.5))', ( REAL(Ud(n1,n2)), n2=1,2*L+1 ) 
+      !END DO         
       temp = MATMUL( Lz, CONJG(TRANSPOSE(Ud)))    
       Lz = MATMUL( Ud, temp )                     
                                                   
@@ -289,10 +289,10 @@ CONTAINS
       temp = MATMUL( Lm, CONJG(TRANSPOSE(Ud)))    
       Lm = MATMUL( Ud, temp )                     
     ELSE IF (L == 3) THEN         
-      PRINT *, " Uf = "
-      DO n1=1,2*L+1
-         PRINT '(100(F11.5))', ( REAL(Uf(n1,n2)), n2=1,2*L+1 ) 
-      END DO         
+      !PRINT *, " Uf = "
+      !DO n1=1,2*L+1
+      !   PRINT '(100(F11.5))', ( REAL(Uf(n1,n2)), n2=1,2*L+1 ) 
+      !END DO         
       temp = MATMUL( Lz, CONJG(TRANSPOSE(Uf)))    
       Lz = MATMUL( Uf, temp )                     
                                                   
@@ -304,30 +304,30 @@ CONTAINS
     END IF    
     
     
-    PRINT *, " Lz in cartesian basis (real part) = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )
-    END DO
-    PRINT *, " Lz in cartesian basis (imaginary part) = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( AIMAG(Lz(n1,n2)), n2=1,2*L+1 )
-    END DO
-    PRINT *, " Lp in cartesian basis (real part) = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
-    END DO
-    PRINT *, " Lp in cartesian basis (imaginary part) = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( AIMAG(Lp(n1,n2)), n2=1,2*L+1 )
-    END DO
-    PRINT *, " Lm in cartesian basis (real part) = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
-    END DO
-    PRINT *, " Lm in cartesian basis (imaginary part) = "
-    DO n1=1,2*L+1
-       PRINT '(100(F11.5))', ( AIMAG(Lm(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !PRINT *, " Lz in cartesian basis (real part) = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )
+    !END DO
+    !PRINT *, " Lz in cartesian basis (imaginary part) = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( AIMAG(Lz(n1,n2)), n2=1,2*L+1 )
+    !END DO
+    !PRINT *, " Lp in cartesian basis (real part) = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
+    !END DO
+    !PRINT *, " Lp in cartesian basis (imaginary part) = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( AIMAG(Lp(n1,n2)), n2=1,2*L+1 )
+    !END DO
+    !PRINT *, " Lm in cartesian basis (real part) = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
+    !END DO
+    !PRINT *, " Lm in cartesian basis (imaginary part) = "
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( AIMAG(Lm(n1,n2)), n2=1,2*L+1 )
+    !END DO
 
 
   END SUBROUTINE L_MATRICES 
@@ -601,15 +601,15 @@ CONTAINS
     L3 = 3
     
     ! Lz, L+, L- Matrices
-    PRINT *, "Calculating L matrices for p orbitals... "
+    !PRINT *, "Calculating L matrices for p orbitals... "
     CALL L_Matrices( L1, L_z1, L_p1, L_m1 ) ! p-orbitals
-    PRINT *, "Calculating L matrices for d orbitals... "
+    !PRINT *, "Calculating L matrices for d orbitals... "
     CALL L_Matrices( L2, L_z2, L_p2, L_m2 ) ! d-orbitals
-    PRINT *, "Calculating L matrices for f orbitals... "
+    !PRINT *, "Calculating L matrices for f orbitals... "
     CALL L_Matrices( L3, L_z3, L_p3, L_m3 ) ! f-orbitals    
     
-    PRINT *, "Total number of shells in the cluster:"
-    PRINT *, NShell
+    !PRINT *, "Total number of shells in the cluster:"
+    !PRINT *, NShell
       
     ish1 = 1
     
@@ -621,12 +621,12 @@ CONTAINS
             END DO
     END DO        
     
-    PRINT *, "Shell type of each orbital:"
-    DO i=1,NAOs
-      PRINT *, AOT(i)
-    END DO  
+    !PRINT *, "Shell type of each orbital:"
+    !DO i=1,NAOs
+    !  PRINT *, AOT(i)
+    !END DO  
       
-    PRINT *, "Basis set of each atom extracted from internal Gaussian variables:"
+    !PRINT *, "Basis set of each atom extracted from internal Gaussian variables:"
     DO i=1,NShell
        ShellT1 = GetShellT(i)
        ShellC1 = GetShellC(i)
@@ -642,19 +642,19 @@ CONTAINS
           IF ( ShellT1 == 0) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)
               matrix(ShellAindex1+j-1,2)=GetC1(ShellAindex1+j-1)   
-              PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
           ELSE IF ( ShellT1 == 1 .and. (ShellC1 == 0 .or. ShellC1 == 1)) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)
               matrix(ShellAindex1+j-1,2)=GetC2(ShellAindex1+j-1)
-              PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
           ELSE IF (ShellT1 == 2 .and. ShellC1 == 2) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)                         
               matrix(ShellAindex1+j-1,2)=GetC3(ShlADFindex1+j-1)                          
-              PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)
           ELSE IF (ShellT1 == 3 .and. ShellC1 == 2) THEN       
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)                         
               matrix(ShellAindex1+j-1,2)=GetC4(ShlADFindex1+j-1)                          
-              PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)          
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)          
           END IF                 
        END DO                                                 
     END DO	 
@@ -664,8 +664,8 @@ CONTAINS
     
     zz = (1.0/a0**3)*(hbar**2)*(Ke/e)*((e**2)/(2.*(me*c)**2)) ! Divide by e to convert from Joules to eV     
                 
-    PRINT *, "Spin-orbit constants within each atom:"
-    PRINT '(a10,2(a15),a20)', 'Atom No.','Shell type 1','Shell type 2','Spin-orbit constant'   
+    !PRINT *, "Spin-orbit constants within each atom:"
+    !PRINT '(a10,2(a15),a20)', 'Atom No.','Shell type 1','Shell type 2','Spin-orbit constant'   
     DO i=1,NShell
         ShellT1 = GetShellT(i)
         ShellC1 = GetShellC(i)    
@@ -708,7 +708,7 @@ CONTAINS
               ELSE 
                   Xi(i,k) = 0.0 
               END IF
-              PRINT '(3(i10),F25.10)',AtomID1,ShellT1,ShellT2,Xi(i,k)                                     
+              !PRINT '(3(i10),F25.10)',AtomID1,ShellT1,ShellT2,Xi(i,k)                                     
            END IF
         END DO                                                          
     END DO	               
@@ -871,44 +871,44 @@ CONTAINS
     
     !Print *, ish1, ish2      
     
-    Print *, "LS1 (real part) = "                                                                          
-    DO s1 = 1,2                                                                                
-       DO i = 1,3                                                                              
-          PRINT '(100(F11.5))', ( REAL(LS1(s1,i,1,j)), j=1,3 ), ( REAL(LS1(s1,i,2,j)), j=1,3 ) 
-       END DO                                                                                  
-    END DO   
-    Print *, "LS1 (imaginary part) = "                 
-    DO s1 = 1,2                                                                                
-       DO i = 1,3                                                                              
-          PRINT '(100(F11.5))', ( AIMAG(LS1(s1,i,1,j)), j=1,3 ), ( AIMAG(LS1(s1,i,2,j)), j=1,3 ) 
-       END DO                                                                                  
-    END DO                                                                                                                                                          
-                                                                                               
-    Print *, "LS2 (real part) = "                                                                          
-    DO s1 = 1,2                                                                                
-       DO i = 1,5                                                                              
-          PRINT '(100(F11.5))', ( REAL(LS2(s1,i,1,j)), j=1,5 ), (REAL( LS2(s1,i,2,j)), j=1,5)  
-       END DO                                                                                  
-    END DO               
-    Print *, "LS2 (imaginary part) = "
-    DO s1 = 1,2                                                                                
-       DO i = 1,5                                                                              
-          PRINT '(100(F11.5))', ( AIMAG(LS2(s1,i,1,j)), j=1,5 ), (AIMAG( LS2(s1,i,2,j)), j=1,5)  
-       END DO                                                                                  
-    END DO                                                                              
-                                                                                               
-    Print *, "LS3 (real part) = "                                                                          
-    DO s1 = 1,2                                                                                
-       DO i = 1,7                                                                              
-          PRINT '(100(F11.5))', ( REAL(LS3(s1,i,1,j)), j=1,7 ), (REAL( LS3(s1,i,2,j)), j=1,7)  
-       END DO                                                                                  
-    END DO   
-    Print *, "LS3 (imaginary part) = "
-    DO s1 = 1,2                                                                                
-       DO i = 1,7                                                                              
-          PRINT '(100(F11.5))', ( AIMAG(LS3(s1,i,1,j)), j=1,7 ), (AIMAG( LS3(s1,i,2,j)), j=1,7)  
-       END DO                                                                                  
-    END DO       
+    !Print *, "LS1 (real part) = "                                                                          
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,3                                                                              
+    !      PRINT '(100(F11.5))', ( REAL(LS1(s1,i,1,j)), j=1,3 ), ( REAL(LS1(s1,i,2,j)), j=1,3 ) 
+    !   END DO                                                                                  
+    !END DO   
+    !Print *, "LS1 (imaginary part) = "                 
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,3                                                                              
+    !      PRINT '(100(F11.5))', ( AIMAG(LS1(s1,i,1,j)), j=1,3 ), ( AIMAG(LS1(s1,i,2,j)), j=1,3 ) 
+    !   END DO                                                                                  
+    !END DO                                                                                                                                                          
+    !                                                                                           
+    !Print *, "LS2 (real part) = "                                                                          
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,5                                                                              
+    !      PRINT '(100(F11.5))', ( REAL(LS2(s1,i,1,j)), j=1,5 ), (REAL( LS2(s1,i,2,j)), j=1,5)  
+    !   END DO                                                                                  
+    !END DO               
+    !Print *, "LS2 (imaginary part) = "
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,5                                                                              
+    !      PRINT '(100(F11.5))', ( AIMAG(LS2(s1,i,1,j)), j=1,5 ), (AIMAG( LS2(s1,i,2,j)), j=1,5)  
+    !   END DO                                                                                  
+    !END DO                                                                              
+    !                                                                                           
+    !Print *, "LS3 (real part) = "                                                                          
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,7                                                                              
+    !      PRINT '(100(F11.5))', ( REAL(LS3(s1,i,1,j)), j=1,7 ), (REAL( LS3(s1,i,2,j)), j=1,7)  
+    !   END DO                                                                                  
+    !END DO   
+    !Print *, "LS3 (imaginary part) = "
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,7                                                                              
+    !      PRINT '(100(F11.5))', ( AIMAG(LS3(s1,i,1,j)), j=1,7 ), (AIMAG( LS3(s1,i,2,j)), j=1,7)  
+    !   END DO                                                                                  
+    !END DO       
                                                                                                                                                   
     
     !*****************************************************
