@@ -2207,12 +2207,12 @@
 
     rho_a = matmul( PD_SOC_UU, S_SOC_UU )+matmul( PD_SOC_UD,S_SOC_DU )
     rho_b = matmul( PD_SOC_DU, S_SOC_UD )+matmul( PD_SOC_DD, S_SOC_DD )
-    IF( NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
+   !IF( NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
       rho_ab = matmul( PD_SOC_UU, S_SOC_UD )+matmul( PD_SOC_UD, S_SOC_DD )
       rho_ab_I = matmul( PD_SOC_UD_I, S_SOC_DD ) !matmul( PD_SOC_UU, S_SOC_UD )+
       rho_ba = matmul( PD_SOC_DU, S_SOC_UU )+matmul( PD_SOC_DD,S_SOC_DU )
       rho_ba_I = matmul( PD_SOC_DU_I, S_SOC_UU )!+matmul( PD_SOC_DD,S_SOC_DU )
-    END IF
+   !END IF
 
     write(ifu_log,*)'----------------------'
     write(ifu_log,*)'Charges in electrode 1'
@@ -3610,7 +3610,7 @@
           CHI = CHI + DIMAG(PD_SOC(k,k1)*S_SOC(k1,k))
        end do
     enddo
-    print*,n,ch,chi
+   !print*,n,ch,chi
       !print*, n,16*CH*(El-Er)/(6*(n+1))
     ! Stopping?
    !print*, n,(CH-xp)*(CH-xp)*16-3*(n+1)*abs(CH-q)*PAcc
@@ -3740,7 +3740,7 @@
           CHI = CHI + DIMAG(PDOUT_SOC(k,k1)*S_SOC(k1,k))
        end do
     enddo
-    print*,n,ch,chi
+   !print*,n,ch,chi
       !print*, n,16*CH*(El-Er)/(6*(n+1))
     ! Stopping?
    !print*, n,(CH-xp)*(CH-xp)*16-3*(n+1)*abs(CH-q)*PAcc
