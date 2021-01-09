@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.4.1  *********************!
+!*********************  ANT.G-2.5.0  *********************!
 !*********************************************************!
 !                                                         !
 !   Copyright (c) by                                      !
@@ -788,7 +788,8 @@ CONTAINS
 111    end do
     end do
 
-    if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+    !if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+    if (ANLead1 == 6 .or. ANLead1 == 1) then
        vpb1(1,5)=-(vpb1(1,1)+vpb1(1,3))     
        vpb1(2,5)=-(vpb1(2,1)+vpb1(2,3))
        vpb1(3,5)=-(vpb1(3,1)+vpb1(3,3))
@@ -852,7 +853,8 @@ CONTAINS
 222    end do
     end do
 
-    if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+    !if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+    if (ANLead2 == 6 .or. ANLead2 == 1) then
        vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))     
        vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
        vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))
@@ -1443,7 +1445,8 @@ CONTAINS
 111    end do
     end do
 
-    if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+    !if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+    if (ANLead1 == 6 .or. ANLead1 == 1) then
        vpb1(1,5)=-(vpb1(1,1)+vpb1(1,3))     
        vpb1(2,5)=-(vpb1(2,1)+vpb1(2,3))
        vpb1(3,5)=-(vpb1(3,1)+vpb1(3,3))
@@ -1505,6 +1508,7 @@ CONTAINS
        ndi=ndi+ndirr
        end do 
        ndir(i)=ndi
+       print *, i, ndir(i)
        if (ndi /= 0) ifrpl(i)=1
 
        do j=1,ndir(i)
@@ -1530,7 +1534,7 @@ CONTAINS
     end do
 
     REWIND(ifu_xyz)
-    write(ifu_xyz,'(I5)'), GetNAtoms()+nblatoms1+nblatoms2
+    write(ifu_xyz,'(I5)'), GetNAtoms()+nblatoms1
     write(ifu_xyz,*)
     do ibl=1,nblatoms1
        WRITE(ifu_xyz,' (A2,3(F11.6))') 'Ar', xbl1(ibl), ybl1(ibl), zbl1(ibl)
@@ -1948,8 +1952,9 @@ CONTAINS
           vpb2(3,nneig2)=-vv(3)
 222    end do
     end do
-    
-    if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+     
+   !if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+    if (ANLead2 == 6 .or. ANLead2 == 1) then
        vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))     
        vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
        vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))

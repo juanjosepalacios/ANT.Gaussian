@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.4.0  *********************!
+!*********************  ANT.G-2.5.0  *********************!
 !*********************************************************!
 !                                                         !
 !   Copyright (c) by                                      !
@@ -306,7 +306,7 @@ CONTAINS
     USE constants
     USE parameters
 #ifdef PGI
-     USE lapack_blas, ONLY: zgetri,zgetrf
+    USE lapack_blas, ONLY: zgetri,zgetrf
 #endif
     IMPLICIT NONE
     external zgetri,zgetrf
@@ -665,9 +665,7 @@ CONTAINS
     USE parameters
 #ifdef PGI
     USE lapack_blas, ONLY: zgetri,zgetrf
-#endif    
-    external zgetri,zgetrf
-    !USE lapack_blas, ONLY: zgetri,zgetrf
+#endif
 
     TYPE(T1DLead), INTENT(inout) :: L1D
     INTEGER, INTENT(in) :: Spin

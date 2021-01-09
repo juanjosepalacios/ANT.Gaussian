@@ -35,7 +35,7 @@
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC
   USE constants, ONLY: Hart
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
@@ -185,6 +185,8 @@
 
      !Opening writting files
      OPEN(ifu_xyz,file=trim(jobname)//'.xyz',status='unknown')
+     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. SOC) OPEN(ifu_tra,file='T.'//trim(jobname)//'.SOC.dat',status='unknown')
+     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. .not. SOC) OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
      IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
      IF (RedTransmB < RedTransmE) OPEN(ifu_red,file='t.'//trim(jobname)//'.dat',status='unknown')
      IF (Hamilton) OPEN(ifu_ham,file='V.'//trim(jobname)//'.dat',status='unknown')

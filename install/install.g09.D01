@@ -28,12 +28,12 @@ echo "**********************************************************"
 ##########################################################
 
 ### Root directory of Gaussian
-export g09root=/home/palacios/gaussian
+export g09root=/home/palacios/Gaussian09/intel/v.D01
   
 ### Portland compiler path or any other compiler GAUSSIAN has been compiled with
-export F90=pgf90
+#export F90=pgf90
 #export F90=/opt/intel/fce/10.1.012/bin/ifort
-#export F90=ifort
+export F90=ifort
 
 ###
 ### The script will try to guess the correct flags from make.log of Gaussian
