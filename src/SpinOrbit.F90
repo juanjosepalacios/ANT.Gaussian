@@ -214,17 +214,17 @@ CONTAINS
     END IF
 
     !PRINT *, " Lz in spherical harmonic basis = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )  
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )  
+    !END DO
     !PRINT *, " Lp in spherical harmonic basis = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
+    !END DO
     !PRINT *, " Lm in spherical harmonic basis = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
-    END DO    
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
+    !END DO    
     
     
     !
@@ -264,9 +264,9 @@ CONTAINS
     
     IF( L == 1 ) THEN
       !PRINT *, " Up = "
-      DO n1=1,2*L+1
-         !PRINT '(100(F11.5))', ( REAL(Up(n1,n2)), n2=1,2*L+1 )
-      END DO      
+      !DO n1=1,2*L+1
+      !   PRINT '(100(F11.5))', ( REAL(Up(n1,n2)), n2=1,2*L+1 )
+      !END DO      
       temp = MATMUL( Lz, CONJG(TRANSPOSE(Up)))
       Lz = MATMUL( Up, temp )
       
@@ -277,9 +277,9 @@ CONTAINS
       Lm = MATMUL( Up, temp )
     ELSE IF (L == 2) THEN         
       !PRINT *, " Ud = "
-      DO n1=1,2*L+1
-         !PRINT '(100(F11.5))', ( REAL(Ud(n1,n2)), n2=1,2*L+1 ) 
-      END DO         
+      !DO n1=1,2*L+1
+      !   PRINT '(100(F11.5))', ( REAL(Ud(n1,n2)), n2=1,2*L+1 ) 
+      !END DO         
       temp = MATMUL( Lz, CONJG(TRANSPOSE(Ud)))    
       Lz = MATMUL( Ud, temp )                     
                                                   
@@ -290,9 +290,9 @@ CONTAINS
       Lm = MATMUL( Ud, temp )                     
     ELSE IF (L == 3) THEN         
       !PRINT *, " Uf = "
-      DO n1=1,2*L+1
-         !PRINT '(100(F11.5))', ( REAL(Uf(n1,n2)), n2=1,2*L+1 ) 
-      END DO         
+      !DO n1=1,2*L+1
+      !   PRINT '(100(F11.5))', ( REAL(Uf(n1,n2)), n2=1,2*L+1 ) 
+      !END DO         
       temp = MATMUL( Lz, CONJG(TRANSPOSE(Uf)))    
       Lz = MATMUL( Uf, temp )                     
                                                   
@@ -305,29 +305,29 @@ CONTAINS
     
     
     !PRINT *, " Lz in cartesian basis (real part) = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lz(n1,n2)), n2=1,2*L+1 )
+    !END DO
     !PRINT *, " Lz in cartesian basis (imaginary part) = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( AIMAG(Lz(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( AIMAG(Lz(n1,n2)), n2=1,2*L+1 )
+    !END DO
     !PRINT *, " Lp in cartesian basis (real part) = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lp(n1,n2)), n2=1,2*L+1 )
+    !END DO
     !PRINT *, " Lp in cartesian basis (imaginary part) = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( AIMAG(Lp(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( AIMAG(Lp(n1,n2)), n2=1,2*L+1 )
+    !END DO
     !PRINT *, " Lm in cartesian basis (real part) = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( REAL(Lm(n1,n2)), n2=1,2*L+1 )
+    !END DO
     !PRINT *, " Lm in cartesian basis (imaginary part) = "
-    DO n1=1,2*L+1
-       !PRINT '(100(F11.5))', ( AIMAG(Lm(n1,n2)), n2=1,2*L+1 )
-    END DO
+    !DO n1=1,2*L+1
+    !   PRINT '(100(F11.5))', ( AIMAG(Lm(n1,n2)), n2=1,2*L+1 )
+    !END DO
 
 
   END SUBROUTINE L_MATRICES 
@@ -549,7 +549,7 @@ CONTAINS
   !*** Compute matrix of SO Hamiltonian for a given basis set ***
   !**************************************************************
   SUBROUTINE CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOs,Nshell)
-    USE parameters, ONLY: theta, phi, soc_cff_p, soc_cff_d, soc_cff_f, NSpinRot, SpinRotTheta, SpinRotPhi, socfac
+    USE parameters, ONLY: theta, phi, soc_cff_p, soc_cff_d, soc_cff_f, NSpinRot, SpinRotTheta, SpinRotPhi, socfac, NSOCFacAtom, SOCFacAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh, GetShellN, GetShellA, GetShlADF, GetEXX, GetC1, GetC2, GetC3, GetC4, GetAN, GetAtmCo
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -571,7 +571,7 @@ CONTAINS
     REAL*8, DIMENSION(NAOs,NAOs), INTENT(IN) :: SD
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin, Z, acount
-    REAL*8 :: theta_atom, phi_atom, result, A, B, x, zz
+    REAL*8 :: theta_atom, phi_atom, result, A, B, x, zz, socfac_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
 
     COMPLEX*16 :: u, v, ustar, vstar, HROT1temp11, HROT1temp12, HROT1temp21, HROT1temp22, SROT1temp11, SROT1temp12, SROT1temp21, SROT1temp22
     COMPLEX*16 :: HROT2temp11, HROT2temp12, HROT2temp21, HROT2temp22, SROT2temp11, SROT2temp12, SROT2temp21, SROT2temp22
@@ -642,19 +642,19 @@ CONTAINS
           IF ( ShellT1 == 0) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)
               matrix(ShellAindex1+j-1,2)=GetC1(ShellAindex1+j-1)   
-    !          !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
           ELSE IF ( ShellT1 == 1 .and. (ShellC1 == 0 .or. ShellC1 == 1)) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)
               matrix(ShellAindex1+j-1,2)=GetC2(ShellAindex1+j-1)
-    !          !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
           ELSE IF (ShellT1 == 2 .and. ShellC1 == 2) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)                         
               matrix(ShellAindex1+j-1,2)=GetC3(ShlADFindex1+j-1)                          
-    !          !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)
           ELSE IF (ShellT1 == 3 .and. ShellC1 == 2) THEN       
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)                         
               matrix(ShellAindex1+j-1,2)=GetC4(ShlADFindex1+j-1)                          
-    !          !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)          
+              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)          
           END IF                 
        END DO                                                 
     END DO	 
@@ -682,15 +682,29 @@ CONTAINS
            AtomID2 = GetAtm4Sh(k)
            IF (AtomID1 == AtomID2) THEN
               Z = GetAN(AtomID2)  ! Atomic number of atom AtomID2
-              IF (soc_cff_p == 0.0 .and. soc_cff_d == 0.0 .and. soc_cff_f == 0.0) THEN
+              IF( NSOCFacAtom > 0) THEN  ! User-defined multiplicative SOC factor of atom AtomID2
+                socfac_atom = SOCFacAtom(AtomID2)
+              ELSE
+                socfac_atom = socfac
+              END IF              
+              IF( NSOCEdit > 0) THEN  ! User-defined SOC coefficients of atom AtomID2
+                soc_cff_p_atom = SOCEditP(AtomID2)
+                soc_cff_d_atom = SOCEditD(AtomID2)
+                soc_cff_f_atom = SOCEditF(AtomID2)
+              ELSE
+                soc_cff_p_atom = soc_cff_p
+                soc_cff_d_atom = soc_cff_d
+                soc_cff_f_atom = soc_cff_f
+              END IF	               
+              IF (socfac_atom > 0.0d0) THEN
                   CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1)                
-                  Xi(i,k) = socfac*zz*Z*result      
+                  Xi(i,k) = socfac_atom*zz*Z*result       
               ELSE IF (ShellT1 == 1 .and. ShellT2 == 1) THEN
-                  Xi(i,k) = soc_cff_p
+                  Xi(i,k) = soc_cff_p_atom
               ELSE IF (ShellT1 == 2 .and. ShellT2 == 2) THEN                
-                  Xi(i,k) = soc_cff_d
+                  Xi(i,k) = soc_cff_d_atom
               ELSE IF (ShellT1 == 3 .and. ShellT2 == 3) THEN 
-                  Xi(i,k) = soc_cff_f
+                  Xi(i,k) = soc_cff_f_atom
               ELSE 
                   Xi(i,k) = 0.0 
               END IF
@@ -765,7 +779,7 @@ CONTAINS
                     ELSE
                       theta_atom = theta
                       phi_atom = phi	
-                    END IF	    
+                    END IF                   	    
                     CALL Pauli_Matrices( theta_atom, phi_atom, sigma_z, sigma_p, sigma_m, u, v, ustar, vstar )                     	        
           	        DO s1 = 1,2        
           	            DO s2 = 1,2
@@ -858,43 +872,43 @@ CONTAINS
     !Print *, ish1, ish2      
     
     !Print *, "LS1 (real part) = "                                                                          
-    DO s1 = 1,2                                                                                
-       DO i = 1,3                                                                              
-          !PRINT '(100(F11.5))', ( REAL(LS1(s1,i,1,j)), j=1,3 ), ( REAL(LS1(s1,i,2,j)), j=1,3 ) 
-       END DO                                                                                  
-    END DO   
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,3                                                                              
+    !      PRINT '(100(F11.5))', ( REAL(LS1(s1,i,1,j)), j=1,3 ), ( REAL(LS1(s1,i,2,j)), j=1,3 ) 
+    !   END DO                                                                                  
+    !END DO   
     !Print *, "LS1 (imaginary part) = "                 
-    DO s1 = 1,2                                                                                
-       DO i = 1,3                                                                              
-          !PRINT '(100(F11.5))', ( AIMAG(LS1(s1,i,1,j)), j=1,3 ), ( AIMAG(LS1(s1,i,2,j)), j=1,3 ) 
-       END DO                                                                                  
-    END DO                                                                                                                                                          
-                                                                                               
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,3                                                                              
+    !      PRINT '(100(F11.5))', ( AIMAG(LS1(s1,i,1,j)), j=1,3 ), ( AIMAG(LS1(s1,i,2,j)), j=1,3 ) 
+    !   END DO                                                                                  
+    !END DO                                                                                                                                                          
+    !                                                                                           
     !Print *, "LS2 (real part) = "                                                                          
-    DO s1 = 1,2                                                                                
-       DO i = 1,5                                                                              
-          !PRINT '(100(F11.5))', ( REAL(LS2(s1,i,1,j)), j=1,5 ), (REAL( LS2(s1,i,2,j)), j=1,5)  
-       END DO                                                                                  
-    END DO               
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,5                                                                              
+    !      PRINT '(100(F11.5))', ( REAL(LS2(s1,i,1,j)), j=1,5 ), (REAL( LS2(s1,i,2,j)), j=1,5)  
+    !   END DO                                                                                  
+    !END DO               
     !Print *, "LS2 (imaginary part) = "
-    DO s1 = 1,2                                                                                
-       DO i = 1,5                                                                              
-          !PRINT '(100(F11.5))', ( AIMAG(LS2(s1,i,1,j)), j=1,5 ), (AIMAG( LS2(s1,i,2,j)), j=1,5)  
-       END DO                                                                                  
-    END DO                                                                              
-                                                                                               
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,5                                                                              
+    !      PRINT '(100(F11.5))', ( AIMAG(LS2(s1,i,1,j)), j=1,5 ), (AIMAG( LS2(s1,i,2,j)), j=1,5)  
+    !   END DO                                                                                  
+    !END DO                                                                              
+    !                                                                                           
     !Print *, "LS3 (real part) = "                                                                          
-    DO s1 = 1,2                                                                                
-       DO i = 1,7                                                                              
-          !PRINT '(100(F11.5))', ( REAL(LS3(s1,i,1,j)), j=1,7 ), (REAL( LS3(s1,i,2,j)), j=1,7)  
-       END DO                                                                                  
-    END DO   
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,7                                                                              
+    !      PRINT '(100(F11.5))', ( REAL(LS3(s1,i,1,j)), j=1,7 ), (REAL( LS3(s1,i,2,j)), j=1,7)  
+    !   END DO                                                                                  
+    !END DO   
     !Print *, "LS3 (imaginary part) = "
-    DO s1 = 1,2                                                                                
-       DO i = 1,7                                                                              
-          !PRINT '(100(F11.5))', ( AIMAG(LS3(s1,i,1,j)), j=1,7 ), (AIMAG( LS3(s1,i,2,j)), j=1,7)  
-       END DO                                                                                  
-    END DO       
+    !DO s1 = 1,2                                                                                
+    !   DO i = 1,7                                                                              
+    !      PRINT '(100(F11.5))', ( AIMAG(LS3(s1,i,1,j)), j=1,7 ), (AIMAG( LS3(s1,i,2,j)), j=1,7)  
+    !   END DO                                                                                  
+    !END DO       
                                                                                                                                                   
     
     !*****************************************************
@@ -905,28 +919,28 @@ CONTAINS
        DO j = 1,NAOs
             !Up-Up
     		hamil_SO(i,j) = HSO(1,i,1,j) 
-    	IF (NSPinROT > 0) THEN
+    		IF (NSPinROT > 0) THEN
     		   hamil(i,j) = HROT(1,i,1,j)
     		   overlap_SO(i,j) = SROT(1,i,1,j)
-    	END IF   
+    		END IF   
     		!Up-Down
     		hamil_SO(i,j+NAOs) = HSO(1,i,2,j)
-    	IF (NSPinROT > 0) THEN
+    		IF (NSPinROT > 0) THEN
     		   hamil(i,j+NAOs) = HROT(1,i,2,j)
     		   overlap_SO(i,j+NAOs) = SROT(1,i,2,j)
-    	END IF   
+    		END IF   
             !Down-Up
     		hamil_SO(i+NAOs,j) = HSO(2,i,1,j)
-    	IF (NSPinROT > 0) THEN
+    		IF (NSPinROT > 0) THEN
     		   hamil(i+NAOs,j) = HROT(2,i,1,j)
     		   overlap_SO(i+NAOs,j) = SROT(2,i,1,j)
-    	END IF   
+    		END IF   
             !Down-Down
     		hamil_SO(i+NAOs,j+NAOs) = HSO(2,i,2,j)
-    	IF (NSPinROT > 0) THEN
+    		IF (NSPinROT > 0) THEN
     		   hamil(i+NAOs,j+NAOs) = HROT(2,i,2,j) 
     		   overlap_SO(i+NAOs,j+NAOs) = SROT(2,i,2,j) 
-    	END IF   
+    		END IF   
        END DO        
     END DO  
       
