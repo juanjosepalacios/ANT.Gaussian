@@ -784,7 +784,7 @@
           HDOrtho = .true.
        end if
        if( DiagCorrbl ) call DiagCorrBlocks( HD, SD )
-       call Hamiltonian
+       call Hamiltonian    
        IF ( HybFunc ) call CompHybFunc
        IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOS_Beg <= LDOS_End) CALL LDOS
        IF (ElType(1) /= "GHOST" .and. ElType(2) /= "GHOST") THEN            
@@ -1028,7 +1028,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,SOC
     !use ieee_arithmetic
     implicit none
 
@@ -1098,6 +1098,7 @@
        E0=shift
        E1=E0-Z 
        E2=E0+Z 
+       if (SOC) call spin_orbit
        if( root_fail )then
           print*,'Secant method'
           call SECANT(CompPD,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
@@ -1320,7 +1321,7 @@
   !* Compute retarded Green's function *
   !*************************************
   subroutine gplus0(z,green)
-    use PARAMETERS, only: eta,glue
+    use PARAMETERS, only: eta,glue,soc
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
@@ -1352,7 +1353,11 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          if (SOC) then
+             green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigl(i,j)-sigr(i,j)
+          else
+             green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          end if   
        enddo
     enddo
 
@@ -1366,7 +1371,7 @@
   !* Compute retarded Green's function and gamma matrices *
   !********************************************************
   subroutine gplus(z,green,gammar,gammal)
-    use PARAMETERS, only: eta, glue
+    use PARAMETERS, only: eta, glue, soc
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
@@ -1406,7 +1411,11 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          if (SOC) then
+             green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigl(i,j)-sigr(i,j)
+          else
+             green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          end if            
        enddo
     enddo
 
@@ -2553,7 +2562,7 @@
        Dtemp=c_zero
        S_SOC=d_zero
 
-       call spin_orbit
+       if (NSPIN==2) call spin_orbit
        
     else
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr)
