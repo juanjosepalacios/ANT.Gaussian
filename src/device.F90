@@ -69,7 +69,7 @@
   complex*16, dimension(:,:),allocatable :: SPH
   
   ! *** Hamiltonian and density matrix of device
-  real*8, dimension(:,:,:),allocatable :: HD
+  complex*16, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
   complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC
@@ -252,7 +252,7 @@
     logical, intent(in) :: UHF
     real*8, dimension(NBasis,NBasis),intent(in) :: S
 
-    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2
+    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2, ii, jj
 
     real*8, dimension(NBasis,NBasis) :: RSPH 
 
@@ -273,7 +273,7 @@
        stop
     end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
        print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
        stop
@@ -283,6 +283,18 @@
     call RMatPow( SD, -1.0d0, InvSD )
 
     if( HybFunc ) call InitCorrelation(NAOrbs,NSpin)
+    
+    if (SOC) then
+       call spin_orbit
+       do ispin=1,2
+       do ii=1,NAOrbs
+       do jj=1,NAOrbs
+          HD(ispin,ii,jj)=HD(ispin,ii,jj) + H_SOC(ii,jj)
+          SD(ii,jj)=SD(ii,jj)+ S_SOC(ii,jj)              
+       end do
+       end do      
+       end do 
+    end if   
 
     allocate( SPH(NAorbs,NAOrbs), STAT=AllocErr )
     if( AllocErr /= 0 ) then
@@ -719,6 +731,7 @@
 
     logical,intent(out) :: ADDP
     real*8, dimension(NSpin,NAOrbs,NAOrbs),intent(in) :: F
+    real*8, dimension(NSpin,NAOrbs,NAOrbs) :: HDMod
 
     real*8, dimension(NAOrbs) :: evals
     real*8, dimension(:,:),allocatable :: SPM
@@ -744,7 +757,11 @@
        call FindEnergyBounds
     end if
 
-    if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
+    if( DFTU ) then 
+       HDMod = REAL(HD)
+       call Add_DFT_plus_U_Pot( PD, HDMod )
+       HD = dcmplx(HDMod,AIMAG(HD))
+    end if   
 
     if(.not.DMImag) call CompDensMat(ADDP)
     if(DMImag) call CompDensMat2(ADDP)
@@ -783,8 +800,13 @@
           end do
           HDOrtho = .true.
        end if
-       if( DiagCorrbl ) call DiagCorrBlocks( HD, SD )
-       call Hamiltonian    
+       if( DiagCorrbl ) then
+         HDMod=REAL(HD)       
+         call DiagCorrBlocks( HDMod, SD )
+         HD = dcmplx(HDMod,AIMAG(HD))
+       endif  
+         
+       call Hamiltonian
        IF ( HybFunc ) call CompHybFunc
        IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOS_Beg <= LDOS_End) CALL LDOS
        IF (ElType(1) /= "GHOST" .and. ElType(2) /= "GHOST") THEN            
@@ -1028,7 +1050,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,SOC
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
     !use ieee_arithmetic
     implicit none
 
@@ -1098,7 +1120,6 @@
        E0=shift
        E1=E0-Z 
        E2=E0+Z 
-       if (SOC) call spin_orbit
        if( root_fail )then
           print*,'Secant method'
           call SECANT(CompPD,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
@@ -1321,7 +1342,7 @@
   !* Compute retarded Green's function *
   !*************************************
   subroutine gplus0(z,green)
-    use PARAMETERS, only: eta,glue,soc
+    use PARAMETERS, only: eta,glue
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
@@ -1353,11 +1374,7 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          if (SOC) then
-             green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigl(i,j)-sigr(i,j)
-          else
-             green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
-          end if   
+          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
 
@@ -1371,7 +1388,7 @@
   !* Compute retarded Green's function and gamma matrices *
   !********************************************************
   subroutine gplus(z,green,gammar,gammal)
-    use PARAMETERS, only: eta, glue, soc
+    use PARAMETERS, only: eta, glue
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
@@ -1411,11 +1428,7 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          if (SOC) then
-             green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigl(i,j)-sigr(i,j)
-          else
-             green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
-          end if            
+          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
 
@@ -2545,10 +2558,10 @@
        if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
+       !if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
+       !if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
@@ -2562,7 +2575,7 @@
        Dtemp=c_zero
        S_SOC=d_zero
 
-       if (NSPIN==2) call spin_orbit
+       call spin_orbit
        
     else
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr)
@@ -2916,14 +2929,19 @@
     
     ! Device Green's function
     complex*16, dimension(NAorbs,NAOrbs) :: GD
+    
+    real*8, dimension(Nspin,NAorbs,NAOrbs) :: HDMod
 
     complex*16, dimension(:,:,:,:,:), allocatable :: delta
 
     print *, "-----------------------------------------"
     print *, "--- Computing Hybridization functions ---"
     print *, "-----------------------------------------"
-
-    call SetHamOvl( HD, SD )
+    
+    HDMod=REAL(HD)
+    call SetHamOvl( HDMod, SD )
+    HD = dcmplx(HDMod,AIMAG(HD))
+    
     !
     ! Read mesh file mesh.dat
     ! 
@@ -4248,19 +4266,19 @@
  if (NSpin == 2) then
     do i=1,NAOrbs
     do j=1,NAOrbs
-       hamil(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamil(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
-       overlap_SO(i,j)=dcmplx(SD(i,j),0.0d0)              
-       overlap_SO(i+NAOrbs,j+NAOrbs)=dcmplx(SD(i,j),0.0d0)
+       hamil(i,j)=HD(1,i,j)
+       hamil(i+NAOrbs,j+NAOrbs)=HD(2,i,j)
+       overlap_SO(i,j)=SD(i,j)              
+       overlap_SO(i+NAOrbs,j+NAOrbs)=SD(i,j)
     end do
     end do
  else 
     do i=1,NAOrbs
     do j=1,NAOrbs
-       hamil(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamil(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-       overlap_SO(i,j)=dcmplx(SD(i,j),0.0d0)              
-       overlap_SO(i+NAOrbs,j+NAOrbs)=dcmplx(SD(i,j),0.0d0)
+       hamil(i,j)=HD(1,i,j)
+       hamil(i+NAOrbs,j+NAOrbs)=HD(1,i,j)
+       overlap_SO(i,j)=SD(i,j)              
+       overlap_SO(i+NAOrbs,j+NAOrbs)=SD(i,j)
     end do
     end do
  end if
@@ -4271,7 +4289,7 @@
  
  nshell = GetNShell()
  
- CALL CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOrbs,nshell)
+ CALL CompHSO(hamil_SO,REAL(HD),hamil,SD,overlap_SO,NAOrbs,nshell)
  
 !PRINT *, "hamil_SO matrix real part:"
 !do i=1, totdim*2
