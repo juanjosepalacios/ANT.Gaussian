@@ -1,0 +1,2555 @@
+fs_prolog.sh startet Tue Dec 29 19:31:12 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203005
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+
+sent 171 bytes  received 283933 bytes  568208.00 bytes/sec
+total size is 283369  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 19:31:12 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 19:31:12 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203005
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203005
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3565983 bytes  received 2365 bytes  2378898.67 bytes/sec
+total size is 3715080  speedup is 1.04
+fs_epilog.sh ended Tue Dec 29 19:37:25 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Tue Dec 29 19:40:12 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203006
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 209 bytes  received 3716220 bytes  7432858.00 bytes/sec
+total size is 3715080  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 19:40:12 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 19:40:13 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203006
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203006
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-5031.inp
+Gau-5032.chk
+Gau-5032.d2e
+Gau-5032.int
+Gau-5032.rwf
+Gau-5032.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 130544963 bytes  received 13150 bytes  11352879.39 bytes/sec
+total size is 130698199  speedup is 1.00
+fs_epilog.sh ended Tue Dec 29 19:41:20 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Tue Dec 29 19:41:57 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203007
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 247 bytes  received 66323559 bytes  10203662.46 bytes/sec
+total size is 66314628  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 19:42:03 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 19:42:03 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203007
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203007
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3594786 bytes  received 12950 bytes  2405157.33 bytes/sec
+total size is 3753944  speedup is 1.04
+fs_epilog.sh ended Tue Dec 29 19:51:59 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Tue Dec 29 20:03:12 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203008
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 228 bytes  received 62875423 bytes  11431936.55 bytes/sec
+total size is 62866995  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 20:03:17 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 20:03:18 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203008
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203008
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3607131 bytes  received 2210 bytes  7218682.00 bytes/sec
+total size is 3764176  speedup is 1.04
+fs_epilog.sh ended Tue Dec 29 20:13:42 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Tue Dec 29 20:20:57 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203009
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 228 bytes  received 62885667 bytes  11433799.09 bytes/sec
+total size is 62877235  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 20:21:02 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 20:21:03 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203009
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203009
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 1812891 bytes  received 2300 bytes  3630382.00 bytes/sec
+total size is 1970175  speedup is 1.09
+fs_epilog.sh ended Tue Dec 29 20:22:33 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Tue Dec 29 20:25:27 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203010
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 228 bytes  received 62844951 bytes  11426396.18 bytes/sec
+total size is 62836526  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 20:25:32 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 20:25:33 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203010
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203010
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3758383 bytes  received 278 bytes  2505774.00 bytes/sec
+total size is 3959251  speedup is 1.05
+fs_epilog.sh ended Tue Dec 29 20:35:56 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Tue Dec 29 21:12:42 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203011
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66587929 bytes  10244337.69 bytes/sec
+total size is 66578916  speedup is 1.00
+fs_prolog.sh ended Tue Dec 29 21:12:48 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Tue Dec 29 21:12:48 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203011
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203011
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3595705 bytes  received 13544 bytes  2406166.00 bytes/sec
+total size is 3951049  speedup is 1.09
+fs_epilog.sh ended Tue Dec 29 21:23:12 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 12:23:12 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203016
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66579723 bytes  10243075.23 bytes/sec
+total size is 66570714  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 12:23:18 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 12:23:18 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203016
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203016
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3545075 bytes  received 13478 bytes  2372368.67 bytes/sec
+total size is 3894875  speedup is 1.09
+fs_epilog.sh ended Wed Dec 30 12:41:52 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 13:00:12 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203017
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66523545 bytes  10234432.46 bytes/sec
+total size is 66514540  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 13:00:18 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 13:00:18 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203017
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203017
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3594630 bytes  received 12992 bytes  7215244.00 bytes/sec
+total size is 3947902  speedup is 1.09
+fs_epilog.sh ended Wed Dec 30 13:03:20 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 13:07:42 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203018
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 247 bytes  received 63069474 bytes  11467222.00 bytes/sec
+total size is 63060972  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 13:07:47 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 13:07:48 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203018
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203018
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3609151 bytes  received 2204 bytes  7222710.00 bytes/sec
+total size is 3959633  speedup is 1.10
+fs_epilog.sh ended Wed Dec 30 13:19:47 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 18:18:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203019
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66588311 bytes  10244396.46 bytes/sec
+total size is 66579298  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 18:18:34 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 18:18:34 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203019
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203019
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-9192.inp
+Gau-9193.chk
+Gau-9193.d2e
+Gau-9193.int
+Gau-9193.rwf
+Gau-9193.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 90499153 bytes  received 63176 bytes  9532876.74 bytes/sec
+total size is 130913688  speedup is 1.45
+fs_epilog.sh ended Wed Dec 30 18:25:36 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 18:26:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203020
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66539111 bytes  10236827.23 bytes/sec
+total size is 66530106  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 18:26:34 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 18:26:34 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203020
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203020
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3599876 bytes  received 12950 bytes  7225652.00 bytes/sec
+total size is 3953158  speedup is 1.09
+fs_epilog.sh ended Wed Dec 30 18:34:14 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 18:43:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203021
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66602758 bytes  10246619.08 bytes/sec
+total size is 66593745  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 18:43:19 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 18:43:19 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203021
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203021
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3578358 bytes  received 13496 bytes  2394569.33 bytes/sec
+total size is 3948328  speedup is 1.10
+fs_epilog.sh ended Wed Dec 30 19:08:43 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 19:21:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203022
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66597924 bytes  10245875.38 bytes/sec
+total size is 66588915  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 19:21:19 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 19:21:19 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203022
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203022
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-13540.inp
+Gau-13541.chk
+Gau-13541.d2e
+Gau-13541.int
+Gau-13541.rwf
+Gau-13541.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 90436292 bytes  received 63101 bytes  10646987.41 bytes/sec
+total size is 130914940  speedup is 1.45
+fs_epilog.sh ended Wed Dec 30 19:27:16 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 19:27:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203023
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66540363 bytes  10237019.85 bytes/sec
+total size is 66531358  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 19:28:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 19:28:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203023
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203023
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-14315.inp
+Gau-14316.chk
+Gau-14316.d2e
+Gau-14316.int
+Gau-14316.rwf
+Gau-14316.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 67951309 bytes  received 62604 bytes  9068521.73 bytes/sec
+total size is 130915364  speedup is 1.92
+fs_epilog.sh ended Wed Dec 30 19:51:44 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 19:52:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203024
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66540787 bytes  10237085.08 bytes/sec
+total size is 66531782  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 19:53:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 19:53:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203024
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203024
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-15862.inp
+Gau-15863.chk
+Gau-15863.d2e
+Gau-15863.int
+Gau-15863.rwf
+Gau-15863.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 84872148 bytes  received 62610 bytes  11324634.40 bytes/sec
+total size is 130915068  speedup is 1.54
+fs_epilog.sh ended Wed Dec 30 19:58:31 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 19:59:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203025
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66540542 bytes  10237047.38 bytes/sec
+total size is 66531537  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:00:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:00:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203025
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203025
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3596915 bytes  received 12950 bytes  2406576.67 bytes/sec
+total size is 3948848  speedup is 1.09
+fs_epilog.sh ended Wed Dec 30 20:01:14 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:03:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203026
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66599724 bytes  10246152.31 bytes/sec
+total size is 66590715  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:03:19 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:03:19 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203026
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203026
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3579030 bytes  received 13454 bytes  2394989.33 bytes/sec
+total size is 3948343  speedup is 1.10
+fs_epilog.sh ended Wed Dec 30 20:04:28 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:09:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203027
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 66599219 bytes  10246074.62 bytes/sec
+total size is 66590210  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:09:19 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:09:19 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203027
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203027
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-17597.inp
+Gau-17606.chk
+Gau-17606.d2e
+Gau-17606.int
+Gau-17606.rwf
+Gau-17606.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 90320483 bytes  received 63108 bytes  9514062.21 bytes/sec
+total size is 130796731  speedup is 1.45
+fs_epilog.sh ended Wed Dec 30 20:19:17 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:20:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203028
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-17597.inp
+Gau-17606.chk
+Gau-17606.d2e
+Gau-17606.int
+Gau-17606.rwf
+Gau-17606.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 380 bytes  received 130813968 bytes  11375160.70 bytes/sec
+total size is 130796733  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:20:24 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:20:24 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203028
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203028
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-17597.inp Gau-17606.chk Gau-17606.d2e Gau-17606.int Gau-17606.rwf Gau-17606.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3596480 bytes  received 12668 bytes  2406098.67 bytes/sec
+total size is 3913619  speedup is 1.08
+fs_epilog.sh ended Wed Dec 30 20:21:28 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:22:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203029
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-17597.inp
+Gau-17606.chk
+Gau-17606.d2e
+Gau-17606.int
+Gau-17606.rwf
+Gau-17606.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 380 bytes  received 130870541 bytes  11380080.09 bytes/sec
+total size is 130853302  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:22:24 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:22:24 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203029
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203029
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-17597.inp Gau-17606.chk Gau-17606.d2e Gau-17606.int Gau-17606.rwf Gau-17606.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-19115.inp
+Gau-19116.chk
+Gau-19116.d2e
+Gau-19116.int
+Gau-19116.rwf
+Gau-19116.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 90342188 bytes  received 62717 bytes  10635871.18 bytes/sec
+total size is 195169995  speedup is 2.16
+fs_epilog.sh ended Wed Dec 30 20:26:50 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:34:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203030
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-17597.inp
+Gau-17606.chk
+Gau-17606.d2e
+Gau-17606.int
+Gau-17606.rwf
+Gau-17606.skr
+Gau-19115.inp
+Gau-19116.chk
+Gau-19116.d2e
+Gau-19116.int
+Gau-19116.rwf
+Gau-19116.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 494 bytes  received 195195439 bytes  11154053.31 bytes/sec
+total size is 195169995  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:34:30 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:34:30 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203030
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203030
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-17597.inp Gau-17606.chk Gau-17606.d2e Gau-17606.int Gau-17606.rwf Gau-17606.skr Gau-19115.inp Gau-19116.chk Gau-19116.d2e Gau-19116.int Gau-19116.rwf Gau-19116.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-20084.inp
+Gau-20085.chk
+Gau-20085.d2e
+Gau-20085.int
+Gau-20085.rwf
+Gau-20085.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 215150129 bytes  received 62212 bytes  11036530.31 bytes/sec
+total size is 384387951  speedup is 1.79
+fs_epilog.sh ended Wed Dec 30 20:52:05 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:52:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203031
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-17597.inp
+Gau-17606.chk
+Gau-17606.d2e
+Gau-17606.int
+Gau-17606.rwf
+Gau-17606.skr
+Gau-19115.inp
+Gau-19116.chk
+Gau-19116.d2e
+Gau-19116.int
+Gau-19116.rwf
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 608 bytes  received 319521512 bytes  11618986.18 bytes/sec
+total size is 384387951  speedup is 1.20
+fs_prolog.sh ended Wed Dec 30 20:52:40 CET 2020 on host compute-1-4.local
+sending incremental file list
+./
+Gau-17597.inp
+Gau-17606.chk
+Gau-17606.d2e
+Gau-17606.int
+Gau-17606.rwf
+Gau-17606.skr
+Gau-19115.inp
+Gau-19116.chk
+Gau-19116.d2e
+Gau-19116.int
+Gau-19116.rwf
+
+sent 128259615 bytes  received 224 bytes  10260787.12 bytes/sec
+total size is 319480080  speedup is 2.49
+fs_epilog.sh ended Wed Dec 30 20:52:52 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 20:56:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203032
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 266 bytes  received 191261433 bytes  11591618.12 bytes/sec
+total size is 191237203  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 20:56:59 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 20:57:00 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203032
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203032
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-21584.inp
+Gau-21585.chk
+Gau-21585.d2e
+Gau-21585.int
+Gau-21585.rwf
+Gau-21585.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+tempT
+
+sent 217427120 bytes  received 139378 bytes  10612999.90 bytes/sec
+total size is 257803797  speedup is 1.18
+fs_epilog.sh ended Wed Dec 30 20:58:12 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:05:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203033
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+tempT
+
+sent 247 bytes  received 130888825 bytes  11381658.43 bytes/sec
+total size is 130872049  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:05:54 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 21:05:54 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203033
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203033
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-22334.inp
+Gau-22335.chk
+Gau-22335.d2e
+Gau-22335.int
+Gau-22335.rwf
+Gau-22335.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+
+sent 282950387 bytes  received 90483 bytes  11099641.96 bytes/sec
+total size is 283206092  speedup is 1.00
+fs_epilog.sh ended Wed Dec 30 21:07:01 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:15:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203034
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-22334.inp
+Gau-22335.chk
+Gau-22335.d2e
+Gau-22335.int
+Gau-22335.rwf
+Gau-22335.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 283241959 bytes  11560912.57 bytes/sec
+total size is 283206092  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:16:07 CET 2020 on host compute-1-4.local
+sending incremental file list
+
+sent 455 bytes  received 12 bytes  934.00 bytes/sec
+total size is 283206092  speedup is 606437.03
+fs_epilog.sh ended Wed Dec 30 21:16:08 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:17:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203035
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+tempT
+
+sent 247 bytes  received 156294220 bytes  11577367.93 bytes/sec
+total size is 156274344  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:17:26 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 21:17:27 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203035
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203035
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-23158.inp
+Gau-23159.chk
+Gau-23159.d2e
+Gau-23159.int
+Gau-23159.rwf
+Gau-23159.skr
+l101.exe
+l502.exe
+name
+
+sent 95372240 bytes  received 86766 bytes  10048316.42 bytes/sec
+total size is 99151533  speedup is 1.04
+fs_epilog.sh ended Wed Dec 30 21:17:49 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:18:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203036
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66402216 bytes  10215769.38 bytes/sec
+total size is 66393166  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:18:34 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 21:18:34 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203036
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203036
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-23474.inp
+Gau-23475.chk
+Gau-23475.d2e
+Gau-23475.int
+Gau-23475.rwf
+Gau-23475.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+tempT
+
+sent 68264152 bytes  received 12554 bytes  10504108.62 bytes/sec
+total size is 131126116  speedup is 1.92
+fs_epilog.sh ended Wed Dec 30 21:19:26 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:25:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203037
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66751627 bytes  10269524.92 bytes/sec
+total size is 66742533  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:25:34 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 21:25:34 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203037
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203037
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-24086.inp
+Gau-24087.chk
+Gau-24087.d2e
+Gau-24087.int
+Gau-24087.rwf
+Gau-24087.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+tempT
+
+sent 90490490 bytes  received 65141 bytes  10653603.65 bytes/sec
+total size is 130992372  speedup is 1.45
+fs_epilog.sh ended Wed Dec 30 21:26:16 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:29:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203038
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-24087.rwf
+Gau-24087.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 323 bytes  received 130482426 bytes  11346326.00 bytes/sec
+total size is 130465429  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:29:39 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 21:29:39 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203038
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203038
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-24087.rwf Gau-24087.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-24547.inp
+Gau-24548.chk
+Gau-24548.d2e
+Gau-24548.int
+Gau-24548.rwf
+Gau-24548.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 84778489 bytes  received 63952 bytes  11312325.47 bytes/sec
+total size is 194644926  speedup is 2.29
+fs_epilog.sh ended Wed Dec 30 21:30:12 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:30:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203039
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-24087.rwf
+Gau-24087.skr
+Gau-24547.inp
+Gau-24548.chk
+Gau-24548.d2e
+Gau-24548.int
+Gau-24548.rwf
+Gau-24548.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 437 bytes  received 194670107 bytes  11124031.09 bytes/sec
+total size is 194644926  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:31:15 CET 2020 on host compute-1-4.local
+sending incremental file list
+
+sent 538 bytes  received 12 bytes  1100.00 bytes/sec
+total size is 194644926  speedup is 353899.87
+fs_epilog.sh ended Wed Dec 30 21:31:15 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 21:31:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203040
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66413753 bytes  10217544.31 bytes/sec
+total size is 66404703  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 21:32:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 21:32:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203040
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203040
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3775228 bytes  received 12650 bytes  2525252.00 bytes/sec
+total size is 4095139  speedup is 1.08
+fs_epilog.sh ended Wed Dec 30 21:54:31 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 22:11:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203041
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66654480 bytes  10254579.23 bytes/sec
+total size is 66645398  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 22:12:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 22:12:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203041
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203041
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-27185.inp
+Gau-27186.chk
+Gau-27186.d2e
+Gau-27186.int
+Gau-27186.rwf
+Gau-27186.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+tempT
+
+sent 68406420 bytes  received 64307 bytes  10533958.00 bytes/sec
+total size is 131121698  speedup is 1.92
+fs_epilog.sh ended Wed Dec 30 22:13:13 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 22:22:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203042
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-27185.inp
+Gau-27186.chk
+Gau-27186.d2e
+Gau-27186.int
+Gau-27186.rwf
+Gau-27186.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 131139016 bytes  11403427.39 bytes/sec
+total size is 131121698  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 22:22:39 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 22:22:39 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203042
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203042
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-27185.inp Gau-27186.chk Gau-27186.d2e Gau-27186.int Gau-27186.rwf Gau-27186.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-27967.inp
+Gau-27968.chk
+Gau-27968.d2e
+Gau-27968.int
+Gau-27968.rwf
+Gau-27968.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 68080763 bytes  received 64972 bytes  10483959.23 bytes/sec
+total size is 195291068  speedup is 2.87
+fs_epilog.sh ended Wed Dec 30 22:24:14 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 22:29:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203043
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-27185.inp
+Gau-27186.chk
+Gau-27186.d2e
+Gau-27186.int
+Gau-27186.rwf
+Gau-27186.skr
+Gau-27967.inp
+Gau-27968.chk
+Gau-27968.d2e
+Gau-27968.int
+Gau-27968.rwf
+Gau-27968.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 513 bytes  received 195316564 bytes  11160975.83 bytes/sec
+total size is 195291068  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 22:30:00 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 22:30:00 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203043
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203043
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-27185.inp Gau-27186.chk Gau-27186.d2e Gau-27186.int Gau-27186.rwf Gau-27186.skr Gau-27967.inp Gau-27968.chk Gau-27968.d2e Gau-27968.int Gau-27968.rwf Gau-27968.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-27185.inp
+Gau-27186.chk
+Gau-27186.d2e
+Gau-27186.int
+Gau-27186.rwf
+Gau-27186.skr
+Gau-27967.inp
+Gau-27968.chk
+Gau-27968.d2e
+Gau-27968.int
+Gau-27968.rwf
+Gau-27968.skr
+Gau-28579.inp
+Gau-28580.chk
+Gau-28580.d2e
+Gau-28580.int
+Gau-28580.rwf
+Gau-28580.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 215064568 bytes  received 63364 bytes  11628536.86 bytes/sec
+total size is 259566113  speedup is 1.21
+fs_epilog.sh ended Wed Dec 30 22:31:08 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 22:31:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203044
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66424418 bytes  10219185.08 bytes/sec
+total size is 66415364  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 22:32:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 22:32:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203044
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203044
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3793659 bytes  received 12650 bytes  2537539.33 bytes/sec
+total size is 4114262  speedup is 1.08
+fs_epilog.sh ended Wed Dec 30 22:52:43 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Wed Dec 30 22:52:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203045
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66683728 bytes  10259078.92 bytes/sec
+total size is 66674646  speedup is 1.00
+fs_prolog.sh ended Wed Dec 30 22:53:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Wed Dec 30 22:53:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203045
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203045
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-30375.inp
+Gau-30376.chk
+Gau-30376.d2e
+Gau-30376.int
+Gau-30376.rwf
+Gau-30376.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 143934025 bytes  received 64432 bytes  10666552.37 bytes/sec
+total size is 184425668  speedup is 1.28
+fs_epilog.sh ended Wed Dec 30 22:54:19 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:20:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203046
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-30375.inp
+Gau-30376.chk
+Gau-30376.d2e
+Gau-30376.int
+Gau-30376.rwf
+Gau-30376.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 184449491 bytes  11178781.21 bytes/sec
+total size is 184425666  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:21:14 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:21:14 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203046
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203046
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-30375.inp Gau-30376.chk Gau-30376.d2e Gau-30376.int Gau-30376.rwf Gau-30376.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3651443 bytes  received 62874 bytes  7428634.00 bytes/sec
+total size is 3918300  speedup is 1.05
+fs_epilog.sh ended Thu Dec 31 10:22:37 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:22:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203047
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66487998 bytes  10228966.62 bytes/sec
+total size is 66478940  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:23:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:23:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203047
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203047
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3576543 bytes  received 13196 bytes  2393159.33 bytes/sec
+total size is 3918016  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 10:24:02 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:26:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203048
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66487714 bytes  10228922.92 bytes/sec
+total size is 66478656  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:26:19 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:26:19 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203048
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203048
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3576104 bytes  received 13190 bytes  7178588.00 bytes/sec
+total size is 3914109  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 10:27:22 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:36:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203049
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66483807 bytes  10228321.85 bytes/sec
+total size is 66474749  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:37:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:37:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203049
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203049
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-3134.inp
+Gau-3135.chk
+Gau-3135.d2e
+Gau-3135.int
+Gau-3135.rwf
+Gau-3135.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 85124323 bytes  received 62716 bytes  10022004.59 bytes/sec
+total size is 130798181  speedup is 1.54
+fs_epilog.sh ended Thu Dec 31 10:37:49 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:39:28 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203050
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66423648 bytes  10219066.62 bytes/sec
+total size is 66414598  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:39:34 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:39:34 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203050
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203050
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-3560.inp
+Gau-3561.chk
+Gau-3561.d2e
+Gau-3561.int
+Gau-3561.rwf
+Gau-3561.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 89868790 bytes  received 62206 bytes  10580117.18 bytes/sec
+total size is 130799860  speedup is 1.45
+fs_epilog.sh ended Thu Dec 31 10:47:23 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:47:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203051
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-3560.inp
+Gau-3561.chk
+Gau-3561.d2e
+Gau-3561.int
+Gau-3561.rwf
+Gau-3561.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 130817103 bytes  11375434.96 bytes/sec
+total size is 130799860  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:47:54 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:47:54 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203051
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203051
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-3560.inp Gau-3561.chk Gau-3561.d2e Gau-3561.int Gau-3561.rwf Gau-3561.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3596736 bytes  received 12662 bytes  2406265.33 bytes/sec
+total size is 3916665  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 10:49:19 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:52:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203052
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-3560.inp
+Gau-3561.chk
+Gau-3561.d2e
+Gau-3561.int
+Gau-3561.rwf
+Gau-3561.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 130877623 bytes  11380697.57 bytes/sec
+total size is 130860376  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:52:54 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:52:54 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203052
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203052
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-3560.inp Gau-3561.chk Gau-3561.d2e Gau-3561.int Gau-3561.rwf Gau-3561.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-5220.inp
+Gau-5221.chk
+Gau-5221.d2e
+Gau-5221.int
+Gau-5221.rwf
+Gau-5221.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 89882855 bytes  received 62734 bytes  10581834.00 bytes/sec
+total size is 195182503  speedup is 2.17
+fs_epilog.sh ended Thu Dec 31 10:53:37 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 10:58:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203055
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66424391 bytes  10219180.92 bytes/sec
+total size is 66415337  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 10:58:49 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 10:58:49 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203055
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203055
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3599029 bytes  received 12656 bytes  7223370.00 bytes/sec
+total size is 3918262  speedup is 1.08
+fs_epilog.sh ended Thu Dec 31 11:05:01 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 11:12:13 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203059
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66487448 bytes  6332165.05 bytes/sec
+total size is 66478390  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 11:12:23 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 11:12:25 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203059
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203059
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3581048 bytes  received 13196 bytes  2396162.67 bytes/sec
+total size is 3915585  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 11:15:31 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 11:20:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203060
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66484771 bytes  10228470.15 bytes/sec
+total size is 66475713  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 11:20:49 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 11:20:49 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203060
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203060
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3580214 bytes  received 13172 bytes  2395590.67 bytes/sec
+total size is 3918907  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 11:33:32 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 18:19:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203065
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66488093 bytes  10228981.23 bytes/sec
+total size is 66479035  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 18:19:49 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 18:19:49 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203065
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203065
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3582225 bytes  received 13202 bytes  7190854.00 bytes/sec
+total size is 3920922  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 18:32:59 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 18:37:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203066
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66490112 bytes  10229291.85 bytes/sec
+total size is 66481050  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 18:38:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 18:38:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203066
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203066
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-29954.inp
+Gau-29955.chk
+Gau-29955.d2e
+Gau-29955.int
+Gau-29955.rwf
+Gau-29955.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 90375489 bytes  received 62770 bytes  10639795.18 bytes/sec
+total size is 130794879  speedup is 1.45
+fs_epilog.sh ended Thu Dec 31 18:49:10 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 18:49:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203067
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66420346 bytes  10218558.62 bytes/sec
+total size is 66411296  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 18:50:04 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 18:50:04 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203067
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203067
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-30912.inp
+Gau-30915.chk
+Gau-30915.d2e
+Gau-30915.int
+Gau-30915.rwf
+Gau-30915.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l502.exe
+name
+
+sent 89973650 bytes  received 62212 bytes  10592454.35 bytes/sec
+total size is 130793818  speedup is 1.45
+fs_epilog.sh ended Thu Dec 31 18:51:06 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 18:51:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203068
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 285 bytes  received 66419281 bytes  10218394.77 bytes/sec
+total size is 66410235  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 18:51:49 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 18:51:49 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203068
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203068
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-31389.inp
+Gau-31390.chk
+Gau-31390.d2e
+Gau-31390.int
+Gau-31390.rwf
+Gau-31390.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 67925718 bytes  received 12607 bytes  10452050.00 bytes/sec
+total size is 130803577  speedup is 1.93
+fs_epilog.sh ended Thu Dec 31 19:01:22 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 19:01:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203069
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-31389.inp
+Gau-31390.chk
+Gau-31390.d2e
+Gau-31390.int
+Gau-31390.rwf
+Gau-31390.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 130820854 bytes  11375761.13 bytes/sec
+total size is 130803576  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 19:01:54 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 19:01:54 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203069
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203069
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-31389.inp Gau-31390.chk Gau-31390.d2e Gau-31390.int Gau-31390.rwf Gau-31390.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3599073 bytes  received 12728 bytes  7223602.00 bytes/sec
+total size is 3916901  speedup is 1.08
+fs_epilog.sh ended Thu Dec 31 19:08:21 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 19:08:58 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203070
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-31389.inp
+Gau-31390.chk
+Gau-31390.d2e
+Gau-31390.int
+Gau-31390.rwf
+Gau-31390.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 130873857 bytes  11380370.09 bytes/sec
+total size is 130856567  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 19:09:09 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 19:09:09 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203070
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203070
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-31389.inp Gau-31390.chk Gau-31390.d2e Gau-31390.int Gau-31390.rwf Gau-31390.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3590018 bytes  received 13184 bytes  7206404.00 bytes/sec
+total size is 3917595  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 19:21:03 CET 2020 on host compute-1-4.local
+fs_prolog.sh startet Thu Dec 31 19:21:43 CET 2020 on host compute-1-4.local
+receiving incremental file list
+created directory /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203071
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.job
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+Gau-31389.inp
+Gau-31390.chk
+Gau-31390.d2e
+Gau-31390.int
+Gau-31390.rwf
+Gau-31390.skr
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+l101.exe
+l502.exe
+name
+tempT
+
+sent 399 bytes  received 130874550 bytes  11380430.35 bytes/sec
+total size is 130857260  speedup is 1.00
+fs_prolog.sh ended Thu Dec 31 19:21:54 CET 2020 on host compute-1-4.local
+-------------------------------------------------
+Job: Ag9-Ag4-Ag-Ag-Ag4-Ag9
+Machine name: compute-1-4.local
+Date: Thu Dec 31 19:21:54 CET 2020
+User: palacios
+Working directory =  /home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts
+Temporary directory = /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203071
+-------------------------------------------------
+Currrent directory: /scratch/palacios/Ag9-Ag4-Ag-Ag-Ag4-Ag9-203071
+
+------------------Your job starts ---------------
+Current directory contents: Ag9-Ag4-Ag-Ag-Ag4-Ag9.ant Ag9-Ag4-Ag-Ag-Ag4-Ag9.gjf Ag9-Ag4-Ag-Ag-Ag4-Ag9.job Ag9-Ag4-Ag-Ag-Ag4-Ag9.log Ag9-Ag4-Ag-Ag-Ag4-Ag9.log0 Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz Gau-31389.inp Gau-31390.chk Gau-31390.d2e Gau-31390.int Gau-31390.rwf Gau-31390.skr P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.SOC.dat T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat l101.exe l502.exe name tempT
+sending incremental file list
+./
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.log
+Ag9-Ag4-Ag-Ag-Ag4-Ag9.xyz
+P.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+T.Ag9-Ag4-Ag-Ag-Ag4-Ag9.dat
+name
+
+sent 3580421 bytes  received 13190 bytes  2395740.67 bytes/sec
+total size is 3914262  speedup is 1.09
+fs_epilog.sh ended Thu Dec 31 19:53:38 CET 2020 on host compute-1-4.local

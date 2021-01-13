@@ -2190,8 +2190,8 @@
     do i=1,NAOrbs
     do j=1,NAOrbs
        S_SOC_UU(i,j)=S_SOC(i,j)
-       S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
-       S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
+       S_SOC_UD(i,j)=S_SOC(i,j+NAOrbs)
+       S_SOC_DU(i,j)=S_SOC(i+NAOrbs,j)
        S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
        PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
        PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
@@ -2508,11 +2508,13 @@
     integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
-    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR, DGreen, DT, Dtemp, DSG
+    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD, DGreen, DT, Dtemp, DSG
+    complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU
     complex*16, dimension(:,:),allocatable :: dummy
     real*8, dimension(:), allocatable :: tn,Dtn
     complex*16, dimension(:), allocatable :: ctn,Dctn
     real*8, dimension(:),allocatable   :: tchan1,tchan2
+    real*8   :: t_uu,t_dd,t_ud,t_du,polar,trans2
 
     print *
     print *, "--------------------------------"
@@ -2522,13 +2524,28 @@
     print *
 
     if (SOC) then
-       write(ifu_log,*)' Adding spin-orbit coupling ...'
-       write(ifu_log,*)'... and finding new Fermi level'
+       write(ifu_log,*)' Adding spin-orbit coupling ... and finding new Fermi level'
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
+       allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(GammaR_DD(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(Green_UU(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(DT(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
@@ -2547,6 +2564,10 @@
        allocate(Dtn(DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(Dctn(DNAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(T(NAOrbs,NAOrbs), STAT=AllocErr)
+       if( AllocErr /= 0 ) stop
+       allocate(temp(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        DSG=c_zero
        DT=c_zero
@@ -2726,7 +2747,7 @@
        else !SOC case
 
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp,GammaR_UU,GammaR_DD,GammaL_UU,GammaL_DD,Green_UU,Green_DD,Green_UD,Green_DU,polar,trans2,t_uu,t_dd,t_ud,t_du,temp,T) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
@@ -2797,9 +2818,75 @@
              tchan2=tn(DNAOrbs-NChannels+1:DNAOrbs)
           end if
 
+
+     ! Computing polarization
+
+       T_uu=0.0d0
+       T_ud=0.0d0
+       T_du=0.0d0
+       T_dd=0.0d0
+
+
+             do i=1,NAOrbs
+             do j=1,NAOrbs
+                GammaR_UU(i,j) = DGammaR(i,j)
+                GammaR_DD(i,j) = DGammaR(i+NAOrbs,j+NAOrbs)
+                GammaL_UU(i,j) = DGammaL(i,j)
+                GammaL_DD(i,j) = DGammaL(i+NAOrbs,j+NAOrbs)
+                Green_UU(i,j) = DGreen(i,j)
+                Green_DD(i,j) = DGreen(i+NAOrbs,j+NAOrbs)
+                Green_UD(i,j) = DGreen(i,j+NAOrbs)
+                Green_DU(i,j) = DGreen(i+NAOrbs,j)
+             end do
+             end do
+
+! up-up
+          T=0.0d0
+          temp=0.0d0
+             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
+
+             do i=1,NAOrbs
+                T_uu = T_uu+REAL(T(i,i))
+             end do
+! up-down
+          T=0.0d0
+          temp=0.0d0
+             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
+
+             do i=1,NAOrbs
+                T_ud = T_ud+REAL(T(i,i))
+             end do
+! down-up
+          T=0.0d0
+          temp=0.0d0
+             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
+
+             do i=1,NAOrbs
+                T_du = T_du+REAL(T(i,i))
+             end do
+! down-down
+          T=0.0d0
+          temp=0.0d0
+             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
+
+             do i=1,NAOrbs
+                T_dd = T_dd+REAL(T(i,i))
+             end do
+
+          polar = t_uu + t_du - t_dd - t_ud
+          trans2 = t_uu + t_du + t_dd + t_ud
+
           call flush(334)
           !write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
-          write(334,1002)energy,trans
+          write(334,1002)energy,trans*2.0,trans2,polar
 
 #ifdef PGI
 !$OMP END CRITICAL
