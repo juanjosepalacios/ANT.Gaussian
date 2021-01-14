@@ -72,7 +72,7 @@
   complex*16, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC
+  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
 
   ! *** Orthognalization matrix for device ***
@@ -232,9 +232,9 @@
   !* Initialize device for transport calculation *
   !***********************************************
   subroutine InitDevice( NBasis, UHF, S )
-    use constants, only: d_zero
+    use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage  
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -252,7 +252,7 @@
     logical, intent(in) :: UHF
     real*8, dimension(NBasis,NBasis),intent(in) :: S
 
-    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2, ii, jj
+    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2, i, j
 
     real*8, dimension(NBasis,NBasis) :: RSPH 
 
@@ -273,7 +273,7 @@
        stop
     end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), H_SOC_ONLY(DNAOrbs,DNAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
        print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
        stop
@@ -283,18 +283,6 @@
     call RMatPow( SD, -1.0d0, InvSD )
 
     if( HybFunc ) call InitCorrelation(NAOrbs,NSpin)
-    
-    if (SOC) then
-       call spin_orbit
-       do ispin=1,2
-       do ii=1,NAOrbs
-       do jj=1,NAOrbs
-          HD(ispin,ii,jj)=HD(ispin,ii,jj) + H_SOC(ii,jj)
-          SD(ii,jj)=SD(ii,jj)+ S_SOC(ii,jj)              
-       end do
-       end do      
-       end do 
-    end if   
 
     allocate( SPH(NAorbs,NAOrbs), STAT=AllocErr )
     if( AllocErr /= 0 ) then
@@ -321,6 +309,26 @@
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
+    
+    if (SOC) then
+       call spin_orbit                 
+       if (NSpin == 2) then
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=H_SOC(i,j)
+             HD(2,i,j)=H_SOC(i+NAOrbs,j+NAOrbs)
+             SD(i,j)=S_SOC(i,j)                
+          end do
+          end do
+       else 
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=H_SOC(i,j)
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
+       end if       
+    end if       
 
     call InitElectrodes
 
@@ -739,7 +747,8 @@
     real*8 :: diff !!,TrP,QD
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
-    HD = F
+    HD = F       
+    
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
@@ -2573,10 +2582,17 @@
        DSG=c_zero
        DT=c_zero
        Dtemp=c_zero
-       S_SOC=d_zero
+       !S_SOC=d_zero
 
        call spin_orbit
        
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+          H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+       end do
+       end do
+          
     else
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
@@ -4368,6 +4384,7 @@ end do
 
  do i=1, totdim*2
     do j=1, totdim*2
+       H_SOC_ONLY(i,j)=hamil_SO(i,j) 
        H_SOC(i,j)=hamil(i,j)+hamil_SO(i,j)
        S_SOC(i,j)=REAL(overlap_SO(i,j))
     end do
