@@ -121,6 +121,9 @@
   ! Manual selection of number of atoms in electrodes for single element systems
   CHARACTER(LEN=10), DIMENSION(2), PARAMETER :: NAtomEl_keyw = (/"NATOMEL1","NATOMEL2"/)
   INTEGER, DIMENSION(2) :: NAtomEL = (/0,0/)
+  
+  ! Whether to initialize calculation from Fock matrix or density matrix 
+  LOGICAL :: FInit = .FALSE. 
 
   ! Switch on Fock matrix mixing (instead of density matrix) for damping
   LOGICAL :: FMixing = .FALSE. ; CHARACTER(len=10), PARAMETER :: FMixing_keyw = "FMIXING"
