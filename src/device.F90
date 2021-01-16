@@ -69,10 +69,10 @@
   complex*16, dimension(:,:),allocatable :: SPH
   
   ! *** Hamiltonian and density matrix of device
-  real*8, dimension(:,:,:),allocatable :: HD
+  complex*16, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC
+  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
 
   ! *** Orthognalization matrix for device ***
@@ -232,9 +232,9 @@
   !* Initialize device for transport calculation *
   !***********************************************
   subroutine InitDevice( NBasis, UHF, S )
-    use constants, only: d_zero
+    use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, FInit  
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -252,7 +252,7 @@
     logical, intent(in) :: UHF
     real*8, dimension(NBasis,NBasis),intent(in) :: S
 
-    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2
+    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2, i, j
 
     real*8, dimension(NBasis,NBasis) :: RSPH 
 
@@ -273,7 +273,7 @@
        stop
     end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), H_SOC_ONLY(DNAOrbs,DNAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
        print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
        stop
@@ -309,6 +309,26 @@
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
+    
+    if (SOC .and. (.not. FInit)) then
+       call spin_orbit                 
+       if (NSpin == 2) then
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=H_SOC(i,j)
+             HD(2,i,j)=H_SOC(i+NAOrbs,j+NAOrbs)
+             SD(i,j)=S_SOC(i,j)                
+          end do
+          end do
+       else 
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=H_SOC(i,j)
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
+       end if       
+    end if       
 
     call InitElectrodes
 
@@ -719,6 +739,7 @@
 
     logical,intent(out) :: ADDP
     real*8, dimension(NSpin,NAOrbs,NAOrbs),intent(in) :: F
+    real*8, dimension(NSpin,NAOrbs,NAOrbs) :: HDMod
 
     real*8, dimension(NAOrbs) :: evals
     real*8, dimension(:,:),allocatable :: SPM
@@ -726,7 +747,8 @@
     real*8 :: diff !!,TrP,QD
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
-    HD = F
+    HD = F       
+    
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
@@ -744,7 +766,11 @@
        call FindEnergyBounds
     end if
 
-    if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
+    if( DFTU ) then 
+       HDMod = REAL(HD)
+       call Add_DFT_plus_U_Pot( PD, HDMod )
+       HD = dcmplx(HDMod,AIMAG(HD))
+    end if   
 
     if(.not.DMImag) call CompDensMat(ADDP)
     if(DMImag) call CompDensMat2(ADDP)
@@ -783,7 +809,12 @@
           end do
           HDOrtho = .true.
        end if
-       if( DiagCorrbl ) call DiagCorrBlocks( HD, SD )
+       if( DiagCorrbl ) then
+         HDMod=REAL(HD)       
+         call DiagCorrBlocks( HDMod, SD )
+         HD = dcmplx(HDMod,AIMAG(HD))
+       endif  
+         
        call Hamiltonian
        IF ( HybFunc ) call CompHybFunc
        IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOS_Beg <= LDOS_End) CALL LDOS
@@ -2151,7 +2182,7 @@
   !*******************************************************************!
   subroutine MullPop_SOC
     use cluster, only: NALead, NAMol, NAOAtom, NAOMol
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage
+    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage, FInit
 #ifdef G03ROOT
     use g03Common, only: GetAtmCo
 #endif
@@ -2186,21 +2217,22 @@
     rho_ba_I = d_zero
     rho_b = d_zero
 
-    
-    do i=1,NAOrbs
-    do j=1,NAOrbs
-       S_SOC_UU(i,j)=S_SOC(i,j)
-       S_SOC_UD(i,j)=S_SOC(i,j+NAOrbs)
-       S_SOC_DU(i,j)=S_SOC(i+NAOrbs,j)
-       S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
-       PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
-       PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
-       PD_SOC_UD_I(i,j)=DIMAG(PD_SOC(i,j+NAOrbs))
-       PD_SOC_DU(i,j)=REAL(PD_SOC(i+NAOrbs,j))    
-       PD_SOC_DU_I(i,j)=DIMAG(PD_SOC(i+NAOrbs,j))                  
-       PD_SOC_DD(i,j)=REAL(PD_SOC(i+NAOrbs,j+NAOrbs))
-    end do
-    end do         
+    if (.not. FInit) then
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          S_SOC_UU(i,j)=S_SOC(i,j)
+          S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
+          S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
+          S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
+          PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
+          PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
+          PD_SOC_UD_I(i,j)=DIMAG(PD_SOC(i,j+NAOrbs))
+          PD_SOC_DU(i,j)=REAL(PD_SOC(i+NAOrbs,j))    
+          PD_SOC_DU_I(i,j)=DIMAG(PD_SOC(i+NAOrbs,j))                  
+          PD_SOC_DD(i,j)=REAL(PD_SOC(i+NAOrbs,j+NAOrbs))
+       end do
+       end do         
+    end if
     
    !if (NSpin.eq.2) sdeg=1.0d0
    !if (NSpin.eq.1) sdeg=2.0d0
@@ -2508,13 +2540,11 @@
     integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
-    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD, DGreen, DT, Dtemp, DSG
-    complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU
+    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR, DGreen, DT, Dtemp, DSG
     complex*16, dimension(:,:),allocatable :: dummy
     real*8, dimension(:), allocatable :: tn,Dtn
     complex*16, dimension(:), allocatable :: ctn,Dctn
     real*8, dimension(:),allocatable   :: tchan1,tchan2
-    real*8   :: t_uu,t_dd,t_ud,t_du,polar,trans2
 
     print *
     print *, "--------------------------------"
@@ -2524,28 +2554,13 @@
     print *
 
     if (SOC) then
-       write(ifu_log,*)' Adding spin-orbit coupling ... and finding new Fermi level'
+       write(ifu_log,*)' Adding spin-orbit coupling ...'
+       write(ifu_log,*)'... and finding new Fermi level'
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
-       allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(GammaR_DD(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(Green_UU(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(DT(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
@@ -2553,10 +2568,10 @@
        if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
+       !if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
+       !if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr)
@@ -2565,17 +2580,20 @@
        if( AllocErr /= 0 ) stop
        allocate(Dctn(DNAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
-       allocate(T(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
-       allocate(temp(NAOrbs,NAOrbs), STAT=AllocErr)
-       if( AllocErr /= 0 ) stop
        DSG=c_zero
        DT=c_zero
        Dtemp=c_zero
-       S_SOC=d_zero
+       !S_SOC=d_zero
 
        call spin_orbit
        
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+          H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+       end do
+       end do
+          
     else
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr)
        if( AllocErr /= 0 ) stop
@@ -2747,7 +2765,7 @@
        else !SOC case
 
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp,GammaR_UU,GammaR_DD,GammaL_UU,GammaL_DD,Green_UU,Green_DD,Green_UD,Green_DU,polar,trans2,t_uu,t_dd,t_ud,t_du,temp,T) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
@@ -2818,75 +2836,9 @@
              tchan2=tn(DNAOrbs-NChannels+1:DNAOrbs)
           end if
 
-
-     ! Computing polarization
-
-       T_uu=0.0d0
-       T_ud=0.0d0
-       T_du=0.0d0
-       T_dd=0.0d0
-
-
-             do i=1,NAOrbs
-             do j=1,NAOrbs
-                GammaR_UU(i,j) = DGammaR(i,j)
-                GammaR_DD(i,j) = DGammaR(i+NAOrbs,j+NAOrbs)
-                GammaL_UU(i,j) = DGammaL(i,j)
-                GammaL_DD(i,j) = DGammaL(i+NAOrbs,j+NAOrbs)
-                Green_UU(i,j) = DGreen(i,j)
-                Green_DD(i,j) = DGreen(i+NAOrbs,j+NAOrbs)
-                Green_UD(i,j) = DGreen(i,j+NAOrbs)
-                Green_DU(i,j) = DGreen(i+NAOrbs,j)
-             end do
-             end do
-
-! up-up
-          T=0.0d0
-          temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
-
-             do i=1,NAOrbs
-                T_uu = T_uu+REAL(T(i,i))
-             end do
-! up-down
-          T=0.0d0
-          temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
-
-             do i=1,NAOrbs
-                T_ud = T_ud+REAL(T(i,i))
-             end do
-! down-up
-          T=0.0d0
-          temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
-
-             do i=1,NAOrbs
-                T_du = T_du+REAL(T(i,i))
-             end do
-! down-down
-          T=0.0d0
-          temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
-
-             do i=1,NAOrbs
-                T_dd = T_dd+REAL(T(i,i))
-             end do
-
-          polar = t_uu + t_du - t_dd - t_ud
-          trans2 = t_uu + t_du + t_dd + t_ud
-
           call flush(334)
           !write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
-          write(334,1002)energy,trans*2.0,trans2,polar
+          write(334,1002)energy,trans
 
 #ifdef PGI
 !$OMP END CRITICAL
@@ -2994,14 +2946,19 @@
     
     ! Device Green's function
     complex*16, dimension(NAorbs,NAOrbs) :: GD
+    
+    real*8, dimension(Nspin,NAorbs,NAOrbs) :: HDMod
 
     complex*16, dimension(:,:,:,:,:), allocatable :: delta
 
     print *, "-----------------------------------------"
     print *, "--- Computing Hybridization functions ---"
     print *, "-----------------------------------------"
-
-    call SetHamOvl( HD, SD )
+    
+    HDMod=REAL(HD)
+    call SetHamOvl( HDMod, SD )
+    HD = dcmplx(HDMod,AIMAG(HD))
+    
     !
     ! Read mesh file mesh.dat
     ! 
@@ -4326,19 +4283,19 @@
  if (NSpin == 2) then
     do i=1,NAOrbs
     do j=1,NAOrbs
-       hamil(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamil(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
-       overlap_SO(i,j)=dcmplx(SD(i,j),0.0d0)              
-       overlap_SO(i+NAOrbs,j+NAOrbs)=dcmplx(SD(i,j),0.0d0)
+       hamil(i,j)=HD(1,i,j)
+       hamil(i+NAOrbs,j+NAOrbs)=HD(2,i,j)
+       overlap_SO(i,j)=SD(i,j)              
+       overlap_SO(i+NAOrbs,j+NAOrbs)=SD(i,j)
     end do
     end do
  else 
     do i=1,NAOrbs
     do j=1,NAOrbs
-       hamil(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamil(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-       overlap_SO(i,j)=dcmplx(SD(i,j),0.0d0)              
-       overlap_SO(i+NAOrbs,j+NAOrbs)=dcmplx(SD(i,j),0.0d0)
+       hamil(i,j)=HD(1,i,j)
+       hamil(i+NAOrbs,j+NAOrbs)=HD(1,i,j)
+       overlap_SO(i,j)=SD(i,j)              
+       overlap_SO(i+NAOrbs,j+NAOrbs)=SD(i,j)
     end do
     end do
  end if
@@ -4349,7 +4306,7 @@
  
  nshell = GetNShell()
  
- CALL CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOrbs,nshell)
+ CALL CompHSO(hamil_SO,REAL(HD),hamil,SD,overlap_SO,NAOrbs,nshell)
  
 !PRINT *, "hamil_SO matrix real part:"
 !do i=1, totdim*2
@@ -4428,6 +4385,7 @@ end do
 
  do i=1, totdim*2
     do j=1, totdim*2
+       H_SOC_ONLY(i,j)=hamil_SO(i,j) 
        H_SOC(i,j)=hamil(i,j)+hamil_SO(i,j)
        S_SOC(i,j)=REAL(overlap_SO(i,j))
     end do
