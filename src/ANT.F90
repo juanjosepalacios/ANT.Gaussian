@@ -35,7 +35,7 @@
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, FInit, SOC
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC
   USE constants, ONLY: Hart
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
@@ -58,7 +58,7 @@
   INTEGER, INTENT(inout) :: JCycle
   LOGICAL,INTENT(inout)    :: ANTOn
   LOGICAL :: ADDP
-  !LOGICAL, SAVE :: FInit
+  LOGICAL, SAVE :: FInit
 
   ! local variables
   REAL*8    :: val, density, fock, exspin, norma
