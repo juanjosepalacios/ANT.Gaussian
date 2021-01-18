@@ -2029,24 +2029,43 @@
   ! Mulliken population analysis !
   !******************************!
   subroutine MullPop
-    use cluster, only: NALead, NAMol, NAOAtom, NAOMol
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End
+    use cluster, only: NALead, NAMol, NAOAtom, NAOMol, LoAOrbNo, HiAOrbNo
+    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, PrtHAtom
 #ifdef G03ROOT
-    use g03Common, only: GetAtmCo
+    use g03Common, only: GetAtmCo, GetNAtoms
 #endif
 #ifdef G09ROOT
-    use g09Common, only: GetAtmCo
+    use g09Common, only: GetAtmCo, GetNAtoms
 #endif
     use constants, only: Bohr
     implicit none
 
-    integer :: i,j, I1, is ,n, l
+    integer :: i,j, I1, is ,n, l, iAtom, jAtom
     real*8 :: sdeg, ro_a, ro_b, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
     real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_b
  
     write(ifu_log,*)'-------------------------------------'
     write(ifu_log,*)'---  Mulliken population analysis ---'
     write(ifu_log,*)'-------------------------------------'
+    
+    if (PrtHatom > 1) then
+       do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+             !if( SpinEdit(iAtom) == -1 .and. SpinEdit(jAtom) == -1 )then
+             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then
+                PRINT *, " Density matrix atom ",iAtom," is: "
+                PRINT *, " Up-Up "  
+                do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                               
+                   PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )               
+                end do                                                                                                       
+                PRINT *, " Down-Down "                                                                              
+                do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
+                   PRINT '(1000(F11.5))', ( (PD(2,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
+                end do                                                                              
+             end if   
+          end do
+       end do
+    end if       
     
     if (NSpin.eq.2) sdeg=1.0d0
     if (NSpin.eq.1) sdeg=2.0d0
@@ -2181,18 +2200,18 @@
   ! Mulliken population analysis with non-collinear or SOC hamiltonian!
   !*******************************************************************!
   subroutine MullPop_SOC
-    use cluster, only: NALead, NAMol, NAOAtom, NAOMol
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage
+    use cluster, only: NALead, NAMol, NAOAtom, NAOMol, LoAOrbNo, HiAOrbNo
+    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage, PrtHAtom
 #ifdef G03ROOT
-    use g03Common, only: GetAtmCo
+    use g03Common, only: GetAtmCo, GetNAtoms
 #endif
 #ifdef G09ROOT
-    use g09Common, only: GetAtmCo
+    use g09Common, only: GetAtmCo, GetNAtoms
 #endif
     use constants, only: Bohr, d_zero, c_zero
     implicit none
 
-    integer :: i,j, I1, is ,n, l
+    integer :: i,j, I1, is ,n, l, iAtom, jAtom
     real*8 :: sdeg, ro_a, ro_ab, ro_ba, ro_ab_I, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
     real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ab, rho_ba, rho_ab_I, rho_ba_I, rho_b, tmp, PD_SOC_UU, S_SOC_UU, PD_SOC_UD, PD_SOC_UD_I, S_SOC_UD, PD_SOC_DU, PD_SOC_DU_I, S_SOC_DU, PD_SOC_DD, S_SOC_DD  
 
@@ -2235,6 +2254,51 @@
     
    !if (NSpin.eq.2) sdeg=1.0d0
    !if (NSpin.eq.1) sdeg=2.0d0
+   
+    if (PrtHatom > 1) then
+       do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then    
+                 PRINT *, "Real part of PD_SOC matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 
+                 PRINT *, "Imaginary part of PD_SOC matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do
+             end if   
+          end do
+       end do      
+    end if     
+   
 
     rho_a = matmul( PD_SOC_UU, S_SOC_UU )+matmul( PD_SOC_UD,S_SOC_DU )
     rho_b = matmul( PD_SOC_DU, S_SOC_UD )+matmul( PD_SOC_DD, S_SOC_DD )
@@ -4266,7 +4330,7 @@
 #endif    
       
     complex*16, dimension(DNAOrbs,DNAOrbs) :: hamil, hamil_SO, overlap_SO
-    integer :: i,j,totdim,nshell,Atom
+    integer :: i,j,totdim,nshell,Atom,iAtom,jAtom
     real*8 :: uno
  
  Atom = PrtHatom   
@@ -4327,42 +4391,49 @@
 !    PRINT '(1000(F11.5))',  ( (HD(2, i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)) 
 !end do                                                            
 !
- PRINT *, "Real part of hamil_so matrix for atom ", PrtHatom
- PRINT *, "Up-Up" 
- do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
-     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
- end do  
- PRINT *, "Up-Down" 
- do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
-     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
- end do  
- PRINT *, "Down-Up"
- do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
-     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
- end do                                   
- PRINT *, "Down-Down"
- do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
-     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
- end do                                   
- 
- PRINT *, "Imaginary part of hamil_so matrix for atom ", PrtHatom
- PRINT *, "Up-Up" 
- do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
-     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
- end do  
- PRINT *, "Up-Down" 
- do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
-     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
- end do  
- PRINT *, "Down-Up"
- do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
-     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
- end do                                   
- PRINT *, "Down-Down"
- do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
-     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
- end do  
-
+    if (PrtHatom > 1) then
+       do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then
+                 PRINT *, "Real part of hamil_so matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 
+                 PRINT *, "Imaginary part of hamil_so matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do
+              end if   
+          end do
+       end do
+    end if       
 
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
