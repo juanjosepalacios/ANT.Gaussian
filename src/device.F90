@@ -234,7 +234,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, FInit  
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage  
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -310,7 +310,7 @@
       stop
     END IF
     
-    if (SOC .and. (.not. FInit)) then
+    if (SOC) then
        call spin_orbit                 
        if (NSpin == 2) then
           do i=1,NAOrbs
@@ -2182,7 +2182,7 @@
   !*******************************************************************!
   subroutine MullPop_SOC
     use cluster, only: NALead, NAMol, NAOAtom, NAOMol
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage, FInit
+    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage
 #ifdef G03ROOT
     use g03Common, only: GetAtmCo
 #endif
@@ -2217,22 +2217,21 @@
     rho_ba_I = d_zero
     rho_b = d_zero
 
-    if (.not. FInit) then
-       do i=1,NAOrbs
-       do j=1,NAOrbs
-          S_SOC_UU(i,j)=S_SOC(i,j)
-          S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
-          S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
-          S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
-          PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
-          PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
-          PD_SOC_UD_I(i,j)=DIMAG(PD_SOC(i,j+NAOrbs))
-          PD_SOC_DU(i,j)=REAL(PD_SOC(i+NAOrbs,j))    
-          PD_SOC_DU_I(i,j)=DIMAG(PD_SOC(i+NAOrbs,j))                  
-          PD_SOC_DD(i,j)=REAL(PD_SOC(i+NAOrbs,j+NAOrbs))
-       end do
-       end do         
-    end if
+    
+    do i=1,NAOrbs
+    do j=1,NAOrbs
+       S_SOC_UU(i,j)=S_SOC(i,j)
+       S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
+       S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
+       S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
+       PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
+       PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
+       PD_SOC_UD_I(i,j)=DIMAG(PD_SOC(i,j+NAOrbs))
+       PD_SOC_DU(i,j)=REAL(PD_SOC(i+NAOrbs,j))    
+       PD_SOC_DU_I(i,j)=DIMAG(PD_SOC(i+NAOrbs,j))                  
+       PD_SOC_DD(i,j)=REAL(PD_SOC(i+NAOrbs,j+NAOrbs))
+    end do
+    end do         
     
    !if (NSpin.eq.2) sdeg=1.0d0
    !if (NSpin.eq.1) sdeg=2.0d0
