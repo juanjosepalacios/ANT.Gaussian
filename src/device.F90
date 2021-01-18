@@ -144,7 +144,7 @@
   real*8 function DevFockMat( is, i, j )
     implicit none
     integer, intent(in) :: is, i, j
-    DevFockMat = HD(is, i, j)
+    DevFockMat = REAL(HD(is, i, j))
   end function DevFockMat
 
   ! *** Get matrix Element of Density matrix ***
@@ -234,7 +234,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage  
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, FInit  
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -278,6 +278,11 @@
        print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
        stop
     end if
+    HD = c_zero
+    H_SOC = c_zero
+    H_SOC_ONLY = c_zero
+    S_SOC = d_zero
+    PD = d_zero
 
     SD = S
     call RMatPow( SD, -1.0d0, InvSD )
@@ -310,7 +315,7 @@
       stop
     END IF
     
-    if (SOC) then
+    if (SOC .and. (.not. FInit)) then
        call spin_orbit                 
        if (NSpin == 2) then
           do i=1,NAOrbs
@@ -589,7 +594,7 @@
     integer :: norb, ni, nj, isp, n, iatom, jatom, is, i, j, ii, jj, AOStart, AO_BEG, AO_END, iorb, jorb, iato, jato
     real*8 :: fock !, TrP, xxx
 
-    real*8, dimension(NSpin,NAOrbs,NAOrbs) :: HDMod
+    complex*16, dimension(NSpin,NAOrbs,NAOrbs) :: HDMod
     character (len=50) :: fockmatrix
   
     write(ifu_log,*) "-------------------------------------------------------------------------------------------"
@@ -747,7 +752,7 @@
     real*8 :: diff !!,TrP,QD
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
-    HD = F       
+    HD = DCMPLX(F)       
     
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
@@ -1361,7 +1366,7 @@
 
     integer :: i, j, info, omp_get_thread_num
     integer, dimension(NAOrbs) :: ipiv
-    complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr, temp 
+    complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr
     complex*16 :: work(4*NAOrbs) 
 
     complex*16, intent(in) :: z 
@@ -2182,7 +2187,7 @@
   !*******************************************************************!
   subroutine MullPop_SOC
     use cluster, only: NALead, NAMol, NAOAtom, NAOMol
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage
+    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage, FInit
 #ifdef G03ROOT
     use g03Common, only: GetAtmCo
 #endif
@@ -2217,21 +2222,22 @@
     rho_ba_I = d_zero
     rho_b = d_zero
 
-    
-    do i=1,NAOrbs
-    do j=1,NAOrbs
-       S_SOC_UU(i,j)=S_SOC(i,j)
-       S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
-       S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
-       S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
-       PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
-       PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
-       PD_SOC_UD_I(i,j)=DIMAG(PD_SOC(i,j+NAOrbs))
-       PD_SOC_DU(i,j)=REAL(PD_SOC(i+NAOrbs,j))    
-       PD_SOC_DU_I(i,j)=DIMAG(PD_SOC(i+NAOrbs,j))                  
-       PD_SOC_DD(i,j)=REAL(PD_SOC(i+NAOrbs,j+NAOrbs))
-    end do
-    end do         
+    if (.not. FInit) then
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          S_SOC_UU(i,j)=S_SOC(i,j)
+          S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
+          S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
+          S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
+          PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
+          PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
+          PD_SOC_UD_I(i,j)=DIMAG(PD_SOC(i,j+NAOrbs))
+          PD_SOC_DU(i,j)=REAL(PD_SOC(i+NAOrbs,j))    
+          PD_SOC_DU_I(i,j)=DIMAG(PD_SOC(i+NAOrbs,j))                  
+          PD_SOC_DD(i,j)=REAL(PD_SOC(i+NAOrbs,j+NAOrbs))
+       end do
+       end do         
+    end if
     
    !if (NSpin.eq.2) sdeg=1.0d0
    !if (NSpin.eq.1) sdeg=2.0d0
@@ -3321,14 +3327,14 @@
 
     real*8, intent(in) :: phi, E0, R
     integer :: i, j !!, ispin 
-    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal
+    complex*16,dimension(NAOrbs,NAOrbs) :: green
     complex*16 :: TrGS, z
 
     z = E0 - R*(cos(phi) - ui*sin(phi)) 
 
     TrGS=c_zero
     do ispin=1,NSpin
-       call gplus(z,green,gammar,gammal)
+       call gplus0(z,green)
        !do i=1,NAOrbs
        do i=NCDAO1,NCDAO2
           do j=1,NAOrbs
@@ -3895,15 +3901,15 @@
        erm = 0.5d0*(-(Em-b)*x + (Em+b))
        EE(1) = rrr*exp(ui*erp)-rrr+Eq
        EE(2) = rrr*exp(ui*erm)-rrr+Eq
-! Useful in case of nesting is allowed
-!$OMP  PARALLEL SHARED(l) PRIVATE(k)
-!$OMP  DO SCHEDULE(DYNAMIC,1)
+! Useful in case nesting is allowed, but IT IS PROBLEMATIC
+!!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!!$OMP  DO SCHEDULE(DYNAMIC,1)
        do k=1,2
           !print *,'l',l,'k',k,omp_get_thread_num()
           call gplus0(EE(k),greenn(k,:,:))
        end do
-!$OMP  END DO
-!$OMP  END PARALLEL
+!!$OMP  END DO
+!!$OMP  END PARALLEL
        do i = 1,NAOrbs
           do j = 1,NAOrbs
              PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
@@ -4033,14 +4039,14 @@
        EE(1) = rrr*exp(ui*erp)-rrr+Eq
        EE(2) = rrr*exp(ui*erm)-rrr+Eq
 ! Useful in case of nesting is allowed
-!$OMP  PARALLEL SHARED(l) PRIVATE(k)
-!$OMP  DO SCHEDULE(DYNAMIC,1)
+!!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!!$OMP  DO SCHEDULE(DYNAMIC,1)
        do k=1,2
           !print *,'l',l,'k',k,omp_get_thread_num()
           call gplus0_SOC(EE(k),greenn(k,:,:))
        end do
-!$OMP  END DO
-!$OMP  END PARALLEL
+!!$OMP  END DO
+!!$OMP  END PARALLEL
        do i = 1,DNAOrbs
           do j = 1,DNAOrbs
              PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
