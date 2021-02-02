@@ -2886,7 +2886,7 @@
 
           call flush(334)
           !write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
-          write(334,1002)energy,trans*2.0,trans2,polar
+          write(334,1002)energy,trans2,polar
 
 #ifdef PGI
 !$OMP END CRITICAL
