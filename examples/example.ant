@@ -6,9 +6,9 @@
 ! which can be user-defined. Just uncomment the one you
 ! want to modify or switch on.
 ! 
-! This file must have the name xxx.ini
+! This file must have the name xxx.ant
 ! where xxx is the character string given in the title line of 
-! the input file (.com). Both must be in the same directory.
+! the input file (.gjf). Both must be in the same directory.
 !
 ! If there is no parameter file the program will run with
 ! the default values, which are given here in this example.
@@ -66,7 +66,7 @@
 !
 !  FERMIACC   =    1.0D-4
 !
-! *** Setting full accuracy  
+! *** Setting full accuracy from the beginning of the SCF cycles
 !
 !  FULLACC
 !
@@ -78,7 +78,7 @@
 !
 !  SELFACC   =    1.0D-5
 !
-! *** Parameters for determining Bethe lattice directions
+! *** Flexibility parameters for determining Bethe lattice directions 
 !
 !  SMALL   =    0.1   
 !  SMALLD   =    0.1   
@@ -87,7 +87,7 @@
 !
 !  BIASVOLT  =    0.0
 !
-! *** Excess charge   
+! *** Excess charge (acts as as gate voltage)
 !
 !  QEXCESS  =    0.0
 !
@@ -95,7 +95,7 @@
 !
 !  ETA        =    1.0D-10
 !
-! *** Switching on leads
+! *** Switching on the BL leads when Gaussian has converged to this accuracy in the SCF cycles
 !
 !  SL         =    1.0d-2
 !
@@ -103,7 +103,7 @@
 !
 !  FERMISTART =   -5.0D0
 !
-! *** Type of electrode
+! *** Type of electrode (GHOST: missing electrode)
 !
 !  TYPE1 = BETHE
 !  TYPE2 = GHOST
@@ -112,12 +112,12 @@
 !
 !  GLUE = 1.0
 !
-! *** Type of electrode parameters
+! *** Type of electrode S-K parameters
 !
 !  BLPAR1 = Papacon-sd
 !  BLPAR2 = Papacon-sd
 !
-! *** Overlap parameter                      
+! *** Orthogonalization criterion (< 0: de-orthogonalizes the basis of the BL according to the overlap matrix of the device)                     
 !
 !  OVERLAP = -1.0
 !
@@ -126,7 +126,7 @@
 !  NEMBED1 = 13
 !  NEMBED2 = 5
 !
-! *** Number of atoms in each electrode (useful for single-element systems)
+! *** Number of atoms in each electrode (useful for analysis in single-element systems)
 !
 !  NATOMEL1 = 13
 !  NATOMEL2 = 13
@@ -149,11 +149,11 @@
 ! * Spin transport parameters *
 ! *****************************
 !
-! *** Fix spin multiplicity for the given number of steps
+! *** Fixes spin multiplicity for the given number of steps
 !
 !  NSPINLOCK = 0
 !
-! *** Or fix spin state until a given covergence 
+! *** Fixes spin multiplicity until a given convergence has been achieved
 !
 !  SWOFFSPL = 1.0d-3
 !

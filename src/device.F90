@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.5.0  *********************!
+!*********************  ANT.G-2.5.1  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -3940,14 +3940,14 @@
        EE(1) = rrr*exp(ui*erp)-rrr+Eq
        EE(2) = rrr*exp(ui*erm)-rrr+Eq
 ! Useful in case of nesting is allowed
-!$OMP  PARALLEL SHARED(l) PRIVATE(k)
-!$OMP  DO SCHEDULE(DYNAMIC,1)
+!!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!!$OMP  DO SCHEDULE(DYNAMIC,1)
        do k=1,2
           !print *,'l',l,'k',k,omp_get_thread_num()
           call gplus0(EE(k),greenn(k,:,:))
        end do
-!$OMP  END DO
-!$OMP  END PARALLEL
+!!$OMP  END DO
+!!$OMP  END PARALLEL
        do i = 1,NAOrbs
           do j = 1,NAOrbs
              PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
@@ -4077,14 +4077,14 @@
        EE(1) = rrr*exp(ui*erp)-rrr+Eq
        EE(2) = rrr*exp(ui*erm)-rrr+Eq
 ! Useful in case of nesting is allowed
-!$OMP  PARALLEL SHARED(l) PRIVATE(k)
-!$OMP  DO SCHEDULE(DYNAMIC,1)
+!!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!!$OMP  DO SCHEDULE(DYNAMIC,1)
        do k=1,2
           !print *,'l',l,'k',k,omp_get_thread_num()
           call gplus0_SOC(EE(k),greenn(k,:,:))
        end do
-!$OMP  END DO
-!$OMP  END PARALLEL
+!!$OMP  END DO
+!!$OMP  END PARALLEL
        do i = 1,DNAOrbs
           do j = 1,DNAOrbs
              PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
