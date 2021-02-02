@@ -533,6 +533,7 @@ gau-cpp -I$g09root/g09 $PFLAGS caldsu.F caldsu.f
 
 $F90 $CFLAGS -c caldsu.f
 
+mkdir ../../bin
 mv bdam1.o ../../bin
 mv ml502.o ../../bin
 mv caldsu.o ../../bin
