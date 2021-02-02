@@ -1,7 +1,7 @@
 %mem=2000mb
 %nproc=4
-%Subst L101 ../bin
-%Subst L502 ../bin
+%Subst L101 ../../bin
+%Subst L502 ../../bin
 #p blyp/gen pseudo=read scf=(maxcycle=300,conver=5,dsymm)
 
 Al-benzene-Al
