@@ -1,7 +1,7 @@
 %mem=16gb 
-%NProcShared=8  
-%Subst L101 .  
-%Subst L502 .  
+%NProcShared=4  
+%Subst L101 ../../bin  
+%Subst L502 ../../bin  
 #p lsda/gen pseudo=read pop=min Scf=(conver=5,maxcycle=1000,dsymm,nodamp) opt(z-matrix,maxcycle=100,loose) nosymm  
 
 input_Electrodo_Au_3_benzene
