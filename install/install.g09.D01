@@ -544,6 +544,9 @@ chmod o-rx l103.exe
 mv l101.exe ../../bin
 mv l103.exe ../../bin
 
+mkdir ../../obj
+mkdir ../../lib
+
 cd ..
 #rm -r #tmp
 ############################################
