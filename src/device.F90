@@ -2240,8 +2240,8 @@
     do i=1,NAOrbs
     do j=1,NAOrbs
        S_SOC_UU(i,j)=S_SOC(i,j)
-       S_SOC_UD(i,j)=S_SOC(i+NAOrbs,j)
-       S_SOC_DU(i,j)=S_SOC(i,j+NAOrbs)
+       S_SOC_UD(i,j)=S_SOC(i,j+NAOrbs)
+       S_SOC_DU(i,j)=S_SOC(i+NAOrbs,j)
        S_SOC_DD(i,j)=S_SOC(i+NAOrbs,j+NAOrbs)
        PD_SOC_UU(i,j)=REAL(PD_SOC(i,j))
        PD_SOC_UD(i,j)=REAL(PD_SOC(i,j+NAOrbs))
