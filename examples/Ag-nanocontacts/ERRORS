@@ -1,0 +1,10 @@
+forrtl: severe (174): SIGSEGV, segmentation fault occurred
+forrtl: severe (174): SIGSEGV, segmentation fault occurred
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-19116.skr"
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-20084.inp"
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-20085.chk"
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-20085.d2e"
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-20085.int"
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-20085.rwf"
+file has vanished: "/home/palacios/ANT.G/ANT.G-2.5.0/examples/Ag-nanocontacts/Gau-20085.skr"
+rsync warning: some files vanished before they could be transferred (code 24) at main.c(1505) [generator=3.0.6]

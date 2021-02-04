@@ -1,0 +1,9 @@
+ALPHA      =    0.015
+NPULAY      =    4
+CHARGEACC  =    1.0D-4
+FERMIACC   =    1.0D-4
+PACC  =    1.0D-7
+ETA = 1.0d-2
+MAX = 10
+TYPE2 = GHOST
+TYPE1 = GHOST
