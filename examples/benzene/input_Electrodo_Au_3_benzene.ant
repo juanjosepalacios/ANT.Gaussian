@@ -1,0 +1,18 @@
+ALPHA = 0.015  
+SL = 1.0d-4  
+SELFACC = 1.0d-5  
+PACC = 1.0d-7  
+NPULAY = 4  
+FERMIACC = 1.0d-5  
+CHARGEACC = 1.0d-5  
+!SOC = 1.0d-0  
+LDOS_BEG = 14  
+LDOS_END = 15  
+MULLIKEN 
+NSPINLOCK = 00  
+NCHANNELS = 6 
+BLPAR1 = lsda-6s  
+BLPAR2 = lsda-6s  
+ 
+ 
+ 

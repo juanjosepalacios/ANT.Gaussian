@@ -1,0 +1,14 @@
+ALPHA = 0.03
+BLPAR1 = Papacon-sd
+BLPAR2 = Papacon-sd
+NSPINLOCK = 0
+SL = 1.0d-3
+CHARGEACC = 1.0d-4
+FERMIACC = 1.0d-4
+PACC = 1.0d-6
+SOC   
+SOCFAC = 0           
+SPINROT         
+1              
+14,  90.0, 90.0   
+
