@@ -2009,7 +2009,7 @@
     use constants, only: Bohr
     implicit none
 
-    integer :: i,j, I1, is ,n, l, iAtom, jAtom
+    integer :: i,j, I1, is ,n, l
     real*8 :: sdeg, ro_a, ro_b, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
     real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_b
  
@@ -4199,8 +4199,8 @@
     use g09Common, only: GetNShell
 #endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: hamil, hamil_SO, hamil_SO_DAG, overlap_SO
-    integer :: i,j,totdim,nshell,Atom, iAtom, jAtom
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: hamil, hamil_SO, overlap_SO
+    integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
  Atom = PrtHatom   
