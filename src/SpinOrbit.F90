@@ -696,7 +696,7 @@ CONTAINS
                 soc_cff_d_atom = soc_cff_d
                 soc_cff_f_atom = soc_cff_f
               END IF	               
-              IF (socfac_atom > 0.0d0) THEN
+              IF (socfac_atom > 0.0d0 .or. (soc_cff_p_atom == 0.0d0 .and. soc_cff_d_atom == 0.0d0 .and. soc_cff_f_atom==0.0d0)) THEN      
                   CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1)                
                   Xi(i,k) = socfac_atom*zz*Z*result       
               ELSE IF (ShellT1 == 1 .and. ShellT2 == 1) THEN
@@ -915,32 +915,35 @@ CONTAINS
     !Construct hamil and hamil_SO matrices to return to ANT
     !*****************************************************
     
+    IF (NSPinROT > 0) THEN   
+       DO i = 1,NAOs
+          DO j = 1,NAOs    
+             !Up-Up
+   	   	     hamil(i,j) = HROT(1,i,1,j)
+   	   	     overlap_SO(i,j) = SROT(1,i,1,j)
+       	     !Up-Down
+   	   	     hamil(i,j+NAOs) = HROT(1,i,2,j)
+   	   	     overlap_SO(i,j+NAOs) = SROT(1,i,2,j)
+             !Down-Up
+   	   	     hamil(i+NAOs,j) = HROT(2,i,1,j)
+   	   	     overlap_SO(i+NAOs,j) = SROT(2,i,1,j)
+             !Down-Down
+   	    	 hamil(i+NAOs,j+NAOs) = HROT(2,i,2,j) 
+   	    	 overlap_SO(i+NAOs,j+NAOs) = SROT(2,i,2,j)  
+          END DO        
+       END DO      
+    END IF            
+    
     DO i = 1,NAOs
        DO j = 1,NAOs
             !Up-Up
     		hamil_SO(i,j) = HSO(1,i,1,j) 
-    		IF (NSPinROT > 0) THEN
-    		   hamil(i,j) = HROT(1,i,1,j)
-    		   overlap_SO(i,j) = SROT(1,i,1,j)
-    		END IF   
     		!Up-Down
     		hamil_SO(i,j+NAOs) = HSO(1,i,2,j)
-    		IF (NSPinROT > 0) THEN
-    		   hamil(i,j+NAOs) = HROT(1,i,2,j)
-    		   overlap_SO(i,j+NAOs) = SROT(1,i,2,j)
-    		END IF   
             !Down-Up
     		hamil_SO(i+NAOs,j) = HSO(2,i,1,j)
-    		IF (NSPinROT > 0) THEN
-    		   hamil(i+NAOs,j) = HROT(2,i,1,j)
-    		   overlap_SO(i+NAOs,j) = SROT(2,i,1,j)
-    		END IF   
             !Down-Down
     		hamil_SO(i+NAOs,j+NAOs) = HSO(2,i,2,j)
-    		IF (NSPinROT > 0) THEN
-    		   hamil(i+NAOs,j+NAOs) = HROT(2,i,2,j) 
-    		   overlap_SO(i+NAOs,j+NAOs) = SROT(2,i,2,j) 
-    		END IF   
        END DO        
     END DO  
       
