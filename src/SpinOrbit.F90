@@ -242,21 +242,21 @@ CONTAINS
     c0 = c_zero                                                     
     c1 = c_one
     c2 = 1.0/sqrt(2.0)
-    Up = TRANSPOSE(reshape((/ -c2,     c2,    c0, &        
-                    -c2/ui, -c2/ui, c0, &                  
-                     c0,     c0,    c1  /), (/ 3, 3 /) ))  
+    Up = TRANSPOSE(reshape((/ -c2,     c2,    c0, &                                               
+                               c2/ui,  c2/ui, c0, &                  
+                               c0,     c0,    c1  /), (/ 3, 3 /) ))  
     Ud = TRANSPOSE(reshape((/  c1,     c0,     c0,     c0,     c0,    &                                   
-              c0,    -c2,     c2,     c0,     c0,    &                                   
-              c0,    -c2/ui,  -c2/ui, c0,     c0,    &                                   
-              c0,     c0,     c0,     c2,     c2,    &                                    
-              c0,     c0,     c0,     c2/ui, -c2/ui  /), (/ 5, 5 /) ))                    
-    Uf = TRANSPOSE(reshape((/  c1,     c0,     c0,     c0,     c0,     c0,     c0,   &         
-              c0,    -c2,     c2,     c0,     c0,    c0,     c0,    &                
-              c0,    -c2/ui,  -c2/ui, c0,     c0,    c0,     c0,    &                
-              c0,     c0,     c0,     c2,     c2,    c0,     c0,    &                
-              c0,     c0,     c0,     c2/ui, -c2/ui,  c0,     c0,    &
-              c0,     c0,     c0,     c0,     c0,   -c2,     c2,    &
-              c0,     c0,     c0,     c0,     c0,  -c2/ui,  -c2/ui  /), (/ 7, 7 /) )) 
+                               c0,    -c2,     c2,     c0,     c0,    &                                   
+                               c0,     c2/ui,  c2/ui, c0,      c0,    &                                   
+                               c0,     c0,     c0,     c2,     c2,    &                                    
+                               c0,     c0,     c0,    -c2/ui,  c2/ui  /), (/ 5, 5 /) ))                    
+    Uf = TRANSPOSE(reshape((/  c1,     c0,     c0,     c0,     c0,     c0,     c0,    &         
+                               c0,    -c2,     c2,     c0,     c0,     c0,     c0,    &                
+                               c0,     c2/ui,  c2/ui,  c0,     c0,     c0,     c0,    &                
+                               c0,     c0,     c0,     c2,     c2,     c0,     c0,    &                
+                               c0,     c0,     c0,    -c2/ui,  c2/ui,  c0,     c0,    &
+                               c0,     c0,     c0,     c0,     c0,    -c2,     c2,    &
+                               c0,     c0,     c0,     c0,     c0,     c2/ui,  c2/ui  /), (/ 7, 7 /) )) 
               
     !
     ! transform matrices to cubic harmonic basis
