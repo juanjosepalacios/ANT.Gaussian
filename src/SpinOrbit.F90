@@ -1,6 +1,6 @@
 !***************************************
 !*                                     *
-!*  ANT.G-2.5.0  - SpinOrbit.f90       *
+!*  ANT.G-2.5.1  - SpinOrbit.f90       *
 !*                                     *
 !*  Calculation of Spin-orbit coupling *
 !*                                     *
@@ -28,9 +28,9 @@
 !*  Sahar Pakdel and                   *
 !*  Prof. Juan Jose Palacios Burgos    *
 !*                                     *
-!*  Departamento de Física             *
+!*  Departamento de FÃ­sica             *
 !*  de la Materia Condensada,          *
-!*  Universidad Autónoma de Madrid     *
+!*  Universidad AutÃ³noma de Madrid     *
 !*  28049 Madrid                       *
 !*  Spain                              *
 !*                                     *
