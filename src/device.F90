@@ -1998,13 +1998,13 @@
   ! Mulliken population analysis !
   !******************************!
   subroutine MullPop
-    use cluster, only: NALead, NAMol, NAOAtom, NAOMol, LoAOrbNo, HiAOrbNo
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, PrtHatom
+    use cluster, only: NALead, NAMol, NAOAtom, NAOMol
+    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End
 #ifdef G03ROOT
-    use g03Common, only: GetAtmCo, GetNAtoms
+    use g03Common, only: GetAtmCo
 #endif
 #ifdef G09ROOT
-    use g09Common, only: GetAtmCo, GetNAtoms
+    use g09Common, only: GetAtmCo
 #endif
     use constants, only: Bohr
     implicit none
@@ -2016,25 +2016,6 @@
     write(ifu_log,*)'-------------------------------------'
     write(ifu_log,*)'---  Mulliken population analysis ---'
     write(ifu_log,*)'-------------------------------------'
-    
-    if (PrtHatom > 1) then
-       do iAtom=1,GetNAtoms()
-          do jAtom=1,GetNAtoms()
-             !if( SpinEdit(iAtom) == -1 .and. SpinEdit(jAtom) == -1 )then
-             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then
-                PRINT *, " Density matrix atom ",iAtom," is: "
-                PRINT *, " Up-Up "  
-                do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                               
-                   PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )               
-                end do                                                                                                       
-                PRINT *, " Down-Down "                                                                              
-                do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
-                   PRINT '(1000(F11.5))', ( (PD(2,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
-                end do                                                                              
-             end if   
-          end do
-       end do
-    end if          
     
     if (NSpin.eq.2) sdeg=1.0d0
     if (NSpin.eq.1) sdeg=2.0d0
@@ -2177,7 +2158,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo
 #endif
-    use constants, only: Bohr, d_zero, c_zero, ui
+    use constants, only: Bohr, d_zero, c_zero
     implicit none
 
     integer :: i,j, I1, is ,n, l
@@ -4224,9 +4205,9 @@
  
  Atom = PrtHatom   
  totdim=NAOrbs   
- hamil = c_zero!dcmplx(0.0d0,0.0d0)
- hamil_SO = c_zero!dcmplx(0.0d0,0.0d0)
- overlap_SO = c_zero!dcmplx(0.0d0,0.0d0)
+ hamil = c_zero
+ hamil_SO = c_zero
+ overlap_SO = c_zero
  H_SOC = c_zero
  S_SOC = d_zero
 
