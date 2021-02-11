@@ -90,8 +90,8 @@ CONTAINS
     halfphi=0.5d0*phi*d_pi/180.0d0
     halftheta=0.5d0*theta*d_pi/180.0d0
     
-    u=dcos(halftheta)*dcmplx(dcos(halfphi),dsin(halfphi))
-    v=dsin(halftheta)*dcmplx(dcos(halfphi),-dsin(halfphi))
+    u=dcos(halftheta)*dcmplx(dcos(halfphi),-dsin(halfphi))
+    v=dsin(halftheta)*dcmplx(dcos(halfphi),dsin(halfphi))
     
     ustar=dconjg(u)                                                  
     vstar=dconjg(v)						
