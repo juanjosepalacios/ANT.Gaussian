@@ -2091,8 +2091,8 @@
        PD_SOC_R=PD_SOC
 
        M=1000
-       a = d_pi
-       b = 2*d_pi
+       a = -d_pi
+       b = 0.d0*d_pi
        call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
        PD_SOC_A=PD_SOC
 
@@ -4203,7 +4203,7 @@
     do l=1,n,2
     !print*,n
        !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
-       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-sgn*dble(l)/(n+1)
+       x = 1+sgn*(0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1))
        erp = 0.5d0*((Em-b)*x + (Em+b))
        erm = 0.5d0*(-(Em-b)*x + (Em+b))
        EE(1) = rrr*exp(ui*erp)-rrr+Eq
@@ -4243,7 +4243,7 @@
        end do
     enddo
     !print *, CH
-    !print*,'ch', 16*CH/(3*(n+1))
+    print*,'ch', 16*CH/(3*(n+1))
     ! ... replacing n by 2n+1
     n = n + n + 1
     ! Stopping?
