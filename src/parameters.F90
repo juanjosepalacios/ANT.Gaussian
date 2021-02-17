@@ -195,7 +195,7 @@
   ! CHARACTER(len=10), PARAMETER :: SOC_keyw = "SOC"
   
   ! Global SOC multiplicative factor due to lack of nodal structure in basis set
-  INTEGER :: socfac = 1
+  REAL*8 :: socfac = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFAC_keyw = "SOCFAC"  
 
   ! Global SOC_COEFF_P
@@ -346,7 +346,7 @@ CONTAINS
          & DOSEnergy_keyw     ,&
          & Overlap_keyw   ,&
 !         & SOC_keyw   ,&
-!         & SOCFAC_keyw  ,&  
+         & SOCFAC_keyw  ,&  
          & SOC_CFF_P_keyw   ,&
          & SOC_CFF_D_keyw   ,&
          & SOC_CFF_F_keyw   ,&         
@@ -398,6 +398,8 @@ CONTAINS
           EStep = rval
        CASE ( Overlap_keyw ) 
           Overlap = rval
+       CASE( SOCFAC_keyw )
+          socfac = rval               
        CASE ( SOC_CFF_P_keyw ) 
           soc_cff_p = rval
        CASE ( SOC_CFF_D_keyw ) 
@@ -416,7 +418,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, SOCFAC_keyw, PrtHatom_keyw  )
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
        !
        ! 2. looking for integer variables
        !
@@ -457,8 +459,8 @@ CONTAINS
           NPulay = ival
        CASE( Max_keyw )
           Max = ival
-       CASE( SOCFAC_keyw )
-          socfac = ival     
+       !CASE( SOCFAC_keyw )
+       !   socfac = ival     
        CASE( PrtHatom_keyw )
           PrtHatom = ival     
 
