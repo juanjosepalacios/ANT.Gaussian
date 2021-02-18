@@ -1049,7 +1049,7 @@
     E2=shift+Z  
     if (root_fail) then
         print*,'SECANT method'
-        call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+        call SECANT(CompPD_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
         if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
            print *, 'Warning: SECANT method failed to find root. Using MULLER.'
            root_fail = .true.
@@ -1060,7 +1060,7 @@
     end if      
     if (root_fail) then
         print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+        call MULLER(CompPD_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
         if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
            print *, 'Warning: MULLER method failed to find root. Using BISEC.'
            root_fail = .true.
@@ -1071,7 +1071,7 @@
     end if  
     if (root_fail) then
        print *, 'BISEC method'
-       shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
+       shift = BISEC(CompPD_SOC,EMin,EMax,Delta,5*Max,K)
        DE=Delta
        if(k.lt.5*Max) root_fail = .false.
        if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
