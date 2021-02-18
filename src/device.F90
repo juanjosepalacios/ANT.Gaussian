@@ -1048,27 +1048,27 @@
     E1=shift
     E2=shift+Z  
     if (root_fail) then
-        print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-           print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
-       end if
-    end if
-    if (root_fail) then
         print*,'SECANT method'
         call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
         if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-           print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+           print *, 'Warning: SECANT method failed to find root. Using MULLER.'
            root_fail = .true.
         else
            shift = E3
            root_fail = .false.
         end if
-    end if    
+    end if      
+    if (root_fail) then
+        print*,'MULLER method'
+        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+           root_fail = .true.
+        else
+           shift = E3
+           root_fail = .false.
+       end if
+    end if  
     if (root_fail) then
        print *, 'BISEC method'
        shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
@@ -1396,32 +1396,21 @@
      use parameters, only: eta, PAcc
 !    USE IFLPORT
      use omp_lib
-#ifdef G03ROOT
-    use g03Common, only: GetNAE, GetNBE
-#endif
-#ifdef G09ROOT
-    use g09Common, only: GetNAE, GetNBE
-#endif
      implicit none
 
      ! chemical potential
      real*8, intent(in) :: mu
 
-     complex*16, dimension(DNAOrbs,DNAOrbs) :: GDR, GDA, PD_SOC_R, PD_SOC_A
+     complex*16, dimension(DNAOrbs,DNAOrbs) :: GDR, GDA, PD_SOC_R, PD_SOC_A, SPEC_A
 
      integer, parameter :: nmin=1, nmax=10, npmax=2**nmax-1
-     complex*16 :: DPD, QA, QR
-     real*8, dimension(2*npmax) :: x, w
-     real*8 :: Ei, dEdx, Q, QQ, E0 
+     complex*16 :: DPD
+     real*8, dimension(npmax) :: x, w
+     real*8 :: Ei, dEdx, Q, QQ, E0, R 
      integer :: n, np, i, j, k, l !, info, ierr
      
-     real*8, parameter :: x0 = 0.5d0
-     real*8 :: aa, bb, cc, EM
-
-     EM = EMax
-     aa = EM/x0
-     bb = aa*(1.0d0-x0)**2
-     cc = EM - bb/(1-x0)
+    ! Integration contour parameters:
+     R  = 0.5*(mu - EMin)     
 
      shift = mu
 
@@ -1433,29 +1422,23 @@
         
         QQ = Q
         Q=d_zero
+        DPD = c_zero
         PD_SOC=c_zero
         PD_SOC_A=c_zero
         PD_SOC_R=c_zero
-        QR = c_zero
-        QA = c_zero
-        
+                
         ! Compute Gauss-Legendre abcsissas and weights
-        call gauleg(0.0d0,2.0d0,x(1:2*np),w(1:2*np),2*np)
+        call gauleg(0.0d0,d_pi,x(1:np),w(1:np),np)
 
-!$OMP PARALLEL PRIVATE(Ei,dEdx,GDR,DPD)
+!$OMP PARALLEL PRIVATE(GDR,DPD)
 !$OMP DO
         do i=1,np
-           Ei = 2.0d0*EMax*x(i)
-           if( x(i) > 0.5d0 ) Ei = 0.5d0*EMax/(1.0d0-x(i))
-           dEdx = 2.0d0*EMax
-           if( x(i) > 0.5d0 ) dEdx = 0.5d0*EMax/(1.0d0-x(i))**2              
-           call gplus0_SOC( ui*Ei, GDR, 1 )        
+           call gplus0_SOC( R*exp(ui*x(i))-R, GDR, 1 )        
 !$OMP CRITICAL
            do k=1,DNAOrbs
               do l=1,DNAOrbs
-                 DPD = w(i)*(dEdx*ui*GDR(k,l)/(2.0d0*d_pi) + 0.5d0*InvS_SOC(k,l))
+                 DPD = w(i)*(ui*R*exp(ui*x(i))*GDR(k,l)/(d_pi) + 0.5d0*InvS_SOC(k,l))
                  PD_SOC_R(k,l) = PD_SOC_R(k,l) + DPD
-                 QR = QR + DPD*S_SOC(l,k)
               end do
            end do
 !$OMP END CRITICAL
@@ -1463,24 +1446,20 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
-        !print '(6(F20.5))', PD_SOC_R(1,1), PD_SOC_R(3,1), PD_SOC_R(1,3) 
+        
+        DPD = c_zero
 
-        call gauleg(-2.0d0,0.0d0,x(1:2*np),w(1:2*np),2*np)
+        call gauleg(-d_pi,0.d0,x(1:np),w(1:np),np)
 
-!$OMP PARALLEL PRIVATE(Ei,dEdx,GDA,DPD)
+!$OMP PARALLEL PRIVATE(GDA,DPD)
 !$OMP DO
-        do i=1,np
-           Ei = 2.0d0*EMax*x(i)
-           if( abs(x(i)) > 0.5d0 ) Ei = 0.5d0*EMax/(-1.0d0-x(i))
-           dEdx = -2.0d0*EMax
-           if( abs(x(i)) > 0.5d0 ) dEdx = -0.5d0*EMax/(-1.0d0-x(i))**2              
-            call gplus0_SOC( ui*Ei, GDA, -1)
+        do i=1,np         
+            call gplus0_SOC( conjg(R*exp(ui*x(i))-R), GDA, -1)
 !$OMP CRITICAL
              do k=1,DNAOrbs
                 do l=1,DNAOrbs
-                   DPD =  w(i)*(dEdx*ui*(GDA(k,l))/(2.0d0*d_pi) + 0.5d0*InvS_SOC(k,l))
-                   PD_SOC_A(k,l) = PD_SOC_A(k,l) + DPD   
-                   QA = QA + DPD*S_SOC(l,k)            
+                   DPD =  w(i)*(conjg(ui*R*exp(ui*x(i))*GDA(k,l))/(d_pi) + 0.5d0*InvS_SOC(k,l))
+                   PD_SOC_A(k,l) = PD_SOC_A(k,l) + DPD    
                 end do
              end do
 !$OMP END CRITICAL
@@ -1488,18 +1467,16 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
+                     
+       PD_SOC=-ui*(PD_SOC_R  - PD_SOC_A)/2.0d0
+       !print '(2(F20.5))',PD_SOC(1,1)
+       !print '(4(F20.5))',PD_SOC(3,1),PD_SOC(1,3) 
 
-       !print '(6(F20.5))', PD_SOC_A(1,1), PD_SOC_A(3,1), PD_SOC_A(1,3) 
-       
-       PD_SOC=PD_SOC_R - PD_SOC_A
-       
-       Q = real(QR - QA)
-
-        !do k=1,DNAOrbs
-        !   do l=1,DNAOrbs
-        !      Q = Q + real(PD_SOC(k,l)*S_SOC(l,k))
-        !   end do
-        !end do
+        do k=1,DNAOrbs
+           do l=1,DNAOrbs
+              Q = Q + real(PD_SOC(k,l)*S_SOC(l,k))
+           end do
+        end do
         if( n > nmin .and. abs(Q-QQ) < PAcc ) exit
         if (n == nmax) print*, 'Warning!, not enough integration points'
      end do
