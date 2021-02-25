@@ -1415,11 +1415,9 @@
    real*8 function CompPD_SOC( mu )
 ! 
 ! Computes the density matrix for a fixed chemical potential mu
-! by integrating Greens function on matsubara axis. No lower energy
-! bound required anymore!
-! - Returns number of electrons in device region
+! by integrating the spectral function. 
 !
-! - replaces old code in functions F(x) and QXTot(x)
+! Returns number of electrons in device region
 !
      use constants
      use util
@@ -1434,8 +1432,7 @@
 
      complex*16, dimension(DNAOrbs,DNAOrbs) :: GDR, GDA
 
-     integer, parameter :: nmin=1, nmax=10, npmax=2**nmax-1
-     complex*16 :: DPD
+     integer, parameter :: nmin=1, nmax=15, npmax=2**nmax-1
      real*8, dimension(npmax) :: x, w
      real*8 :: Q, QQ, R
      integer :: n, np, i, j, k, l, M !, info, ierr
@@ -1444,33 +1441,31 @@
      R  = 0.5*abs(EMin)
 
      shift = mu
+     PD_SOC=c_zero
 
-     Q = d_zero
-
+! Retarded density matrix
+  
+     Q=0.0d0
      do n=nmin,nmax
 
         np=2**n-1
         
         QQ = Q
-        Q=d_zero
-        DPD = c_zero
-        PD_SOC=c_zero
-        PD_SOC_A=c_zero
         PD_SOC_R=c_zero       
                 
         ! Compute Gauss-Legendre abcsissas and weights
         call gauleg(0.d0,d_pi,x(1:np),w(1:np),np)
 
-!$OMP PARALLEL PRIVATE(GDR,DPD)
+!$OMP PARALLEL PRIVATE(GDR)
 !$OMP DO
         do i=1,np
            call gplus0_SOC( R*exp(ui*x(i))-R, GDR, 1 )        
+    !print*,'x(i)',i,x(i),GDR(1,1)
 
 !$OMP CRITICAL
            do k=1,DNAOrbs
               do l=1,DNAOrbs
-                 DPD = w(i)*(ui*R*exp(ui*x(i))*GDR(k,l)/d_pi)
-                 PD_SOC_R(k,l) = PD_SOC_R(k,l) + DPD     
+                 PD_SOC_R(k,l) = PD_SOC_R(k,l) + w(i)*(ui*R*exp(ui*x(i))*GDR(k,l))
               end do
            end do
 !$OMP END CRITICAL
@@ -1478,21 +1473,41 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
+        Q=d_zero
+        do k=1,DNAOrbs
+           do l=1,DNAOrbs
+              Q = Q + real(PD_SOC_R(k,l)*S_SOC(l,k))
+           end do
+        end do
+       !print*,'Q=',Q
+        if( n > nmin .and. abs(Q-QQ) < PAcc ) exit
+        if (n == nmax) print*, 'Warning!, not enough integration points'
+
+     end do
         
-        DPD = c_zero
+     print '(A,I4,A)', 'Integration of retarded density matrix along the upper semicircle on the complex plane has needed ', np, ' points.'
+
+! Advanced density matrix
+
+     Q=0.0d0
+     do n=nmin,nmax
+
+        np=2**n-1
+        
+        QQ = Q
+        PD_SOC_A=c_zero
         
         call gauleg(0.0d0,-d_pi,x(1:np),w(1:np),np)
 
-!$OMP PARALLEL PRIVATE(GDA,DPD)
+!$OMP PARALLEL PRIVATE(GDA)
 !$OMP DO
         do i=1,np           
             call gplus0_SOC(R*exp(ui*(x(i)))-R, GDA, -1)
+    !print*,'x(i)',i,x(i),GDA(1,1)
 !$OMP CRITICAL
              do k=1,DNAOrbs
                 do l=1,DNAOrbs
-                   ! DPD = w(i)*(ui*R*exp(ui*(d_pi-x(i)))*GDA(k,l)/d_pi)    ! alternative method that seemed to work with previous gplus0_SOC
-                   DPD = w(i)*(ui*R*exp(ui*(x(i)))*GDA(k,l)/d_pi)
-                   PD_SOC_A(k,l) = PD_SOC_A(k,l) + DPD    
+                   PD_SOC_A(k,l) = PD_SOC_A(k,l) + w(i)*(ui*R*exp(ui*(x(i)))*GDA(k,l))
                 end do
              end do
 !$OMP END CRITICAL
@@ -1500,26 +1515,31 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
-                     
-       PD_SOC=-ui*(PD_SOC_R  - PD_SOC_A)/2.0d0
-       !print '(2(F20.5))',PD_SOC(1,1)
-       !print '(4(F20.5))',PD_SOC(3,1),PD_SOC(1,3)          
-
+        Q=d_zero
         do k=1,DNAOrbs
            do l=1,DNAOrbs
-              Q = Q + real(PD_SOC(k,l)*S_SOC(l,k))
+              Q = Q + real(PD_SOC_A(k,l)*S_SOC(l,k))
            end do
         end do
+       !print*,'Q=',Q
         if( n > nmin .and. abs(Q-QQ) < PAcc ) exit
         if (n == nmax) print*, 'Warning!, not enough integration points'
      end do
+     print '(A,I4,A)', 'Integration of advanced density matrix along the lower semicircle on the complex plane has needed ', np, ' points.'
         
-     print '(A,I4,A)', ' Integration of density matrix along imaginary axis has needed ', np, ' points.'
-     print '(A,F10.5,A,F10.5,A,F8.5)', ' mu =', -mu, '  Num. of electrons =', Q, ' +/-', abs(Q-QQ)            
+     PD_SOC =-ui*(PD_SOC_R  - PD_SOC_A)/(2.0d0*d_pi)
 
-     Q_SOC = Q 
+     Q_SOC= d_zero
+     do k=1,DNAOrbs
+        do l=1,DNAOrbs
+           Q_SOC = Q_SOC + PD_SOC(k,l)*S_SOC(l,k)
+        end do
+     end do
+     print '(A,F10.5,A,F10.5,A,F8.5)', ' mu =', -mu, '  Num. of electrons =', Q_SOC
+       !print '(2(F20.5))',PD_SOC(1,1)
+       !print '(4(F20.5))',PD_SOC(3,1),PD_SOC(1,3)          
 
-     CompPD_SOC = Q - dble(NCDEl)
+     CompPD_SOC = Q_SOC - dble(NCDEl)
 
   end function CompPD_SOC
 
@@ -1638,7 +1658,7 @@
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
-    call CompSelfEnergies( ispin, z, sigl, sigr )
+    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
     sigl=glue*sigl
     
@@ -1690,7 +1710,7 @@
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
-    call CompSelfEnergies( ispin, z, sigl, sigr )
+    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
     sigl=glue*sigl
     
@@ -1754,7 +1774,7 @@
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
-    call CompSelfEnergies( ispin, z, sigl, sigr )
+    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
     sigl=glue*sigl
     
@@ -1850,9 +1870,9 @@
     sigr2=-ui*eta*SD 
     sigl2=-ui*eta*SD 
 
-    call CompSelfEnergies( 1, z, sigl1, sigr1 )
+    call CompSelfEnergies( 1, z, sigl1, sigr1, 1 )
    
-    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2 )
+    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2, 1 )
     sigr1=glue*sigr1
     sigl1=glue*sigl1
     sigr2=glue*sigr2
@@ -3068,7 +3088,7 @@
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL)
+             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
              call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGammaL,DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
              call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
              call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
@@ -3466,7 +3486,7 @@
           energy = N*EStep
           cenergy = energy
 
-          call CompSelfEnergies(is,cenergy,SigmaL,SigmaR)
+          call CompSelfEnergies(is,cenergy,SigmaL,SigmaR,1)
        
           do i=1,NLD
              do j=1,NLD
@@ -3603,7 +3623,7 @@
   ! ***********************************
   ! Compute Self energies of electrodes
   ! ***********************************
-  subroutine CompSelfEnergies( spin, cenergy, Sigma1, Sigma2 )
+  subroutine CompSelfEnergies( spin, cenergy, Sigma1, Sigma2, sgn )
     use parameters, only: ElType, DD, UD, DU, Overlap
     use BetheLattice, only: CompSelfEnergyBL, LeadBL 
     use OneDLead, only: CompSelfEnergy1D, Lead1D
@@ -3614,7 +3634,7 @@
     implicit none
     external zgemm
     
-    integer, intent(in) :: spin
+    integer, intent(in) :: spin,sgn
     complex*16, intent(in) :: cenergy
     complex*16, dimension(:,:),intent(inout) :: Sigma1
     complex*16, dimension(:,:),intent(inout) :: Sigma2
@@ -3634,7 +3654,7 @@
     !write(ifu_log,*)omp_get_thread_num(),'in CompSelfEnergies',shift,cenergy,'lead 1'
     select case( ElType(1) )
     case( "BETHE" ) 
-       call CompSelfEnergyBL( LeadBL(1), is, cenergy, Sigma1 )
+       call CompSelfEnergyBL( LeadBL(1), is, cenergy, Sigma1, sgn )
        ! transform to non-orthogonal basis
        if( Overlap < -0.01 .and. .not. HDOrtho )then
           ! Sigma1 -> S^1/2 * Sigma1 * S^1/2
@@ -3657,7 +3677,7 @@
     !write(ifu_log,*)omp_get_thread_num(),'in CompSelfEnergies',shift,cenergy,'lead 2'
     select case( ElType(2) )
     case( "BETHE" )
-       call CompSelfEnergyBL( LeadBL(2), is, cenergy, Sigma2 )
+       call CompSelfEnergyBL( LeadBL(2), is, cenergy, Sigma2, sgn )
        ! transform to non-orthogonal basis 
        if( Overlap < -0.01 .and. .not. HDOrtho )then
           ! Sigma2 -> S^1/2 * Sigma2 * S^1/2
@@ -4336,7 +4356,7 @@
   !*********************************************************************
   !* Compute retarded Green's function with SOC (doubling the matrices)*
   !*********************************************************************
-  subroutine gplus_SOC(z,green,gammar,gammal)
+  subroutine gplus_SOC(z,green,gammar,gammal,sgn)
     use parameters, only: eta, glue
     use constants, only: c_zero, ui
 #ifdef PGI
@@ -4347,6 +4367,7 @@
     external zgetri, zgetrf     
 
     integer :: i, j, info, omp_get_thread_num
+    integer, intent(in) :: sgn
     integer, dimension(DNAOrbs) :: ipiv
     complex*16, dimension(4*DNAOrbs) :: work
     complex*16, intent(in) :: z 
@@ -4364,14 +4385,14 @@
     sigmal=c_zero
 
 
-    sigr1=-ui*eta*SD 
-    sigl1=-ui*eta*SD 
-    sigr2=-ui*eta*SD 
-    sigl2=-ui*eta*SD 
+    sigr1=-sgn*ui*eta*SD 
+    sigl1=-sgn*ui*eta*SD 
+    sigr2=-sgn*ui*eta*SD 
+    sigl2=-sgn*ui*eta*SD 
 
-    call CompSelfEnergies( 1, z, sigl1, sigr1 )
+    call CompSelfEnergies( 1, z, sigl1, sigr1, sgn )
    
-    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2 )
+    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2, sgn )
     sigr1=glue*sigr1
     sigl1=glue*sigl1
     sigr2=glue*sigr2
@@ -4439,7 +4460,7 @@
     complex*16, dimension(NAOrbs,NAOrbs) :: sigl1,sigr1
     complex*16, dimension(NAOrbs,NAOrbs) :: sigl2,sigr2
     complex*16, dimension(DNAOrbs,DNAOrbs), intent(out) :: green
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: sigmar,sigmal,greenr
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: sigmar,sigmal
     
     ! Initilization 
     green=c_zero
@@ -4449,14 +4470,14 @@
     sigl1=c_zero     
     sigr2=c_zero     
     sigl2=c_zero     
-    sigr1=-ui*eta*SD
-    sigl1=-ui*eta*SD 
-    sigr2=-ui*eta*SD 
-    sigl2=-ui*eta*SD
+    sigr1=-sgn*ui*eta*SD
+    sigl1=-sgn*ui*eta*SD 
+    sigr2=-sgn*ui*eta*SD 
+    sigl2=-sgn*ui*eta*SD
 
-    call CompSelfEnergies( 1, z, sigl1, sigr1 )
+    call CompSelfEnergies( 1, z, sigl1, sigr1, sgn )
    
-    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2 )
+    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2, sgn )
     sigr1=glue*sigr1
     sigl1=glue*sigl1
     sigr2=glue*sigr2
@@ -4493,23 +4514,30 @@
 
    !print*,'..........'
     !************************************************************************
-    !c Retarded "Green" function
+    !c Retarded or advanced Green's functions
     !************************************************************************
 
+    if (sgn == 1) then
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-        if (sgn == 1) greenr(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
-        if (sgn == -1) greenr(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-conjg(sigmal(i,j))-conjg(sigmar(i,j))
+          green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
        enddo
     enddo
+    else if (sgn == -1) then 
+    do i=1,DNAOrbs
+       do j=1,DNAOrbs
+         !green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-conjg(sigmal(i,j))-conjg(sigmar(i,j))
+          green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+       enddo
+    enddo
+    else
+       print*,'Warning in gplus0_SOC'
+       stop
+    end if
 
-    call zgetrf(DNAOrbs,DNAOrbs,greenr,DNAOrbs,ipiv,info)
-    call zgetri(DNAOrbs,greenr,DNAOrbs,ipiv,work,4*DNAOrbs,info)
+    call zgetrf(DNAOrbs,DNAOrbs,green,DNAOrbs,ipiv,info)
+    call zgetri(DNAOrbs,green,DNAOrbs,ipiv,work,4*DNAOrbs,info)
 
-   green =greenr !retarded
-   !if (sgn == 1)  green =greenr !retarded
-   !if (sgn == -1) green = conjg(transpose(greenr)) !advanced
- 
    !print*,'in gplus0'
    !print*,sgn
    !print*,green(1,1)
