@@ -4531,10 +4531,10 @@
     use parameters, only: PrtHatom, NSpinRot
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
-    use g03Common, only: GetNShell
+    use g03Common, only: GetNShell, GetNAtoms
 #endif
 #ifdef G09ROOT
-    use g09Common, only: GetNShell
+    use g09Common, only: GetNShell, GetNAtoms
 #endif    
       
     complex*16, dimension(DNAOrbs,DNAOrbs) :: hamil_SO, overlap_SO, hamilrot
@@ -4556,8 +4556,8 @@
  if (NSpin == 2) then
     do i=1,NAOrbs
     do j=1,NAOrbs
-       hamilrot(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamilrot(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
+       hamilrot(i,j)=HD(1,i,j)
+       hamilrot(i+NAOrbs,j+NAOrbs)=HD(2,i,j)
        S_SOC(i,j)=SD(i,j)              
        S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)
     end do
@@ -4565,8 +4565,8 @@
  else 
     do i=1,NAOrbs
     do j=1,NAOrbs
-       hamilrot(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamilrot(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+       hamilrot(i,j)=HD(1,i,j)
+       hamilrot(i+NAOrbs,j+NAOrbs)=HD(1,i,j)
        S_SOC(i,j)=SD(i,j)              
        S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)
     end do
@@ -4579,7 +4579,7 @@
  
  nshell = GetNShell()
  
- CALL CompHSO(hamil_SO,HD,hamilrot,SD,overlap_SO,NAOrbs,nshell)
+ CALL CompHSO(hamil_SO,REAL(HD),hamilrot,SD,overlap_SO,NAOrbs,nshell)
 !CALL CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
