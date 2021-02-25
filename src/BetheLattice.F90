@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.5.1  **********************
+!*********************  ANT.G-2.5.0  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -662,7 +662,7 @@ contains
   !
   ! *** Compute self-energy matrix ***
   !
-  subroutine CompSelfEnergyBL( BL, spin, cenergy, Sigma_n )
+  subroutine CompSelfEnergyBL( BL, spin, cenergy, Sigma_n, sgn )
 #ifdef G03ROOT
     USE g03Common, ONLY: GetAN, GetNAtoms
 #endif
@@ -675,7 +675,7 @@ contains
     implicit none
 
     type(TBetheLattice), intent(inout) :: BL
-    integer, intent(in) :: spin
+    integer, intent(in) :: spin,sgn
     complex*16, intent(in) :: cenergy
     complex*16, dimension(:,:), intent(inout) :: Sigma_n
     complex*16, dimension(BL%NNeighbs,BL%NAOrbs,BL%NAOrbs) :: Sigmak
@@ -689,7 +689,7 @@ contains
     NNeighbs=BL%NNeighbs
 
     !call SolveDysonBL( BL%Sigmak(ispin,1:NNeighbs,1:NAO,1:NAO), cenergy, BL%H0(ispin,1:NAO,1:NAO), &
-    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO) )
+    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )
 
     !Sigma_n = c_zero
     do ia = 1,GetNAtoms()
@@ -712,7 +712,7 @@ contains
   !
   ! *** Self-consistent solver of Dyson equation for Bethe lattice ***
   !
-  subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk )
+  subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, sgn )
     use constants, only: c_zero, ui, c_one
     use parameters, only: eta,selfacc
 #ifdef PGI
@@ -732,7 +732,7 @@ contains
     complex*16, intent(in) :: Energy
     
     integer :: k, i, j, NAOrbs, NNeighbs, ncycle, ipiv(size( SigmaK, 3 )), info, AllocErr
-    integer, intent(in) :: LeadNo
+    integer, intent(in) :: LeadNo,sgn
     
     ! auxiliary directional self energy for self-consistent calculation
     complex*16, dimension( size(SigmaK,1), size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux
@@ -753,7 +753,7 @@ contains
     
     do i=1,NAOrbs
        do k=1,NNeighbs
-          Sigmak(k,i,i)=-1.0d0*ui
+          Sigmak(k,i,i)=-sgn*ui
        enddo
     end do
 
@@ -898,10 +898,10 @@ contains
     integer :: i
 
     if( BL%Overlap )then
-       call CompG0X( BL, spin, energy, G0X )
+       call CompG0X( BL, spin, energy, G0X, 1 )
        GS0X = MATMUL( G0X, S0X )
     else 
-       call CompGreensFunc( BL, spin, energy, G0 )
+       call CompGreensFunc( BL, spin, energy, G0, 1 )
     end if
 
     BulkSDOS = d_zero
@@ -919,7 +919,7 @@ contains
   ! 
   ! *** Computes Bulk Green's function G0 ***
   ! 
-  subroutine CompGreensFunc( BL, Spin, energy, G0 )
+  subroutine CompGreensFunc( BL, Spin, energy, G0, sgn )
     use constants, only: c_zero, ui
     use parameters, only: eta, DD, UD, DU
 #ifdef PGI
@@ -930,7 +930,7 @@ contains
     external  zgetri,zgetrf
 
     type(TBetheLattice), intent(inout) :: BL
-    integer, intent(in) :: Spin
+    integer, intent(in) :: Spin,sgn
     complex*16, intent(in) :: energy
     complex*16, dimension( BL%NAOrbs, BL%NAOrbs ),intent(out) :: G0
     complex*16, dimension( BL%NSpin,BL%NNeighbs,BL%NAOrbs, BL%NAOrbs ) :: BLSigmak
@@ -951,7 +951,7 @@ contains
     if( spin == 2 .and. BL%NSpin == 1 ) ispin = 1
     NNeighbs = BL%NNeighbs
     n=BL%NAOrbs
-    call SolveDysonBL( BL%LeadNo, BLSigmak(ispin,1:NNeighbs,1:n,1:n), energy, BL%H0(ispin,1:n,1:n), BL%Vk(ispin,1:NNeighbs,1:n,1:n),BL%S0(1:n,1:n), BL%Sk(1:NNeighbs,1:n,1:n) )
+    call SolveDysonBL( BL%LeadNo, BLSigmak(ispin,1:NNeighbs,1:n,1:n), energy, BL%H0(ispin,1:n,1:n), BL%Vk(ispin,1:NNeighbs,1:n,1:n),BL%S0(1:n,1:n), BL%Sk(1:NNeighbs,1:n,1:n), sgn )
 
     G0=c_zero
 
@@ -966,7 +966,7 @@ contains
 
     do i=1,n
        do j=1,n
-          G0(i,j)=(energy+ui*1.0d-10)*BL%S0(i,j)-BL%H0(ispin,i,j)
+          G0(i,j)=(energy+sgn*ui*eta)*BL%S0(i,j)-BL%H0(ispin,i,j)
           do k=nj,NNeighbs,nj
              G0(i,j)=G0(i,j)-BLSigmak(ispin,k,i,j)
           enddo
@@ -982,7 +982,7 @@ contains
   ! 
   ! *** Computes Bulk Green's function G0 for extended cluster ***
   ! 
-  subroutine CompG0X( BL, Spin, energy, G0X )
+  subroutine CompG0X( BL, Spin, energy, G0X, sgn )
     use constants, only: c_zero, ui
     use parameters, only: eta, DU, UD, DD
 #ifdef PGI
@@ -993,7 +993,7 @@ contains
     external  zgetri,zgetrf
 
     type(TBetheLattice), intent(inout) :: BL
-    integer, intent(in) :: Spin
+    integer, intent(in) :: Spin,sgn
     complex*16, intent(in) :: energy
     complex*16, dimension( BL%NSpin,BL%NNeighbs,BL%NAOrbs, BL%NAOrbs ) :: BLSigmak
     complex*16, dimension( nx, nx ),intent(out) :: G0X
@@ -1014,13 +1014,13 @@ contains
     if( spin == 2 .and. BL%NSpin == 1 ) ispin = 1
     NNeighbs = BL%NNeighbs
     n=BL%NAOrbs
-    call SolveDysonBL( BL%LeadNo, BLSigmak(ispin,1:NNeighbs,1:n,1:n), energy, BL%H0(ispin,1:n,1:n), BL%Vk(ispin,1:NNeighbs,1:n,1:n),BL%S0(1:n,1:n), BL%Sk(1:NNeighbs,1:n,1:n) )
+    call SolveDysonBL( BL%LeadNo, BLSigmak(ispin,1:NNeighbs,1:n,1:n), energy, BL%H0(ispin,1:n,1:n), BL%Vk(ispin,1:NNeighbs,1:n,1:n),BL%S0(1:n,1:n), BL%Sk(1:NNeighbs,1:n,1:n), sgn )
 
     G0X = c_zero
 
     do i=1,nx
        do j=1,nx
-          G0X(i,j)=(energy+ui*1.0d-10)*S0X(i,j)-H0X(ispin,i,j)
+          G0X(i,j)=(energy+sgn*ui*eta)*S0X(i,j)-H0X(ispin,i,j)
        enddo
     enddo
     
@@ -1261,11 +1261,11 @@ contains
     ReTrG0 = d_zero
     do ispin = 1, NSpin
        if( LeadBL(WhichLead)%Overlap )then
-          call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X ) 
+          call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X, 1 ) 
           GS0X = MATMUL( G0X, S0X )
           ReTrG0 = ReTrG0 + real(CTrace(GS0X(1:NAO,1:NAO)))          
        else
-          call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0 ) 
+          call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0, 1 ) 
           ReTrG0 = ReTrG0 + real(CTrace(G0))
        end if
     end do
