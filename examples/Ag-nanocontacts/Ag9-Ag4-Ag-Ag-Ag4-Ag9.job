@@ -1,0 +1,43 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -N Ag9-Ag4-Ag-Ag-Ag4-Ag9
+#$ -o OUTPUT
+#$ -e ERRORS
+#$ -pe orte 16
+#$ -V
+#$ -cwd
+#$ -l hostname=compute-1-4
+
+export tempdir=/scratch/palacios/$JOB_NAME-$JOB_ID ;
+export workdir=`pwd` ;
+export ANTG=/home/palacios/ANT.G/ANT.G-2.5.0/bin ;
+export ANT=/home/palacios/ANT.G/ANT.G-2.5.0 ;
+export GAUSS_SCRDIR=$tempdir ;
+export g09root=$HOME/Gaussian09/intel/v.D01
+. $g09root/g09/bsd/g09.profile ;
+
+echo "-------------------------------------------------";
+echo "Job:" $JOB_NAME ;
+echo "Machine name:" $HOSTNAME ;
+echo "Date:" `date`;
+echo "User:" $USER ;
+echo "Working directory = " $workdir;
+echo "Temporary directory =" $tempdir;
+echo "-------------------------------------------------";
+
+cd $tempdir ;
+
+echo "Currrent directory:" `pwd`;
+echo ""
+echo "------------------Your job starts ---------------";
+
+cp -pf $ANTG/l101.exe .
+cp -pf $ANTG/l502.exe .
+
+echo "Current directory contents:" `ls`;
+
+g09 $JOB_NAME.gjf ;
+
+rm -f Gau* *exe ;
+
+#END 
