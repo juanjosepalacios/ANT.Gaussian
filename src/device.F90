@@ -1048,30 +1048,30 @@
     E1=shift
     E2=shift+Z  
     if (root_fail) then
-        print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-           print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
-       end if
-    end if
-    if (root_fail) then
         print*,'SECANT method'
-        call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+        call SECANT(CompPD_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
         if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-           print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+           print *, 'Warning: SECANT method failed to find root. Using MULLER.'
            root_fail = .true.
         else
            shift = E3
            root_fail = .false.
         end if
-    end if    
+    end if      
+    if (root_fail) then
+        print*,'MULLER method'
+        call MULLER(CompPD_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+           root_fail = .true.
+        else
+           shift = E3
+           root_fail = .false.
+       end if
+    end if  
     if (root_fail) then
        print *, 'BISEC method'
-       shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
+       shift = BISEC(CompPD_SOC,EMin,EMax,Delta,5*Max,K)
        DE=Delta
        if(k.lt.5*Max) root_fail = .false.
        if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
@@ -1396,32 +1396,21 @@
      use parameters, only: eta, PAcc
 !    USE IFLPORT
      use omp_lib
-#ifdef G03ROOT
-    use g03Common, only: GetNAE, GetNBE
-#endif
-#ifdef G09ROOT
-    use g09Common, only: GetNAE, GetNBE
-#endif
      implicit none
 
      ! chemical potential
      real*8, intent(in) :: mu
 
-     complex*16, dimension(DNAOrbs,DNAOrbs) :: GDR, GDA, PD_SOC_R, PD_SOC_A
+     complex*16, dimension(DNAOrbs,DNAOrbs) :: GDR, GDA
 
      integer, parameter :: nmin=1, nmax=10, npmax=2**nmax-1
-     complex*16 :: DPD, QA, QR
-     real*8, dimension(2*npmax) :: x, w
-     real*8 :: Ei, dEdx, Q, QQ, E0 
-     integer :: n, np, i, j, k, l !, info, ierr
+     complex*16 :: DPD
+     real*8, dimension(npmax) :: x, w
+     real*8 :: Q, QQ, R
+     integer :: n, np, i, j, k, l, M !, info, ierr
      
-     real*8, parameter :: x0 = 0.5d0
-     real*8 :: aa, bb, cc, EM
-
-     EM = EMax
-     aa = EM/x0
-     bb = aa*(1.0d0-x0)**2
-     cc = EM - bb/(1-x0)
+    ! Integration contour parameters:
+     R  = 0.5*abs(EMin)
 
      shift = mu
 
@@ -1433,29 +1422,24 @@
         
         QQ = Q
         Q=d_zero
+        DPD = c_zero
         PD_SOC=c_zero
         PD_SOC_A=c_zero
-        PD_SOC_R=c_zero
-        QR = c_zero
-        QA = c_zero
-        
+        PD_SOC_R=c_zero       
+                
         ! Compute Gauss-Legendre abcsissas and weights
-        call gauleg(0.0d0,2.0d0,x(1:2*np),w(1:2*np),2*np)
+        call gauleg(0.d0,d_pi,x(1:np),w(1:np),np)
 
-!$OMP PARALLEL PRIVATE(Ei,dEdx,GDR,DPD)
+!$OMP PARALLEL PRIVATE(GDR,DPD)
 !$OMP DO
         do i=1,np
-           Ei = 2.0d0*EMax*x(i)
-           if( x(i) > 0.5d0 ) Ei = 0.5d0*EMax/(1.0d0-x(i))
-           dEdx = 2.0d0*EMax
-           if( x(i) > 0.5d0 ) dEdx = 0.5d0*EMax/(1.0d0-x(i))**2              
-           call gplus0_SOC( ui*Ei, GDR, 1 )        
+           call gplus0_SOC( R*exp(ui*x(i))-R, GDR, 1 )        
+
 !$OMP CRITICAL
            do k=1,DNAOrbs
               do l=1,DNAOrbs
-                 DPD = w(i)*(dEdx*ui*GDR(k,l)/(2.0d0*d_pi) + 0.5d0*InvS_SOC(k,l))
-                 PD_SOC_R(k,l) = PD_SOC_R(k,l) + DPD
-                 QR = QR + DPD*S_SOC(l,k)
+                 DPD = w(i)*(ui*R*exp(ui*x(i))*GDR(k,l)/d_pi)
+                 PD_SOC_R(k,l) = PD_SOC_R(k,l) + DPD     
               end do
            end do
 !$OMP END CRITICAL
@@ -1463,24 +1447,21 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
-        !print '(6(F20.5))', PD_SOC_R(1,1), PD_SOC_R(3,1), PD_SOC_R(1,3) 
+        
+        DPD = c_zero
+        
+        call gauleg(0.0d0,-d_pi,x(1:np),w(1:np),np)
 
-        call gauleg(-2.0d0,0.0d0,x(1:2*np),w(1:2*np),2*np)
-
-!$OMP PARALLEL PRIVATE(Ei,dEdx,GDA,DPD)
+!$OMP PARALLEL PRIVATE(GDA,DPD)
 !$OMP DO
-        do i=1,np
-           Ei = 2.0d0*EMax*x(i)
-           if( abs(x(i)) > 0.5d0 ) Ei = 0.5d0*EMax/(-1.0d0-x(i))
-           dEdx = -2.0d0*EMax
-           if( abs(x(i)) > 0.5d0 ) dEdx = -0.5d0*EMax/(-1.0d0-x(i))**2              
-            call gplus0_SOC( ui*Ei, GDA, -1)
+        do i=1,np           
+            call gplus0_SOC(R*exp(ui*(x(i)))-R, GDA, -1)
 !$OMP CRITICAL
              do k=1,DNAOrbs
                 do l=1,DNAOrbs
-                   DPD =  w(i)*(dEdx*ui*(GDA(k,l))/(2.0d0*d_pi) + 0.5d0*InvS_SOC(k,l))
-                   PD_SOC_A(k,l) = PD_SOC_A(k,l) + DPD   
-                   QA = QA + DPD*S_SOC(l,k)            
+                   ! DPD = w(i)*(ui*R*exp(ui*(d_pi-x(i)))*GDA(k,l)/d_pi)    ! alternative method that seemed to work with previous gplus0_SOC
+                   DPD = w(i)*(ui*R*exp(ui*(x(i)))*GDA(k,l)/d_pi)
+                   PD_SOC_A(k,l) = PD_SOC_A(k,l) + DPD    
                 end do
              end do
 !$OMP END CRITICAL
@@ -1488,31 +1469,28 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
+                     
+       PD_SOC=-ui*(PD_SOC_R  - PD_SOC_A)/2.0d0
+       !print '(2(F20.5))',PD_SOC(1,1)
+       !print '(4(F20.5))',PD_SOC(3,1),PD_SOC(1,3)          
 
-       !print '(6(F20.5))', PD_SOC_A(1,1), PD_SOC_A(3,1), PD_SOC_A(1,3) 
-       
-       PD_SOC=PD_SOC_R - PD_SOC_A
-       
-       Q = real(QR - QA)
-
-        !do k=1,DNAOrbs
-        !   do l=1,DNAOrbs
-        !      Q = Q + real(PD_SOC(k,l)*S_SOC(l,k))
-        !   end do
-        !end do
+        do k=1,DNAOrbs
+           do l=1,DNAOrbs
+              Q = Q + real(PD_SOC(k,l)*S_SOC(l,k))
+           end do
+        end do
         if( n > nmin .and. abs(Q-QQ) < PAcc ) exit
         if (n == nmax) print*, 'Warning!, not enough integration points'
      end do
         
      print '(A,I4,A)', ' Integration of density matrix along imaginary axis has needed ', np, ' points.'
-     print '(A,F10.5,A,F10.5,A,F8.5)', ' mu =', -mu, '  Num. of electrons =', Q, ' +/-', abs(Q-QQ) 
+     print '(A,F10.5,A,F10.5,A,F8.5)', ' mu =', -mu, '  Num. of electrons =', Q, ' +/-', abs(Q-QQ)            
 
-     Q_SOC = Q
+     Q_SOC = Q 
 
      CompPD_SOC = Q - dble(NCDEl)
 
   end function CompPD_SOC
-
 
 !-------------------------------------------------------------------------------------
   
@@ -2072,34 +2050,39 @@
 
     real*8, intent(in) :: x
 
-    real*8 :: rrr, a, b, Q
+    real*8 :: rrr, a, b, Q, E0
     integer :: i,j,M,omp_get_thread_num
 
        shift=x
     !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
        Q = d_zero
+       PD_SOC = c_zero       
+       PDOUT_SOC = c_zero
 
        ! Radius of complex contour integration
        ! add 10eV just in case 
-       rrr = 0.5*abs(EMin)+10.0d0;
+       !rrr = 0.5*abs(EMin)+10.d0;
+       !rrr = 0.5*(x - EMin)
 
        !c c Integral limits ... (a,b)
-       M=1000
-       a = 0.d0
-       b = d_pi
-       call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
-       PD_SOC_R=PD_SOC
+       !M=1000
+       !a = 0.d0
+       !b = d_pi
+       !call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
+       !PD_SOC_R=PD_SOC
+	   !!
+       !M=1000
+       !a = -d_pi
+       !b = 0.d0
+       !call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
+       !PD_SOC_A=PD_SOC
+	   !!
+       !PD_SOC = PD_SOC_R - PD_SOC_A
 
-       M=1000
-       a = -d_pi
-       b = 0.d0*d_pi
-       call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
-       PD_SOC_A=PD_SOC
-
-       PD_SOC = PD_SOC_R - PD_SOC_A
-
-      !if (NSpin == 2) call IntRealAxis_SOC(EMin,-dabs(biasvoltage/2.0),M)
-      !PD_SOC = PDOUT_SOC
+      !if (NSpin == 2)
+      M=10000 
+      call IntRealAxis_SOC(EMin,-dabs(biasvoltage/2.0),M)
+      PD_SOC = PD_SOC + PDOUT_SOC
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
@@ -3963,9 +3946,7 @@
       write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
 
       return
-    end subroutine IntRealAxis_SOC
-
-
+    end subroutine IntRealAxis_SOC     
 
   !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
   !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
@@ -4430,16 +4411,17 @@
 
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-         greenr(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+        if (sgn == 1) greenr(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+        if (sgn == -1) greenr(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-conjg(sigmal(i,j))-conjg(sigmar(i,j))
        enddo
     enddo
 
     call zgetrf(DNAOrbs,DNAOrbs,greenr,DNAOrbs,ipiv,info)
     call zgetri(DNAOrbs,greenr,DNAOrbs,ipiv,work,4*DNAOrbs,info)
 
-   !green =greenr !retarded
-   if (sgn == 1)  green =greenr !retarded
-   if (sgn == -1) green = conjg(transpose(greenr)) !advanced
+   green =greenr !retarded
+   !if (sgn == 1)  green =greenr !retarded
+   !if (sgn == -1) green = conjg(transpose(greenr)) !advanced
  
    !print*,'in gplus0'
    !print*,sgn
