@@ -209,14 +209,6 @@
   ! Global SOC_COEFF_F                                             
   REAL*8 :: soc_cff_f = 0.0d0                             
   CHARACTER(len=10), PARAMETER :: SOC_CFF_F_keyw = "SOC_CFF_F"   
-    
-  ! THETA
-  REAL*8 :: theta = 0.0d0                           
-  CHARACTER(len=10), PARAMETER :: THETA_keyw = "THETA"
-  
-  ! PHI                                             
-  REAL*8 :: phi = 0.0d0                             
-  CHARACTER(len=10), PARAMETER :: PHI_keyw = "PHI"
   
   ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
   INTEGER :: NSocFacAtom = 0
@@ -231,6 +223,18 @@
   INTEGER :: NSOCEdit = 0 
   REAL*8, DIMENSION( MaxAtm ) :: SOCEditP = 0.0d0, SOCEditD = 0.0d0,  SOCEditF = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCEdit_keyw = "SOCEDIT"
+  
+  ! ROT
+  LOGICAL :: rot = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: ROT_keyw = "ROT"      
+  
+  ! THETA
+  REAL*8 :: theta = 0.0d0                           
+  CHARACTER(len=10), PARAMETER :: THETA_keyw = "THETA"
+  
+  ! PHI                                             
+  REAL*8 :: phi = 0.0d0                             
+  CHARACTER(len=10), PARAMETER :: PHI_keyw = "PHI"  
   
   ! Atom spin orientation manipulation of initial guess
   INTEGER :: NSpinRot = 0
@@ -518,7 +522,9 @@ CONTAINS
     CASE ( DiagCorrBl_keyw )
        DiagCorrBl = .true.
     CASE ( SOC_keyw )
-       soc = .true.        
+       soc = .true.   
+    CASE ( ROT_keyw )
+       rot = .true.               
     CASE ( SpinDel_keyw )
        SpinDel = .true.
     CASE ( FMixing_keyw )
@@ -753,6 +759,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
     WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
     WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
+    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"   
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL

@@ -704,7 +704,7 @@
   !* Solve transport problem *
   !***************************
   subroutine Transport(F,ADDP) 
-    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, PrtHatom
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, ROT, PrtHatom
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -818,7 +818,7 @@
           end do
        end if   
         
-       if (SOC) then 
+       if (SOC .or. ROT) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -2723,7 +2723,7 @@
   subroutine transmission
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, FermiAcc, QExcess, ChargeAcc, DMIMAG
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, ChargeAcc, DMIMAG
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
 #ifdef PGI
@@ -2763,7 +2763,7 @@
     print *, "--------------------------------"
     print *
 
-    if (SOC) then
+    if (SOC .or. ROT) then
        write(ifu_log,*)' Adding spin-orbit coupling ... and finding new Fermi level'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2817,7 +2817,7 @@
     allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr)
     if( AllocErr /= 0 ) stop
 
-    if (SOC) then
+    if (SOC .or. ROT) then
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
           call CompDensMat2_SOC(ADDP)
@@ -2834,7 +2834,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if (.not. SOC) then
+    if ((.not. SOC) .and. (.not. ROT)) then
 
     do ispin=1,NSpin
 
@@ -3132,7 +3132,7 @@
           
           if (dabs(trans2-trans) >= 1.0d-5) then
                print*,'Warning in the transmission with SOC'
-               stop
+               !stop
            end if
 
           call flush(334)
@@ -3183,7 +3183,7 @@
 
   end if !End of SOC if
 
-      if (SOC) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -4446,8 +4446,9 @@
  subroutine spin_orbit
 
     use SpinOrbit, only: CompHSO
+    use SpinRotate, only: CompHROT
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, NSpinRot
+    use parameters, only: PrtHatom, NSpinRot, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
@@ -4456,15 +4457,15 @@
     use g09Common, only: GetNShell
 #endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: hamil_SO, overlap_SO, hamilrot
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
     integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
  Atom = PrtHatom   
  totdim=NAOrbs   
  hamilrot = c_zero
- hamil_SO = c_zero
- overlap_SO = c_zero
+ overlaprot = c_zero
+ hamil_SO = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4472,34 +4473,36 @@
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (NSpin == 2) then
-    do i=1,NAOrbs
-    do j=1,NAOrbs
-       hamilrot(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamilrot(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
-       S_SOC(i,j)=SD(i,j)              
-       S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)
-    end do
-    end do
- else 
-    do i=1,NAOrbs
-    do j=1,NAOrbs
-       hamilrot(i,j)=dcmplx(HD(1,i,j),0.0d0)
-       hamilrot(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-       S_SOC(i,j)=SD(i,j)              
-       S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)
-    end do
-    end do
+ if (SOC) then 
+   if (NSpin == 2) then
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
+         S_SOC(i,j)=SD(i,j)              
+         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+      end do
+      end do
+   else 
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+         S_SOC(i,j)=SD(i,j)              
+         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+      end do
+      end do
+   end if
  end if
-
+ 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Return the input matrix with double size plus the soc interaction
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
  nshell = GetNShell()
  
- CALL CompHSO(hamil_SO,HD,hamilrot,SD,overlap_SO,NAOrbs,nshell)
-!CALL CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOrbs,nshell)
+ If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
+ If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
@@ -4556,20 +4559,23 @@
 !    PRINT '(1000(F11.5))',  ( IMAG(hamil_SO( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
 !end do                                                                                             
 
- if (NSPINROT > 0) then
+ if (ROT) then
     S_SOC=d_zero
     do i=1, totdim*2
        do j=1, totdim*2
-          S_SOC(i,j)=REAL(overlap_SO(i,j))         
+          S_SOC(i,j)=REAL(overlaprot(i,j))         
+          H_SOC(i,j)=hamilrot(i,j)
        end do
     end do 
  end if    
 
- do i=1, totdim*2
-    do j=1, totdim*2
-       H_SOC(i,j)=hamilrot(i,j)+hamil_SO(i,j)
-    end do
- end do
+ if (SOC) then
+   do i=1, totdim*2
+      do j=1, totdim*2
+         H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
+      end do
+   end do
+ end if
 
  return
  end subroutine spin_orbit
