@@ -2,6 +2,7 @@
 #
 # Important flags for ANT Make file 
 #
+# Flags are obtained automatically after running ./install, but still probably need to be tuned for your particular system. In particular removing compilation flags sometimes helps
 
 # Preprocessor flags. Must be the same value as in Gaussian
 PREPROC= -DDEFMAXSHL=250000 -DDEFMAXATM=250000 -DDEFMAXTIT=100 -DDEFMAXRTE=4000
