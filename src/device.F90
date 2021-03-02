@@ -1080,7 +1080,7 @@
     E2=shift+Z  
     if (root_fail) then
         print*,'SECANT method'
-        call SECANT(CompPD_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+        call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
         if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
            print *, 'Warning: SECANT method failed to find root. Using MULLER.'
            root_fail = .true.
@@ -1091,7 +1091,7 @@
     end if      
     if (root_fail) then
         print*,'MULLER method'
-        call MULLER(CompPD_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
         if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
            print *, 'Warning: MULLER method failed to find root. Using BISEC.'
            root_fail = .true.
@@ -1102,7 +1102,7 @@
     end if  
     if (root_fail) then
        print *, 'BISEC method'
-       shift = BISEC(CompPD_SOC,EMin,EMax,Delta,5*Max,K)
+       shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
        DE=Delta
        if(k.lt.5*Max) root_fail = .false.
        if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
@@ -1437,8 +1437,9 @@
      real*8 :: Q, QQ, R
      integer :: n, np, i, j, k, l, M !, info, ierr
      
-    ! Integration contour parameters:
-     R  = 0.5*abs(EMin)
+     ! Radius of complex contour integration
+     ! add 10eV just in case 
+     R  = 0.5*abs(EMin)+10.0
 
      shift = mu
      PD_SOC=c_zero
@@ -2106,34 +2107,30 @@
 
        shift=x
     !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
-       Q = d_zero
+       Q = 0.d0
        PD_SOC = c_zero       
        PDOUT_SOC = c_zero
 
        ! Radius of complex contour integration
        ! add 10eV just in case 
-       !rrr = 0.5*abs(EMin)+10.d0;
-       !rrr = 0.5*(x - EMin)
+       rrr = 0.5*abs(EMin)+10.0;
 
        !c c Integral limits ... (a,b)
-       !M=1000
-       !a = 0.d0
-       !b = d_pi
-       !call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
-       !PD_SOC_R=PD_SOC
-	   !!
-       !M=1000
-       !a = -d_pi
-       !b = 0.d0
-       !call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
-       !PD_SOC_A=PD_SOC
-	   !!
-       !PD_SOC = PD_SOC_R - PD_SOC_A
+       M=1000
+       a = 0.d0
+       b = d_pi
+       call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
+       PD_SOC_R=PD_SOC
+	   
+       M=1000
+       a = -d_pi
+       b = 0.d0
+       call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
+       PD_SOC_A=PD_SOC
+	   
+       PD_SOC = PD_SOC_R - PD_SOC_A
 
       !if (NSpin == 2)
-      M=10000 
-      call IntRealAxis_SOC(EMin,-dabs(biasvoltage/2.0),M)
-      PD_SOC = PD_SOC + PDOUT_SOC
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
@@ -2145,12 +2142,12 @@
 
       do i=NCDAO1, NCDAO2
           do j=1,NAOrbs
-             Q=Q+REAL(PD_SOC(i,j)*S_SOC(j,i))
+             Q=Q+PD_SOC(i,j)*S_SOC(j,i)
           end do
        end do
        do i=NCDAO1+NAOrbs, NCDAO2+NAOrbs
           do j=NAOrbs+1,DNAOrbs
-             Q=Q+REAL(PD_SOC(i,j)*S_SOC(j,i))
+             Q=Q+PD_SOC(i,j)*S_SOC(j,i)
           end do
        end do
 
@@ -4247,26 +4244,17 @@
     er0 = edex3(Em,b,x0)
     der0 = 0.5d0*(Em-b)
     E0 = rrr*exp(ui*er0)-rrr+Eq
-
-  !print*,'........'
-  !print*,'sgn', sgn
-  !print'(4(F11.5))',er0, der0, E0            
+       
     call gplus0_SOC(E0,green,sgn)
-    !print*,green(1,1)
-    !print*,green(1,3),green(3,1)
-
 
     CH = 0.d0
 
     do i = 1,DNAOrbs
        do j =1,DNAOrbs
           PD_SOC(i,j)= PD_SOC(i,j) + a*rrr*exp(ui*er0)*green(i,j)*der0
-          CH = CH + sgn*real(PD_SOC(i,j)*S_SOC(j,i))
+          CH = CH + real(PD_SOC(i,j)*S_SOC(j,i))
        enddo
     enddo
-    !print*,PD_SOC(1,1)
-    !print*,PD_SOC(1,3)
-    !print*,PD_SOC(3,1)
     
    !print*,'ch', 16*CH/(3*(n+1))    
     
@@ -4291,18 +4279,13 @@
     do l=1,n,2
     !print*,n
        !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
-       x = 1+sgn*(0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1))
+       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
        erp = 0.5d0*((Em-b)*x + (Em+b))
        erm = 0.5d0*(-(Em-b)*x + (Em+b))
        EE(1) = rrr*exp(ui*erp)-rrr+Eq
        EE(2) = rrr*exp(ui*erm)-rrr+Eq
-       !if ( ((((n-1)/2)+1)/2 .ge. 15 .and. sgn ==+1) .or. ((((n-1)/2)+1)/2 .ge. 15 .and. sgn ==-1) ) then 
-       !   print'(6(F11.5))',erp,erm,EE(1),EE(2)
-       !end if
        do k=1,2
-          call gplus0_SOC(EE(k),greenn(k,:,:),sgn)
-          !print *,'k = ', k
-          !print'(6(F11.5))',greenn(k,1,1),greenn(k,1,3),greenn(k,3,1)          
+          call gplus0_SOC(EE(k),greenn(k,:,:),sgn)    
        end do
         
        do i = 1,DNAOrbs
@@ -4320,18 +4303,13 @@
        end do
 !$OMP END CRITICAL
 !$OMP END PARALLEL
-    !print*,PD_SOC(1,1)
-    !print*,PD_SOC(1,3)
-    !print*,PD_SOC(3,1)
     CH = 0.d0
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-         !CH = CH + real(PD_SOC(i,j))*S_SOC(j,i)
-          CH = CH + sgn*real(PD_SOC(i,j)*S_SOC(j,i))
+          CH = CH + real(PD_SOC(i,j)*S_SOC(j,i))
        end do
     enddo
-    !print *, CH
-    print*,'ch', 16*CH/(3*(n+1))
+    !print*,'ch', 16*CH/(3*(n+1))
     ! ... replacing n by 2n+1
     n = n + n + 1
     ! Stopping?
@@ -4342,7 +4320,7 @@
     CH = 16*CH/(3*(n+1))
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-          PD_SOC(i,j) = 16*PD_SOC(i,j)/(3*(n+1))
+          PD_SOC(i,j) = sgn*16*PD_SOC(i,j)/(3*(n+1))
        enddo
     enddo
    !print*,'ch', CH
