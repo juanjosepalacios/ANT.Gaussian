@@ -90,7 +90,7 @@ CONTAINS
   !*** Compute matrix of Rotated Hamiltonian for a given basis set ***
   !*******************************************************************
   SUBROUTINE CompHROT(HD,hamilrot,SD,overlaprot,NAOs,Nshell)
-    USE parameters, ONLY: theta, phi, NSpinRot, SpinRotTheta, SpinRotPhi
+    USE parameters, ONLY: theta, phi, NSpinRotAtom, SpinRotAtomTheta, SpinRotAtomPhi
     USE G09common, ONLY : GetNAtoms, GetShellT, GetAtm4Sh, GetShellN
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -153,9 +153,9 @@ CONTAINS
             AtomID2 = GetAtm4Sh(k)   
           	DO q=1,2*ShellT2+1
           	  IF (AtomID2 == AtomID1) THEN 
-                    IF( NSpinRot > 0) THEN
-                      theta_atom = SpinRotTheta(AtomID2)
-                      phi_atom = SpinRotPhi(AtomID2)
+                    IF( NSpinRotAtom > 0) THEN
+                      theta_atom = SpinRotAtomTheta(AtomID2)
+                      phi_atom = SpinRotAtomPhi(AtomID2)
                     ELSE
                       theta_atom = theta
                       phi_atom = phi	
@@ -176,7 +176,7 @@ CONTAINS
                   ! Rotate INTER-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space    
                   ELSE
                       
-                      CALL Rot_Matrices( SpinRotTheta(AtomID1), SpinRotPhi(AtomID1), u, v, ustar, vstar )
+                      CALL Rot_Matrices( SpinRotAtomTheta(AtomID1), SpinRotAtomPhi(AtomID1), u, v, ustar, vstar )
                       ! Hamiltonian
                       HROT1temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                       HROT1temp12 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
@@ -188,7 +188,7 @@ CONTAINS
                       SROT1temp21 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
                       SROT1temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                                                                                                                                       
-                      CALL Rot_Matrices( SpinRotTheta(AtomID2), SpinRotPhi(AtomID2), u, v, ustar, vstar )
+                      CALL Rot_Matrices( SpinRotAtomTheta(AtomID2), SpinRotAtomPhi(AtomID2), u, v, ustar, vstar )
                       ! Hamiltonian
                       HROT2temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                       HROT2temp12 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 

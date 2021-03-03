@@ -237,9 +237,9 @@
   CHARACTER(len=10), PARAMETER :: PHI_keyw = "PHI"  
   
   ! Atom spin orientation manipulation of initial guess
-  INTEGER :: NSpinRot = 0
-  REAL*8, DIMENSION( MaxAtm) :: SpinRotTheta = 0.0d0, SpinRotPhi = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: SpinRot_keyw = "SPINROT"       
+  INTEGER :: NSpinRotAtom = 0
+  REAL*8, DIMENSION( MaxAtm) :: SpinRotAtomTheta = 0.0d0, SpinRotAtomPhi = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"       
   
 
   ! *********************
@@ -635,32 +635,32 @@ CONTAINS
          SOCFacAtom( index ) = rval
       END DO       
                          
-    CASE ( SPINROT_keyw )
-           READ (unit=inpfile,fmt=*,iostat=ios), NSpinRot
+    CASE ( SPINROTATOM_keyw )
+           READ (unit=inpfile,fmt=*,iostat=ios), NSpinRotAtom
            IF( ios /= 0 ) RETURN 
-           DO i=1,NSpinRot
+           DO i=1,NSpinRotAtom
               READ (unit=inpfile,fmt=*,iostat=ios), index, rval, rvall
               IF( ios /= 0 ) RETURN 
               IF( abs(rval) > 180.0d0 )THEN
-                 WRITE( unit=logfile, fmt=* ) "ERROR - Illegal theta value in SPINROT field"
+                 WRITE( unit=logfile, fmt=* ) "ERROR - Illegal theta value in SPINROTATOM field"
                  WRITE( unit=logfile, fmt=* ) "Allowed values: -180\BA ... 180\BA"
                  ios = 1
                  RETURN
               END IF
               IF( abs(rvall) > 360.0d0 )THEN                                               
-                 WRITE( unit=logfile, fmt=* ) "ERROR - Illegal phi value in SPINROT field"
+                 WRITE( unit=logfile, fmt=* ) "ERROR - Illegal phi value in SPINROTATOM field"
                  WRITE( unit=logfile, fmt=* ) "Allowed values: -360\BA ... 360\BA"                 
                  ios = 1                                                                  
                  RETURN                                                                   
               END IF                                                                      
               IF( index > MaxAtm .OR. index < 1 )THEN
-                 WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SPINROT field"
+                 WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SPINROTATOM field"
                  WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
                  ios = 1
                  RETURN
               END IF
-              SpinRotTheta( index ) = rval
-              SpinRotPhi( index ) = rvall
+              SpinRotAtomTheta( index ) = rval
+              SpinRotAtomPhi( index ) = rvall
            END DO
 
     CASE ( SOCEDIT_keyw )
@@ -824,9 +824,9 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SOCFacAtom(i) > 1.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
     END DO        
-    WRITE(unit=logfile,fmt=*) SpinRot_keyw, " = ", NSpinRot
+    WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
-       IF( SpinRotTheta(i) > 0.0d0 .OR. SpinRotPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotTheta(i), SpinRotPhi(i)
+       IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
     END DO                                                                  
     WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
     DO i=1,MaxAtm

@@ -2744,7 +2744,7 @@
     real*8, dimension(MaxAtm) :: AtomDOS
     real*8, dimension(10001) :: xxx
     complex*16 :: cenergy,ctrans
-    integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k
+    integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k, wcount
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
     complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD
@@ -2991,6 +2991,8 @@
       
       open(334,file='tempT',status='unknown')
       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+      
+      wcount = 0  ! Issue warning of failure in transmission just once
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
@@ -3130,8 +3132,10 @@
           trans2 = T_uu + T_du + T_dd + T_ud
 
           
-          if (dabs(trans2-trans) >= 1.0d-5) then
-               print*,'Warning in the transmission with SOC'
+          if (dabs(trans2-trans) >= 1.0d-5 .and. wcount < 1) then
+               if (SOC) print*,'Warning in the transmission with SOC'
+               if (ROT) print*,'Warning in the transmission with spin rotations'
+               wcount = wcount + 1
                !stop
            end if
 
@@ -4448,7 +4452,7 @@
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, NSpinRot, SOC, ROT
+    use parameters, only: PrtHatom, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
