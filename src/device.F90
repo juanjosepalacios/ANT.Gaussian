@@ -2764,7 +2764,7 @@
     print *
 
     if (SOC .or. ROT) then
-       write(ifu_log,*)' Adding spin-orbit coupling ... and finding new Fermi level'
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
