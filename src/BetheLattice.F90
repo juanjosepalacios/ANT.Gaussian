@@ -1272,6 +1272,43 @@ contains
     if(NSpin==1) ReTrG0=2d0*ReTrG0
   end function ReTrG0
 
+  ! *************************************************************
+  ! Real part of trace of Bulk Green's function on imaginary axis
+  ! - For charge integration along imaginary axis
+  ! *************************************************************
+  !real function ReTrG01DBL( ImE ) ! NOT USED NOW FOR 1DBL. DUPLICATE ImE MAKES INTEGRATION OF LEAD CHARGE EASIER.
+  !  use constants, only: ui, d_zero
+  !  use numeric, only: ctrace
+  !  implicit none
+  !
+  !  real, intent(in) :: ImE
+  !
+  !  complex*16 :: zenergy
+  !  complex*16, dimension(LeadBL(WhichLead)%NAOrbs,LeadBL(WhichLead)%NAOrbs) :: G0
+  !  complex*16, dimension(nx,nx) :: G0X, GS0X
+  !
+  !  integer :: ispin, NSpin, NAO
+  !
+  !  NAO = LeadBL(WhichLead)%NAOrbs
+  !  NSpin = LeadBL(WhichLead)%NSpin
+  !
+! !   zenergy = E0 + ui*ImE ! ORIGINAL CODE.
+  !  zenergy = E0 + ui*2.0d0*ImE ! DUPLICATE ImE MAKES INTEGRATION OF LEAD CHARGE EASIER.
+  !
+  !  ReTrG01DBL = d_zero
+  !  do ispin = 1, NSpin
+  !     if( LeadBL(WhichLead)%Overlap )then
+  !        call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X )
+  !        GS0X = MATMUL( G0X, S0X )
+  !        ReTrG01DBL = ReTrG01DBL + real(CTrace(GS0X(1:NAO,1:NAO)))
+  !     else
+  !        call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0 )
+  !        ReTrG01DBL = ReTrG01DBL + real(CTrace(G0))
+  !     end if
+  !  end do
+  !  if(NSpin==1) ReTrG01DBL=2d0*ReTrG01DBL
+  !  if(Debug)Write(*,'(A,g15.5)')"ReTrG01DBL = ",ReTrG01DBL
+  !end function ReTrG01DBL
 
   !
   ! *** Computes rotation matrix TR for direction k ***

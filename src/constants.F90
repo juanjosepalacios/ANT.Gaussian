@@ -35,6 +35,10 @@
   REAL*8, PARAMETER :: Hart = 27.2113834d0
   REAL*8, PARAMETER :: Ryd  = 0.5d0*Hart
   REAL*8, PARAMETER :: Bohr  = 0.5291772108d0
+  
+  REAL*8, PARAMETER :: eleccharge = 1.6d-19
+!  REAL*8, PARAMETER :: hbar = 1.05457d-34 ! J*s
+  REAL*8, PARAMETER :: hbar = 6.582d-16 ! eV*S ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.  
 
   ! Computational constants
   
