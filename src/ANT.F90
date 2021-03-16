@@ -29,7 +29,15 @@
 !*     03690 Alicante (SPAIN)                             *
 !*                                                        *
 !**********************************************************
-  SUBROUTINE ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn,NBasis)
+  MODULE ANT
+  
+  PUBLIC :: ANT
+
+CONTAINS
+  !SUBROUTINE ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn,NBasis)
+  SUBROUTINE ANT (UHF,JCycle,inputNCycles,Cinputjobname,Cinputjobname_len,NBasis,&
+                 outHWFockA,outHWFockB,outGibbsYA,outGibbsYB,outGibbsYKernel1A,outGibbsYKernel1B,outGibbsYKernel2A,outGibbsYKernel2B,&
+                 IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn)   
 !**********************************************************************************************************************
 !* Interface subroutine with Gaussian                                                                                 *
 !**********************************************************************************************************************
@@ -40,7 +48,9 @@
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
        SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, &
-       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
+       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat, &
+       DevHWFockMat, SetDevHWFockMat, &
+       DevDGibbsYMat, SetDevDGibbsYMat, DevDGibbsYKernel1Mat, SetDevDGibbsYKernel1Mat, DevDGibbsYKernel2Mat, SetDevDGibbsYKernel2Mat       
 #ifdef G03ROOT
   USE g03Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
 #endif
@@ -52,7 +62,9 @@
   IMPLICIT NONE
 
   ! dummy arguments
-  LOGICAL, INTENT(in)      :: UHF          
+  LOGICAL, INTENT(in)      :: UHF   
+  REAL*8,DIMENSION(NBasis,NBasis),INTENT(out) :: outHWFockA, outHWFockB
+  REAL*8,DIMENSION(NBasis,NBasis),INTENT(out) :: outGibbsYA, outGibbsYB, outGibbsYKernel1A, outGibbsYKernel1B, outGibbsYKernel2A, outGibbsYKernel2B       
   REAL*8,INTENT(in)        :: denerrj, Crit
   INTEGER, INTENT(in)    :: NBasis,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig
   INTEGER, INTENT(inout) :: JCycle
@@ -62,7 +74,7 @@
 
   ! local variables
   REAL*8    :: val, density, fock, exspin, norma
-  INTEGER :: ic, ndim, i, j, info, ii, jj, ispin, acount, AllocErr, ios ,k, iatom, jatom, ntot
+  INTEGER :: ic, ndim, i, j, info, ii, jj, ispin, acount, AllocErr, ios ,k, iatom, jatom, ntot, ia
   INTEGER, DIMENSION(MaxAtm) :: NAO
 
   CHARACTER(len=50), SAVE :: densitymatrix, fockmatrix
@@ -73,7 +85,6 @@
 
   REAL*8, DIMENSION(:),ALLOCATABLE   :: TS
   REAL*8, DIMENSION(:,:),ALLOCATABLE :: S
-  real, DIMENSION(:,:,:),ALLOCATABLE :: PtimesS  
 
   !
   ! Matrices in lower trinagular form (alpha and beta) 
@@ -91,9 +102,6 @@
   INTEGER, DIMENSION(npulay+1) ::  ipiv
 
   real*8 :: fmix
-  real, DIMENSION(2) :: TraceCharge, TraceChargeNoOv
-  real, DIMENSION(:,:),ALLOCATABLE ::  SingleSpinDens
-  character(80) strfmt  
 
   !*******************************************************************
   ! Before first cycle: Initialize module device, allocate memory etc 
@@ -468,6 +476,61 @@
   
   ! Call subroutine that solves transport problem
   CALL Transport(F,ADDP)
+  
+  if( jcycle.EQ.1000)THEN
+    if(CompFock)then
+      Write(*,'(A)')"outHWFockA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      Write(*,'(A)')"ALPHA HWFOCK outHWFockA(:,:)"
+      do i=1,NBasis
+        do j=1,NBasis
+          outHWFockA(i,j)=DevHWFockMat(1,i,j)
+        end do
+        Write(*, '(10F8.4)')( outHWFockA(i,j) ,j=1,NBasis)
+      end do
+      if(NSpin==2)then
+        Write(*,'(A)')"BETA HWFOCK outHWFockB(:,:)"
+        do i=1,NBasis
+          do j=1,NBasis
+            outHWFockB(i,j)=DevHWFockMat(2,i,j)
+          end do
+          Write(*, '(10F8.4)')( outHWFockB(i,j) ,j=1,NBasis)
+        end do
+      end if
+      Write(*,'(A)')"END outHWFockA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+
+      Write(*,'(A)')"outGibbsYA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      Write(*,'(A)')"ALPHA GibbsY outGibbsYA(:,:)"
+      do i=1,NBasis
+        do j=1,NBasis
+          outGibbsYA(i,j)=DevDGibbsYMat(1,i,j)
+          outGibbsYKernel1A(i,j)=DevDGibbsYKernel1Mat(1,i,j)
+          outGibbsYKernel2A(i,j)=DevDGibbsYKernel2Mat(1,i,j)
+        end do
+        Write(*, '(10F8.4)')( outGibbsYA(i,j) ,j=1,NBasis)
+      end do
+      Write(*,'(A)')"ALPHA GibbsY outGibbsYKernel1A(:,:)"
+      call PrintRMatrix(outGibbsYKernel1A)
+      Write(*,'(A)')"ALPHA GibbsY outGibbsYKernel2A(:,:)"
+      call PrintRMatrix(outGibbsYKernel2A)
+      if(NSpin==2)then
+        Write(*,'(A)')"BETA GibbsY outGibbsYB(:,:)"
+        do i=1,NBasis
+          do j=1,NBasis
+            outGibbsYB(i,j)=DevDGibbsYMat(2,i,j)
+            outGibbsYKernel1B(i,j)=DevDGibbsYKernel1Mat(2,i,j)
+            outGibbsYKernel2B(i,j)=DevDGibbsYKernel2Mat(2,i,j)
+          end do
+          Write(*, '(10F8.4)')( outGibbsYB(i,j) ,j=1,NBasis)
+        end do
+        Write(*,'(A)')"BETA GibbsY outGibbsYKernel1B(:,:)"
+        call PrintRMatrix(outGibbsYKernel1B)
+        Write(*,'(A)')"BETA GibbsY outGibbsYKernel2B(:,:)"
+        call PrintRMatrix(outGibbsYKernel2B)
+      end if
+      Write(*,'(A)')"END outGibbsYA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+    end if
+  end if  
+  
   CALL SwitchOffChargeCntr
   
   IF( SL <= 0.0d0 ) alpha = 1.0d0
@@ -667,3 +730,16 @@
   !*********
   RETURN
 END SUBROUTINE ANT
+
+  subroutine PrintRMatrix( A )
+    implicit none
+    real,dimension(:,:),intent(in) :: A
+    integer :: i,j,dim1,dim2
+    dim1 = size(A,1)
+    dim2 = size(A,2)
+    do i=1,dim1
+       print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
+    end do
+  end subroutine PrintRMatrix
+  
+END MODULE ANT  
