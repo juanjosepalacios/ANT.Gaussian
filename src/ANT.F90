@@ -35,7 +35,7 @@
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT, IntEnergy, DiagFock, SpinMu
   USE constants, ONLY: Hart
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
@@ -73,6 +73,7 @@
 
   REAL*8, DIMENSION(:),ALLOCATABLE   :: TS
   REAL*8, DIMENSION(:,:),ALLOCATABLE :: S
+  real, DIMENSION(:,:,:),ALLOCATABLE :: PtimesS  
 
   !
   ! Matrices in lower trinagular form (alpha and beta) 
@@ -90,6 +91,9 @@
   INTEGER, DIMENSION(npulay+1) ::  ipiv
 
   real*8 :: fmix
+  real, DIMENSION(2) :: TraceCharge, TraceChargeNoOv
+  real, DIMENSION(:,:),ALLOCATABLE ::  SingleSpinDens
+  character(80) strfmt  
 
   !*******************************************************************
   ! Before first cycle: Initialize module device, allocate memory etc 

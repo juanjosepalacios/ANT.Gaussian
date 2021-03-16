@@ -36,12 +36,21 @@ MODULE BetheLattice
 !* leads by means of a Bethe lattice model                *
 !**********************************************************
   use ANTCommon  
+  use parameters, only: Debug, DebugBethe, DebugDyson
+  use util, only: PrintCMatrix  
   implicit none
   save
 
   ! Array dimensions
   integer, parameter, private :: MaxDim = 100, MaxSh = 10, MaxDir = 12
-
+  
+  !*************************************
+  !********** Type for shells **********
+  !*************************************
+  type Shell_def_t
+    integer*8 :: ntypeshell
+    integer*8 :: norbsinshell
+  end type
   !*************************************
   !* Type for Bethe lattice parameters *
   !*************************************
@@ -84,6 +93,7 @@ MODULE BetheLattice
      ! f_{y(3x^2-y^2)}   = 15
 
      integer, dimension(MaxDim) :: AOT 
+     integer, dimension(MaxDim) :: SHT     
      
      ! number of s-orbitals in atomic basis-set
      integer :: nso
@@ -116,6 +126,8 @@ MODULE BetheLattice
 
      ! Lower and upper bound for non-zero DOS
      real*8 :: EMin, EMax
+     ! FermiStart to search Fermi Level for each Lead (+- BiasVoltage)
+     real :: FermiStart = 0.0d0     
   end type TBetheLattice
 
 
@@ -177,6 +189,7 @@ contains
   ! *** Initialize Bethe lattice ***
   ! 
   subroutine InitBetheLattice( BL, LeadNo )
+    use util, only: PrintCMatrix  
     use cluster, only: LeadAtmNo, LeadNAOrbs, NNeigBL, vpb, NConnect
     use constants, only: c_zero, ui
     use Parameters, only : leaddos, estep, Overlap, ANT1DInp, eta
@@ -269,6 +282,8 @@ contains
        BL%Vk = c_zero
        BL%Sk = c_zero
        do ispin=1, BL%NSpin
+          Write(*,'(A,I2)')"BL%NNeighbs = ",BL%NNeighbs
+          !if(DebugBethe)Pause       
           do k=1, BL%NNeighbs
              ! *** get coupling from bethe parameters
              do i=1, n
@@ -403,9 +418,36 @@ contains
                    ! write(ifu_log,*)k,i,j,BL%Vk(ispin, k,i,j)
                 end do
              end do
+             if(DebugBethe)Write(*,'(A,I2,A,I2,A)')"BL%Vk(",ispin,",", k,", :, :) in InitBetheLattice"
+             if(DebugBethe)call PrintCMatrix(BL%Vk(ispin, k, 1:n, 1:n))
+             if(DebugBethe)Pause             
           end do
        end do
     end if
+    if(DebugBethe)then
+      Write(*,'(A)')"(BL%Vk(ispin, k, 1:n, 1:n))"
+      do iSpin=1,BL%NSpin
+        do k=1,BL%NNeighbs
+          do i=1,n
+            do j=1,n
+              Write(*,'(A,I2,A,I2,A,I2,A,I2,A,g15.5,A,g15.5,A)')"(",ispin,",",k,",",i,",",j,",",REAL(BL%Vk(ispin, k, i, j)),",",AIMAG(BL%Vk(ispin, k, i, j)),")"
+              if(DebugBethe)pause
+            end do
+          end do
+        end do
+      end do
+
+      Write(*,'(A)')"(BL%Sk(ispin, k, 1:n, 1:n))"
+        do k=1,BL%NNeighbs
+          do i=1,n
+            do j=1,n
+              Write(*,'(A,I2,A,I2,A,I2,A,g15.5,A,g15.5,A)')"(",k,",",i,",",j,",",REAL(BL%Sk(k, i, j)),",",AIMAG(BL%Sk(k, i, j)),")"
+              if(DebugBethe)pause
+            end do
+          end do
+        end do
+    end if
+    
 
     !
     ! Rotate hoppings and overlaps
@@ -413,8 +455,15 @@ contains
     do k=1, BL%NNeighbs
        call getRotMat( BL, k, TR )
        do ispin=1, BL%NSpin
+          if(DebugBethe)Write(*,'(A)')"TR(:, :) in InitBetheLattice Rotation"
+          if(DebugBethe)call PrintCMatrix(TR(1:n, 1:n))
           temp = matmul( TR, BL%Vk(ispin, k,1:n,1:n) )
+          if(DebugBethe)Write(*,'(A)')"temp(:, :) in InitBetheLattice Rotation"
+          if(DebugBethe)call PrintCMatrix(temp(1:n, 1:n))
           BL%Vk(ispin, k,1:n,1:n) = matmul( temp, transpose( TR ) )
+          if(DebugBethe)Write(*,'(A,I2,A,I2,A)')"BL%Vk(",ispin,",", k,", :, :) in InitBetheLattice Rotation"
+          if(DebugBethe)call PrintCMatrix(BL%Vk(ispin, k, 1:n, 1:n))
+          if(DebugBethe)pause
        end do
        temp = matmul( TR, BL%Sk( k,1:n,1:n) )
        BL%Sk(k,1:n,1:n) = matmul( temp, transpose( TR ) )
@@ -682,6 +731,8 @@ contains
     integer :: ia, i, j, nk, li, lj, ispin, k, NAO, NNeighbs
     integer :: omp_get_thread_num
     
+    if(DebugBethe)Write(*,'(A)')"ENTERED BetheLattice/CompSelfEnergyBL"    
+    
     ispin=spin
     if( BL%NSpin==1 .and. spin == 2 )ispin=1
 
@@ -689,7 +740,11 @@ contains
     NNeighbs=BL%NNeighbs
 
     !call SolveDysonBL( BL%Sigmak(ispin,1:NNeighbs,1:NAO,1:NAO), cenergy, BL%H0(ispin,1:NAO,1:NAO), &
-    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )
+    if(.not.DebugDyson)then
+      call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )
+    else
+      call SolveDysonBLDebug( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn ) ! FOR DEBUGDYSON.
+    end if    
 
     !Sigma_n = c_zero
     do ia = 1,GetNAtoms()
@@ -736,6 +791,7 @@ contains
     
     ! auxiliary directional self energy for self-consistent calculation
     complex*16, dimension( size(SigmaK,1), size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux
+    complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux_aux    
     ! temporary matrix for multiplication and Energy matrix E(i,j) = ( energy + ui*eta )*delta(i,j)
     ! and Total self-energy 
     complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: temp, E, Sigma_T, G0, Vkeff, Sigma_TA, Sigma_TB
@@ -743,12 +799,15 @@ contains
     complex*16, dimension( 4*size(SigmaK,2) ) :: work
 
     real*8 :: error
+    
+    if(DebugBethe)Write(*,'(A)')"ENTERED BetheLattice/SolveDysonBL"    
 
     NNeighbs = size( SigmaK, 1 )
     NAOrbs   = size( SigmaK, 2 )
    
     ! Initialize directional self-energies and energy matrix
-    E = S0*energy
+    !E = S0*energy ! ORIGINAL CODE.
+    E = S0*(energy+ui*eta) ! ADDED THIS TO AVOID THE CRASH ON Energy=0.0+i*0.0 OCCURRING FOR 1DBL
     Sigmak = c_zero
     
     do i=1,NAOrbs
@@ -868,6 +927,110 @@ contains
        Sigmak=Sigma_aux
        error=error/(NAOrbs*NAOrbs*NNeighbs)
     enddo ! End of self-consistency loop
+    
+  ELSE IF(Nembed(LeadNo)==1)THEN
+    !Write(*,'(A)')"3rd case: (Nembed(LeadNo)==1)"
+      ! Write(ifu_log,'(A,I2)')"1D BL for LeadNo = ",LeadNo
+      !Write(*,'(A)') "Computing 1D Bethe Lattice."
+      !Write(*,'(A)') "Press any key to continue..."
+      !if(DebugBethe)Pause
+      ! Selfconsistency NOT NECESSARY IN THE 1D CASE.
+      Sigmak = c_zero
+      Sigma_T = c_zero
+    if(.false.)then
+      ! ADDED ONLY FOR 1DBL BEACUSE SELF-CONSISTENCY NOT NECESSARY.
+      do k=1, NNeighbs
+        Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+            Sigma_aux_aux(i,j) = E(i,j) - H0(i,j) - Vk(k,i,j)
+          end do
+        end do
+      ! Inverting to obtain (E-H-(Vkeff(-k)))^-1
+      !call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+      !call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+      call zgetrf(NAOrbs,NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,info)
+      call zgetri(NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,work,4*NAOrbs,info)
+      !
+      ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+      !
+      !Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+      !
+      !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
+      call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+           !c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+           c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
+           c_zero,temp,NAOrbs )
+      call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+           c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+           c_zero,Sigma_aux(k,:,:),NAOrbs )
+
+        !call PrintCMatrix(Sigma_aux_aux)
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+            Sigmak(k,i,j)=Sigma_aux_aux(i,j)
+          end do
+        end do
+      end do
+      return ! EXIT FROM IF BECAUSE Sigmak(k,i,j) IS CORRECT.
+    end if
+      !NNeighbs = 2
+      do while (error.gt.selfacc) !ncycle=1,MaxCycle
+        ncycle = ncycle + 1
+        ! Compute total self-energy
+        !  = sum of directional self-energies
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+             Sigma_T(i,j)= c_zero
+             do k=1,NNeighbs
+                Sigma_T(i,j)=Sigma_T(i,j)+Sigmak(k,i,j)
+             enddo
+          enddo
+        enddo
+        do k=1, NNeighbs
+          ! Computing Self energy for direction k
+
+!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j)
+!!$OMP DO SCHEDULE(STATIC,1)
+          do i=1,NAOrbs
+          !write(ifu_log,*)omp_get_thread_num()
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigma_T(i,j) + Sigmak(k-(-1)**k,i,j)
+                !Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigmak(k,i,j)
+             enddo
+          enddo
+!!$OMP END DO
+!!$OMP END PARALLEL
+          ! Inverting to obtain (E-H-(Sigma_T-Sigma_(-k)))^-1
+          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+          call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+          !
+          ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+          !
+          Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+          !
+          !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
+          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+               !c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
+               c_zero,temp,NAOrbs )
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+               c_zero,Sigma_aux(k,:,:),NAOrbs )
+               !c_zero,Sigma_aux_aux,NAOrbs )
+          !Sigma_aux(k,:,:)=Sigma_aux_aux(:,:)
+          ! Mixing with old self-energy matrix 50:50
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = 0.5d0*(Sigma_aux(k,i,j)+Sigmak(k,i,j))
+                error=error+abs(Sigma_aux(k,i,j)-Sigmak(k,i,j))
+             end do
+          end do
+       enddo ! End of k-Loop
+       ! Actualization of dir. self-energies
+       Sigmak=Sigma_aux
+       error=error/(NAOrbs*NAOrbs*NNeighbs)
+    enddo ! End of self-consistency loop
 
     ELSE 
 
@@ -878,6 +1041,319 @@ contains
 
 
   end subroutine SolveDysonBL
+  
+  ! *** Self-consistent solver of Dyson equation for Bethe lattice ***
+  !
+  !subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, NNeighbs, NAOrbs )
+  subroutine SolveDysonBLDebug( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk )
+    use util, only: PrintCMatrix
+    use constants, only: c_zero, ui, c_one
+    use parameters, only: eta,selfacc,NEmbed,NAtomEl
+   !use lapack_blas, only: zgemm,zgetri,zgetrf
+   !use lapack95, only: zgetri,zgetrf
+   !use blas95, only: zgemm
+   !use lapack95
+   !use blas95
+    use ANTCommon
+    use G09Common, only: GetNAtoms, GetAN
+    implicit none
+
+    external zgemm,zgetri,zgetrf
+
+!    integer, intent(in) :: NNeighbs, NAOrbs
+    complex*16, dimension(:,:,:),intent(out) :: Sigmak
+    complex*16, dimension(:,:,:),intent(in) :: Vk
+    !complex, dimension(NNeighbs,NAOrbs,NAOrbs),intent(in) :: Vk
+    complex*16, dimension(:,:),intent(in) :: H0
+    complex*16, dimension(:,:,:),intent(in) :: Sk
+    complex*16, dimension(:,:),intent(in) :: S0
+    complex*16, intent(in) :: Energy
+
+    integer :: k, i, j, NAOrbs, NNeighbs, ncycle, ipiv(size( SigmaK, 3 )), info, AllocErr
+!    integer :: k, i, j, ncycle, ipiv(size( Vk, 3 )), info, AllocErr
+    integer, intent(in) :: LeadNo
+
+    ! auxiliary directional self energy for self-consistent calculation
+    complex*16, dimension( size(SigmaK,1), size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux
+!    complex*16, dimension( size(Vk,1), size(Vk,2), size(Vk,2) ) :: Sigma_aux
+    !complex*16, dimension( size(Vk,2), size(Vk,2) ) :: Sigma_aux_aux
+    complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux_aux
+    ! temporary matrix for multiplication and Energy matrix E(i,j) = ( energy + ui*eta )*delta(i,j)
+    ! and Total self-energy
+    complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: temp, E, Sigma_T, G0, Vkeff, Sigma_TA, Sigma_TB
+!    complex*16, dimension( size(Vk,2), size(Vk,2) ) :: temp, E, Sigma_T, G0, Vkeff, Sigma_TA, Sigma_TB
+    ! work array for inversion
+    complex*16, dimension( 4*size(SigmaK,2) ) :: work
+!    complex*16, dimension( 4*size(Vk,2) ) :: work
+
+    real :: error
+
+    if(DebugBethe)Write(*,'(A)')"ENTERED BetheLattice/SolveDysonBLDebug"
+
+
+    NNeighbs = size( SigmaK, 1 ) ! ORIGINAL CODE. 1ST DIMENSION SEEMS TO BE SPIN.
+    NAOrbs   = size( SigmaK, 2 ) ! ORIGINAL CODE. 1ST DIMENSION SEEMS TO BE SPIN.
+    !NNeighbs = size( SigmaK, 2 )
+    !NAOrbs   = size( SigmaK, 3 )
+    if(DebugDyson)then
+      Write(*,'(A,I4,A,I4,A,I4)')"LeadNo =",LeadNo,"; NNeighbs",NNeighbs,"; NAOrbs",NAOrbs
+      do k=1,NNeighbs
+        Write(*,'(A,I2,A,I2,A)')"Vk(",k,",1:NAOrbs,1:NAOrbs) as input at start SolveDysonBethelattice"
+        call PrintCMatrix(Vk(k,1:NAOrbs,1:NAOrbs))
+      end do
+    end if
+
+    ! Initialize directional self-energies and energy matrix
+    !E = S0*energy ! ORIGINAL CODE.
+    E = S0*(energy+ui*eta) ! ADDED THIS TO AVOID THE CRASH ON Energy=0.0+i*0.0 OCCURRING FOR 1DBL
+    Sigmak = c_zero
+    
+    do i=1,NAOrbs
+       do k=1,NNeighbs
+          Sigmak(k,i,i)=-1.0d0*ui
+       enddo
+    end do
+
+    error = 1.0d0
+    ncycle = 0
+
+    IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 .or. (NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) /=6) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) /=6)) then
+      !Write(*,'(A)')"1st case: (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 .or. (NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) /=6) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) /=6))"
+      ! Selfconsistency
+      do while (error.gt.selfacc) !ncycle=1,MaxCycle
+        ncycle = ncycle + 1
+        ! Compute total self-energy
+        !  = sum of directional self-energies
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+             Sigma_T(i,j)= c_zero
+             do k=1,NNeighbs
+                Sigma_T(i,j)=Sigma_T(i,j)+Sigmak(k,i,j)
+             enddo
+          enddo
+        enddo
+        do k=1, NNeighbs
+          ! Computing Self energy for direction k 
+        
+!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j)
+!!$OMP DO SCHEDULE(STATIC,1)
+          do i=1,NAOrbs
+          !write(ifu_log,*)omp_get_thread_num()
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigma_T(i,j) + Sigmak(k-(-1)**k,i,j)
+             enddo
+          enddo
+!!$OMP END DO
+!!$OMP END PARALLEL
+          ! Inverting to obtain (E-H-(Sigma_T-Sigma_(-k)))^-1
+          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+          call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+          !
+          ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+          !
+          Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+          !
+          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+               c_zero,temp,NAOrbs )
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+               c_zero,Sigma_aux(k,:,:),NAOrbs )
+          ! Mixing with old self-energy matrix 50:50
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = 0.5d0*(Sigma_aux(k,i,j)+Sigmak(k,i,j))
+                error=error+abs(Sigma_aux(k,i,j)-Sigmak(k,i,j))
+             end do
+          end do
+       enddo ! End of k-Loop
+       ! Actualization of dir. self-energies
+       Sigmak=Sigma_aux
+       error=error/(NAOrbs*NAOrbs*NNeighbs)
+    enddo ! End of self-consistency loop
+
+  else if ((NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) == 6 ) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) ==6)) then
+    !Write(*,'(A)')"2nd case: ((NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) == 6 ) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) ==6))"
+    !Selfconsistency
+    do while (error.gt.selfacc) !ncycle=1,MaxCycle
+       ncycle = ncycle + 1
+       ! Compute total self-energy         
+       !  = sum of partial directional self-energies 
+       do i=1,NAOrbs
+          do j=1,NAOrbs
+             Sigma_TA(i,j)= c_zero
+             Sigma_TB(i,j)= c_zero
+             do k=1,NNeighbs,2
+                Sigma_TA(i,j)=Sigma_TA(i,j)+Sigmak(k,i,j)
+                Sigma_TB(i,j)=Sigma_TB(i,j)+Sigmak(k+1,i,j)
+             enddo
+          enddo
+       enddo
+       do k=1, NNeighbs,2
+          ! Computing Self energy for direction k 
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigma_TB(i,j) + Sigmak(k+1,i,j)
+                Sigma_aux(k+1,i,j) = E(i,j) - H0(i,j) - Sigma_TA(i,j) + Sigmak(k,i,j)
+             enddo
+          enddo
+          ! Inverting to obtain (E-H-(Sigma_T-Sigma_(-k)))^-1
+          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+          call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k+1,:,:),NAOrbs,ipiv,info)
+          call zgetri(NAOrbs,Sigma_aux(k+1,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+          !
+          ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+          !
+          Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,c_zero,temp,NAOrbs )
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,Vkeff,NAOrbs,temp,NAOrbs,c_zero,Sigma_aux(k,:,:),NAOrbs )
+          Vkeff = Vk(k+1,:,:)-Energy*Sk(k+1,:,:)
+          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,Sigma_aux(k+1,:,:),NAOrbs,Vkeff, NAOrbs,c_zero,temp,NAOrbs )
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,Vkeff,NAOrbs,temp,NAOrbs,c_zero,Sigma_aux(k+1,:,:),NAOrbs )
+          ! Mixing with old self-energy matrix 50:50
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = 0.5d0*(Sigma_aux(k,i,j)+Sigmak(k,i,j))
+                error=error+abs(Sigma_aux(k,i,j)-Sigmak(k,i,j))
+             end do
+          end do
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k+1,i,j) = 0.5d0*(Sigma_aux(k+1,i,j)+Sigmak(k+1,i,j))
+                error=error+abs(Sigma_aux(k+1,i,j)-Sigmak(k+1,i,j))
+             end do
+          end do
+       enddo ! End of k-Loop
+       ! Actualization of dir. self-energies
+       Sigmak=Sigma_aux
+       error=error/(NAOrbs*NAOrbs*NNeighbs)
+    enddo ! End of self-consistency loop
+
+  ELSE IF(Nembed(LeadNo)==1)THEN
+    !Write(*,'(A)')"3rd case: (Nembed(LeadNo)==1)"
+      ! Write(ifu_log,'(A,I2)')"1D BL for LeadNo = ",LeadNo
+      !Write(*,'(A)') "Computing 1D Bethe Lattice."
+      !Write(*,'(A)') "Press any key to continue..."
+      !if(DebugBethe)Pause
+      ! Selfconsistency NOT NECESSARY IN THE 1D CASE.
+      Sigmak = c_zero
+      Sigma_T = c_zero
+    if(.false.)then
+      ! ADDED ONLY FOR 1DBL BEACUSE SELF-CONSISTENCY NOT NECESSARY.
+      do k=1, NNeighbs
+        Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+            Sigma_aux_aux(i,j) = E(i,j) - H0(i,j) - Vk(k,i,j)
+          end do
+        end do
+      ! Inverting to obtain (E-H-(Vkeff(-k)))^-1
+      !call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+      !call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+      call zgetrf(NAOrbs,NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,info)
+      call zgetri(NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,work,4*NAOrbs,info)
+      !
+      ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+      !
+      !Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+      !
+      !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
+      call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+           !c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+           c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
+           c_zero,temp,NAOrbs )
+      call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+           c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+           c_zero,Sigma_aux(k,:,:),NAOrbs )
+
+        call PrintCMatrix(Sigma_aux_aux)
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+            Sigmak(k,i,j)=Sigma_aux_aux(i,j)
+          end do
+        end do
+      end do
+      return ! EXIT FROM IF BECAUSE Sigmak(k,i,j) IS CORRECT.
+    end if
+      !NNeighbs = 2
+      if(DebugDyson)Write(*,'(A,g15.5,A,g15.5,A)')"Energy = ",REAL(Energy),"+i(",AIMAG(Energy),")"
+      do while (error.gt.selfacc) !ncycle=1,MaxCycle
+        ncycle = ncycle + 1
+        ! Compute total self-energy
+        !  = sum of directional self-energies
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+             Sigma_T(i,j)= c_zero
+             do k=1,NNeighbs
+                Sigma_T(i,j)=Sigma_T(i,j)+Sigmak(k,i,j)
+             enddo
+          enddo
+        enddo
+        do k=1, NNeighbs
+          ! Computing Self energy for direction k
+
+!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j)
+!!$OMP DO SCHEDULE(STATIC,1)
+          do i=1,NAOrbs
+          !write(ifu_log,*)omp_get_thread_num()
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigma_T(i,j) + Sigmak(k-(-1)**k,i,j)
+                !Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigmak(k,i,j)
+             enddo
+          enddo
+!!$OMP END DO
+!!$OMP END PARALLEL
+          ! Inverting to obtain (E-H-(Sigma_T-Sigma_(-k)))^-1
+          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+          call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+          !
+          ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+          !
+          Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+          !
+          !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
+          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+               !c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
+               c_zero,temp,NAOrbs )
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+               c_zero,Sigma_aux(k,:,:),NAOrbs )
+               !c_zero,Sigma_aux_aux,NAOrbs )
+          !Sigma_aux(k,:,:)=Sigma_aux_aux(:,:)
+          ! Mixing with old self-energy matrix 50:50
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = 0.5d0*(Sigma_aux(k,i,j)+Sigmak(k,i,j)) ! ORIGINAL CODE.
+                !Sigma_aux(k,i,j) = (0.01d0*Sigma_aux(k,i,j)+0.99d0*Sigmak(k,i,j)) ! SLOWER. NO EFFECT. SOLVED BY ADDING ui*eta
+                error=error+abs(Sigma_aux(k,i,j)-Sigmak(k,i,j))
+             end do
+          end do
+       enddo ! End of k-Loop
+       ! Actualization of dir. self-energies
+       Sigmak=Sigma_aux
+
+       error=error/(NAOrbs*NAOrbs*NNeighbs)
+       if(DebugDyson)Write(*,'(A,g15.5,A,g15.5,A)')"error = ",error," > ",selfacc," = selfacc"
+     enddo ! End of self-consistency loop
+     if(DebugDyson)then
+       do k=1,NNeighbs
+         Write(*,'(A,I2,A)')"Sigmak(",k,",:,:)"
+         call PrintCMatrix(Sigmak(k,:,:))
+       end do
+     end if
+
+  ELSE
+    !Write(*,'(A)')"4th case: else..."
+      WRITE(ifu_log,*)' Number of directions incorrect in Bethelattice'
+      STOP
+  END IF
+
+  !Write(*,'(A)')"EXIT SolveDysonBL"
+  !if(DebugBethe)Pause
+
+  end subroutine SolveDysonBLDebug  
 
 
   ! 
@@ -934,9 +1410,18 @@ contains
     complex*16, intent(in) :: energy
     complex*16, dimension( BL%NAOrbs, BL%NAOrbs ),intent(out) :: G0
     complex*16, dimension( BL%NSpin,BL%NNeighbs,BL%NAOrbs, BL%NAOrbs ) :: BLSigmak
+    complex*16, dimension( BL%NNeighbs,BL%NAOrbs, BL%NAOrbs ) :: Vk_aux    
     integer :: n, k, ipiv(BL%NAOrbs), info, i, j, ispin,nj,NNeighbs
     complex*16, dimension( 4*BL%NAOrbs  ) :: work
     !real*8 :: dos
+    
+    if(Debug)then
+      Write(*,'(A)')"ENTER CompGreensFunc"
+      Write(*,'(A,I4)')"n = ",n
+      Write(*,'(A,I4)')"BL%NSpin = ",BL%NSpin
+      Write(*,'(A,I4)')"BL%NNeighbs = ",BL%NNeighbs
+      Write(*,'(A,I4)')"BL%NAorbs = ",BL%NAOrbs
+    end if    
 
     ispin = spin
     if( ispin < 1 .or. ispin > 2 ) then
@@ -951,14 +1436,34 @@ contains
     if( spin == 2 .and. BL%NSpin == 1 ) ispin = 1
     NNeighbs = BL%NNeighbs
     n=BL%NAOrbs
+    
+    if(Debug)then
+      do k=1,NNeighbs
+        Write(*,'(A,I2,A,I2,A)')"BL%Vk(",ispin,",",k,",:,:) before call SolveDysonBL"
+        call PrintCMatrix(BL%Vk(ispin,k,1:n,1:n))
+      end do
+    end if    
+    
+    !Vk_aux(k,:,:) = BL%Vk(ispin,k,:,:)    
+    
     call SolveDysonBL( BL%LeadNo, BLSigmak(ispin,1:NNeighbs,1:n,1:n), energy, BL%H0(ispin,1:n,1:n), BL%Vk(ispin,1:NNeighbs,1:n,1:n),BL%S0(1:n,1:n), BL%Sk(1:NNeighbs,1:n,1:n), sgn )
+    
+    if(Debug)then
+      do k=1,BL%NNeighbs
+        Write(*,'(A,I2,A,I2,A)')"BLSigmak(",spin,",",k,",:,:)"
+        call PrintCMatrix(BLSigmak(spin,k,:,:))
+      end do
+    end if    
 
     G0=c_zero
 
     if (NNeighbs == 6) then
         nj=2
-    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4) then
+    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2) then
         nj=1
+    else if (Nembed(BL%LeadNo)==1) then
+        !Write(ifu_log,'(A,I1)')"1D BL in electrode BL%LeadNo=",BL%LeadNo
+        nj=1        
     else
         print *,"Incorrect number of directions: Error n. 1"
         stop
@@ -975,6 +1480,9 @@ contains
     
     call zgetrf(n,n,G0,n,ipiv,info)
     call zgetri(n,G0,n,ipiv,work,4*n,info)
+    
+    if(Debug)Write(*,'(A)')"PrintCMatrix(G0)"
+    if(Debug)call PrintCMatrix(G0)    
  
   end subroutine CompGreensFunc
 
@@ -996,8 +1504,9 @@ contains
     integer, intent(in) :: Spin,sgn
     complex*16, intent(in) :: energy
     complex*16, dimension( BL%NSpin,BL%NNeighbs,BL%NAOrbs, BL%NAOrbs ) :: BLSigmak
+    complex*16, dimension( BL%NNeighbs,BL%NAOrbs, BL%NAOrbs ) :: Vk_aux    
     complex*16, dimension( nx, nx ),intent(out) :: G0X
-    integer :: n, k1, k2, ipiv(nx), info, i, j, ispin, NNeighbs
+    integer :: n, k1, k2, ipiv(nx), info, i, j, k, ispin, NNeighbs
     complex*16, dimension( 4*nx  ) :: work
     real*8 :: dos
 
@@ -1014,6 +1523,16 @@ contains
     if( spin == 2 .and. BL%NSpin == 1 ) ispin = 1
     NNeighbs = BL%NNeighbs
     n=BL%NAOrbs
+    
+    if(Debug)then
+      do k=1,NNeighbs
+        Write(*,'(A,I2,A,I2,A)')"BL%Vk(",ispin,",",k,",:,:) before call SolveDysonBL"
+        call PrintCMatrix(BL%Vk(ispin,k,1:n,1:n))
+      end do
+    end if
+
+    !Vk_aux = BL%Vk(ispin,1:NNeighbs,1:n,1:n)
+        
     call SolveDysonBL( BL%LeadNo, BLSigmak(ispin,1:NNeighbs,1:n,1:n), energy, BL%H0(ispin,1:n,1:n), BL%Vk(ispin,1:NNeighbs,1:n,1:n),BL%S0(1:n,1:n), BL%Sk(1:NNeighbs,1:n,1:n), sgn )
 
     G0X = c_zero
@@ -1042,7 +1561,7 @@ contains
        end do
     enddo
 
-    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 ) THEN
+    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2 ) THEN
 
     do k1=1,NNeighbs  ! Loop over outer cluster atoms
        do k2=1,NNeighbs ! Loop over all BL directions connected to that atom
@@ -1065,6 +1584,9 @@ contains
     
     call zgetrf(nx,nx,G0X,nx,ipiv,info)
     call zgetri(nx,G0X,nx,ipiv,work,4*nx,info)
+    
+    if(Debug)Write(*,'(A)')"PrintCMatrix(G0X)"
+    if(Debug)call PrintCMatrix(G0X)    
  
   end subroutine CompG0X
 
@@ -1096,11 +1618,13 @@ contains
     ! (assumes integrand decaying approx. ~1/x)
     y0=20.0d0
     
-    s = 0.0d0
+    !s = 0.0d0
+    s = 1.0d-30
     call qromo( ReTrG0,0.0d0,y0,s,midpnt)
     q = s/d_pi
 
-    s = 0.0d0
+     !s = 0.0d0
+    s = 1.0d-30
     call qromo( ReTrG0,y0,1.d30,s,midinf)
     q = q + s/d_pi
 
@@ -1111,6 +1635,52 @@ contains
 
     TotCharge = q-ChargeOffSet
   end function TotCharge
+  
+  ! 
+  ! *** Total charge up to energy E ***
+  ! 
+  ! Integrates Green's function along imaginary
+  ! axis so that no lower energy bound is needed.
+  ! Uses routine qromo of Num. Rec. with midpnt
+  ! rule up to some point on the path and midinf 
+  ! rule for the tail.
+  !
+  real function TotCharge1DBL( E )
+    use constants, only: d_pi
+    use numeric, only: midpnt, midinf, qromo1DBL
+    implicit none
+    
+    real, intent(in) :: E
+    integer omp_get_thread_num
+    real :: s, q, y0
+
+    E0 = E
+    !write(ifu_log,*)omp_get_thread_num(),'in TotCharge',E0
+
+    ! integration from [0:y0] with midpnt rule
+    ! and from [y0:inf] with midinf rule 
+    ! (assumes integrand decaying approx. ~1/x)
+    y0=20.0d0
+    
+    s = 0.0d0
+!    s = 1.0d-16
+    Write(*,'(A,g12.4,A,g15.5,A,g18.6,A)')"call qromo1DBL(ReTrG0,",0.0d0,",",y0,",",s,",midpnt)"
+    call qromo1DBL( ReTrG0,0.0d0,y0,s,midpnt)
+    q = s/d_pi
+
+    s = 0.0d0
+!    s = 1.0d-16
+    call qromo1DBL( ReTrG0,y0,1.d30,s,midinf)
+    q = q + s/d_pi
+
+    q = q + LeadBL(WhichLead)%NAOrbs
+
+    !!print *, "Whichlead = ", WhichLead
+    !PRINT *, " E=", E, "    TotCharge=", q
+
+    TotCharge1DBL = q-ChargeOffSet
+    Write(*,'(A,g15.5,A,g15.5)')"E = ",E,"; TotCharge1DBL = ",TotCharge1DBL
+  end function TotCharge1DBL  
 
 
   ! *************************************
@@ -1124,7 +1694,7 @@ contains
   !    adjust Fermi level to zero
   ! *************************************
   subroutine AdjustFermi( BL )
-    use parameters, only: ChargeAcc, FermiAcc, BiasVoltage, Glue, Overlap
+    use parameters, only: ChargeAcc, FermiAcc, BiasVoltage, Glue, Overlap, Nembed
     use constants, only: d_zero
     use numeric, only: bisec, muller_omp, secant_omp, secant, muller
     implicit none
@@ -1148,7 +1718,13 @@ contains
     ! Fine tuning for EMin ...
     do
        BL%EMin = BL%EMin - DE
-       Q = TotCharge( BL%EMin )
+!       Q = TotCharge( BL%EMin ) ! ORIGINAL CODE.
+       if(Nembed(Whichlead)==1)then
+         Q = TotCharge1DBL( BL%EMin )
+         !Q = TotCharge( BL%EMin )
+       else
+         Q = TotCharge( BL%EMin )
+       end if
        !if( abs(Q) <  ChargeAcc .or. Q < 0.0d0 ) exit       
        !if( abs(Q-BL%NCore) <  0.1d0 .or. Q < 0.0d0 ) exit       
        if( abs(Q-BL%NCore) <  ChargeAcc*2*BL%NAOrbs .or. Q < 0.0d0 ) exit       
@@ -1159,7 +1735,13 @@ contains
     ! Fine tuning for EMax ...
     do
        BL%EMax = BL%EMax + DE
-       Q = TotCharge( BL%EMax )
+!       Q = TotCharge( BL%EMax ) ! ORIGINAL CODE.
+       if(Nembed(Whichlead)==1)then
+         Q = TotCharge1DBL( BL%EMax )
+         !Q = TotCharge( BL%EMax )
+       else
+         Q = TotCharge( BL%EMax )
+       end if
        !if( abs(Q - 2*BL%NAOrbs) <  ChargeAcc ) exit       
        !if( abs(Q - 2*BL%NAOrbs) <  0.1d0 ) exit       
        if( abs(Q - 2*BL%NAOrbs) <  ChargeAcc*2*BL%NAOrbs ) exit       
@@ -1178,9 +1760,19 @@ contains
     ! does not get stuck within a band gap
     E1 = BL%EMin+5
     E2 = BL%EMax-5
-    Delta = 0.1d0
+!    Delta = 0.1d0
 
-    EFermi = Bisec(TotCharge,E1,E2,Delta,100,K) 
+!    EFermi = Bisec(TotCharge,E1,E2,Delta,100,K) ! ORIGINAL CODE 100 ITERATIONS.
+    if(Nembed(Whichlead)==1)then
+      Delta = 0.1d0 ! ORIGINAL CODE.
+      !Delta = 1.0d-5
+      !Delta = 1.0d+1
+      EFermi = Bisec(TotCharge1DBL,E1,E2,Delta,1000,K)
+      !EFermi = Bisec(TotCharge,E1,E2,Delta,100,K)
+    else
+      Delta = 0.1d0
+      EFermi = Bisec(TotCharge,E1,E2,Delta,100,K) 
+    end if
 
     ! Now use Muller or Secant method to determine Fermi level exactly
     E00 = EFermi
@@ -1194,7 +1786,15 @@ contains
     !CALL MULLER_OMP(TotCharge,E00,E1,E2,Delta,Epsilon,Max,EFermi,Z,K,Cond)
      PRINT *, "Secant method:"
      !call SECANT_OMP(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
-     call SECANT(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
+     !call SECANT(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K) ! ORIGINAL CODE.
+    if(Nembed(Whichlead)==1)then
+      !Delta = 5.0d+1*Delta
+      !Epsilon = 5.0d+1*Epsilon
+      call SECANT(TotCharge1DBL,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
+      !call SECANT(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
+    else
+      call SECANT(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
+    end if
     ChargeOffset = d_zero
     print *, "Bethe lattice Fermi energy = ", EFermi
 
@@ -1270,45 +1870,46 @@ contains
        end if
     end do
     if(NSpin==1) ReTrG0=2d0*ReTrG0
+    if(Debug)Write(*,'(A,g15.5)')"ReTrG0 = ",ReTrG0    
   end function ReTrG0
 
   ! *************************************************************
   ! Real part of trace of Bulk Green's function on imaginary axis
   ! - For charge integration along imaginary axis
   ! *************************************************************
-  !real function ReTrG01DBL( ImE ) ! NOT USED NOW FOR 1DBL. DUPLICATE ImE MAKES INTEGRATION OF LEAD CHARGE EASIER.
-  !  use constants, only: ui, d_zero
-  !  use numeric, only: ctrace
-  !  implicit none
-  !
-  !  real, intent(in) :: ImE
-  !
-  !  complex*16 :: zenergy
-  !  complex*16, dimension(LeadBL(WhichLead)%NAOrbs,LeadBL(WhichLead)%NAOrbs) :: G0
-  !  complex*16, dimension(nx,nx) :: G0X, GS0X
-  !
-  !  integer :: ispin, NSpin, NAO
-  !
-  !  NAO = LeadBL(WhichLead)%NAOrbs
-  !  NSpin = LeadBL(WhichLead)%NSpin
-  !
-! !   zenergy = E0 + ui*ImE ! ORIGINAL CODE.
-  !  zenergy = E0 + ui*2.0d0*ImE ! DUPLICATE ImE MAKES INTEGRATION OF LEAD CHARGE EASIER.
-  !
-  !  ReTrG01DBL = d_zero
-  !  do ispin = 1, NSpin
-  !     if( LeadBL(WhichLead)%Overlap )then
-  !        call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X )
-  !        GS0X = MATMUL( G0X, S0X )
-  !        ReTrG01DBL = ReTrG01DBL + real(CTrace(GS0X(1:NAO,1:NAO)))
-  !     else
-  !        call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0 )
-  !        ReTrG01DBL = ReTrG01DBL + real(CTrace(G0))
-  !     end if
-  !  end do
-  !  if(NSpin==1) ReTrG01DBL=2d0*ReTrG01DBL
-  !  if(Debug)Write(*,'(A,g15.5)')"ReTrG01DBL = ",ReTrG01DBL
-  !end function ReTrG01DBL
+  real function ReTrG01DBL( ImE ) ! NOT USED NOW FOR 1DBL. DUPLICATE ImE MAKES INTEGRATION OF LEAD CHARGE EASIER.
+    use constants, only: ui, d_zero
+    use numeric, only: ctrace
+    implicit none
+  
+    real, intent(in) :: ImE
+  
+    complex*16 :: zenergy
+    complex*16, dimension(LeadBL(WhichLead)%NAOrbs,LeadBL(WhichLead)%NAOrbs) :: G0
+    complex*16, dimension(nx,nx) :: G0X, GS0X
+  
+    integer :: ispin, NSpin, NAO
+  
+    NAO = LeadBL(WhichLead)%NAOrbs
+    NSpin = LeadBL(WhichLead)%NSpin
+  
+!    zenergy = E0 + ui*ImE ! ORIGINAL CODE.
+    zenergy = E0 + ui*2.0d0*ImE ! DUPLICATE ImE MAKES INTEGRATION OF LEAD CHARGE EASIER.
+  
+    ReTrG01DBL = d_zero
+    do ispin = 1, NSpin
+       if( LeadBL(WhichLead)%Overlap )then
+          call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X )
+          GS0X = MATMUL( G0X, S0X )
+          ReTrG01DBL = ReTrG01DBL + real(CTrace(GS0X(1:NAO,1:NAO)))
+       else
+          call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0 )
+          ReTrG01DBL = ReTrG01DBL + real(CTrace(G0))
+       end if
+    end do
+    if(NSpin==1) ReTrG01DBL=2d0*ReTrG01DBL
+    if(Debug)Write(*,'(A,g15.5)')"ReTrG01DBL = ",ReTrG01DBL
+  end function ReTrG01DBL
 
   !
   ! *** Computes rotation matrix TR for direction k ***
@@ -1369,7 +1970,11 @@ contains
     integer :: ios, i, nline, NAOrbs, NSpin, NElectrons, NCore, ipt, idt, ift, aocount
     character(LEN=50) :: SetName
     character :: ChAOT
-    
+    character(len=10) :: orblist = "spdfghijkl"
+    integer :: orbindex, oldorbindex, shellcount, aocountinshell    
+
+    orbindex=0
+    oldorbindex=0    
 #ifdef PGI
     ! Obtain environment variable containing path for Bethe lattice parameters
     call cgetenv( bl_dir_name, dname_len, "ANT\0" )
@@ -1427,26 +2032,45 @@ contains
                 end if
                 if( aocount == BL%NAOrbs ) exit
                 read (UNIT=ifu_bl,FMT='(A1)',IOSTAT=ios), ChAOT
+                
+                orbindex = INDEX(orblist,ChAOT)
+                Write(*,'(A,A,A,I2)')"ChAOT = ",ChAOT,"; ORBINDEX = ",orbindex
+                if(DebugBethe)Pause
+                if(orbindex <= oldorbindex)then
+                  shellcount = shellcount+1
+                  aocountinshell = 0
+                end if
+                oldorbindex=orbindex
+                Write(*,'(A,A,A,I2)')"ChAOT = ",ChAOT,"; ORBINDEX = ",orbindex
+                if(DebugBethe)Pause                
                 if( ChAOT == "s" ) then
+                   aocountinshell = aocountinshell + 1
                    aocount = aocount + 1
                    BL%AOT( aocount ) = 0
+                   BL%SHT( aocount ) = shellcount
                    BL%nso = BL%nso +1
                 else if( ChAOT == "p" ) then
                    do ipt=1,3
+                      aocountinshell = aocountinshell + 1
                       aocount = aocount + 1
                       BL%AOT( aocount ) = ipt
+                      BL%SHT( aocount ) = shellcount
                       BL%npo = BL%npo + 1
                    end do
                 else if( ChAOT == "d" ) then
                    do idt=4,8
+                      aocountinshell = aocountinshell + 1
                       aocount = aocount + 1
                       BL%AOT( aocount ) = idt
+                      BL%SHT( aocount ) = shellcount
                       BL%ndo = BL%ndo + 1
                    end do
                 else if( ChAOT == "f" ) then
                    do ift=9,15
+                      aocountinshell = aocountinshell + 1
                       aocount = aocount + 1
                       BL%AOT( aocount ) = ift
+                      BL%SHT( aocount ) = shellcount
                       BL%nfo = BL%nfo + 1
                    end do
                 else
@@ -1474,6 +2098,7 @@ contains
        if( ios /= 0 ) exit
     end do
     print*, "Done."
+    REWIND ifu_bl    
     close(ifu_bl)
     
     if (Overlap < 0.01 ) BL%Overlap = .false.
@@ -1526,6 +2151,15 @@ contains
           return 
        end if       
        ispin = ival
+       
+    else if( keyword == "BLFERMISTART" ) then
+       backspace inpfile
+       read (unit=inpfile,fmt=*,iostat=ios), keyword, eqsign, ival
+       if( ios /= 0 .or. eqsign /= '=' ) then
+          if ( ios > 0 ) print*, "Format ERROR 2: "
+          return
+       end if
+       BL%FermiStart = ival       
 
     !Change energy unit to Ryd (for Papacon parameters)
     else if( keyword == "RYD" ) then
@@ -1536,7 +2170,10 @@ contains
 
     else
        backspace inpfile
-       read (unit=inpfile,fmt=*,iostat=ios), keyword, eqsign, rval      
+       read (unit=inpfile,fmt=*,iostat=ios), keyword, eqsign, rval
+       Write(*,'(A)')"keyword = rval "
+       Write(*,'(A,A,g15.5)')keyword, eqsign, rval
+       if(DebugBethe)Pause             
        print *, keyword, eqsign, rval      
        if( ios /= 0 .or. eqsign /= '=' ) then
           if ( ios > 0 ) print*, "Format ERROR 3: "
@@ -1556,7 +2193,7 @@ contains
           ! ******************
        case( "H0" )  
           BL%Matrix = .true.
-          backspace inpfile
+          !backspace inpfile ! IMPORTANT TO COMMENT THIS. WORKS FOR C.SALGADO ON 2016-04-23.
           ! Read in complete on-site Hamiltonian
           do i=1,BL%NAOrbs
              read (unit=inpfile,fmt=*,iostat=ios), (rvec(j),j=1,BL%NAOrbs)
@@ -1568,7 +2205,7 @@ contains
           ! ******************
        case( "Vk" )  
           BL%Matrix = .true.
-          backspace inpfile
+          !backspace inpfile ! IMPORTANT TO COMMENT THIS. WORKS FOR C.SALGADO ON 2016-04-23.
           ! Read in complete hopping matrix
           do i=1,BL%NAOrbs
              read (unit=inpfile,fmt=*,iostat=ios), (rvec(j),j=1,BL%NAOrbs)
@@ -1581,7 +2218,7 @@ contains
        case( "S0" )  
           BL%Matrix = .true.
           BL%Overlap = .true.
-          backspace inpfile
+          !backspace inpfile ! IMPORTANT TO COMMENT THIS. WORKS FOR C.SALGADO ON 2016-04-23.
           ! Read in complete on-site Overlap matrix
           do i=1,BL%NAOrbs
              read (unit=inpfile,fmt=*,iostat=ios), (rvec(j),j=1,BL%NAOrbs)
@@ -1594,7 +2231,7 @@ contains
        case( "Sk" )  
           BL%Matrix = .true.
           BL%Overlap = .true.
-          backspace inpfile
+          !backspace inpfile ! IMPORTANT TO COMMENT THIS. WORKS FOR C.SALGADO ON 2016-04-23.
           ! Read in complete inter-site overlap matrix
           do i=1,BL%NAOrbs
              read (unit=inpfile,fmt=*,iostat=ios), (rvec(j),j=1,BL%NAOrbs)

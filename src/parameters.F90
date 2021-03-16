@@ -186,7 +186,25 @@
 
   ! Convergence before switching off spin lock, (  SwOffSpL < SL  )
   REAL*8 :: SwOffSpL = 1.0d-3            
-  CHARACTER(len=10), PARAMETER ::  SwOffSpL_keyw = "SWOFFSPL"        
+  CHARACTER(len=10), PARAMETER ::  SwOffSpL_keyw = "SWOFFSPL"   
+  
+  ! **************************************************************
+  ! Blocks to calculate the local resolved spin chemical potential
+  ! **************************************************************
+  CHARACTER(LEN=10), PARAMETER :: SpinMuBl_keyw = "SPINMUBL"
+  integer :: NSpinMuBl = 0
+  integer, dimension(MaxAtm) :: SpinMuBlBeg=0, SpinMuBlEnd=0
+  !real, dimension(MaxAtm) :: UCoul=0, JHund=0
+
+  ! Whether to compute the spin local resolved bias.
+  logical :: SPINMU = .false.; CHARACTER(len=10), PARAMETER :: SPINMU_keyw = "SPINMU"
+
+  ! calculate SPINMU for atom numbers from SPIN_BEG up to SPIN_END
+  integer :: SPIN_Beg = 1      
+  CHARACTER(len=10), PARAMETER :: SPIN_Beg_keyw = "SPIN_BEG" 
+  integer :: SPIN_End = 0      
+  CHARACTER(len=10), PARAMETER :: SPIN_End_keyw = "SPIN_END" 
+         
 
   ! SOC
   LOGICAL :: soc = .FALSE. 
@@ -254,6 +272,53 @@
   LOGICAL :: Mulliken = .FALSE. 
   CHARACTER(len=10), PARAMETER :: Mulliken_keyw = "MULLIKEN"
   
+  ! Print out INTENERGY
+  logical :: IntEnergy = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: IntEnergy_keyw = "INTENERGY"
+
+  ! Print out BIASENERGY
+  logical :: BiasEnergy = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: BiasEnergy_keyw = "BIASENERGY"
+  
+  ! Compute COMPFOCK
+  logical :: CompFock = .FALSE.
+  CHARACTER(len=10), PARAMETER :: CompFock_keyw = "COMPFOCK"
+
+  ! Compute COMPGIBBSY
+  logical :: CompGibbsY = .FALSE.
+  CHARACTER(len=10), PARAMETER :: CompGibbsY_keyw = "COMPGIBBSY"
+
+  ! Debug
+  logical :: Debug = .FALSE.
+  CHARACTER(len=10), PARAMETER :: Debug_keyw = "DEBUG"
+
+  ! DebugDev
+  logical :: DebugDev = .FALSE.
+  CHARACTER(len=10), PARAMETER :: DebugDev_keyw = "DEBUGDEV"
+
+  ! DebugBethe
+  logical :: DebugBethe = .FALSE.
+  CHARACTER(len=10), PARAMETER :: DebugBethe_keyw = "DEBUGBETHE"
+
+  ! DebugDyson
+  logical :: DebugDyson = .FALSE.
+  CHARACTER(len=10), PARAMETER :: DebugDyson_keyw = "DEBUGDYSON"
+
+  ! Print out DIAGFOCK
+  logical :: DiagFock = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: DiagFock_keyw = "DIAGFOCK"
+  
+  ! Whether to use a plane Bethe Lattice instead of a bulk one in electrode 1.
+  logical :: PlBethe1= .FALSE.     
+  CHARACTER(len=10), PARAMETER :: PlBethe1_keyw = "PLBETHE1"   
+  
+  ! Whether to use a plane Bethe Lattice instead of a bulk one in electrode 2.
+  logical :: PlBethe2 = .FALSE.     
+  CHARACTER(len=10), PARAMETER :: PlBethe2_keyw = "PLBETHE2" 
+
+  ! Whether to use a plane Bethe Lattice instead of a bulk one in electrode 2.
+  logical :: NoCloseHex = .FALSE.     
+  CHARACTER(len=10), PARAMETER :: NoCloseHex_keyw = "NOCLOSEHEX"   
   
   ! Energy at which to evaluate the Projected DOS
   REAL*8:: DOSEnergy= 0.0d0       
@@ -422,7 +487,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, SPIN_Beg_keyw, SPIN_End_keyw )
        !
        ! 2. looking for integer variables
        !
@@ -437,6 +502,10 @@ CONTAINS
           LDOS_Beg = ival
        CASE ( LDOS_End_keyw )
           LDOS_End = ival
+       CASE ( SPIN_Beg_keyw )
+          SPIN_Beg = ival
+       CASE ( SPIN_End_keyw )
+          SPIN_End = ival          
        CASE( NChannels_keyw )
           NChannels = ival
        CASE( RedTransmB_keyw )
@@ -507,6 +576,30 @@ CONTAINS
        Hamilton = .TRUE.
     CASE ( Mulliken_keyw )
        Mulliken = .TRUE.
+    CASE ( IntEnergy_keyw )
+       IntEnergy = .TRUE.
+    CASE ( BiasEnergy_keyw )
+       BiasEnergy = .TRUE.
+    CASE ( CompFock_keyw )
+       CompFock = .TRUE.
+    CASE ( CompGibbsY_keyw )
+       CompGibbsY = .TRUE.
+    CASE ( Debug_keyw )
+       Debug = .TRUE.
+    CASE ( DebugDev_keyw )
+       DebugDev = .TRUE.
+    CASE ( DebugBethe_keyw )
+       DebugBethe = .TRUE.
+    CASE ( DebugDyson_keyw )
+       DebugDyson = .TRUE.
+    CASE ( DiagFock_keyw )
+       DiagFock = .TRUE.
+    CASE ( PlBethe1_keyw )
+       PlBethe1 = .TRUE.
+    CASE ( PlBethe2_keyw )
+       PlBethe2 = .TRUE.
+    CASE ( NoCloseHex_keyw )
+       NoCloseHex = .TRUE.       
     CASE ( FullAcc_keyw )
        FullAcc = .TRUE.
     CASE ( ANT1DInp_keyw )
@@ -524,7 +617,11 @@ CONTAINS
     CASE ( SOC_keyw )
        soc = .true.   
     CASE ( ROT_keyw )
-       rot = .true.               
+       rot = .true. 
+    !CASE ( SpinMuBl_keyw )
+    !   SpinMuBl = .true.
+    CASE ( SpinMu_keyw )
+       SpinMu = .true.                     
     CASE ( SpinDel_keyw )
        SpinDel = .true.
     CASE ( FMixing_keyw )
@@ -591,6 +688,21 @@ CONTAINS
              RETURN
           END IF
        END DO
+    CASE ( SpinMuBl_keyw )
+       READ (unit=inpfile,fmt=*,iostat=ios), NSpinMuBl
+       print *, "Spin Chemical Resolved Blocks: NSpinMuBlocks = ", NSpinMuBl
+       IF( ios /= 0 ) RETURN 
+       DO i=1,NSpinMuBl
+          READ (unit=inpfile,fmt=*,iostat=ios), SpinMuBlBeg(i), SpinMuBlEnd(i) !, UCoul(i), JHund(i)
+          print *, SpinMuBlBeg(i), SpinMuBlEnd(i)
+          !print *, UCoul(i), JHund(i)
+          IF( ios /= 0 ) RETURN 
+          IF( SpinMuBlBeg(i) < 1 .OR. SpinMuBlEnd(i) < 1 )THEN
+             WRITE( unit=logfile, fmt=* ) "ERROR - Negative number for begin or end of spin mu block in SPINMUBLOCK Field"
+             ios = 1
+             RETURN
+          END IF
+       END DO       
 
     CASE ( PFix_keyw )
        PFix = .TRUE.
@@ -848,6 +960,17 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) "*****************"
     WRITE(unit=logfile,fmt=*) Hamilton_keyw, " = ", Hamilton
     WRITE(unit=logfile,fmt=*) Mulliken_keyw, " = ", Mulliken
+    WRITE(unit=logfile,fmt=*) IntEnergy_keyw, " = ", IntEnergy
+    WRITE(unit=logfile,fmt=*) BiasEnergy_keyw, " = ", BiasEnergy
+    WRITE(unit=logfile,fmt=*) CompFock_keyw, " = ", CompFock
+    WRITE(unit=logfile,fmt=*) CompGibbsY_keyw, " = ", CompGibbsY
+    WRITE(unit=logfile,fmt=*) Debug_keyw, " = ", Debug
+    WRITE(unit=logfile,fmt=*) DebugDev_keyw, " = ", DebugDev
+    WRITE(unit=logfile,fmt=*) DebugBethe_keyw, " = ", DebugBethe
+    WRITE(unit=logfile,fmt=*) DebugDyson_keyw, " = ", DebugDyson
+    WRITE(unit=logfile,fmt=*) DiagFock_keyw, " = ", DiagFock
+    WRITE(unit=logfile,fmt=*) PlBethe1_keyw, " = ", PlBethe1
+    WRITE(unit=logfile,fmt=*) PlBethe2_keyw, " = ", PlBethe2    
     WRITE(unit=logfile,fmt=*) HTransm_keyw, " = ", HTransm
     WRITE(unit=logfile,fmt=*) EStep_keyw, " = ", EStep
     WRITE(unit=logfile,fmt=*) DOSEnergy_keyw, " = ", DOSEnergy
@@ -855,6 +978,8 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) EW2_keyw, " = ", EW2
     WRITE(unit=logfile,fmt=*) LDOS_Beg_keyw, " = ", LDOS_Beg
     WRITE(unit=logfile,fmt=*) LDOS_End_keyw, " = ", LDOS_End
+    WRITE(unit=logfile,fmt=*) SPIN_Beg_keyw, " = ", SPIN_Beg
+    WRITE(unit=logfile,fmt=*) SPIN_End_keyw, " = ", SPIN_End    
     WRITE(unit=logfile,fmt=*) RedTransmB_keyw, " = ",RedTransmB
     WRITE(unit=logfile,fmt=*) RedTransmE_keyw, " = ",RedTransmE
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels

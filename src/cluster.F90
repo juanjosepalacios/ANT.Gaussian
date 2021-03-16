@@ -35,6 +35,7 @@
   PUBLIC :: LeadAtmNo, LeadNAOrbs, VPB, NAMol, NALead, NAOMol, NAOAtom, AnalyseCluster, cmatr 
   PUBLIC :: AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo
   PUBLIC :: NConnect
+  PUBLIC :: FillEl  
 
   INTEGER, PARAMETER :: nvec = 12
 
@@ -54,7 +55,11 @@ CONTAINS
   LOGICAL FUNCTION AreConnected( iAtom, LeadNo )
     IMPLICIT NONE
     INTEGER, INTENT(in) :: iAtom, LeadNo
-    AreConnected = ( ifrpl( iAtom ) == LeadNo )
+    if(.not.(Nembed(LeadNo)==1))then
+      AreConnected = ( ifrpl( iAtom ) == LeadNo )
+    else
+      AreConnected = ( ifrpl( iAtom+((-1)**(LeadNo)) ) == LeadNo )
+    end if
   END FUNCTION AreConnected
   
   ! *** Lowest atomic orbital on Atom ***
@@ -177,7 +182,7 @@ CONTAINS
   !*                                                 *
   !***************************************************
   SUBROUTINE AnalyseCluster
-    use parameters, only: ANT1DInp, smalld, small
+    use parameters, only: ANT1DInp, smalld, small, PlBethe1, PlBethe2, NoCloseHex, ElType
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms, &
        GetShellT, GetShellC
@@ -215,7 +220,11 @@ CONTAINS
     INTEGER :: nblatoms1, nblatoms2, ibl
     ! Coordnates of a Bethe lattice atom
     REAL*8 :: xbla, ybla, zbla
-
+    ! Added by C. Salgado to work with Geometry
+    real,  parameter :: PI_8  = 4 * atan (1.0_8)
+    real :: cross(3)
+    real :: crossmod
+    integer :: nbethecount    
     
     !C
     CALL FillEl(ein,MaxEl,IEl)
@@ -375,14 +384,18 @@ CONTAINS
     PRINT ('(A,A2)'), " Atom type of lead 2: ", IEl(ANLead2)
     PRINT *
 
-    IF( GetAN(1) /= GetAN(2) .OR. GetAN(1) /= GetAN(3) )THEN
-       PRINT *, "ERROR: Too few atoms to define first electrode."
-       STOP
+    IF(Nembed(1)/=1)THEN
+      IF( GetAN(1) /= GetAN(2) .OR. GetAN(1) /= GetAN(3) )THEN
+        PRINT *, "ERROR: Too few atoms to define first electrode."
+        STOP
+      END IF
     END IF
 
-    IF( GetAN(GetNAtoms()) /= GetAN(GetNAtoms()-1) .OR. GetAN(GetNAtoms()) /= GetAN(GetNAtoms()-2) )THEN
-       PRINT *, "ERROR: Too few atoms to define second electrode."
-       STOP
+    IF(Nembed(2)/=1)THEN
+      IF( GetAN(GetNAtoms()) /= GetAN(GetNAtoms()-1) .OR. GetAN(GetNAtoms()) /= GetAN(GetNAtoms()-2) )THEN
+        PRINT *, "ERROR: Too few atoms to define second electrode."
+        STOP
+      END IF
     END IF
 
     DO i=1,GetNAtoms()
@@ -683,6 +696,26 @@ CONTAINS
           ENDIF
        ENDIF
     ENDIF
+    
+!       ! ADDED BELOW TO DEAL WITH 1D BETHE LATTICE.
+!       IF((nlead1.EQ.1).AND.(nlead2.EQ.1))THEN
+!         bb(1)= GetAtmCo(1,1) - GetAtmCo(1,2)
+!         bb(2)= GetAtmCo(2,1) - GetAtmCo(2,2)
+!         bb(3)= GetAtmCo(3,1) - GetAtmCo(3,2)
+!
+!         bbnorm = dsqrt(bb(1)*bb(1) &
+!               & + bb(2)*bb(2) &
+!               & + bb(3)*bb(3) )
+!
+!          IF (ABS(bbnorm).LT.smallp) then
+!              write(ifu_log,*)'The 2 atoms used to make 1D BL are too near!!!!'
+!              stop
+!          END IF
+!
+!          bb(1) = bb(1)/bbnorm
+!          bb(2) = bb(2)/bbnorm
+!          bb(3) = bb(3)/bbnorm
+!       ENDIF    
           
     !C    DETERMINE THE FRONTIER PLANES WITHIN THE ABOVE PLANES
     !C    AND ORIENTATE THEIR DIRECTOR VECTOR IN THE DIRECTION
@@ -747,28 +780,70 @@ CONTAINS
 
     nn1 = NEmbed(1) 
     nn2 = NEmbed(2)
+    
+    
+    if(PlBethe1)then
+        nbethecount = NEmbed(1) ! Build a plane Bethe lattice from plane.
+    else
+      if(nlead1==1)then
+        nbethecount = nlead1+1 ! 1D Bethe Lattice
+      else
+        nbethecount = nlead1 ! Build a bulk Bethe lattice taking into account various planes.
+      end if
+    end if    
  
     ! Finding lattice parameter for electrode 1
 
     write(ifu_log,*)'Finding lattice directions in electrode 1 ....'
     d1=100000000.0
-    do i=1,NEmbed(1)
-       do j=i+1,nlead1
+    if(Nembed(1)==1)then
+      d1=dsqrt((GetAtmCo(1,1)-GetAtmCo(1,2))**2+(GetAtmCo(2,1)-GetAtmCo(2,2))**2+(GetAtmCo(3,1)-GetAtmCo(3,2))**2)
+    else
+      do i=1,NEmbed(1)
+        do j=i+1,nlead1
           ddd=dsqrt((xl1(j)-xl1(i))**2+(yl1(j)-yl1(i))**2+(zl1(j)-zl1(i))**2)
           if (ddd <= d1) d1=ddd
-       end do
-    end do
+        end do
+      end do
+    endif
     print *, "Near-neighbor distance at electrode 1 = ", d1*au2ang
+
+!    nneig1=0
+!    do i=1,NEmbed(1)
+!       !do j=i+1,nlead1
+!       do j=i+1,nbethecount
+!          vv(1)=xl1(j)-xl1(i)
+!          vv(2)=yl1(j)-yl1(i)
+!          vv(3)=zl1(j)-zl1(i)
+!          ddd=dsqrt(vv(1)**2+vv(2)**2+vv(3)**2)
+!          ! Remark DJ: I increased tolerance to 0.1 Angstroem
+!          ! in order to allow for slightly disordered lattices
+!          if (dabs(ddd-d1) > smalld) cycle   ! from here, only nn-distance atoms pass.
+!          vv(1)=vv(1)/ddd
+!          vv(2)=vv(2)/ddd
+!          vv(3)=vv(3)/ddd	! normalize the vector to modulus 1.0
+!          do k=1,nneig1
+!             scalar=vv(1)*vpb1(1,k)+vv(2)*vpb1(2,k)+vv(3)*vpb1(3,k)
+!             if (abs(scalar-1.0) <= small) goto 111
+!          end do
+!          nneig1=nneig1+1
+!          vpb1(1,nneig1)=vv(1)                   
+!          vpb1(2,nneig1)=vv(2)
+!          vpb1(3,nneig1)=vv(3)
+!          nneig1=nneig1+1
+!          vpb1(1,nneig1)=-vv(1)                   
+!          vpb1(2,nneig1)=-vv(2)
+!          vpb1(3,nneig1)=-vv(3)
+!111    end do
+!    end do
 
     nneig1=0
     do i=1,NEmbed(1)
-       do j=i+1,nlead1
+       do j=i+1,nbethecount
           vv(1)=xl1(j)-xl1(i)
           vv(2)=yl1(j)-yl1(i)
           vv(3)=zl1(j)-zl1(i)
           ddd=dsqrt(vv(1)**2+vv(2)**2+vv(3)**2)
-          ! Remark DJ: I increased tolerance to 0.1 Angstroem
-          ! in order to allow for slightly disordered lattices
           if (dabs(ddd-d1) > smalld) cycle
           vv(1)=vv(1)/ddd
           vv(2)=vv(2)/ddd
@@ -787,19 +862,82 @@ CONTAINS
           vpb1(3,nneig1)=-vv(3)
 111    end do
     end do
+    if(NEmbed(1).EQ.1)then
+      vv(1)=GetAtmCo(1,1)-GetAtmCo(1,2)
+      vv(2)=GetAtmCo(2,1)-GetAtmCo(2,2)
+      vv(3)=GetAtmCo(3,1)-GetAtmCo(3,2)
+      ddd=dsqrt(vv(1)**2+vv(2)**2+vv(3)**2)
+      if (dabs(ddd-d1) > smalld)then
+        write(ifu_log,*)'The 2 atoms used to make 1D BL are too near!!!!'
+        stop
+      end if
+!      vv(1)=vv(1)/ddd ! THIS LEADS TO ERRORS.
+!      vv(2)=vv(2)/ddd ! THIS LEADS TO ERRORS.
+!      vv(3)=vv(3)/ddd ! THIS LEADS TO ERRORS.
+      vpb1(1,1)=vv(1)                   
+      vpb1(2,1)=vv(2)
+      vpb1(3,1)=vv(3)
+      nneig1=1+1
+      vpb1(1,nneig1)=-vv(1)
+      vpb1(2,nneig1)=-vv(2)
+      vpb1(3,nneig1)=-vv(3)
+      nneig1=2
+    endif
 
-    !if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
-    if (ANLead1 == 6 .or. ANLead1 == 1) then
-       vpb1(1,5)=-(vpb1(1,1)+vpb1(1,3))     
-       vpb1(2,5)=-(vpb1(2,1)+vpb1(2,3))
-       vpb1(3,5)=-(vpb1(3,1)+vpb1(3,3))
-       vpb1(1,6)=-vpb1(1,5)    
-       vpb1(2,6)=-vpb1(2,5)
-       vpb1(3,6)=-vpb1(3,5)
-       nneig1 = 6
-    end if
-       
-    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /=4) then
+!	! For hexagonal lattices.
+!    if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+!       vpb1(1,5)=-(vpb1(1,1)+vpb1(1,3))     
+!       vpb1(2,5)=-(vpb1(2,1)+vpb1(2,3))
+!       vpb1(3,5)=-(vpb1(3,1)+vpb1(3,3))
+!       vpb1(1,6)=-vpb1(1,5)    
+!       vpb1(2,6)=-vpb1(2,5)
+!       vpb1(3,6)=-vpb1(3,5)
+!       nneig1 = 6
+!    end if
+
+ ! For hexagonal lattices. I use PI_8  = 4 * atan (1.0_8)
+
+ if(ElType(1)=="GRAPHENE")then
+   if (NoCloseHex)then
+     if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+         ! When there are no closed hexagons, I compute the cross product of the plane-normal vector with the only lattice direction stored in the vectors vpb1(1:3,1) and its opposite vpb1(1:3,2).
+         cross(1) = vpb1(2,1) * aplane(3,1) - vpb1(3,1) * aplane(2,1)
+         cross(2) = vpb1(3,1) * aplane(1,1) - vpb1(1,1) * aplane(3,1)
+         cross(3) = vpb1(1,1) * aplane(2,1) - vpb1(2,1) * aplane(1,1)
+         crossmod=dsqrt(cross(1)**2+cross(2)**2+cross(3)**2)
+         cross(1)=cross(1)/crossmod
+         cross(2)=cross(2)/crossmod
+         cross(3)=cross(3)/crossmod	! normalize the vector to modulus 1.0
+
+         vpb1(1,3)=-(cos(PI_8/3.0)*vpb1(1,1) + d1*sin(PI_8/3.0)*cross(1))
+         vpb1(2,3)=-(cos(PI_8/3.0)*vpb1(2,1) + d1*sin(PI_8/3.0)*cross(2))
+         vpb1(3,3)=-(cos(PI_8/3.0)*vpb1(3,1) + d1*sin(PI_8/3.0)*cross(3))
+         vpb1(1,4)=-vpb1(1,3)
+         vpb1(2,4)=-vpb1(2,3)
+         vpb1(3,4)=-vpb1(3,3)
+
+         vpb1(1,5)=-(cos(PI_8/3.0)*vpb1(1,1) - d1*sin(PI_8/3.0)*cross(1))
+         vpb1(2,5)=-(cos(PI_8/3.0)*vpb1(2,1) - d1*sin(PI_8/3.0)*cross(2))
+         vpb1(3,5)=-(cos(PI_8/3.0)*vpb1(3,1) - d1*sin(PI_8/3.0)*cross(3))
+         vpb1(1,6)=-vpb1(1,5)
+         vpb1(2,6)=-vpb1(2,5)
+         vpb1(3,6)=-vpb1(3,5)
+         nneig1 = 6
+     end if
+   else
+     if (ANLead1 == 6 .or. ANLead1 == 1 .or. ANLead1 == 83 .or. ANLead1 == 51) then
+         vpb1(1,5)=-(vpb1(1,1)+vpb1(1,3))
+         vpb1(2,5)=-(vpb1(2,1)+vpb1(2,3))
+         vpb1(3,5)=-(vpb1(3,1)+vpb1(3,3))
+         vpb1(1,6)=-vpb1(1,5)
+         vpb1(2,6)=-vpb1(2,5)
+         vpb1(3,6)=-vpb1(3,5)
+         nneig1 = 6
+     end if
+   end if
+ end if
+     
+    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /=4 .and. NEmbed(1) /=1 ) then
        write(ifu_log,*)'Problem finding lattice directions in electrode 1 !!!!!'
        stop
     else
@@ -808,6 +946,12 @@ CONTAINS
           write(ifu_log,'(3f10.5)')(vpb1(j,i),j=1,3)
        end do
     end if
+    
+    if(PlBethe2)then
+        nbethecount = NEmbed(2) ! Build a plane Bethe lattice from plane.
+    else
+        nbethecount = nlead2 ! Build a bulk Bethe lattice taking into account various planes.
+    end if    
 
     ! Finding lattice parameter for electrode 2
 
@@ -817,17 +961,22 @@ CONTAINS
     d2=100000000.0
     ! Loop until nn2 gives problems when innermost atoms (not included in NEmbed(2))
     ! do not have perfect crystalline order: Nearest neighbour distance too short
-    do i=1,NEmbed(2)
-       do j=i+1,nlead2
+    if(Nembed(2)==1)then
+      d2=dsqrt((GetAtmCo(1,GetNAtoms())-GetAtmCo(1,GetNAtoms()-1))**2+(GetAtmCo(2,GetNAtoms())-GetAtmCo(2,GetNAtoms()-1))**2+(GetAtmCo(3,GetNAtoms())-GetAtmCo(3,GetNAtoms()-1))**2)
+    else
+      do i=1,NEmbed(2)
+        do j=i+1,nlead2
           ddd=dsqrt((xl2(j)-xl2(i))**2+(yl2(j)-yl2(i))**2+(zl2(j)-zl2(i))**2)
           if (ddd <= d2) d2=ddd
-       end do
-    end do
+        end do
+      end do
+    endif
     print *, "Near-neighbor distance at electrode 2 = ", d2*au2ang
 
     nneig2=0
     do i=1,NEmbed(2)
-       do j=i+1,nlead2
+       !do j=i+1,nlead2
+       do j=i+1,nbethecount
           vv(1)=xl2(j)-xl2(i)
           vv(2)=yl2(j)-yl2(i)
           vv(3)=zl2(j)-zl2(i)
@@ -853,8 +1002,69 @@ CONTAINS
 222    end do
     end do
 
-    !if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
-    if (ANLead2 == 6 .or. ANLead2 == 1) then
+    if(NEmbed(2).EQ.1)then
+      vv(1)=GetAtmCo(1,GetNAtoms())-GetAtmCo(1,GetNAtoms()-1)
+      vv(2)=GetAtmCo(2,GetNAtoms())-GetAtmCo(2,GetNAtoms()-1)
+      vv(3)=GetAtmCo(3,GetNAtoms())-GetAtmCo(3,GetNAtoms()-1)
+      ddd=dsqrt(vv(1)**2+vv(2)**2+vv(3)**2)
+      if (dabs(ddd-d1) > smalld)then
+        write(ifu_log,*)'The 2 atoms used to make 1D BL are too near!!!!'
+        stop
+      end if
+!      vv(1)=vv(1)/ddd ! THIS LEADS TO ERRORS.
+!      vv(2)=vv(2)/ddd ! THIS LEADS TO ERRORS.
+!      vv(3)=vv(3)/ddd ! THIS LEADS TO ERRORS.
+      vpb2(1,1)=vv(1)                   
+      vpb2(2,1)=vv(2)
+      vpb2(3,1)=vv(3)
+      nneig2=1+1
+      vpb2(1,nneig2)=-vv(1)
+      vpb2(2,nneig2)=-vv(2)
+      vpb2(3,nneig2)=-vv(3)
+      nneig2=2
+    endif
+
+
+!	! For hexagonal lattices.
+!    if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+!       vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))     
+!       vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
+!       vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))
+!       vpb2(1,6)=-vpb2(1,5)    
+!       vpb2(2,6)=-vpb2(2,5)
+!       vpb2(3,6)=-vpb2(3,5)
+!       nneig2 = 6
+!    end if
+
+ if(ElType(2)=="GRAPHENE")then
+   if (NoCloseHex)then
+     if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+       ! When there are no closed hexagons, I compute the cross product of the plane-normal vector with the only lattice direction stored in the vectors vpb1(1:3,1) and its opposite vpb1(1:3,2).
+       cross(1) = vpb2(2,1) * aplane(3,2) - vpb2(3,1) * aplane(2,2)
+       cross(2) = vpb2(3,1) * aplane(1,2) - vpb2(1,1) * aplane(3,2)
+       cross(3) = vpb2(1,1) * aplane(2,2) - vpb2(2,1) * aplane(1,2)
+       crossmod=dsqrt(cross(1)**2+cross(2)**2+cross(3)**2)
+       cross(1)=cross(1)/crossmod
+       cross(2)=cross(2)/crossmod
+       cross(3)=cross(3)/crossmod	! normalize the vector to modulus 1.0
+
+       vpb2(1,3)=-(cos(PI_8/3.0)*vpb2(1,1) + d2*sin(PI_8/3.0)*cross(1))     
+       vpb2(2,3)=-(cos(PI_8/3.0)*vpb2(2,1) + d2*sin(PI_8/3.0)*cross(2)) 
+       vpb2(3,3)=-(cos(PI_8/3.0)*vpb2(3,1) + d2*sin(PI_8/3.0)*cross(3)) 
+       vpb2(1,4)=-vpb2(1,3)    
+       vpb2(2,4)=-vpb2(2,3)
+       vpb2(3,4)=-vpb2(3,3)
+
+       vpb2(1,5)=-(cos(PI_8/3.0)*vpb2(1,1) - d2*sin(PI_8/3.0)*cross(1))     
+       vpb2(2,5)=-(cos(PI_8/3.0)*vpb2(2,1) - d2*sin(PI_8/3.0)*cross(2)) 
+       vpb2(3,5)=-(cos(PI_8/3.0)*vpb2(3,1) - d2*sin(PI_8/3.0)*cross(3)) 
+       vpb2(1,6)=-vpb2(1,5)    
+       vpb2(2,6)=-vpb2(2,5)
+       vpb2(3,6)=-vpb2(3,5)
+       nneig2 = 6
+     end if
+   else
+     if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
        vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))     
        vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
        vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))
@@ -862,9 +1072,11 @@ CONTAINS
        vpb2(2,6)=-vpb2(2,5)
        vpb2(3,6)=-vpb2(3,5)
        nneig2 = 6
-    end if
-    
-    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4) then
+     end if
+   end if
+ end if
+
+    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4 .and. NEmbed(2) /=1 ) then
        write(ifu_log,*)'Problem finding lattice directions in electrode 2 !!!!!'
        stop
     else
@@ -883,9 +1095,31 @@ CONTAINS
     else
        nj=1
     end if
-    do i=1,NEmbed(1)
-       ndi=0
-       do k1=1,nj
+    
+    if (Nembed(1)==1)then
+      ! xl1(i) = GetAtmCo(i)
+      ! THE 3 LIES BELOW GIVE THE RELATIVE VECTORS BUT NOT THE POSITION.
+      v(1,1)=(GetAtmCo(1,1)-GetAtmCo(1,2))!*d1
+      v(2,1)=(GetAtmCo(2,1)-GetAtmCo(2,2))!*d1
+      v(3,1)=(GetAtmCo(3,1)-GetAtmCo(3,2))!*d1
+      ddd = sqrt(v(1,1)**2+v(2,1)**2+v(3,1)**2)
+      !if (dabs(ddd-d1) > smalld)then
+      !  write(ifu_log,*)'The 2 atoms used to make 1D BL1 are too near!!!! Exit when filling nvbet.'
+      !  stop
+      !endif
+      ! Coordinates of a new Bethe lattice atom
+      !zbla = au2ang*(zl1(i)+vb(3,k))
+      xbla = au2ang*(GetAtmCo(1,1)+v(1,1))
+      ybla = au2ang*(GetAtmCo(2,1)+v(2,1))
+      zbla = au2ang*(GetAtmCo(3,1)+v(3,1))
+      nblatoms1=1
+      xbl1(nblatoms1) = xbla
+      ybl1(nblatoms1) = ybla
+      zbl1(nblatoms1) = zbla
+    else
+      do i=1,NEmbed(1)
+        ndi=0
+        do k1=1,nj
           ndirr=0
           do k=k1,nneig1,nj
              vb(1,k)=vpb1(1,k)*d1
@@ -939,9 +1173,10 @@ CONTAINS
              zbl1(nblatoms1) = zbla
           end if
 
-       end do
-       nbethe=nbethe+ndir(i)
-    end do
+        end do
+        nbethe=nbethe+ndir(i)
+      end do
+    end if
 
 ! Finding atoms in electrode 2 where to attach Bethe lattices
 
@@ -953,9 +1188,30 @@ CONTAINS
        nj=1
     end if
 
-    do i=GetNAtoms(),GetNAtoms()-NEmbed(2)+1,-1
-       !write(ifu_log,*)'Atom', i
-       ndi=0
+    if (Nembed(2)==1)then
+      ! xl1(i) = GetAtmCo(i)
+      ! THE 3 LINES BELOW GIVE THE RELATIVE VECTOR BUT NOT THE POSITION.
+      v(1,1)=(GetAtmCo(1,GetNAtoms())-GetAtmCo(1,GetNAtoms()-1))!*d2
+      v(2,1)=(GetAtmCo(2,GetNAtoms())-GetAtmCo(2,GetNAtoms()-1))!*d2
+      v(3,1)=(GetAtmCo(3,GetNAtoms())-GetAtmCo(3,GetNAtoms()-1))!*d2
+      ddd = sqrt(v(1,1)**2+v(2,1)**2+v(3,1)**2)
+      !if (dabs(ddd-d1) > smalld)then
+      !  write(ifu_log,*)'The 2 atoms used to make 1D BL2 are too near!!!! Exit when filling nvbet.'
+      !  stop
+      !endif
+      ! Coordinates of a new Bethe lattice atom
+      !zbla = au2ang*(zl1(i)+vb(3,k))
+      xbla = au2ang*(GetAtmCo(1,GetNAtoms())+v(1,1))
+      ybla = au2ang*(GetAtmCo(2,GetNAtoms())+v(2,1))
+      zbla = au2ang*(GetAtmCo(3,GetNAtoms())+v(3,1))
+      nblatoms2=1
+      xbl2(nblatoms2) = xbla
+      ybl2(nblatoms2) = ybla
+      zbl2(nblatoms2) = zbla
+    else
+      do i=GetNAtoms(),GetNAtoms()-NEmbed(2)+1,-1
+        !write(ifu_log,*)'Atom', i
+        ndi=0
        do k1=1,nj
           ndirr=0
           do k=k1,nneig2,nj
@@ -1011,10 +1267,10 @@ CONTAINS
              zbl2(nblatoms2) = zbla
           end if
 
-       end do
-       nbethe=nbethe+ndir(i)
-    end do
-
+         end do
+         nbethe=nbethe+ndir(i)
+      end do
+    end if
     !
     !    OPEN A FILE FOR FURTHER CHECK OF BETHE LATTICE DIRECTIONS 
     !
@@ -1060,7 +1316,7 @@ CONTAINS
   END SUBROUTINE AnalyseCluster
 
   SUBROUTINE AnalyseClusterElectrodeOne
-    use parameters, only: ANT1DInp, smalld, small
+    use parameters, only: ANT1DInp, smalld, small, PlBethe1, PlBethe2, NoCloseHex
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
     use ANTCommon
@@ -1097,7 +1353,11 @@ CONTAINS
     INTEGER :: nblatoms1, nblatoms2, ibl
     ! Coordnates of a Bethe lattice atom
     REAL*8 :: xbla, ybla, zbla
-
+    ! Added by C. Salgado to work with Geometry
+    real,  parameter :: PI_8  = 4 * atan (1.0_8)
+    real :: cross(3)
+    real :: crossmod
+    integer :: nbethecount    
     
     !C
     CALL FillEl(ein,MaxEl,IEl)
@@ -1534,7 +1794,7 @@ CONTAINS
     end do
 
     REWIND(ifu_xyz)
-    write(ifu_xyz,'(I5)'), GetNAtoms()+nblatoms1
+    write(ifu_xyz,'(I5)'), GetNAtoms()+nblatoms1+nblatoms2
     write(ifu_xyz,*)
     do ibl=1,nblatoms1
        WRITE(ifu_xyz,' (A2,3(F11.6))') 'Ar', xbl1(ibl), ybl1(ibl), zbl1(ibl)
@@ -1563,7 +1823,7 @@ CONTAINS
   END SUBROUTINE AnalyseClusterElectrodeOne
 
   SUBROUTINE AnalyseClusterElectrodeTwo
-    use parameters, only: ANT1DInp, small, smalld
+    use parameters, only: ANT1DInp, small, smalld, PlBethe1, PlBethe2, NoCloseHex
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
     use ANTCommon
@@ -1600,7 +1860,11 @@ CONTAINS
     INTEGER :: nblatoms1, nblatoms2, ibl
     ! Coordnates of a Bethe lattice atom
     REAL*8 :: xbla, ybla, zbla
-
+    ! Added by C. Salgado to work with Geometry
+    real,  parameter :: PI_8  = 4 * atan (1.0_8)
+    real :: cross(3)
+    real :: crossmod
+    integer :: nbethecount    
     
     !C
     CALL FillEl(ein,MaxEl,IEl)
@@ -1916,6 +2180,16 @@ CONTAINS
     nn2 = NEmbed(2)
 
     ! Finding lattice parameter for electrode 2
+    
+    if(PlBethe2)then
+        nbethecount = NEmbed(2) ! Build a plane Bethe lattice from plane.
+    else
+      if(nlead2==1)then
+        nbethecount = nlead2+1 ! 1D Bethe Lattice
+      else
+        nbethecount = nlead2 ! Build a bulk Bethe lattice taking into account various planes.
+      end if
+    end if    
 
     write(ifu_log,*)'Finding lattice directions in electrode 2 ....'
     d2=100000000.0
@@ -1929,7 +2203,8 @@ CONTAINS
 
     nneig2=0
     do i=1,NEmbed(2)
-       do j=i+1,nlead2
+       !do j=i+1,nlead2
+       do j=i+1,nbethecount
           vv(1)=xl2(j)-xl2(i)
           vv(2)=yl2(j)-yl2(i)
           vv(3)=zl2(j)-zl2(i)
@@ -1953,16 +2228,69 @@ CONTAINS
 222    end do
     end do
      
-   !if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
-    if (ANLead2 == 6 .or. ANLead2 == 1) then
-       vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))     
-       vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
-       vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))
+!    if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+!       vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))     
+!       vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
+!       vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))
+!       vpb2(1,6)=-vpb2(1,5)    
+!       vpb2(2,6)=-vpb2(2,5)
+!       vpb2(3,6)=-vpb2(3,5)
+!       nneig2 = 6
+!    end if
+    
+  if (NoCloseHex)then
+    if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+ ! When there are no closed hexagons, I compute the cross product of the plane-normal vector with the only lattice direction stored in the vectors vpb1(1:3,1) and its opposite vpb1(1:3,2).
+
+       if(DOT_PRODUCT(aplane(:,2),aplane(:,2))==0) aplane(:,2) = aplane(:,1)
+
+       write(ifu_log,*)'vpb2(1:3,1)'
+       write(ifu_log,*)(vpb2(i,1),i=1,3)
+       write(ifu_log,*)'vpb2(1:3,2)'
+       write(ifu_log,*)(vpb2(i,2),i=1,3)
+       write(ifu_log,*)'aplane(1:3,2)'
+       write(ifu_log,*)(aplane(i,2),i=1,3)
+
+       cross(1) = vpb2(2,1) * aplane(3,2) - vpb2(3,1) * aplane(2,2)
+       cross(2) = vpb2(3,1) * aplane(1,2) - vpb2(1,1) * aplane(3,2)
+       cross(3) = vpb2(1,1) * aplane(2,2) - vpb2(2,1) * aplane(1,2)
+       crossmod=dsqrt(cross(1)**2+cross(2)**2+cross(3)**2)
+       cross(1)=cross(1)/crossmod
+       cross(2)=cross(2)/crossmod
+       cross(3)=cross(3)/crossmod	! normalize the vector to modulus 1.0
+       
+       write(ifu_log,*)'cross(1:3)'
+       write(ifu_log,*)(cross(i),i=1,3)
+
+       crossmod=dsqrt(vpb2(1,1)**2+vpb2(2,1)**2+vpb2(3,1)**2)
+
+       !vpb2(1,3)=-(cos(PI_8/3.0)*vpb2(1,1) + d2*sin(PI_8/3.0)*cross(1)) 
+       vpb2(1,3)=-(cos(PI_8/3.0)*vpb2(1,1) + sin(PI_8/3.0)*cross(1))      
+       vpb2(2,3)=-(cos(PI_8/3.0)*vpb2(2,1) + sin(PI_8/3.0)*cross(2)) 
+       vpb2(3,3)=-(cos(PI_8/3.0)*vpb2(3,1) + sin(PI_8/3.0)*cross(3)) 
+       vpb2(1,4)=-vpb2(1,3)    
+       vpb2(2,4)=-vpb2(2,3)
+       vpb2(3,4)=-vpb2(3,3)
+
+       vpb2(1,5)=-(cos(PI_8/3.0)*vpb2(1,1) - sin(PI_8/3.0)*cross(1))     
+       vpb2(2,5)=-(cos(PI_8/3.0)*vpb2(2,1) - sin(PI_8/3.0)*cross(2)) 
+       vpb2(3,5)=-(cos(PI_8/3.0)*vpb2(3,1) - sin(PI_8/3.0)*cross(3)) 
        vpb2(1,6)=-vpb2(1,5)    
        vpb2(2,6)=-vpb2(2,5)
        vpb2(3,6)=-vpb2(3,5)
        nneig2 = 6
     end if
+  else
+    if (ANLead2 == 6 .or. ANLead2 == 1 .or. ANLead2 == 83 .or. ANLead2 == 51) then
+      vpb2(1,5)=-(vpb2(1,1)+vpb2(1,3))
+      vpb2(2,5)=-(vpb2(2,1)+vpb2(2,3))
+      vpb2(3,5)=-(vpb2(3,1)+vpb2(3,3))
+      vpb2(1,6)=-vpb2(1,5)
+      vpb2(2,6)=-vpb2(2,5)
+      vpb2(3,6)=-vpb2(3,5)
+      nneig2 = 6
+    end if
+  end if
 
     if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4) then
        write(ifu_log,'(A6,i10,A20)')'Found ',nneig2, 'lattice directions'
@@ -2182,6 +2510,39 @@ CONTAINS
 
     
   END SUBROUTINE cmatr
+  
+
+      Subroutine FillEl(ISt,IEnd,El)
+      Implicit Integer(A-Z)
+!C
+!C     Load array El with the names of the elements from ISt to IEnd.
+!C     ISt can be zero, in which case El starts with Banquo, or -1, in
+!C     which case El starts with X
+!C
+      Parameter (MinEl=-2,MaxEl=118)
+      Dimension ElDat(MinEl:MaxEl), El(ISt:IEnd)
+      Save ElDat, Quest
+      Data ElDat/2hTV,2hX ,2HBq,2HH ,2HHe,2HLi,2HBe,2HB ,2HC ,&
+     2HN ,2HO ,2HF ,2HNe,2HNa,2HMg,2HAl,2HSi,2HP ,2HS ,2HCl,2HAr,2HK ,&
+     2HCa,2HSc,2HTi,2HV ,2HCr,2HMn,2HFe,2HCo,2HNi,2HCu,2HZn,2HGa,2HGe,&
+     2HAs,2HSe,2HBr,2HKr,2HRb,2HSr,2HY ,2HZr,2HNb,2HMo,2HTc,2HRu,2HRh,&
+     2HPd,2HAg,2HCd,2HIn,2HSn,2HSb,2HTe,2HI ,2HXe,2HCs,2HBa,2HLa,2HCe,&
+     2HPr,2HNd,2HPm,2HSm,2HEu,2HGd,2HTb,2HDy,2HHo,2HEr,2HTm,2HYb,2HLu,&
+     2HHf,2HTa,2HW ,2HRe,2HOs,2HIr,2HPt,2HAu,2HHg,2HTl,2HPb,2HBi,2HPo,&
+     2HAt,2HRn,2HFr,2HRa,2HAc,2HTh,2HPa,2HU ,2hNp,2hPu,2hAm,2hCm,2hBk,&
+     2hCf,2hEs,2hFm,2hMd,2hNo,2hLr,2hRf,2hDb,2hSg,2hBh,2hHs,2hMt,2hDs,&
+     2hUu,2hUb,2hUt,2hUq,2hUp,2hUh,2hUs,2hUo/,Quest/2h??/
+!C
+      ISt1 = Max(ISt,MinEl)
+      IEnd1 = Min(IEnd,MaxEl)
+      Do 10 I = ISt, (ISt1-1)
+   10   El(I) = Quest
+      Do 20 I = ISt1, IEnd1
+   20   El(I) = ElDat(I)
+      Do 30 I = (IEnd1+1), IEnd
+   30   El(I) = Quest
+      Return
+      End  
 
 
   END MODULE Cluster
