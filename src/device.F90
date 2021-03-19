@@ -41,11 +41,15 @@
 
   private
 
-  public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevDensMat, SetDevDensMat
+  public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevDensMat, SetDevDensMat, SetDevFockMat
+  public :: DevHWFockMat, SetDevHWFockMat, DevDGibbsYMat, SetDevDGibbsYMat
+  public :: DevDGibbsYKernel1Mat, SetDevDGibbsYKernel1Mat, DevDGibbsYKernel2Mat, SetDevDGibbsYKernel2Mat
+  public :: BuildLiouvillian, CompCGibbsY  
   public :: LeadsOn, SwitchOnLeads, SecantOn, SwitchOnSecant, SwitchOffSecant
   public :: EvaluationOn, SwitchOnEvaluation
   public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock
   public :: InitDevice, ReadDensMat, ReadFockMat, CleanUpDevice, InitElectrodes, Transport
+  public :: IntDDOStimesE, DDOStimesE0, WorkFock, WorkEnergy  
 
 
   !*****************************
@@ -66,12 +70,19 @@
   real*8, dimension(:,:), allocatable :: S_SOC, InvS_SOC
 
   ! *** Complex S^+1/2 matrix ***
-  complex*16, dimension(:,:),allocatable :: SPH
+  complex*16, dimension(:,:),allocatable :: SPH, SNH
   
   ! *** Hamiltonian and density matrix of device
   real*8, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
+  real*8, dimension(:,:,:),allocatable :: PDGIBBS
+  real*8, dimension(:,:,:),allocatable :: HW
+  real*8, dimension(:,:,:),allocatable :: DGibbsY, DGibbsYKernel1, DGibbsYKernel2  
   complex*16, dimension(:,:,:),allocatable :: PDOUT
+  complex*16, dimension(:,:,:),allocatable :: PDOUTGIBBS
+  complex*16, dimension(:,:,:),allocatable :: HWOUT
+  complex*16, dimension(:,:,:),allocatable :: LiouvSOp
+  complex*16, dimension(:,:,:),allocatable :: CGibbsY, CGibbsYKernel1, CGibbsYKernel2  
   complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC,PD_SOC_R,PD_SOC_A
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
 
@@ -110,6 +121,15 @@
   ! Whether device Hamiltonain has been orthogonalized
   logical :: HDOrtho = .false.
   
+  ! *** In which atom to calculate the spinmu ***
+  integer :: spinatom
+  ! *** Number of electrons projected on atoms at the Fermi energy
+  ! *** Actual electron charge for certain Fermi energy ***
+  real*8 :: LocalQAlpha, LocalQBeta
+  real*8, dimension(:), allocatable :: alphaelec, betaelec, alphalocalshift, betalocalshift
+  real*8, dimension(:,:,:),allocatable :: LocPD
+  complex*16, dimension(:,:,:),allocatable :: LocPDOUT  
+  
 !!$OMP THREADPRIVATE(shift)
   contains
 
@@ -146,6 +166,14 @@
     integer, intent(in) :: is, i, j
     DevFockMat = HD(is, i, j)
   end function DevFockMat
+  
+  ! *** Set matrix Element of Fock matrix ***
+  subroutine SetDevFockMat( is, i, j, fij )
+    implicit none
+    integer, intent(in) :: is, i, j
+    real, intent(in) :: fij
+    HD(is, i, j) = fij
+  end subroutine SetDevFockMat  
 
   ! *** Get matrix Element of Density matrix ***
   real*8 function DevDensMat( is, i, j )
@@ -161,6 +189,66 @@
     real*8, intent(in) :: pij
     PD(is, i, j) = pij
   end subroutine SetDevDensMat
+  
+  ! *** Get matrix Element of HWFock matrix ***
+  real function DevHWFockMat( is, i, j )
+    implicit none
+    integer, intent(in) :: is, i, j
+    DevHWFockMat = HW(is, i, j)
+  end function DevHWFockMat
+
+  ! *** Set matrix Element of HWFock matrix ***
+  subroutine SetDevHWFockMat( is, i, j, hwij )
+    implicit none
+    integer, intent(in) :: is, i, j
+    real, intent(in) :: hwij
+    HW(is, i, j) = hwij
+  end subroutine SetDevHWFockMat
+
+  ! *** Get matrix Element of CGibbsY matrix ***
+  real*8 function DevDGibbsYMat( is, i, j )
+    implicit none
+    integer, intent(in) :: is, i, j
+    DevDGibbsYMat = DGibbsY(is, i, j)
+  end function DevDGibbsYMat
+
+  ! *** Set matrix Element of CGibbsY matrix ***
+  subroutine SetDevDGibbsYMat( is, i, j, DGibbsYij )
+    implicit none
+    integer, intent(in) :: is, i, j
+    real, intent(in) :: DGibbsYij
+    DGibbsY(is, i, j) = DGibbsYij
+  end subroutine SetDevDGibbsYMat
+
+  ! *** Get matrix Element of CGibbsYKernel1 matrix ***
+  real*8 function DevDGibbsYKernel1Mat( is, i, j )
+    implicit none
+    integer, intent(in) :: is, i, j
+    DevDGibbsYKernel1Mat = DGibbsYKernel1(is, i, j)
+  end function DevDGibbsYKernel1Mat
+
+  ! *** Set matrix Element of CGibbsYKernel1 matrix ***
+  subroutine SetDevDGibbsYKernel1Mat( is, i, j, DGibbsYKernel1ij )
+    implicit none
+    integer, intent(in) :: is, i, j
+    real, intent(in) :: DGibbsYKernel1ij
+    DGibbsYKernel1(is, i, j) = DGibbsYKernel1ij
+  end subroutine SetDevDGibbsYKernel1Mat
+
+  ! *** Get matrix Element of CGibbsYKernel2 matrix ***
+  real*8 function DevDGibbsYKernel2Mat( is, i, j )
+    implicit none
+    integer, intent(in) :: is, i, j
+    DevDGibbsYKernel2Mat = DGibbsYKernel2(is, i, j)
+  end function DevDGibbsYKernel2Mat
+
+  ! *** Set matrix Element of CGibbsYKernel2 matrix ***
+  subroutine SetDevDGibbsYKernel2Mat( is, i, j, DGibbsYKernel2ij )
+    implicit none
+    integer, intent(in) :: is, i, j
+    real, intent(in) :: DGibbsYKernel2ij
+    DGibbsYKernel2(is, i, j) = DGibbsYKernel2ij
+  end subroutine SetDevDGibbsYKernel2Mat  
 
   ! ***
   logical function LeadsOn()
@@ -234,7 +322,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, CompFock, SOC, biasvoltage
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -267,17 +355,39 @@
     exspin=d_zero
 
     !if (biasvoltage /= 0.0) allocate(PDOUT(NSpin,NAOrbs,NAOrbs), STAT=AllocErr) 
-    allocate(PDOUT(NSpin,NAOrbs,NAOrbs), STAT=AllocErr) 
-    if( AllocErr /= 0 ) then
-       print *, "DEVICE/Allocation error for PDOUT"
-       stop
-    end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs), PDOUT(NSpin,NAOrbs,NAOrbs), STAT=AllocErr )
     if( AllocErr /= 0 ) then
        print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
        stop
     end if
+    if(CompFock)then
+      allocate( HW(NSpin,NAOrbs,NAOrbs), &
+         HWOUT(NSpin,NAOrbs,NAOrbs), &
+         STAT=AllocErr )
+      if( AllocErr /= 0 ) then
+        print *, "DEVICE/Allocation error for HW, HWOUT"
+        stop
+      end if
+      allocate( CGibbsY(NSpin,NAOrbs,NAOrbs), &
+                DGibbsY(NSpin,NAOrbs,NAOrbs), &
+                CGibbsYKernel1(NSpin,NAOrbs,NAOrbs), &
+                DGibbsYKernel1(NSpin,NAOrbs,NAOrbs), &
+                CGibbsYKernel2(NSpin,NAOrbs,NAOrbs), &
+                DGibbsYKernel2(NSpin,NAOrbs,NAOrbs), &
+                STAT=AllocErr )
+      if( AllocErr /= 0 ) then
+        print *, "DEVICE/Allocation error for CGibbsY"
+        stop
+      end if
+      allocate( PDGIBBS(NSpin,NAOrbs,NAOrbs), &
+                PDOUTGIBBS(NSpin,NAOrbs,NAOrbs), &
+                STAT=AllocErr )
+      if( AllocErr /= 0 ) then
+        print *, "DEVICE/Allocation error for PDGIBBS"
+        stop
+      end if
+    end if    
 
     SD = S
     call RMatPow( SD, -1.0d0, InvSD )
@@ -648,12 +758,13 @@
   !**************************
   subroutine CleanUpDevice
     use BetheLattice, only: CleanUpBL, LeadBL
-    use parameters, only: ElType
+    use parameters, only: ElType, BiasVoltage, CompFock
+    implicit none    
     integer :: AllocErr, LeadNo
 
-    deallocate( SD, InvSD, HD, PD, PDOUT, SPH, STAT=AllocErr )
+    deallocate( SD, InvSD, HD, PD, PDOUT, SPH, HW, HWOUT, DGibbsY, CGibbsY, DGibbsYKernel1, CGibbsYKernel1, DGibbsYKernel2, CGibbsYKernel2, PDGIBBS, PDOUTGIBBS, STAT=AllocErr )
     if( AllocErr /= 0 ) then
-       print *, "DEVICE/Deallocation error for SD, InvSD, HD, PD, PDOUT, SPH"
+       print *, "DEVICE/Deallocation error for SD, InvSD, HD, PD, PDOUT, SPH, HW, HWOUT, DGibbsY, CGibbsY, DGibbsYKernel1, CGibbsYKernel1, DGibbsYKernel2, CGibbsYKernel2, PDGIBBS, PDOUTGIBBS"
        stop
     end if
     do LeadNo=1,2
@@ -704,11 +815,13 @@
   !* Solve transport problem *
   !***************************
   subroutine Transport(F,ADDP) 
-    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, ROT, PrtHatom
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, IntEnergy, BiasEnergy, DiagFock, SPINMU, BiasVoltage, CompFock, CompGibbsY
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
     use orthogonalization
+    use constants, only: Hart    
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms
 #endif
@@ -746,7 +859,7 @@
 
     if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
 
-    if(.not.DMImag) call CompDensMat(ADDP)
+    if(.not.DMImag) call CompDensMat(ADDP,.false.,.false.)
     if(DMImag) call CompDensMat2(ADDP)
 
     if( Evaluation )then
@@ -762,6 +875,33 @@
        print *, "*                                        * "       
        print *, "****************************************** "
        print *
+       
+      if( SPINMU )then
+        !call Hamiltonian
+        !call LDOS
+        !call MullPop
+        if(.not.DMImag) call CompLocalMu(ADDP)
+        if(DMImag) call CompLocalMu(ADDP)
+      end if
+      !if( IntEnergy ) call WorkEnergy
+      if( DiagFock ) call WorkFock
+      if( IntEnergy ) call WorkEnergy
+      if( BiasEnergy ) call WorkBiasEnergy
+      if( CompFock )then
+      !if( CompGibbsY )then
+        if(BiasVoltage==0.0d0)then
+          ! 1st TRUE MEANS COMPUTE FOCK WITH QHWTot. 2nd FALSE MEANS NOT COMPUTE CGibbsY.
+          !call CompDensMat(ADDP,.true.,.false.)
+          call BuildLiouvillian ! COMMENTED ON 2018-04-24 BECAUSE LIOUVILIAN IS NOT USED ANYMORE.
+          call CompDensMat(ADDP,.true.,.true.)
+          call DeallocateLiouvillian ! COMMENTED ON 2018-04-24 BECAUSE LIOUVILIAN IS NOT USED ANYMORE.
+        elseif(BiasVoltage/=0.0d0)then
+          call BuildLiouvillian ! COMMENTED ON 2018-04-24 BECAUSE LIOUVILIAN IS NOT USED ANYMORE.
+          ! 1st TRUE MEANS COMPUTE FOCK WITH QHWTot. 2nd TRUE MEANS COMPUTE CGibbsY.
+          call CompDensMat(ADDP,.true.,.true.)
+          call DeallocateLiouvillian ! COMMENTED ON 2018-04-24 BECAUSE LIOUVILIAN IS NOT USED ANYMORE.
+        end if
+      end if       
 
        IF( ANT1DInp ) call WriteANT1DInput
 
@@ -826,6 +966,752 @@
  
     end if
   end subroutine transport
+
+  subroutine BuildLiouvillian
+!    use g09Common, only: GetNAE, GetNBE
+    use parameters, only: eta
+    use constants, only: d_zero, d_one, c_zero, c_one, ui, eleccharge, hbar
+    use numeric, only: CInv
+    implicit none
+
+!    complex, dimension(:,:,:),allocatable :: LiouvSOp!, LiouvSOpL, LiouvSOpR
+    complex, dimension(NAOrbs,NAOrbs) :: IDD
+    complex, dimension(NAOrbs*NAOrbs,NAOrbs*NAOrbs) :: LiouvSOpPiv
+!    real ::
+!    real ::
+    integer :: iSpin, i, j, k, l
+    integer :: info, allocerr
+    integer :: n, ipiv(NAOrbs*NAOrbs)
+    complex*16, DIMENSION( 4*NAOrbs*NAOrbs ) :: work
+
+    if(DebugDev)then
+    Write(*,'(A)')"***********************************"
+    Write(*,'(A)')"**** ENTER BuildLiouvillian!!! ****"
+    Write(*,'(A)')"***********************************"
+    end if
+
+    allocate( LiouvSOp(NSpin,NAorbs*NAorbs,NAorbs*NAorbs),&
+              STAT=AllocErr )
+    if( AllocErr /= 0 ) then
+      print *, "DEVICE/BuildLiouvillian: Allocation error for LiouvSOp(:,:,:)"
+      stop
+    end if
+    LiouvSOpPiv = c_zero
+    LiouvSOp = c_zero
+
+    IDD = c_zero                           ! Initialize the array.
+    forall(j = 1:NAOrbs) IDD(j,j) = c_one     ! Set the diagonal.
+
+    Write(*,'(A)')"DON'T FORGET TO MULTIPLY BY THE ELECTRON CHARGE!!!"
+    do iSpin=1,NSpin
+      LiouvSOpPiv = c_zero
+      do i=1,NAOrbs
+        do j=1,NAOrbs
+          do k=1,NAOrbs
+            do l=1,NAOrbs
+              !LiouvSOpL((i-1)*NAOrbs+k,(j-1)*NAOrbs+l)=HD(i,j)*IDD(k,l)
+              !LiouvSOpR((i-1)*NAOrbs+k,(j-1)*NAOrbs+l)=IDD(i,j)*HD(k,l)
+              ! FOR EACH SUPEROP ELEMENT, 1st SUMANDO BELONGS TO LiouvSOpL & 2nd TO LiouvSOpR, NEGATIVE.
+              ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.
+              !LiouvSOpPiv((i-1)*NAOrbs+k,(j-1)*NAOrbs+l)= -(COMPLEX(HD(iSpin,i,j),0.0D0)*IDD(k,l) - IDD(i,j)*COMPLEX(HD(iSpin,k,l),0.0D0))
+              LiouvSOpPiv((i-1)*NAOrbs+k,(j-1)*NAOrbs+l)= - HD(iSpin,i,j)*IDD(k,l) + IDD(i,j)*HD(iSpin,k,l) ! STRICTLY -L.
+              ! ADD COMPLEX ETA TO THE DIAGONAL.
+              if((i==j) .and. (k==l))then
+                LiouvSOpPiv((i-1)*NAOrbs+k,(j-1)*NAOrbs+l) = LiouvSOpPiv((i-1)*NAOrbs+k,(j-1)*NAOrbs+l) + ui*eta ! BECAUSE -L+i*eta
+              end if
+              !Write(*,'(I4,I4,I4,F12.8,F12.8)')iSpin,i,j,LiouvSOp(iSpin,i,j)
+            end do
+          end do
+        end do
+      end do
+
+      if(DebugDev)then
+      if(iSpin==1)Write(*,'(A)')"ALPHA LIOUVILLIAN BEFORE INVERSION"
+      if(iSpin==2)Write(*,'(A)')"BETA LIOUVILLIAN BEFORE INVERSION"
+      call PrintCMatrix(LiouvSOpPiv)
+      end if
+
+      !info = Cinv(LiouvSOpPiv)
+      n = SIZE( LiouvSOpPiv, 1)
+      CALL zgetrf(n,n,LiouvSOpPiv,n,ipiv,info)
+      CALL zgetri(n,LiouvSOpPiv,n,ipiv,work,4*n,info)
+      if( info /= 0 ) THEN
+        WRITE(ifu_log,*)'Device/BuildLiouvillian using CInv (zgetrf,zgetri) in device.f90'
+        WRITE(ifu_log,*)'INFO=',info
+!       STOP
+      end if
+
+      do i=1,NAOrbs*NAOrbs
+        do j=1,NAOrbs*NAOrbs
+          LiouvSOp(iSpin,i,j)=LiouvSOpPiv(i,j)
+        end do
+      end do
+
+    end do
+
+    if(DebugDev)then
+    do iSpin=1,NSpin
+      if(iSpin==1)Write(*,'(A)')"ALPHA INVERSE LIOUVILLIAN"
+      if(iSpin==2)Write(*,'(A)')"BETA INVERSE LIOUVILLIAN"
+      !do i=1,NAOrbs*NAOrbs
+      !  do j=1,NAOrbs*NAOrbs
+      !    Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)')iSpin,i,j,"(",DREAL(LiouvSOp(iSpin,i,j)),") + i*(",DIMAG(LiouvSOp(iSpin,i,j)),")"
+      !  end do
+      !end do
+      if(iSpin==1)Write(*,'(A)')"ALPHA LIOUVILLIAN AFTER INVERSION"
+      if(iSpin==2)Write(*,'(A)')"BETA LIOUVILLIAN AFTER INVERSION"
+      call PrintCMatrix(LiouvSOpPiv)
+    end do
+    end if
+
+    if(DebugDev)then
+    Write(*,'(A)')"***********************************"
+    Write(*,'(A)')"**** EXIT BuildLiouvillian!!! *****"
+    Write(*,'(A)')"***********************************"
+    end if
+
+  end subroutine BuildLiouvillian
+
+  subroutine DeallocateLiouvillian
+    implicit none
+    integer :: allocerr
+    !deallocate(LiouvSOp,stat=allocerr)
+    if (allocerr /= 0 ) then
+      print*,"Problems deallocating LiouvSOp"
+      !stop
+    end if
+  end subroutine DeallocateLiouvillian
+
+  subroutine WorkEnergy
+    use g09Common, only: GetNAE, GetNBE
+    use constants, only: d_zero, d_pi
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, DiagFock, IntEnergy, QEXCESS
+    implicit none
+    ! *** Eigenvalues of the Fock-Matrix ***
+    real, dimension(:,:,:),allocatable :: OHD
+    real :: upIntegerDOSE, downIntegerDOSE, IntegerDOSE, E1
+    real :: hartreeupIntegerDOSE, hartreedownIntegerDOSE, hartreeIntegerDOSE,evperhartree
+    integer :: i,j,is, info, AllocErr, NROT
+    
+    evperhartree = 2.721138D1
+
+        !if(DMImag)then
+        if(NSpin==2 .and. SPINLOCK )then
+        !if(NSpin==2)then
+          print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+          do ispin=1,NSpin
+            !if(shiftup/=shiftdown)then
+              if (ispin.eq.1)then
+                E1=shiftup
+                write(ifu_log,*)'ispin',ispin
+                write(ifu_log,*)'- SHIFTUP',-shiftup
+              end if
+              if (ispin.eq.2)then
+                E1=shiftdown
+                write(ifu_log,*)'ispin',ispin
+                write(ifu_log,*)'- SHIFTDOWN',-shiftdown
+              end if
+              if (ispin.eq.1)upIntegerDOSE = FullEnergy(d_zero)
+              if (ispin.eq.2)downIntegerDOSE = FullEnergy(d_zero)
+            !end if
+            write(ifu_log,*)'--------------------------------------------------------'
+            if (ispin.eq.1) then
+              write(ifu_log,'(A,F9.5)') ' Fermi energy for alpha electrons= ', -shiftup
+              write(ifu_log,*)
+              write(ifu_log,'(A,F16.8)') ' Energy of the alpha electrons: ', upIntegerDOSE
+            end if
+            if (ispin.eq.2) then
+              write(ifu_log,'(A,F9.5)') ' Fermi energy for beta electrons=  ', -shiftdown
+              write(ifu_log,*)
+              write(ifu_log,'(A,F16.8)') ' Energy of the beta electrons: ', downIntegerDOSE
+            end if
+            write(ifu_log,*)'--------------------------------------------------------'
+          end do
+        else if(NSpin==2 .and. .not. SPINLOCK )then
+          print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+          ispin = 1
+            E1=shift
+            write(ifu_log,*)'ispin',ispin
+            write(ifu_log,*)'- SHIFT',-shift
+            IntegerDOSE = FullEnergy(d_zero)
+            write(ifu_log,*)'--------------------------------------------------------'
+            write(ifu_log,'(A,F9.5)') ' Fermi energy for alpha/beta electrons= ', -shift
+            write(ifu_log,*)
+            write(ifu_log,'(A,F16.8)') ' Energy of the alpha/beta electrons: ', IntegerDOSE
+            write(ifu_log,*)'--------------------------------------------------------'
+
+ !if(.not.DMImag) then
+        !if(NSpin==1)then
+        else
+          print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+          do ispin=1,NSpin
+            E1=shift
+            write(ifu_log,*)'ispin',ispin
+            write(ifu_log,*)'- SHIFT',-shift
+            IntegerDOSE = FullEnergy(d_zero)
+            write(ifu_log,*)'--------------------------------------------------------'
+            write(ifu_log,'(A,F9.5)') ' Fermi energy for alpha/beta electrons= ', -shift
+            write(ifu_log,*)
+            write(ifu_log,'(A,F16.8)') ' Energy of the alpha/beta electrons: ', IntegerDOSE
+            write(ifu_log,*)'--------------------------------------------------------'
+          end do
+        end if
+        if(NSpin==2 .and. SPINLOCK )then
+          IntegerDOSE = upIntegerDOSE + downIntegerDOSE
+          hartreeIntegerDOSE = IntegerDOSE/evperhartree
+        else if(NSpin==2 .and. .not. SPINLOCK )then
+          IntegerDOSE = 2.0d0*IntegerDOSE
+          hartreeIntegerDOSE = IntegerDOSE/evperhartree
+        else if(NSpin==1)then
+          IntegerDOSE = 2.0d0*IntegerDOSE
+          hartreeIntegerDOSE = IntegerDOSE/evperhartree
+        end if
+        write(ifu_log,*)
+        write(ifu_log,*)'--------------------------------------------------------'
+        !write(ifu_log,'(A,F10.5)') ' Total energy of electrons:  ', IntegerDOSE
+        write(ifu_log,'(A,F16.8)') ' Total energy of electrons (eV):  ', IntegerDOSE
+        write(ifu_log,'(A,F10.5)') ' Total energy of electrons (Hartree):  ', hartreeIntegerDOSE
+        write(ifu_log,*)'--------------------------------------------------------'
+  end subroutine WorkEnergy
+
+  subroutine WorkBiasEnergy
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, DiagFock, BiasEnergy
+    implicit none
+    ! *** Eigenvalues of the Fock-Matrix ***
+    real, dimension(:,:,:),allocatable :: OHD
+    real :: upIntegerDOSE, downIntegerDOSE, IntegerDOSE
+    real :: hartreeupIntegerDOSE, hartreedownIntegerDOSE, hartreeIntegerDOSE,evperhartree
+    integer :: i,j,is, info, AllocErr, NROT
+    
+    evperhartree = 2.721138D1
+
+ !if(.not.DMImag) then
+        if(NSpin==1)then
+            write(ifu_log,*)''
+            write(ifu_log,*)''
+            write(ifu_log,*)'*************************************************************'
+            write(ifu_log,*)'ENERGY UP TO WHICH WE INTEGRATE DOS(E)*E'
+            write(ifu_log,*)'- SHIFT',-shift
+            !write(ifu_log,*)'SHIFT',shift
+            write(ifu_log,*)'*************************************************************'
+            write(ifu_log,*)'' 
+
+            IntegerDOSE = QXTotEnergy(shift) ! THE - SIGN DOESN'T WORK.
+            !IntegerDOSE = CompEnergy(shift) ! THE BEST ONE. INTEGRATES TO MU.
+            !IntegerDOSE = CompEnergy(-shift) ! THE BEST ONE. INTEGRATES TO MU.
+
+            hartreeIntegerDOSE = IntegerDOSE/evperhartree
+            !print *, "Integral of DOS*E =", upIntegerDOSE
+     write(ifu_log,*)'Integral of DOS*E (eV) =',IntegerDOSE
+     write(ifu_log,*)'Integral of DOS*E (Hartree) =',hartreeIntegerDOSE
+            write(ifu_log,*)''
+        end if
+        !if(DMImag)then
+        if(NSpin==2)then
+          write(ifu_log,*)'- SHIFTUP',-shiftup
+          write(ifu_log,*)'- SHIFTDOWN',-shiftdown
+
+          if(shiftup/=shiftdown)then
+            write(ifu_log,*)'*************************************************************'
+            write(ifu_log,*)'ENERGY UP TO WHICH WE INTEGRATE ALPHA DOS(E)*E'
+            write(ifu_log,*)'- SHIFTUP',-shiftup
+            !write(ifu_log,*)'SHIFTUP',shiftup
+            write(ifu_log,*)'ENERGY UP TO WHICH WE INTEGRATE BETA DOS(E)*E'
+            write(ifu_log,*)'- SHIFTDOWN',-shiftdown
+            !write(ifu_log,*)'SHIFTDOWN',shiftdown
+            write(ifu_log,*)'*************************************************************'
+            write(ifu_log,*)''
+
+            upIntegerDOSE = QXTotEnergy(shiftup) ! THE - SIGN DOESN'T WORK.
+            !upIntegerDOSE = CompEnergy(shiftup) ! THE BEST ONE. INTEGRATES TO MU.
+            !upIntegerDOSE = CompEnergy(-shiftup) ! THE BEST ONE. INTEGRATES TO MU.
+
+            hartreeupIntegerDOSE = upIntegerDOSE/evperhartree
+            !print *, "Integral of spin-up DOS*E =", upIntegerDOSE
+     write(ifu_log,*)'Integral of spin-up DOS*E (eV) =',upIntegerDOSE
+     write(ifu_log,*)'Integral of spin-up DOS*E (Hartree) =',hartreeupIntegerDOSE
+            write(ifu_log,*)''
+
+            downIntegerDOSE = QXTotEnergy(shiftdown) ! THE - SIGN DOESN'T WORK.
+            !downIntegerDOSE = CompEnergy(shiftdown) ! THE BEST ONE. INTEGRATES TO MU.
+            !downIntegerDOSE = CompEnergy(-shiftdown) ! THE BEST ONE. INTEGRATES TO MU.
+
+     hartreedownIntegerDOSE = downIntegerDOSE/evperhartree
+            !print *, "Integral of spin-down DOS*E =", downIntegerDOSE
+     write(ifu_log,*)'Integral of spin-down DOS*E (eV) =',downIntegerDOSE
+     write(ifu_log,*)'Integral of spin-down DOS*E (Hartree) =',hartreedownIntegerDOSE
+            write(ifu_log,*)''
+
+            IntegerDOSE = upIntegerDOSE + downIntegerDOSE
+            hartreeIntegerDOSE = IntegerDOSE/evperhartree
+          else
+            write(ifu_log,*)''
+            write(ifu_log,*)''
+            write(ifu_log,*)'*************************************************************'
+            write(ifu_log,*)'ENERGY UP TO WHICH WE INTEGRATE DOS(E)*E'
+            write(ifu_log,*)'- SHIFT',-shift
+            !write(ifu_log,*)'SHIFT',shift
+            write(ifu_log,*)'*************************************************************'
+            write(ifu_log,*)'' 
+
+            IntegerDOSE = QXTotEnergy(shift) ! THE - SIGN DOESN'T WORK.
+            !IntegerDOSE = CompEnergy(shift) ! THE BEST ONE. INTEGRATES TO MU.
+            !IntegerDOSE = CompEnergy(-shift) ! THE BEST ONE. INTEGRATES TO MU.
+
+            hartreeIntegerDOSE = IntegerDOSE/evperhartree
+            !print *, "Integral of DOS*E =", upIntegerDOSE
+     write(ifu_log,*)'Integral of DOS*E (eV) =',IntegerDOSE
+     write(ifu_log,*)'Integral of DOS*E (Hartree) =',hartreeIntegerDOSE
+            write(ifu_log,*)''
+          end if
+        end if
+
+        write(ifu_log,*)'*************************************************************'
+        write(ifu_log,*)''
+ write(ifu_log,*)'Integral of total DOS*E (eV) =',IntegerDOSE
+ write(ifu_log,*)'Integral of total DOS*E (Hartree) =',hartreeIntegerDOSE 
+        write(ifu_log,*)''
+        write(ifu_log,*)'*************************************************************'
+
+  end subroutine WorkBiasEnergy
+
+  subroutine WorkFock
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, DiagFock, IntEnergy, glue
+    use numeric, only: RMatPow, RSDiag, CDiag, Jacobi, eigsrt, ordks, balanc, RInv, GAUSSJ
+    use correlation
+    use util
+    use orthogonalization
+    !use lapack_blas, only: zgetri, zgetrf
+    implicit none
+    ! *** Eigenvalues of the Fock-Matrix ***
+    real, dimension(:,:,:),allocatable :: OHD
+    complex*16, dimension(:,:,:),allocatable :: COHD
+    real, dimension(:,:),allocatable :: kseigenvalues
+    real, dimension(:),allocatable :: upkseigenvalues, DupOHD
+    real, dimension(:),allocatable :: downkseigenvalues, DdownOHD
+    real, dimension(:),allocatable :: allkseigenvalues, ordkseigenvalues, hartreekseigenvalues
+    real, dimension(:,:),allocatable :: upHD, upOHD, invupOHD, pivupOHD, VupOHD
+    real, dimension(:,:),allocatable :: downHD, downOHD, invdownOHD, pivdownOHD, VdownOHD
+    complex*16, dimension(:),allocatable :: DupCOHD
+    complex*16, dimension(:,:),allocatable :: upCOHD, VupCOHD
+    complex*16, dimension(:),allocatable :: DdownCOHD
+    complex*16, dimension(:,:),allocatable :: downCOHD, VdownCOHD
+    real :: kohnshamenergy, upkohnshamenergy, downkohnshamenergy
+    real :: hartreeks, hartreeupks, hartreedownks, evperhartree
+    integer :: i,j,is, info, AllocErr, NROT
+    integer :: upocckscount, downocckscount, norbks
+    complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr
+    complex*16 :: cshiftup, cshiftdown
+
+
+! Dynamic arrays 
+    allocate( OHD(NSpin,NAOrbs,NAOrbs), &
+         kseigenvalues(NAOrbs,NAOrbs), &
+         allkseigenvalues(2*NAOrbs), &
+         hartreekseigenvalues(2*NAOrbs), &
+         ordkseigenvalues(2*NAOrbs), &
+         upkseigenvalues(NAOrbs), &
+         downkseigenvalues(NAOrbs), &
+         upHD(NAOrbs,NAOrbs), &
+         downHD(NAOrbs,NAOrbs), &
+         upOHD(NAOrbs,NAOrbs), &
+         downOHD(NAOrbs,NAOrbs), &
+         invupOHD(NAOrbs,NAOrbs), &
+         invdownOHD(NAOrbs,NAOrbs), &
+         pivupOHD(NAOrbs,NAOrbs), &
+         pivdownOHD(NAOrbs,NAOrbs), &
+         DupOHD(NAOrbs), &
+         DdownOHD(NAOrbs), &
+         VupOHD(NAOrbs,NAOrbs), &
+         VdownOHD(NAOrbs,NAOrbs), &
+         COHD(NSpin,NAOrbs,NAOrbs), &
+         upCOHD(NAOrbs,NAOrbs), &
+         downCOHD(NAOrbs,NAOrbs), &
+         DupCOHD(NAOrbs), &
+         DdownCOHD(NAOrbs), &
+         VupCOHD(NAOrbs,NAOrbs), &
+         VdownCOHD(NAOrbs,NAOrbs), &
+         STAT=AllocErr )
+    
+    if( AllocErr /= 0 ) then
+       print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
+       stop
+    end if
+    
+    evperhartree = 2.721138D1   
+    upkohnshamenergy = 0.d0
+    downkohnshamenergy = 0.d0
+    !write(ifu_log,*)''
+    !write(ifu_log,*)'******************************************************************'
+    !write(ifu_log,*)'Before orthogonalization and diagonalization (looks yet symmetric)'
+      !NAOrbs = SIZE(HD(1,:,:),2)
+      !NBasis = SIZE(HD(1,:,:),2)
+10111 format(a6,i4)
+10112 format(f12.6)
+!10111 format(a6,i4,f12.6)
+
+        !write(ifu_log,*)'SNH'
+        !call PrintCMatrix( SNH(1:4,1:4) )
+        !write(ifu_log,*)'SPH'
+        !call PrintCMatrix( SPH(1:4,1:4) )
+
+        do ispin=1,NSpin
+            !write(ifu_log,*)'HD'
+            !call PrintRMatrix( HD(ispin,1:4,1:4) )
+        end do
+
+        do ispin=1,NSpin
+           !OHD(ispin,:,:) = HD(ispin,:,:)
+           ! Looks like this is the correct way.
+           !OHD(ispin,:,:) = matmul( SNH, matmul( HD(ispin,:,:), SPH ) )
+           ! Orthogonalization by SNH*HD*SNH
+           OHD(ispin,:,:) = matmul( SNH, matmul( HD(ispin,:,:), SNH ) ) ! This seems to be the correct expression.
+           !OHD(ispin,:,:) = HD(ispin,:,:)
+           !OHD(ispin,:,:) = matmul( SNH, matmul( F(ispin,:,:), SPH ) )
+
+           !OHD(ispin,:,:) = matmul( transpose(SD), matmul(HD(ispin,:,:), SD) )
+           !OHD(ispin,:,:) = matmul( transpose(OD), matmul(F(ispin,:,:), OD) )
+           !PD(ispin,:,:) = matmul( OD, matmul(PD(ispin,:,:), transpose(OD) ) )
+        end do
+
+        if(.not.DMIMag)then
+          cshiftup = dcmplx(shift)
+        else
+          cshiftup = dcmplx(shiftup)
+          cshiftdown = dcmplx(shiftdown)
+        end if
+        do ispin=1,NSpin
+            !if ((ispin == 1)) upOHD=OHD(ispin,:,:)+sigl+sigr
+            if ((ispin == 1))then
+              call CompSelfEnergies( ispin, cshiftup, sigl, sigr )
+              sigr = glue*sigr
+              sigl = glue*sigl
+              upCOHD=dcmplx(OHD(ispin,:,:))+sigl+sigr
+            end if
+            !if(DMImag)
+            !if ((ispin == 2)) downOHD=OHD(ispin,:,:)+sigl+sigr
+            if ((ispin == 2))then
+              call CompSelfEnergies( ispin, cshiftdown, sigl, sigr )
+              sigr = glue*sigr
+              sigl = glue*sigl
+              downCOHD=dcmplx(OHD(ispin,:,:))+sigl+sigr
+            end if
+        end do
+    !write(ifu_log,*)'***************************************************************'
+    !write(ifu_log,*)''
+    !	write(ifu_log,*)'After orthogonalization'
+    !write(ifu_log,*)'***************************************************************'
+    !write(ifu_log,*)''
+
+    do ispin=1,NSpin
+      if ((ispin == 1))then
+        !write(ifu_log,*)'Spin-up Hamiltonian'
+        !call PrintRMatrix( upOHD(1:4,1:4) )
+        !call PrintCMatrix( upCOHD(1:4,1:4) )
+        !write(ifu_log,*)'***************************************************************'
+      end if
+      !if(DMImag)
+      if ((ispin == 2))then
+        !write(ifu_log,*)'Spin-down Hamiltonian'
+        !call PrintRMatrix( downOHD(1:4,1:4) )
+        !call PrintCMatrix( downCOHD(1:4,1:4) )
+        !write(ifu_log,*)'***************************************************************'
+      end if
+    end do
+    do ispin=1,NSpin
+      if ((ispin == 1)) then
+        !call balanc(upOHD)
+        !call zgetrf(NAOrbs,NAOrbs,upCOHD,NAOrbs,ipiv,info)
+        !write(ifu_log,*)'After balancing'
+        !write(ifu_log,*)'***************************************************************'
+        !write(ifu_log,*)''
+        !write(ifu_log,*)'Spin-up Hamiltonian'
+        !call PrintRMatrix( upOHD(1:4,1:4) )
+        !call PrintCMatrix( upCOHD(1:4,1:4) )
+      end if
+      !if(DMImag)
+      if ((Nspin == 2)) then
+        !call balanc(downOHD)
+        !call zgetrf(NAOrbs,NAOrbs,downCOHD,NAOrbs,ipiv,info)
+        !write(ifu_log,*)'After balancing'
+        !write(ifu_log,*)'***************************************************************'
+        !write(ifu_log,*)''
+        !write(ifu_log,*)'Spin-down Hamiltonian'
+        !call PrintRMatrix( downOHD(1:4,1:4) )
+        !call PrintCMatrix( downCOHD(1:4,1:4) )
+      end if
+    end do
+
+    !write(ifu_log,*)'***************************************************************'
+    !write(ifu_log,*)''
+
+    !write(ifu_log,*)'*************************************************************'
+    !write(ifu_log,*)''
+    !write(ifu_log,*)'Before diagonalization'
+    do ispin=1,NSpin
+      if ((ispin == 1)) then
+        call CDiag(upCOHD,DupCOHD,info)
+        ! Sorting eigenvalues and eigenvectors in ascending order of eigenvalues.
+        upOHD = real(upCOHD,8)
+        DupOHD = real(DupCOHD,8)
+        DupOHD = -DupOHD
+        call eigsrt(DupOHD,VupOHD)
+        DupOHD = -DupOHD
+        !print *, ' DupOHD(j)'
+        !print *, ( DupOHD(j), j=1,NAOrbs )
+      end if
+      !if(DMImag)
+      if ((ispin == 2)) then
+        call CDiag(downCOHD,DdownCOHD,info)
+        ! Sorting eigenvalues and eigenvectors in ascending order of eigenvalues.
+        downOHD = real(downCOHD,8)
+        DdownOHD = real(DdownCOHD,8)
+        DdownOHD = -DdownOHD
+        call eigsrt(DdownOHD,VdownOHD)
+        DdownOHD = -DdownOHD
+        !print *, ' DdownOHD(j)'
+        !print *, ( DdownOHD(j), j=1,NAOrbs )
+      end if
+    end do
+    
+    !if(.not.DMImag)
+    if ((Nspin == 1)) DdownOHD = DupOHD !because beta and alpha eigenvalues are equal, overwrite the betas with the alphas. YOU DON'T NEED TO MULTIPLY LATER BY TWO.
+    if ((Nspin == 1)) norbks = nint(2*QAlpha)
+    if ((Nspin == 2)) norbks = nint(QAlpha+QBeta)
+
+    do i=1,NAOrbs
+      do j=i,NAOrbs
+        do ispin=1,NSpin
+          if ((ispin == 1)) upOHD(j,i)=upOHD(i,j)
+          if ((ispin == 2)) downOHD(j,i)=downOHD(i,j)
+        end do
+      end do
+    end do
+
+    !write(ifu_log,*)'************************************************************'
+    !write(ifu_log,*)''
+    !write(ifu_log,*)'After diagonalization'
+        
+    allkseigenvalues(1:NAOrbs) = DupOHD(:)
+    ordkseigenvalues(1:NAOrbs) = 1.0
+    allkseigenvalues(NAOrbs+1:2*NAOrbs) = DdownOHD(:)
+    ordkseigenvalues(NAOrbs+1:2*NAOrbs) = 2.0
+
+    allkseigenvalues = -allkseigenvalues
+    call ordks(allkseigenvalues,ordkseigenvalues)
+    allkseigenvalues = -allkseigenvalues
+
+    !do i=1,NAOrbs+1 !I first wrote this, don't remember why.
+
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Total num of K-S occ. orbitals',norbks
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'K-S occ. eigen. (eV)',(allkseigenvalues(i),i=1,norbks)
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'K-S virt. eigen. (eV)',(allkseigenvalues(i),i=norbks+1,2*NAOrbs)
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)''
+!    !do i=1,2*NAOrbs
+!    !   shiftallkseigenvalues(i) = allkseigenvalues(i) - shift
+!    !end do
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)'SHIFT = ', -SHIFT
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Total num of K-S occ. orbitals',norbks
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'K-S occ. eigen. (eV) (shifted)',(allkseigenvalues(i)-shift,i=1,norbks)
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'K-S virt. eigen. (eV) (shifted)',(allkseigenvalues(i)-shift,i=norbks+1,2*NAOrbs)
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)''
+    do i=1,2*NAOrbs
+      hartreekseigenvalues(i) = allkseigenvalues(i)/27.21184
+      !shifthartreekseigenvalues(i) = shiftallkseigenvalues(i)/27.21184
+    end do
+
+    write(ifu_log,*)'************************************************************'
+    write(ifu_log,*)''
+    write(ifu_log,*)'Total num of K-S occ. orbitals',norbks
+    write(ifu_log,*)''
+    write(ifu_log,*)'K-S occ. eigen. (Hartree)',(hartreekseigenvalues(i),i=1,norbks)
+    write(ifu_log,*)''
+    !write(ifu_log,*)'K-S virt. eigen. (Hartree)',(hartreekseigenvalues(i),i=norbks+1,2*NAOrbs)
+    !write(ifu_log,*)''
+    write(ifu_log,*)'************************************************************'
+    write(ifu_log,*)''
+    write(ifu_log,*)'************************************************************'
+    write(ifu_log,*)'SHIFT = ', -SHIFT
+    write(ifu_log,*)'************************************************************'
+    write(ifu_log,*)''
+    write(ifu_log,*)'Total num of K-S occ. orbitals',norbks
+    write(ifu_log,*)''
+    write(ifu_log,*)'K-S occ. eigen. (Hartree) (shifted)',(hartreekseigenvalues(i)-shift/evperhartree,i=1,norbks)
+    write(ifu_log,*)''
+    !write(ifu_log,*)'K-S virt. eigen. (Hartree) (shifted)',(hartreekseigenvalues(i)-shift/evperhartree,i=norbks+1,2*NAOrbs)
+    !write(ifu_log,*)''
+    write(ifu_log,*)'************************************************************'
+    write(ifu_log,*)''
+
+    upocckscount = 0
+    downocckscount = 0
+    do i=1,norbks
+      if(ordkseigenvalues(i).eq.1.0) upocckscount = upocckscount + 1
+      if(ordkseigenvalues(i).eq.2.0) downocckscount = downocckscount + 1
+      IF (upocckscount + downocckscount .GE. norbks) EXIT
+    end do
+
+      !do i=1,NAOrbs
+      !  !if(DupOHD(i).le.0.0d0)then
+      !  if(i.le.NAOrbs/2)then
+      !    upkohnshamenergy=upkohnshamenergy+DupOHD(i)
+      !  end if
+      !  !if(DdownOHD(i).le.0.0d0)then
+      !  if(i.le.NAOrbs/2)then
+      !    downkohnshamenergy=downkohnshamenergy+DdownOHD(i)
+      !  end if
+      !end do
+
+    !do i=1,2*NAOrbs
+    !  shiftDupOHD(i) = DupOHD(i)
+    !  shiftDdownOHD(i) = DdownOHD(i)
+    !end do
+
+    upkohnshamenergy = sum(DupOHD(1:upocckscount))
+    downkohnshamenergy = sum(DdownOHD(1:downocckscount))
+
+    !shiftupkohnshamenergy = upkohnshamenergy - upocckscount*shift
+    !shiftdownkohnshamenergy = downkohnshamenergy - downocckscount*shift
+
+    !kohnshamenergy = upkohnshamenergy + downkohnshamenergy
+    kohnshamenergy = sum(allkseigenvalues(1:norbks))
+    hartreeupks = upkohnshamenergy/evperhartree
+    hartreedownks = downkohnshamenergy/evperhartree
+    hartreeks = kohnshamenergy/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Occupied alpha eigenvalues',upocckscount
+!    !print '(1000(ES14.4))', ( DupOHD(j), j=1,upocckscount )
+!    print *, ( DupOHD(j), j=1,upocckscount )
+!    write(ifu_log,*)'up Kohn-Sham energy sum',upkohnshamenergy
+!    write(ifu_log,*)'upKS in Hartrees',hartreeupks
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Occupied beta eigenvalues',downocckscount
+!    !print '(1000(ES14.4))', ( DdownOHD(j), j=1,downocckscount )
+!    print *, ( DdownOHD(j), j=1,downocckscount )
+!    write(ifu_log,*)'down Kohn-Sham energy sum',downkohnshamenergy
+!    write(ifu_log,*)'downKS in Hartrees',hartreedownks
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Total Kohn-Sham eigenvalues',norbks
+!    write(ifu_log,*)'Total Kohn-Sham energy sum',kohnshamenergy
+!    write(ifu_log,*)'KS in Hartrees',hartreeks
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)'SHIFT = ', -SHIFT
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Occupied alpha eigenvalues (shifted)',upocckscount
+!    !print '(1000(ES14.4))', ( DupOHD(j)-shift, j=1,upocckscount )
+!    print *, ( DupOHD(j)-shift, j=1,upocckscount )
+!    write(ifu_log,*)'up Kohn-Sham energy sum (shifted)',upkohnshamenergy-upocckscount*shift
+!    write(ifu_log,*)'upKS in Hartrees (shifted)',hartreeupks-upocckscount*shift/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Occupied beta eigenvalues (shifted)',downocckscount
+!    !print '(1000(ES14.4))', ( DdownOHD(j)-shift, j=1,downocckscount )
+!    print *, ( DdownOHD(j)-shift, j=1,downocckscount )
+!    write(ifu_log,*)'down Kohn-Sham energy sum (shifted)',downkohnshamenergy-downocckscount*shift
+!    write(ifu_log,*)'downKS in Hartrees (shifted)',hartreedownks-downocckscount*shift/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Total Kohn-Sham eigenvalues',norbks
+!    write(ifu_log,*)'Total Kohn-Sham energy sum (shifted)',kohnshamenergy-norbks*shift
+!    write(ifu_log,*)'KS in Hartrees (shifted)',hartreeks-norbks*shift/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+
+    write(ifu_log,*)'****************************************************************'
+    write(ifu_log,*)''
+    write(ifu_log,*)'Occupied alpha eigenvalues in Hartrees',upocckscount
+    !print '(1000(ES14.4))', ( DupOHD(j), j=1,upocckscount )
+    print *, ( DupOHD(j)/evperhartree, j=1,upocckscount )
+    write(ifu_log,*)'up Kohn-Sham energy sum',upkohnshamenergy
+    write(ifu_log,*)'upKS in Hartrees',hartreeupks
+    write(ifu_log,*)'****************************************************************'
+    write(ifu_log,*)''
+    write(ifu_log,*)'Occupied beta eigenvalues in Hartrees',downocckscount
+    !print '(1000(ES14.4))', ( DdownOHD(j), j=1,downocckscount )
+    print *, ( DdownOHD(j)/evperhartree, j=1,downocckscount )
+    write(ifu_log,*)'down Kohn-Sham energy sum',downkohnshamenergy
+    write(ifu_log,*)'downKS in Hartrees',hartreedownks
+    write(ifu_log,*)'****************************************************************'
+    write(ifu_log,*)''
+    write(ifu_log,*)'Total Kohn-Sham eigenvalues',norbks
+    write(ifu_log,*)'Total Kohn-Sham energy sum',kohnshamenergy
+    write(ifu_log,*)'KS in Hartrees',hartreeks
+    write(ifu_log,*)'****************************************************************'
+    write(ifu_log,*)''
+
+!    write(ifu_log,*)'************************************************************'
+!    write(ifu_log,*)'SHIFT = ', -SHIFT
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Occupied alpha eigenvalues in Hartrees (shifted)',upocckscount
+!    !print '(1000(ES14.4))', ( DupOHD(j)-shift, j=1,upocckscount )
+!    print *, ( (DupOHD(j)-shift)/evperhartree, j=1,upocckscount )
+!    write(ifu_log,*)'up Kohn-Sham energy sum (shifted)',upkohnshamenergy-upocckscount*shift
+!    write(ifu_log,*)'upKS in Hartrees (shifted)',hartreeupks-upocckscount*shift/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Occupied beta eigenvalues in Hartrees (shifted)',downocckscount
+!    !print '(1000(ES14.4))', ( DdownOHD(j)-shift, j=1,downocckscount )
+!    print *, ( (DdownOHD(j)-shift)/evperhartree, j=1,downocckscount )
+!    write(ifu_log,*)'down Kohn-Sham energy sum (shifted)',downkohnshamenergy-downocckscount*shift
+!    write(ifu_log,*)'downKS in Hartrees (shifted)',hartreedownks-downocckscount*shift/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+!    write(ifu_log,*)'Total Kohn-Sham eigenvalues',norbks
+!    write(ifu_log,*)'Total Kohn-Sham energy sum (shifted)',kohnshamenergy-norbks*shift
+!    write(ifu_log,*)'KS in Hartrees (shifted)',hartreeks-norbks*shift/evperhartree
+!    write(ifu_log,*)'****************************************************************'
+!    write(ifu_log,*)''
+
+
+
+      !do ispin=1,NSpin
+      !  do j=1,6
+      !    if(NSpin==1) write(ifu_log,10111)'Elem:',j
+      !    if(NSpin==1) write(ifu_log,10112)(upOHD(j,i),i=1,3)
+      !    if(NSpin==2) write(ifu_log,10111)'Elem:',j
+      !    if(NSpin==2) write(ifu_log,10112)(downOHD(j,i),i=1,3)
+      !  end do
+      !end do
+
+      !call DiagFullHamiltonian( HD, SD)
+      !call DiagHamiltonian
+      deallocate( OHD, kseigenvalues, allkseigenvalues, upkseigenvalues, downkseigenvalues, upHD, downHD, upOHD, downOHD, DupOHD, DdownOHD, VupOHD, VdownOHD )
+      !deallocate( shiftallkseigenvalues, shiftupkseigenvalues, shiftdownkseigenvalues, shiftDupOHD, shiftDdownOHD )
+  end subroutine WorkFock
+
+  subroutine PrintCMatrix( A )
+    implicit none
+    complex*16,dimension(:,:),intent(in) :: A
+    integer :: i,j,dim1,dim2
+    dim1 = size(A,1)
+    dim2 = size(A,2)
+    do i=1,dim1
+       !print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
+       print '(100(g15.5,g15.5,2x))', ( real(A(i,j)),&
+                                        AIMAG(A(i,j)), j=1,dim2 )
+    end do
+  end subroutine PrintCMatrix
   
   subroutine WriteANT1DInput
     use parameters, only: eta
@@ -884,33 +1770,34 @@
   !*   PC: Density-matrix                                       *
   !*   shiftup,shiftdown: Fermi-energies                        *
   !**************************************************************
-  subroutine CompDensMat(ADDP)
-    use numeric, only: SECANT, MULLER, BISEC
+  subroutine CompDensMat(ADDP, boolComputeFock, boolComputeCGibbsY)
+    use numeric, only: Secant, Muller, BISEC
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
 #endif
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
-#endif
+#endif    
     use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
     !use ieee_arithmetic
     implicit none
 
     logical,intent(out) :: ADDP
+    logical,intent(in) :: boolComputeFock, boolComputeCGibbsY
     integer :: i,j, k,cond
     real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
-    
+    real*8 :: TotChargeFromGlesser
     logical :: root_fail
     
-    Z=0.1d0
+    Write(*,'(A)')"ENTERED Device/CompDensMat"
+
+    Z=10.0d0*FermiAcc
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
     if( NSpin == 2 .and. SPINLOCK )then
        print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
        do ispin=1,NSpin
-          if (ispin == 1) print*,'Spin alpha'
-          if (ispin == 2) print*,'Spin beta'
           root_fail = .true.
           if (ispin.eq.1) E1=shiftup
           if (ispin.eq.2) E1=shiftdown
@@ -918,7 +1805,8 @@
           E2=E1+Z
           if( root_fail )then
              print*,'MULLER method'
-             call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+             call MULLER(F,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+             !call MULLER_OMP(F,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
              if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
                 print *, 'Warning: MULLER method failed to find root. Using SECANT.'
                 root_fail = .true.
@@ -930,7 +1818,7 @@
           end if
           if( root_fail )then
              print*,'SECANT method'
-             call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+             call SECANT(F,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
              if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
                 print *, 'Warning: SECANT method failed to find root. Using BISEC.'
                 root_fail = .true.
@@ -942,8 +1830,8 @@
           end if
           if (root_fail) then
              print *, 'BISEC method'
-             if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-             if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+             if (ispin.eq.1) shiftup = BISEC(F,EMin,EMax,Delta,5*Max,K)
+             if (ispin.eq.2) shiftdown = BISEC(F,EMin,EMax,Delta,5*Max,K)
              DE=Delta
              if(k.lt.5*Max) root_fail = .false.
              if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
@@ -970,7 +1858,12 @@
        E2=shift+Z
        if (root_fail) then
           print*,'MULLER method'
-          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          if(boolComputeFock)then
+            call MULLER(QHWTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          else
+            call MULLER(QXTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          end if
+          !call MULLER_OMP(QXTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
           if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
              print *, 'Warning: MULLER method failed to find root. Using SECANT.'
              root_fail = .true.
@@ -981,7 +1874,11 @@
        end if
        if (root_fail) then
           print*,'SECANT method'
-          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          if(boolComputeFock)then
+            call SECANT(QHWTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          else
+            call SECANT(QXTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          end if
           if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
              print *, 'Warning: SECANT method failed to find root. Using BISEC.'
              root_fail = .true.
@@ -992,10 +1889,47 @@
        end if
        if (root_fail) then
           print *, 'BISEC method'
-          shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
+          if(boolComputeFock)then
+            shift = BISEC(QHWTot,EMin,EMax,Delta,5*Max,K)
+          else
+            shift = BISEC(QXTot,EMin,EMax,Delta,5*Max,K)
+          end if
           DE=Delta
           if(k.lt.5*Max) root_fail = .false.
           if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+       end if
+
+       if(boolComputeCGibbsY)then
+         ! MUST NOT CALL MULLER METHOD RELYING ON  QCGibbsYTot BECAUSE IT USES GLESSER IN THE FULL ENERGY RANGE.
+         !call MULLER(QCGibbsYTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+         write(ifu_log,*)''
+         write(ifu_log,*)''
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'--- BEFORE QCGibbsYTot(shift) ---'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'--- boolComputeCGibbsY IS true ---'
+         write(ifu_log,*)'--- ENTERING QCGibbsYTot(shift) ---'
+         TotChargeFromGlesser = QCGibbsYTot(shift)
+         write(ifu_log,'(A,F10.5)') ' TotChargeFromGlesser:  ', TotChargeFromGlesser
+         write(ifu_log,*)'--- AFTER QCGibbsYTot(shift) ---'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)''
+         write(ifu_log,*)''
+       else
+         write(ifu_log,*)''
+         write(ifu_log,*)''
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'--- boolComputeCGibbsY IS false ---'
+         write(ifu_log,*)'--- NOT ENTERING QCGibbsYTot(shift) ---'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)'-----------------------------------------------'
+         write(ifu_log,*)''
+         write(ifu_log,*)''
+         TotChargeFromGlesser = 0.0d0
        end if
 
        write(ifu_log,*)'-----------------------------------------------'
@@ -1007,8 +1941,145 @@
        write(ifu_log,*)'-----------------------------------------------'
     end if
     ADDP = .not. root_fail
-    return
   end subroutine CompDensMat
+  
+  
+  !**************************************************************
+  !* Subroutine for determining Fermi energy and density matrix *
+  !* for some total charge                                      *
+  !**************************************************************
+  !* Pre-condition:                                             *
+  !*   HC: Fock-matrix                                          *
+  !*   shiftup,shiftdown: starting values for Fermi-energies    *
+  !* Results:                                                   *
+  !*   PC: Density-matrix                                       *
+  !*   shiftup,shiftdown: Fermi-energies                        *
+  !**************************************************************
+!  subroutine CompDensMat(ADDP)
+!    use numeric, only: SECANT, MULLER, BISEC
+!#ifdef G03ROOT
+!    use g03Common, only: GetNAE, GetNBE
+!#endif
+!#ifdef G09ROOT
+!    use g09Common, only: GetNAE, GetNBE
+!#endif
+!    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+!    !use ieee_arithmetic
+!    implicit none
+!
+!    logical,intent(out) :: ADDP
+!    integer :: i,j, k,cond
+!    real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
+!    
+!    logical :: root_fail
+!    
+!    Z=0.1d0
+!    Delta=FermiAcc
+!    Epsilon=ChargeAcc*(NCDEl+QExcess)
+!
+!    if( NSpin == 2 .and. SPINLOCK )then
+!       print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+!       do ispin=1,NSpin
+!          if (ispin == 1) print*,'Spin alpha'
+!          if (ispin == 2) print*,'Spin beta'
+!          root_fail = .true.
+!          if (ispin.eq.1) E1=shiftup
+!          if (ispin.eq.2) E1=shiftdown
+!          E0=E1-Z
+!          E2=E1+Z
+!          if( root_fail )then
+!             print*,'MULLER method'
+!             call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+!             if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+!                print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+!                root_fail = .true.
+!             else
+!                if (ispin.eq.1)shiftup=E3
+!                if (ispin.eq.2)shiftdown=E3
+!                root_fail = .false.
+!             end if
+!          end if
+!          if( root_fail )then
+!             print*,'SECANT method'
+!             call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+!             if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+!                print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+!                root_fail = .true.
+!             else
+!                if (ispin.eq.1)shiftup=E3
+!                if (ispin.eq.2)shiftdown=E3
+!                root_fail = .false.
+!             end if
+!          end if
+!          if (root_fail) then
+!             print *, 'BISEC method'
+!             if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+!             if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+!             DE=Delta
+!             if(k.lt.5*Max) root_fail = .false.
+!             if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+!          end if
+!          write(ifu_log,*)'--------------------------------------------------------'
+!          if (ispin.eq.1) then
+!             write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for alpha electrons= ', -shiftup,'  +/-',dabs(DE)
+!             write(ifu_log,*)
+!             write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', QAlpha
+!          end if
+!          if (ispin.eq.2) then
+!             write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for beta electrons=  ', -shiftdown,'  +/-',dabs(DE)
+!             write(ifu_log,*)
+!             write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
+!             write(ifu_log,*)
+!             write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', QAlpha+QBeta
+!          end if
+!          write(ifu_log,*)'--------------------------------------------------------'
+!       end do
+!    else
+!       root_fail = .true.
+!       E0=shift-Z 
+!       E1=shift
+!       E2=shift+Z
+!       if (root_fail) then
+!          print*,'MULLER method'
+!          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+!          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+!             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+!             root_fail = .true.
+!          else
+!             shift = E3
+!             root_fail = .false.
+!          end if
+!       end if
+!       if (root_fail) then
+!          print*,'SECANT method'
+!          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+!          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+!             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+!             root_fail = .true.
+!          else
+!             shift = E3
+!             root_fail = .false.
+!          end if
+!       end if
+!       if (root_fail) then
+!          print *, 'BISEC method'
+!          shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
+!          DE=Delta
+!          if(k.lt.5*Max) root_fail = .false.
+!          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+!       end if
+!
+!       write(ifu_log,*)'-----------------------------------------------'
+!       write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy= ',-shift,'  +/-',dabs(DE)
+!       write(ifu_log,*)
+!       write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', QAlpha
+!       write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
+!       write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', QAlpha+QBeta
+!       write(ifu_log,*)'-----------------------------------------------'
+!    end if
+!    ADDP = .not. root_fail
+!    return
+!  end subroutine CompDensMat
 
 !**************************************************************
 !* Subroutine for determining Fermi energy and density matrix *
