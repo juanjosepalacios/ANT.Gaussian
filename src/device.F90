@@ -2358,6 +2358,230 @@
 
   end subroutine CompDensMat2_SOC
   
+subroutine CompLocalMu(ADDP)
+    !use numeric, only: LocalSecant, LocalMuller, LocalBISEC
+    use numeric, only: Secant, Muller, BISEC
+    use g09Common, only: GetNAE, GetNBE
+    use cluster, only: LoAOrbNo, HiAOrbNo, LoAOrbNo, HiAOrbNo
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,BiasVoltage,SPIN_Beg,SPIN_End
+    !use ieee_arithmetic
+    implicit none
+
+    logical,intent(out) :: ADDP
+    integer :: i,j, k,cond
+    real :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
+    
+    logical :: root_fail
+
+!-------------------------------------------------------
+    integer :: n,l
+    real :: sdeg, ro_a, ro_b, chargeregion, spinregion
+    real, dimension(NAOrbs,NAOrbs) :: rho_a, rho_b, tmp
+!-------------------------------------------------------
+    
+    write(ifu_log,*)'-------------------------------------'
+    write(ifu_log,*)'------- I am in CompLocalMu ---------'
+    write(ifu_log,*)'-------------------------------------'
+    write(ifu_log,*)'-------------------------------------'
+    write(ifu_log,*)'---  Mulliken population analysis ---'
+    write(ifu_log,*)'-------------------------------------'
+
+
+    if (NSpin.eq.2) sdeg=1.0d0
+    if (NSpin.eq.1) sdeg=2.0d0
+
+    rho_a = matmul( PD(1,:,:), SD )
+    if( NSpin == 2 ) rho_b = matmul( PD(2,:,:), SD )
+
+    write(ifu_log,*)'---------------------------------------------------------------------'
+    write(ifu_log,*)'Charges in selected region to compute local electrochemical potential'
+    write(ifu_log,*)'---------------------------------------------------------------------'
+
+    chargeregion=0.0d0
+    spinregion=0.0d0
+    do j=SPIN_Beg,SPIN_End
+       ro_a=0.0d0
+       ro_b=0.0d0
+       do i=LoAOrbNo(j),HiAOrbNo(j)
+          ro_a=ro_a+rho_a(i,i)
+          !if(NSpin==1) ro_b=ro_a
+          if(NSpin==2) ro_b=ro_b+rho_b(i,i)
+       end do
+       alphaelec(j-SPIN_Beg+1)=ro_a
+       if(NSpin==1) betaelec(j-SPIN_Beg+1)=ro_a
+       if(NSpin==2) betaelec(j-SPIN_Beg+1)=ro_b
+       if(NSpin ==1 ) write(ifu_log,'(A,I5,A,f9.5)')'Atom:',j,' El.dens:',ro_a*sdeg
+       if(NSpin ==2 ) write(ifu_log,'(A,I5,A,f9.5,A,f9.5)')'Atom:',j,' El.dens:', (ro_a+ro_b),' Sp.dens:', (ro_a-ro_b)
+
+       chargeregion=chargeregion+(ro_a+ro_b)
+       if (NSpin == 2) spinregion=spinregion+(ro_a-ro_b)
+    end do
+    
+   write(ifu_log,*)'----------------------------------------------------'
+   write(ifu_log,*)'Total num. of electrons in selected region:',chargeregion*sdeg
+   if (NSpin == 2) write(ifu_log,*)'Total spin in selected region:',spinregion
+   write(ifu_log,*)'----------------------------------------------------'
+
+!-------------------------------------------------------------------------------------------------
+    Z=10.0d0*FermiAcc
+    Delta=FermiAcc
+    !Epsilon=ChargeAcc*(NCDEl+QExcess)
+    Epsilon=ChargeAcc*(chargeregion)
+
+!-------------------------------------------------------------------------------------------------
+
+    !--- ADDED BY CARLOS -----------------------------------------------
+    print*,'BiasVoltage = ', BiasVoltage
+    !-------------------------------------------------------------------
+!if( NSpin == 2 .and. SPINLOCK )then
+if( NSpin == 2 )then
+!  print*,'SPINLOCK is true'
+  print*,'NSpin = 2'
+  print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+  do spinatom=SPIN_Beg,SPIN_End
+    alphalocalshift(spinatom) = shiftup
+    betalocalshift(spinatom) = shiftdown
+    do ispin=1,NSpin
+       root_fail = .true.
+       !if (ispin.eq.1) E1=shiftup
+       !if (ispin.eq.2) E1=shiftdown
+       if (ispin.eq.1) E1=alphalocalshift(spinatom)
+       if (ispin.eq.2) E1=betalocalshift(spinatom)
+       E0=E1-Z
+       E2=E1+Z
+       if( root_fail )then
+          print*,'MULLER method'
+          call MULLER(FPart,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+             root_fail = .true.
+          else
+             !if (ispin.eq.1)shiftup=E3
+             !if (ispin.eq.2)shiftdown=E3
+             if (ispin.eq.1)alphalocalshift(spinatom)=E3
+             if (ispin.eq.2)betalocalshift(spinatom)=E3
+             root_fail = .false.
+          end if
+       end if
+       if( root_fail )then
+          print*,'SECANT method'
+          call SECANT(FPart,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+             root_fail = .true.
+          else
+             !if (ispin.eq.1)shiftup=E3
+             !if (ispin.eq.2)shiftdown=E3
+             if (ispin.eq.1)alphalocalshift(spinatom)=E3
+             if (ispin.eq.2)betalocalshift(spinatom)=E3
+             root_fail = .false.
+          end if
+       end if
+       if (root_fail) then
+          print *, 'BISEC method'
+          !if (ispin.eq.1) shiftup = LocalBISEC(FPart,EMin,EMax,Delta,5*Max,K)
+          !if (ispin.eq.2) shiftdown = LocalBISEC(FPart,EMin,EMax,Delta,5*Max,K)
+          if (ispin.eq.1) alphalocalshift(spinatom) = BISEC(FPart,EMin,EMax,Delta,5*Max,K)
+          if (ispin.eq.2) betalocalshift(spinatom) = BISEC(FPart,EMin,EMax,Delta,5*Max,K)          
+          DE=Delta
+          if(k.lt.5*Max) root_fail = .false.
+          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+       end if
+       write(ifu_log,*)'--------------------------------------------------------'
+       if (ispin.eq.1) then
+          write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for alpha electrons= ', -alphalocalshift(spinatom),'  +/-',dabs(DE)
+          write(ifu_log,*)
+          write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', LocalQAlpha
+       end if
+       if (ispin.eq.2) then
+          write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for beta electrons=  ', -betalocalshift(spinatom),'  +/-',dabs(DE)
+          write(ifu_log,*)
+          write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', LocalQBeta
+          write(ifu_log,*)
+          write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', LocalQAlpha+LocalQBeta
+       end if
+       write(ifu_log,*)'--------------------------------------------------------'
+    end do
+  end do
+    write(ifu_log,*)'-----------------------------------------------'
+    write(ifu_log,*)'-----------------------------------------------'
+  do ispin=1,NSpin 
+    do spinatom=SPIN_Beg,SPIN_End
+      !write(ifu_log,'(A,F9.5,A,f9.5)') ' Local Mu= ',-alphalocalshift(spinatom),'  +/-',dabs(DE)
+      if (ispin.eq.1)write(ifu_log,'(A,I5,A,F9.5)') 'Atom',spinatom,'	Alpha Local Mu:  ',-alphalocalshift(spinatom)
+      if (ispin.eq.2)write(ifu_log,'(A,I5,A,F9.5)') 'Atom',spinatom,'	Beta Local Mu:  ',-betalocalshift(spinatom)
+    end do
+    write(ifu_log,*)'-----------------------------------------------'
+  end do
+else
+  do spinatom=SPIN_Beg,SPIN_End
+    !print*,'SPINLOCK is false'
+    print*,'NSpin = 1'
+    !alphalocalshift(spinatom) = shiftup
+    !betalocalshift(spinatom) = shiftdown
+    alphalocalshift(spinatom) = shift
+    root_fail = .true.
+    E0=alphalocalshift(spinatom)-Z 
+    E1=alphalocalshift(spinatom)
+    E2=alphalocalshift(spinatom)+Z
+    if (root_fail) then
+      print*,'MULLER method'
+      !call MULLER(QXPart,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+      call MULLER(QXPart,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+      if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+         print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+         root_fail = .true.
+      else
+         alphalocalshift(spinatom) = E3
+         root_fail = .false.
+      end if
+    end if
+    if (root_fail) then
+      print*,'SECANT method'
+      !call SECANT(QXPart,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+      call SECANT(QXPart,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+      if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+         print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+         root_fail = .true.
+      else
+         alphalocalshift(spinatom) = E3
+         root_fail = .false.
+      end if
+    end if
+    if (root_fail) then
+      print *, 'BISEC method'
+      !Delta = 10*Delta !Added by Carlos Salgado
+      !Max = 10*Max !Added by Carlos Salgado
+      !alphalocalshift(spinatom) = BISEC(QXPart,EMin,EMax,Delta,5*Max,K)
+      alphalocalshift(spinatom) = BISEC(QXPart,EMin,EMax,Delta,5*Max,K)
+      !alphalocalshift(spinatom) = BISEC(QXPart,EMin,EMax,1.0D2*Delta,500*Max,K)
+      DE=Delta
+      if(k.lt.5*Max) root_fail = .false.
+      if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+    end if
+
+    write(ifu_log,*)'-----------------------------------------------'
+    write(ifu_log,'(A,F9.5,A,f9.5)') ' Alpha Local Mu:  ',-alphalocalshift(spinatom),'  +/-',dabs(DE)
+    write(ifu_log,*)
+    write(ifu_log,'(A,F10.5)') ' Number of alpha electrons:  ', LocalQAlpha
+    write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', LocalQBeta
+    write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', LocalQAlpha+LocalQBeta
+    write(ifu_log,*)'-----------------------------------------------'
+
+  end do
+    write(ifu_log,*)'-----------------------------------------------'
+    write(ifu_log,*)'-----------------------------------------------'
+  do spinatom=SPIN_Beg,SPIN_End
+    !write(ifu_log,'(A,F9.5,A,f9.5)') ' Local Mu= ',-alphalocalshift(spinatom),'  +/-',dabs(DE)
+    write(ifu_log,'(A,I5,A,F9.5)') 'Atom',spinatom,'	Local Mu:  ',-alphalocalshift(spinatom)
+  end do
+    write(ifu_log,*)'-----------------------------------------------'
+    write(ifu_log,*)'-----------------------------------------------'
+
+end if
+  ADDP = .not. root_fail
+end subroutine CompLocalMu  
+  
   ! 
   ! Computes the density matrix for a fixed chemical potential mu
   ! by integrating Greens function on matsubara axis. No lower energy
@@ -2670,6 +2894,115 @@
      CompSpinPD = Q - NCDAB
 
    end function CompSpinPD
+   
+  ! 
+  ! Computes the density matrix for a fixed chemical potential mu
+  ! by integrating Greens function on matsubara axis. No lower energy
+  ! bound required anymore!
+  ! - Returns number of electrons in device region
+  !
+  ! - replaces old code in functions F(x) and QXTot(x)
+  !
+  real function CompEnergy( mu )
+     use constants
+     use util
+     use numeric, only: CHDiag, gauleg, RTrace
+     use parameters, only: eta, PAcc
+    use g09Common, only: GetNAE, GetNBE
+     implicit none
+
+     ! chemical potential
+     real, intent(in) :: mu
+
+     complex*16, dimension(NAOrbs,NAOrbs) :: GD
+
+     integer, parameter :: nmin=1, nmax=8, npmax=2**nmax-1
+     !integer, parameter :: nmin=1, nmax=16, npmax=2**nmax-1
+     real, dimension(2*npmax) :: x, w
+     real :: Ei, dEdx, Q, QQ, DPD, E0 !, Qi
+     integer :: n, np, i, j, k, l !, info, ierr
+     
+     real, parameter :: x0 = 0.5d0
+     real :: aa, bb, cc, EM
+
+     real :: IntDOSE, IntDOSEAlpha, IntDOSEBeta, IntDOSEE, CompPD
+
+     EM = EMax
+     aa = EM/x0
+     bb = aa*(1.0d0-x0)**2
+     cc = EM - bb/(1-x0)
+     
+     print *, " - SHIFT:", -shift
+     shift = mu ! ADDED BECAUSE IT IS IN OTHER FUNCTIONS
+     print *, " - mu:", -mu
+     !shift = mu ! I HAVE TO CLEAR THIS TO AVOID OVERWRITING SHIFT
+     print *, " - SHIFT:", -shift
+     Q = d_zero
+     IntDOSE = d_zero
+
+     do n=nmin,nmax
+
+        np=2**n-1
+        
+        QQ = Q
+        PD=d_zero
+        QAlpha = d_zero; QBeta = d_zero
+        IntDOSEE = IntDOSE
+        IntDOSEAlpha = d_zero; IntDOSEBeta = d_zero
+        
+        ! Compute Gauss-Legendre abcsissas and weights
+        call gauleg(0.0d0,2.0d0,x(1:2*np),w(1:2*np),2*np)
+
+        do ispin=1,NSpin
+!$OMBLABLABLAP PARALLEL PRIVATE(Ei,dEdx,GD,DPD)
+!$OMBLABLABLAP DO
+           do i=1,np
+              Ei = 2.0d0*EMax*x(i)
+              if( x(i) > 0.5d0 ) Ei = 0.5d0*EMax/(1.0d0-x(i))
+              dEdx = 2.0d0*EMax
+              if( x(i) > 0.5d0 ) dEdx = 0.5d0*EMax/(1.0d0-x(i))**2   
+              call GPlus0( ui*Ei, GD )
+!$OMBLABLABLAP CRITICAL
+              do k=1,NAOrbs
+                 do l=1,NAOrbs
+                    DPD = w(i)*(dEdx*real(GD(k,l))/d_pi + 0.5d0*InvSD(k,l))
+                    PD(ispin,k,l) = PD(ispin,k,l) + DPD
+                    if(ispin.eq.1) QAlpha = QAlpha + DPD*SD(l,k)
+                    if(ispin.eq.2) QBeta = QBeta + DPD*SD(l,k)
+                    if(ispin.eq.1) IntDOSEAlpha = IntDOSEAlpha + (x(i)-mu)*DPD*SD(l,k)
+                    if(ispin.eq.2) IntDOSEBeta = IntDOSEBeta + (x(i)-mu)*DPD*SD(l,k)
+                 end do
+              end do
+!$OMBLABLABLAP END CRITICAL
+           end do
+           print *, ' Grid points:',np
+           !print *, ' Charge alpha ', QAlpha
+           !print *, ' Charge beta ', QBeta
+           print *, ' Charge alpha + beta ', QAlpha + QBeta
+           !print *, ' IntDOSE alpha ', IntDOSEAlpha
+           !print *, ' IntDOSE beta ', IntDOSEBeta
+           print *, ' IntDOSE alpha + beta ', IntDOSEAlpha + IntDOSEBeta
+!$OMBLABLABLAP END DO
+!$OMBLABLABLAP BARRIER
+!$OMBLABLABLAP END PARALLEL
+        end do
+        if(NSpin.eq.1) QBeta=QAlpha
+        Q = QAlpha + QBeta 
+        if(NSpin.eq.1) IntDOSEBeta=IntDOSEAlpha  
+        IntDOSE = IntDOSEAlpha + IntDOSEBeta     
+        if( n > nmin .and. abs(Q-QQ) < PAcc*NCDEl ) exit
+        !if( n > nmin .and. abs(Q-QQ) < (1/16)*PAcc*NCDEl ) exit
+     end do
+        
+     print '(A,I4,A)', ' Integration of P has needed ', np, ' points.'
+     print '(A,F10.5,A,F10.5,A,F8.5)', ' mu =', -mu, '  Num. of electrons =', Q, ' +/-', abs(Q-QQ) 
+
+     print *, ' Computed Charge alpha + beta ', Q
+
+     CompPD = Q - dble(NCDEl)
+     CompEnergy = IntDOSE
+
+  end function CompEnergy   
 
   
   !*************************************
