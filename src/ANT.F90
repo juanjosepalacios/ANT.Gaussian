@@ -187,7 +187,7 @@
      OPEN(ifu_xyz,file=trim(jobname)//'.xyz',status='unknown')
      IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. (SOC .or. ROT)) OPEN(ifu_tra,file='T.'//trim(jobname)//'.SOC.dat',status='unknown')
      IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. (.not. SOC) .and. (.not. ROT)) OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
-     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
+     !IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
      IF (RedTransmB < RedTransmE) OPEN(ifu_red,file='t.'//trim(jobname)//'.dat',status='unknown')
      IF (Hamilton) OPEN(ifu_ham,file='V.'//trim(jobname)//'.dat',status='unknown')
      IF (Mulliken) OPEN(ifu_mul,file='Q.'//trim(jobname)//'.dat',status='unknown')
