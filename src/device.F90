@@ -3003,6 +3003,884 @@ end subroutine CompLocalMu
      CompEnergy = IntDOSE
 
   end function CompEnergy   
+  
+  !**************************************************************
+  !* Subroutine for determining Fermi energy and density matrix *
+  !* for some total charge                                      *
+  !**************************************************************
+  !* Pre-condition:                                             *
+  !*   HC: Fock-matrix                                          *
+  !*   shiftup,shiftdown: starting values for Fermi-energies    *
+  !* Results:                                                   *
+  !*   PC: Density-matrix                                       *
+  !*   shiftup,shiftdown: Fermi-energies                        *
+  !**************************************************************
+  subroutine CompDensLocal2(ADDP)
+    use cluster, only: NALead, NAMol, NAOAtom, NAOMol, LoAOrbNo, HiAOrbNo
+    use numeric, only: Secant, Muller, BISEC
+    use g09Common, only: GetNAE, GetNBE, GetNAtoms, GetAtmCo
+
+    use constants, only: bohr
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess, NSpinMuBl, SpinMuBlBeg, SpinMuBlEnd, Mulliken, Ldos_beg, Ldos_end
+    !use ieee_arithmetic
+    implicit none
+
+    logical,intent(out) :: ADDP
+    integer :: i,j, k,cond
+    real :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
+    
+    logical :: root_fail
+
+    !---------------------------------------------------------------------------------------------
+    !---------- ADDED BY CARLOS TO SORT AND STORE THE MULLPOP ------------------------------------
+    !---------------------------------------------------------------------------------------------
+    integer :: I1, is ,n, l
+    real :: sdeg, ro_a, ro_b, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
+    real, dimension(NAOrbs,NAOrbs) :: rho_a, rho_b, tmp
+
+    integer :: iblock, iao, jao, ispin
+    integer :: iatbl
+    !---------------------------------------------------------------------------------------------
+
+    write(ifu_log,*)'-----------------------------------------------'
+    write(ifu_log,*)'- Charges in Block to calculate the spatially -'
+    write(ifu_log,*)'---- and spin resolved chemical potential -----'
+    write(ifu_log,*)'-----------------------------------------------'
+
+
+    !--- MULLIKEN POPULATION -----------------------
+    rho_a = matmul( PD(1,:,:), SD )
+    if( NSpin == 2 ) rho_b = matmul( PD(2,:,:), SD )
+    !-----------------------------------------------
+
+    I1=0
+
+    do iblock = 1,NSpinMuBl
+      do iatbl = SpinMuBlBeg(iblock),SpinMuBlEnd(iblock)
+        I1=LoAOrbNo(iatbl)
+        ro_a=0.0d0
+        ro_b=0.0d0
+        !do i=I1,I1+NAOAtom(j)-1
+        do i=LoAOrbNo(iatbl),HiAOrbNo(iatbl)
+           ro_a=ro_a+rho_a(i,i)
+           if(NSpin==2) ro_b=ro_b+rho_b(i,i)
+        end do
+        if(NSpin ==1 ) write(ifu_log,1011)'Atom:',j,' El.dens:',ro_a*sdeg
+        if(NSpin ==2 ) write(ifu_log,1012)'Atom:',j,' El.dens:', (ro_a+ro_b),' Sp.dens:', (ro_a-ro_b)
+
+        
+
+        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+          if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg,AtomDOSEF(1,j)
+          if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+        END IF
+        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+          if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg
+          if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b)
+        END IF
+
+        !chargelead1=chargelead1+(ro_a+ro_b)
+        !if (NSpin == 2) spinlead1=spinlead1+(ro_a-ro_b)
+
+        !I1 = I1 + NAOAtom(j)
+
+
+
+
+      end do
+    end do
+
+
+1011 format(a6,i4,a10,f8.4)
+1012 format(a6,i4,a10,f8.4,a10,2f9.4)
+1013 format(7f9.4) 
+
+    ADDP = .not. root_fail
+  end subroutine CompDensLocal2
+  
+  !*************************************
+  !* Compute lesser Green's function *
+  !*************************************
+  subroutine CompCGibbsY(z,gless,GibbsY,GibbsYKernel1,GibbsYKernel2) !NoHanWorks20180425
+    use parameters, only: eta, biasvoltage, glue
+    use constants, only: c_zero, ui, c_one
+    use util, only: PrintCMatrix
+   !use lapack_blas, only: zgetri, zgetrf, zgemm
+   !use lapack95, only: zgetri, zgetrf, zgemm
+   !use lapack95
+   !use blas95
+
+    implicit none
+    external               zgetri, zgetrf, zgemm
+
+    integer :: i, j, info, error
+    integer, dimension(NAOrbs) :: ipiv
+    complex*16 :: work(4*NAOrbs)
+
+    complex*16, intent(in) :: z
+
+    complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: gless
+    complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: GibbsY, GibbsYKernel1, GibbsYKernel2
+    complex*16, dimension(:,:), allocatable :: green,gammar,gammal,sigl,sigr,glessR,glessL
+
+    complex*16, dimension(:,:), allocatable :: auxPD, aux1Kernel1, aux2Kernel1, aux1Kernel2, aux2Kernel2!, glessKernelL, glessKernelR
+
+     if(DebugDev)then
+    Write(*,*)"********************************************************************"
+    Write(*,*)"*********************** ENTERED CompCGibbsY ************************"
+    Write(*,*)"********************************************************************"
+     end if
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/CompCGibbsY"
+
+     allocate(glessR(NAOrbs,NAOrbs),glessL(NAOrbs,NAOrbs),green(NAOrbs,NAOrbs),stat=error)
+     if (error /= 0 ) then
+        print*,"Problems allocating"
+        stop
+     end if
+     allocate(sigl(NAOrbs,NAOrbs),sigr(NAOrbs,NAOrbs),gammar(NAOrbs,NAOrbs),gammal(NAOrbs,NAOrbs),stat=error)
+     if (error /= 0 ) then
+        print*,"Problems allocating"
+        stop
+     end if
+     allocate(auxPD(NAOrbs,NAOrbs), aux1Kernel1(NAOrbs,NAOrbs), aux2Kernel1(NAOrbs,NAOrbs), aux1Kernel2(NAOrbs,NAOrbs), aux2Kernel2(NAOrbs,NAOrbs),stat=error)
+     if (error /= 0 ) then
+        print*,"Problems allocating"
+        stop
+     end if
+
+    gammar=c_zero
+    gammal=c_zero
+    sigr=-ui*eta*SD
+    sigl=-ui*eta*SD
+
+    call CompSelfEnergies( ispin, z, sigl, sigr )
+    sigr=glue*sigr
+    sigl=glue*sigl
+
+    !************************************************************************
+    !c Coupling matrices
+    !************************************************************************
+    gammar=ui*(sigr-conjg(transpose(sigr)))
+    gammal=ui*(sigl-conjg(transpose(sigl)))
+
+    !************************************************************************
+    !c Retarded "Green" function
+    !************************************************************************
+    do i=1,NAOrbs
+       do j=1,NAOrbs
+          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+       enddo
+    enddo
+
+    call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
+    call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
+
+    !************************************************************************
+    !* G< (Gless)
+    !************************************************************************
+
+     ! argument 'C' means zgemm uses the conjugate hermitian of green (retarded), which is the advanced.
+     call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,gammal,NAOrbs,green,NAOrbs, &
+          &           c_zero,gless,NAOrbs)
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,green,NAOrbs,gless,NAOrbs, &
+          &           c_zero,glessL,NAOrbs)
+     ! argument 'C' means zgemm uses the conjugate hermitian of green (retarded), which is the advanced.
+     call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,gammar,NAOrbs,green,NAOrbs, &
+          &           c_zero,gless,NAOrbs)
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,green,NAOrbs,gless,NAOrbs, &
+          &           c_zero,glessR,NAOrbs)
+
+     gless=ui*(glessL*theta(dble(z)-biasvoltage/2)+glessR*theta(dble(z)+biasvoltage/2))
+
+     !GibbsYL=(Fermi-biasvoltage/2)*ui*(glessL*theta(dble(z)-(biasvoltage/2)))
+     !GibbsYR=(Fermi+biasvoltage/2)*ui*(glessR*theta(dble(z)-(-biasvoltage/2)))
+     ! REMOVE Fermi because everything is shifted to ZERO.
+     !GibbsYL=(-biasvoltage/2)*ui*(glessL*theta(dble(z)-(biasvoltage/2)))
+     !GibbsYR=(+biasvoltage/2)*ui*(glessR*theta(dble(z)-(-biasvoltage/2)))
+
+     ! ADD OR SUBSTRACT shift TO PUT HERE THE CORRECT FERMI LEVEL
+     !GibbsY = - ( (-shift-biasvoltage/2)*(glessL*theta(dble(z)-(biasvoltage/2))) &
+     !         & + (-shift+biasvoltage/2)*(glessR*theta(dble(z)-(-biasvoltage/2))) )
+     glessL = (glessL*theta(dble(z)-(biasvoltage/2)))
+     glessR = (glessR*theta(dble(z)-(-biasvoltage/2)))
+     GibbsY = - ( (-shift-biasvoltage/2)*glessL + (-shift+biasvoltage/2)*glessR )
+
+
+     do i=1,NAOrbs
+       do j=1,NAOrbs
+         auxPD(i,j)=PD(ispin,i,j)
+         aux1Kernel1(i,j) = (0.0,0.0)
+         aux2Kernel1(i,j) = (0.0,0.0)
+       end do
+     end do
+
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,auxPD,NAOrbs,glessL,NAOrbs, &
+          &           c_zero,aux1Kernel1,NAOrbs)
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,glessL,NAOrbs,aux1Kernel1,NAOrbs, &
+          &           c_zero,aux2Kernel1,NAOrbs)
+
+     GibbsYKernel1 = (-shift-biasvoltage/2)*(z-shift)*aux2Kernel1;
+     GibbsYKernel2 = (-shift-biasvoltage/2)*( - aux2Kernel1 );
+
+     do i=1,NAOrbs
+       do j=1,NAOrbs
+         auxPD(i,j)=PD(ispin,i,j)
+         aux1Kernel1(i,j) = (0.0,0.0)
+         aux2Kernel1(i,j) = (0.0,0.0)
+       end do
+     end do
+
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,auxPD,NAOrbs,glessR,NAOrbs, &
+          &           c_zero,aux1Kernel1,NAOrbs)
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,glessR,NAOrbs,aux1Kernel1,NAOrbs, &
+          &           c_zero,aux2Kernel1,NAOrbs)
+
+     GibbsYKernel1 = GibbsYKernel1 + (-shift+biasvoltage/2)*(z-shift)*aux2Kernel1;
+     GibbsYKernel2 = GibbsYKernel2 + (-shift+biasvoltage/2)*( - aux2Kernel1 );
+
+
+     deallocate(glessR,glessL,sigl,sigr,gammar,gammal,stat=error)
+     if (error /= 0 ) then
+        print*,"Problems deallocating"
+        stop
+     end if
+     deallocate(auxPD, aux1Kernel1, aux2Kernel1, aux1Kernel2, aux2Kernel2,stat=error)
+     if (error /= 0 ) then
+        print*,"Problems deallocating"
+        stop
+     end if
+
+     if(DebugDev)then
+       Write(*,'(A)')"Device/CompCGibbsY output gless(:,:) = "
+       call PrintCMatrix(gless)
+
+!       Write(*,'(A)')"Device/CompCGibbsY output GibbsY(:,:) = "
+!       call PrintCMatrix(GibbsY)
+!
+!       Write(*,'(A)')"Device/CompCGibbsY output GibbsYKernel1(:,:) = "
+!       call PrintCMatrix(GibbsYKernel1)
+!
+!       Write(*,'(A)')"Device/CompCGibbsY output GibbsYKernel2(:,:) = "
+!       call PrintCMatrix(GibbsYKernel2)
+
+    Write(*,*)"********************************************************************"
+    Write(*,*)"************************* EXIT CompCGibbsY *************************"
+    Write(*,*)"********************************************************************"
+    end if
+
+  end subroutine CompCGibbsY !NoHanWorks20180425
+
+  !*************************************
+  !* Compute lesser Green's function *
+  !*************************************
+  subroutine CompCGibbsYHan(z,gless,GibbsY)
+    use parameters, only: eta, biasvoltage, glue
+    use constants, only: c_zero, ui, c_one, eleccharge, hbar
+    use util, only: PrintCMatrix, PrintRMatrix
+   !use lapack_blas, only: zgetri, zgetrf, zgemm
+   !use lapack95, only: zgetri, zgetrf, zgemm
+   !use lapack95
+   !use blas95
+
+    implicit none
+    external               zgetri, zgetrf, zgemm
+
+    integer :: i, j, info, error
+    integer, dimension(NAOrbs) :: ipiv
+    complex*16 :: work(4*NAOrbs)
+
+    complex*16, intent(in) :: z
+
+    complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: gless
+    complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: GibbsY
+    complex*16, dimension(NAOrbs,NAOrbs) :: CGibbsYHan
+    complex*16, dimension(:,:), allocatable :: green,gammar,gammal,sigl,sigr,glessR,glessL
+
+    ! 2018-04-25 CompCGibbsYHan DECLARATIONS
+    complex*16, dimension(NAOrbs,NAOrbs) :: HGOp, OUT1, OUT2
+    complex*16, dimension(NAOrbs,NAOrbs) :: HDPiv
+    complex*16, dimension(NAOrbs*NAOrbs) :: HGOpCol, CGibbsYHanCol
+    complex*16, dimension(NAOrbs*NAOrbs,NAOrbs*NAOrbs) :: LiouvSOpPiv
+    !complex*16, dimension(:,:), allocatable :: green,gammar,gammal,sigl,sigr,glessR,glessL
+    !INTEGER MKL_GET_MAX_THREADS
+    !INTEGER MAX_THREADS
+    integer :: N, N2
+    !DOUBLE PRECISION ALPHA, BETA
+    real :: ALPHA, BETA
+
+
+
+    if(DebugDev)then
+    Write(*,*)"********************************************************************"
+    Write(*,*)"********************** ENTERED CompCGibbsYHan **********************"
+    Write(*,*)"********************************************************************"
+    end if
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/CompCGibbsY"
+
+     allocate(glessR(NAOrbs,NAOrbs),glessL(NAOrbs,NAOrbs),green(NAOrbs,NAOrbs),stat=error)
+     if (error /= 0 ) then
+        print*,"Problems allocating"
+        stop
+     end if
+     allocate(sigl(NAOrbs,NAOrbs),sigr(NAOrbs,NAOrbs),gammar(NAOrbs,NAOrbs),gammal(NAOrbs,NAOrbs),stat=error)
+     if (error /= 0 ) then
+        print*,"Problems allocating"
+        stop
+     end if
+
+    gammar=c_zero
+    gammal=c_zero
+    sigr=-ui*eta*SD
+    sigl=-ui*eta*SD
+
+    call CompSelfEnergies( ispin, z, sigl, sigr )
+    sigr=glue*sigr
+    sigl=glue*sigl
+
+    !************************************************************************
+    !c Coupling matrices
+    !************************************************************************
+    gammar=ui*(sigr-conjg(transpose(sigr)))
+    gammal=ui*(sigl-conjg(transpose(sigl)))
+
+    !************************************************************************
+    !c Retarded "Green" function
+    !************************************************************************
+    do i=1,NAOrbs
+       do j=1,NAOrbs
+          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+       enddo
+    enddo
+
+    call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
+    call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
+
+    !************************************************************************
+    !* G< (Gless)
+    !************************************************************************
+
+     call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,gammal,NAOrbs,green,NAOrbs, &
+          &           c_zero,gless,NAOrbs)
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,green,NAOrbs,gless,NAOrbs, &
+          &           c_zero,glessL,NAOrbs)
+     call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,gammar,NAOrbs,green,NAOrbs, &
+          &           c_zero,gless,NAOrbs)
+     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,green,NAOrbs,gless,NAOrbs, &
+          &           c_zero,glessR,NAOrbs)
+
+     gless=ui*(glessL*theta(dble(z)-biasvoltage/2)+glessR*theta(dble(z)+biasvoltage/2))
+
+     !GibbsYL=(Fermi-biasvoltage/2)*ui*(glessL*theta(dble(z)-(biasvoltage/2)))
+     !GibbsYR=(Fermi+biasvoltage/2)*ui*(glessR*theta(dble(z)-(-biasvoltage/2)))
+     ! REMOVE Fermi because everything is shifted to ZERO.
+     !GibbsYL=(-biasvoltage/2)*ui*(glessL*theta(dble(z)-(biasvoltage/2)))
+     !GibbsYR=(+biasvoltage/2)*ui*(glessR*theta(dble(z)-(-biasvoltage/2)))
+     GibbsY= - ( (-biasvoltage/2)*(glessL*theta(dble(z)-(biasvoltage/2))) + (+biasvoltage/2)*(glessR*theta(dble(z)-(-biasvoltage/2))) )
+
+     deallocate(glessR,glessL,sigl,sigr,gammar,gammal,stat=error)
+     if (error /= 0 ) then
+        print*,"Problems deallocating"
+        stop
+     end if
+
+     if(DebugDev)then
+       Write(*,'(A)')"Device/CompCGibbsYHan output gless(:,:) = "
+       call PrintCMatrix(gless)
+     end if
+
+
+
+    ALPHA = 1.0d0
+    BETA = 0.0d0
+    N = NAOrbs
+
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        HDPiv(i,j)=HD(iSpin,i,j)
+      end do
+    end do
+
+    if(DebugDev)then
+      Write(*,'(A)')"Device/CompCGibbsYHan output HDPiv(:,:) = "
+      call PrintCMatrix(HDPiv)
+    end if
+
+    !MAX_THREADS = MKL_GET_MAX_THREADS()
+    !CALL MKL_SET_NUM_THREADS(MAX_THREADS)
+
+    ! pERFORM COMMUTATOR HD*glesser - glesser*HD
+    !CALL ZGEMM('N','N',M,N,P,ALPHA,A,M,B,P,BETA,C,M)
+    CALL ZGEMM ('N','N',N,N,N,c_one,HDPiv,N,gless,N,c_zero,OUT1,N ) ! 2018-04-25 REPLACED glesserBY gless BECAUSE ALL NaN WHEN PRINTING HGOp BELOW.
+    CALL ZGEMM ('N','N',N,N,N,c_one,gless,N,HDPiv,N,c_zero,OUT2,N ) ! 2018-04-25 REPLACED glesserBY gless BECAUSE ALL NaN WHEN PRINTING HGOp BELOW.
+
+    !HGOp = -(ui/hbar)*(OUT1 - OUT2)  ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        !HGOp(i,j) = -(ui/hbar)*(OUT1(i,j) - OUT2(i,j))  ! SEEMS TO BE THE CORRECT, BUT NON-HERMITIAN, MAYBE ANTIHERMITIAN.
+        HGOp(i,j) = -(c_one/hbar)*(OUT1(i,j) - OUT2(i,j))  ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.
+      end do
+    end do
+
+    !************************************************************************
+    !c CONVERT TO SUPEROPERATOR FORM.
+    !************************************************************************
+    if(DebugDev)then
+    if(iSpin==1)Write(*,'(A)')"ALPHA CURRENT OPERATOR"
+    if(iSpin==2)Write(*,'(A)')"BETA CURRENT OPERATOR"
+    Write(*,*)DREAL(HGOp(1,1))
+    Write(*,*)DIMAG(HGOp(1,1))
+    Write(*,*)DREAL(HGOp(1,2))
+    Write(*,*)DIMAG(HGOp(1,2))
+    call PrintCMatrix( HGOp )
+    end if
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        HGOpCol((i-1)*NAOrbs+j)=HGOp(i,j)
+        !Write(*,'(I2,I2,A,F12.8,A,F12.8,A)'),i,j,"(",DREAL(HGOp(i,j)),")+i(",DIMAG(HGOp(i,j)),")"
+      end do
+      !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(HGOp(i,j)),") +i*(",DIMAG(HGOp(i,j)),")") ,j=1,NAOrbs)
+    end do
+
+    !************************************************************************
+    !c Retarded "Green" function
+    !************************************************************************
+    N2 = NAOrbs*NAOrbs
+    if(DebugDev)then
+    if(iSpin==1)Write(*,'(A)')"ALPHA INVERSE LIOUVILLIAN"
+    if(iSpin==2)Write(*,'(A)')"BETA INVERSE LIOUVILLIAN"
+    end if
+
+    if(.not.ALLOCATED(LiouvSop))then
+      call BuildLiouvillian
+    end if
+
+    if(DebugDev)then
+    Write(*,*)DREAL(LiouvSop(1,1,1))
+    Write(*,*)DIMAG(LiouvSop(1,1,1))
+    end if
+
+    do i=1,N2
+      do j=1,N2
+        !Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)')iSpin,i,j,"(",DREAL(LiouvSOp(iSpin,i,j)),") + i*(",DIMAG(LiouvSOp(iSpin,i,j)),")"
+        LiouvSOpPiv(i,j)=LiouvSOp(iSpin,i,j)
+        !Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)')iSpin,i,j,"(",DREAL(LiouvSOpPiv(i,j)),")+i(",DIMAG(LiouvSOpPiv(i,j)),")"
+      end do
+    end do
+    !alpha and beta are scalars,
+    !A, B and C are matrices:
+    !op(A) is an m-by-k matrix,
+    !op(B) is a k-by-n matrix,
+    !C is an m-by-n matrix.
+    !call zgemm(transa, transb, m, n, k, alpha, A, lda, b, ldb, beta, c, ldc)
+    ! THE 1 FOR THE 4th PARAMETER n IS THE NUMBER OF COLUMNS OF B AND C, 1 IN THIS CASE.
+    call zgemm('N','N',N2,1,N2,c_one,LiouvSOpPiv,N2,HGOpCol,N2,c_zero,CGibbsYHanCol,N2)
+
+
+
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        CGibbsYHan(i,j)=CGibbsYHanCol((i-1)*NAOrbs+j)
+      enddo
+      !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(CGibbsYHan(i,j)),") +i*(",DIMAG(CGibbsYHan(i,j)),")") ,j=1,NAOrbs)
+    enddo
+
+
+    if(DebugDev)then
+    if(iSpin==1)Write(*,'(A)')"ALPHA CGibbsYHan(:,:)"
+    if(iSpin==2)Write(*,'(A)')"BETA CGibbsYHan(:,:)"
+    Write(*,*)DREAL(CGibbsYHan(1,1))
+    Write(*,*)DIMAG(CGibbsYHan(1,1))
+    Write(*,*)DREAL(CGibbsYHan(1,2))
+    Write(*,*)DIMAG(CGibbsYHan(1,2))
+    call PrintCMatrix( CGibbsYHan )
+    end if
+
+    if(DebugDev)then
+    Write(*,*)"********************************************************************"
+    Write(*,*)"************************ EXIT CompCGibbsYHan ***********************"
+    Write(*,*)"********************************************************************"
+    end if
+
+  end subroutine CompCGibbsYHan
+
+  !*************************************
+  !* Compute lesser Green's function *
+  !*************************************
+  subroutine CompCGibbsYHanOld(glesser,CGibbsYHan)
+    use parameters, only: eta, biasvoltage, glue
+    use constants, only: c_zero, ui, c_one, eleccharge, hbar
+   !use lapack_blas, only: zgetri, zgetrf, zgemm
+   !use lapack95, only: zgetri, zgetrf, zgemm
+   !use lapack95
+   !use blas95
+
+    implicit none
+    external               zgemm
+
+    integer :: i, j!, info, error
+    integer, dimension(NAOrbs) :: ipiv
+!    complex*16 :: work(4*NAOrbs)
+!    complex*16, intent(in) :: z
+    complex*16, dimension(NAOrbs,NAOrbs), intent(in) :: glesser
+    complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: CGibbsYHan
+    complex*16, dimension(NAOrbs,NAOrbs) :: HGOp, OUT1, OUT2
+    complex*16, dimension(NAOrbs,NAOrbs) :: HDPiv
+    complex*16, dimension(NAOrbs*NAOrbs) :: HGOpCol, CGibbsYHanCol
+    complex*16, dimension(NAOrbs*NAOrbs,NAOrbs*NAOrbs) :: LiouvSOpPiv
+    !complex*16, dimension(:,:), allocatable :: green,gammar,gammal,sigl,sigr,glessR,glessL
+    !INTEGER MKL_GET_MAX_THREADS
+    !INTEGER MAX_THREADS
+    integer :: N, N2
+    !DOUBLE PRECISION ALPHA, BETA
+    real :: ALPHA, BETA
+
+    Write(*,*)"********************************************************************"
+    Write(*,*)"********************** ENTERED CompCGibbsYHan **********************"
+    Write(*,*)"********************************************************************"
+    ALPHA = 1.0d0
+    BETA = 0.0d0
+    N = NAOrbs
+
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        HDPiv(i,j)=HD(iSpin,i,j)
+      end do
+    end do
+
+    !MAX_THREADS = MKL_GET_MAX_THREADS()
+    !CALL MKL_SET_NUM_THREADS(MAX_THREADS)
+
+    ! pERFORM COMMUTATOR HD*glesser - glesser*HD
+    !CALL ZGEMM('N','N',M,N,P,ALPHA,A,M,B,P,BETA,C,M)
+    CALL ZGEMM ('N','N',N,N,N,c_one,HDPiv,N,glesser,N,c_zero,OUT1,N )
+    CALL ZGEMM ('N','N',N,N,N,c_one,glesser,N,HDPiv,N,c_zero,OUT2,N )
+
+    !HGOp = -(ui/hbar)*(OUT1 - OUT2)  ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        !HGOp(i,j) = -(ui/hbar)*(OUT1(i,j) - OUT2(i,j))  ! SEEMS TO BE THE CORRECT, BUT NON-HERMITIAN, MAYBE ANTIHERMITIAN.
+        HGOp(i,j) = -(c_one/hbar)*(OUT1(i,j) - OUT2(i,j))  ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.
+      end do
+    end do
+
+    !************************************************************************
+    !c CONVERT TO SUPEROPERATOR FORM.
+    !************************************************************************
+    if(iSpin==1)Write(*,'(A)')"ALPHA CURRENT OPERATOR"
+    if(iSpin==2)Write(*,'(A)')"BETA CURRENT OPERATOR"
+    Write(*,*)DREAL(HGOp(1,1))
+    Write(*,*)DIMAG(HGOp(1,1))
+    Write(*,*)DREAL(HGOp(1,2))
+    Write(*,*)DIMAG(HGOp(1,2))
+    call PrintCMatrix( HGOp )
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        HGOpCol((i-1)*NAOrbs+j)=HGOp(i,j)
+        !Write(*,'(I2,I2,A,F12.8,A,F12.8,A)'),i,j,"(",DREAL(HGOp(i,j)),")+i(",DIMAG(HGOp(i,j)),")"
+      end do
+      !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(HGOp(i,j)),") +i*(",DIMAG(HGOp(i,j)),")") ,j=1,NAOrbs)
+    end do
+
+    !************************************************************************
+    !c Retarded "Green" function
+    !************************************************************************
+    N2 = NAOrbs*NAOrbs
+    if(iSpin==1)Write(*,'(A)')"ALPHA INVERSE LIOUVILLIAN"
+    if(iSpin==2)Write(*,'(A)')"BETA INVERSE LIOUVILLIAN"
+    if(.not.ALLOCATED(LiouvSop))then
+      call BuildLiouvillian
+    end if
+    Write(*,*)DREAL(LiouvSop(1,1,1))
+    Write(*,*)DIMAG(LiouvSop(1,1,1))
+    do i=1,N2
+      do j=1,N2
+        !Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)')iSpin,i,j,"(",DREAL(LiouvSOp(iSpin,i,j)),") + i*(",DIMAG(LiouvSOp(iSpin,i,j)),")"
+        LiouvSOpPiv(i,j)=LiouvSOp(iSpin,i,j)
+        !Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)')iSpin,i,j,"(",DREAL(LiouvSOpPiv(i,j)),")+i(",DIMAG(LiouvSOpPiv(i,j)),")"
+      end do
+    end do
+    !alpha and beta are scalars,
+    !A, B and C are matrices:
+    !op(A) is an m-by-k matrix,
+    !op(B) is a k-by-n matrix,
+    !C is an m-by-n matrix.
+    !call zgemm(transa, transb, m, n, k, alpha, A, lda, b, ldb, beta, c, ldc)
+    ! THE 1 FOR THE 4th PARAMETER n IS THE NUMBER OF COLUMNS OF B AND C, 1 IN THIS CASE.
+    call zgemm('N','N',N2,1,N2,c_one,LiouvSOpPiv,N2,HGOpCol,N2,c_zero,CGibbsYHanCol,N2)
+
+
+    if(iSpin==1)Write(*,'(A)')"ALPHA CGibbsYHan(:,:)"
+    if(iSpin==2)Write(*,'(A)')"BETA CGibbsYHan(:,:)"
+    Write(*,*)DREAL(CGibbsYHan(1,1))
+    Write(*,*)DIMAG(CGibbsYHan(1,1))
+    Write(*,*)DREAL(CGibbsYHan(1,2))
+    Write(*,*)DIMAG(CGibbsYHan(1,2))
+    call PrintCMatrix( CGibbsYHan )
+    do i=1,NAOrbs
+      do j=1,NAOrbs
+        CGibbsYHan(i,j)=CGibbsYHanCol((i-1)*NAOrbs+j)
+      enddo
+      !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(CGibbsYHan(i,j)),") +i*(",DIMAG(CGibbsYHan(i,j)),")") ,j=1,NAOrbs)
+    enddo
+    Write(*,*)"********************************************************************"
+    Write(*,*)"************************ EXIT CompCGibbsYHan ***********************"
+    Write(*,*)"********************************************************************"
+
+  end subroutine CompCGibbsYHanOld
+  
+  !****************************************
+  ! Function gives excess charge of device
+  ! in dependence of Fermi energy x
+  !****************************************
+  double precision function QXTotEnergy(x)
+    use parameters, only: biasvoltage,QExcess
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: rrr, a, b, Q
+    integer :: i,j,M,omp_get_thread_num
+
+    real :: QXTot, IntDOSE, intpjIntDOSE, intchIntDOSE, IntDOSEAlpha, IntDOSEBeta
+
+    print*,"I am in QXTotEnergy" 
+
+    do ispin=1,NSpin
+       shift=x
+    !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
+       Q = d_zero
+
+       !IntDOSE = d_zero
+       !intchIntDOSE = d_zero
+       !intpjIntDOSE = d_zero
+       LocPD = 0.d0
+       LocPDOUT = 0.d0
+
+       ! Radius of complex contour integration
+       ! add 10eV just in case 
+       rrr = 0.5*abs(EMin)+10.0d0;
+
+       !c c Integral limits ... (a,b)
+       a = 0.d0
+       b = d_pi
+       M=1000
+       print*,"-shift = ", -shift
+       !call intpjenergy(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+       intpjIntDOSE=intpjenergy(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+       !print*,"After call intpjIntDOSE = ", intpjIntDOSE
+       ! Density matrix out of equilibirum
+       !print*,"biasvoltage = ", biasvoltage
+       if (biasvoltage /= 0.d0) then
+          !print*,"Calculating bias window energy"
+          M=100
+          !call intchenergy(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          intchIntDOSE=intchenergy(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                LocPD(ispin,i,j)=LocPD(ispin,i,j)+LocPDOUT(ispin,i,j)
+             end do
+          end do
+       end if
+       ! Density matrix out of equilibirum
+
+       !intchIntDOSE = 0.d0
+       !do i=1,NAOrbs
+       do i=NCDAO1, NCDAO2
+          do j=1,NAOrbs
+             Q=Q+LocPD(ispin,i,j)*SD(j,i)
+             ! WITH THIS, I TAKE INTO ACCOUNT INTPJ (EQ.) AND INTCH (NONEQ.)
+             !intchIntDOSE=intchIntDOSE+(d_zero-x)*PD(ispin,i,j)*SD(j,i)
+             !intchIntDOSE=intchIntDOSE+(x-shift)*PD(ispin,i,j)*SD(j,i)
+             !intchIntDOSE=intchIntDOSE+x*PD(ispin,i,j)*SD(j,i)
+          end do
+       end do
+       print*,"intpjenergy IntDOSE = ", intpjIntDOSE
+       print*,"intchenergy IntDOSE = ", intchIntDOSE
+       IntDOSE = intpjIntDOSE + intchIntDOSE
+       print*,"IntDOSE = ", IntDOSE
+       if( ispin == 1 ) QAlpha = Q
+       if( ispin == 2 ) QBeta  = Q
+       if( ispin == 1 ) IntDOSEAlpha = IntDOSE
+       if( ispin == 2 ) IntDOSEBeta  = IntDOSE
+    end do
+
+    if( NSpin == 1 ) QBeta = QAlpha
+    !QXTot = QAlpha + QBeta -dble(GetNAE()) -dble(GetNBE())
+    QXTot = QAlpha + QBeta - dble(NCDEl) - QExcess
+    if( NSpin == 1 ) IntDOSEBeta = IntDOSEAlpha
+    QXTotEnergy = IntDOSEAlpha + IntDOSEBeta
+    return
+  end function QXTotEnergy
+
+  !****************************************
+  ! Function gives excess charge of selected atom
+  ! in dependence of Fermi energy x
+  !****************************************
+  double precision function FPart(x)
+    use cluster, only: NAOAtom, LoAOrbNo, HiAOrbNo
+    use parameters, only: biasvoltage,QExcess, SPIN_Beg, SPIN_End
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: chargeup, chargedown, rrr, a, b, Q
+    integer :: i,j,M
+
+    !write(ifu_log,*)'-------------------------------------'
+    !write(ifu_log,*)'------- I am in FPart ---------------'
+    !write(ifu_log,*)'-------------------------------------'
+
+    shift=x
+    
+    ! Radius of complex contour integration
+    ! add 10eV just in case 
+    rrr = 0.5*abs(EMin)+10.0d0;
+
+    !c c Integral limits ... (a,b)
+    a = 0.d0
+    b = d_pi
+    M=1000
+    call localintpj(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+      
+    ! Density matrix out of equilibirum
+    if (biasvoltage /= 0.0) then
+       M=100
+       call localintch(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+    !  print *,PDOUT
+       !do i=1,NAOrbs
+       do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom)
+          do j=1,NAOrbs
+             LocPD(ispin,i,j)=LocPD(ispin,i,j)+LocPDOUT(ispin,i,j)
+          end do
+       end do
+    end if
+    ! Density matrix out of equilibirum
+      
+    Q=d_zero
+    !do i=1,NAOrbs
+    !do i=NCDAO1, NCDAO2
+    do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom)
+       do j=1,NAOrbs
+          Q=Q+LocPD(ispin,i,j)*SD(j,i)
+       end do
+    end do
+    if (ispin.eq.1) LocalQAlpha = Q
+    if (ispin.eq.2) LocalQBeta  = Q
+!    !if (ispin.eq.1) f = QAlpha - dble(GetNAE())
+!    !if (ispin.eq.2) f = QBeta  - dble(GetNBE())
+!    !if (ispin.eq.1) f = QAlpha - dble(GetNAE()*NCDEl)/dble(GetNAE()+GetNBE()) -QExcess/2.0
+!    !if (ispin.eq.2) f = QBeta  - dble(GetNBE()*NCDEl)/dble(GetNAE()+GetNBE()) -QExcess/2.0
+!    if (ispin.eq.1) FPart = LocalQAlpha + alphaelec(spinatom-SPIN_Beg+1) !- GetAtmChg(spinatom)
+!    if (ispin.eq.1) FPart = LocalQBeta + betaelec(spinatom-SPIN_Beg+1) !- GetAtmChg(spinatom)
+
+
+    if (ispin.eq.1) FPart = LocalQAlpha - alphaelec(spinatom-SPIN_Beg+1) ! - GetAtmChg(spinatom)
+    if (ispin.eq.2) FPart = LocalQBeta - betaelec(spinatom-SPIN_Beg+1) ! - GetAtmChg(spinatom)
+    !QXPart = LocalQAlpha + LocalQBeta
+    write(ifu_log,'(A,I4,A,f9.5)')' Curr. spinatom:',spinatom,'		FPart: ',FPart
+    return
+  end function FPart
+
+  !****************************************
+  ! Function gives excess charge of device
+  ! in dependence of Fermi energy x
+  !****************************************
+  double precision function QXPart(x)
+    use cluster, only: NAOAtom, LoAOrbNo, HiAOrbNo
+    use parameters, only: biasvoltage,QExcess, SPIN_Beg, SPIN_End
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE, GetNAtoms, GetAtmChg
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: rrr, a, b, Q
+    integer :: i,j,M,omp_get_thread_num
+
+    !real :: LocalQAlpha, LocalQBeta
+    !integer, intent(in) :: iatom
+
+    !print*,"I am in QXTot" 
+    !write(ifu_log,*)'-------------------------------------'
+    !write(ifu_log,*)'------- I am in QXPart ---------------'
+    !write(ifu_log,*)'-------------------------------------'
+    
+    !do ispin=1,NSpin
+    !  do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom)
+    !    do j=1,NAOrbs
+    !      LocPD(ispin,i,j)=PD(ispin,i,j)
+    !    end do
+    !  end do
+    !end do
+
+    do ispin=1,NSpin
+       shift=x
+    !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
+       Q = d_zero
+
+       ! Radius of complex contour integration
+       ! add 10eV just in case 
+       rrr = 0.5*abs(EMin)+10.0d0;
+
+       !c c Integral limits ... (a,b)
+       a = 0.d0
+       b = d_pi
+       M=1000
+       call localintpj(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+
+       ! Density matrix out of equilibirum
+       if (biasvoltage /= 0.d0) then
+          M=100
+          call localintch(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          do i=1,NAOrbs
+          !do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom)
+             do j=1,NAOrbs
+                LocPD(ispin,i,j)=LocPD(ispin,i,j)+LocPDOUT(ispin,i,j)
+             end do
+          end do
+       end if
+       ! Density matrix out of equilibirum
+
+       !do i=1,NAOrbs
+       !do i=NCDAO1, NCDAO2
+       !do i=LoAOrbNo(SPIN_Beg), HiAOrbNo(SPIN_End)
+       do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom)
+          do j=1,NAOrbs
+             Q=Q+LocPD(ispin,i,j)*SD(j,i)
+          end do
+       end do
+       !if( ispin == 1 ) QAlpha = Q
+       !if( ispin == 2 ) QBeta  = Q
+       if( ispin == 1 ) LocalQAlpha = Q
+       if( ispin == 2 ) LocalQBeta  = Q
+    end do
+
+    !if( NSpin == 1 ) QBeta = QAlpha
+    if( NSpin == 1 ) LocalQBeta = LocalQAlpha
+!    !QXTot = QAlpha + QBeta -dble(GetNAE()) -dble(GetNBE())
+!    !QXTot = QAlpha + QBeta - dble(NCDEl) - QExcess
+!    write(ifu_log,*)'Current spinatom: ', spinatom
+!    write(ifu_log,*)' Alpha Local Shift= ',x
+!    write(ifu_log,*)'LocalQAlpha', LocalQAlpha
+!    write(ifu_log,*)'LocalQBeta', LocalQBeta
+!    !write(ifu_log,*)'LocalQAlpha + LocalQBeta', LocalQAlpha + LocalQBeta
+!    write(ifu_log,*)'alphaelec', alphaelec(spinatom-SPIN_Beg+1)
+!    write(ifu_log,*)'betaelec', betaelec(spinatom-SPIN_Beg+1)
+!    !write(ifu_log,*)'alphaelec + betaelec', alphaelec + betaelec
+!    write(ifu_log,*)'QXPart = ', LocalQAlpha + LocalQBeta - alphaelec(spinatom-SPIN_Beg+1) - betaelec(spinatom-SPIN_Beg+1)! - GetAtmChg(spinatom)
+
+    QXPart = LocalQAlpha + LocalQBeta - alphaelec(spinatom-SPIN_Beg+1) - betaelec(spinatom-SPIN_Beg+1)! - GetAtmChg(spinatom)
+    !QXPart = LocalQAlpha + LocalQBeta
+    write(ifu_log,'(A,I4,A,f9.5)')' Curr. spinatom:',spinatom,'		QXPart: ',QXPart
+    return
+  end function QXPart
+      
 
   
   !*************************************
@@ -3640,6 +4518,55 @@ end subroutine CompLocalMu
 1011 format(a6,i4,f12.6)
      !close(ifu_ham)
   end subroutine Hamiltonian 
+  
+  !*******************************************!
+  ! Writing the Diagonalized Hamiltonian      !
+  !*******************************************!
+  subroutine DiagHamiltonian
+    use cluster, only: NALead, NAMol, NAOAtom, NAOMol, NEmbedBL
+    USE parameters, only: Hamilton
+    use g09Common, only: GetAtmCo
+    use constants, only: Bohr
+    implicit none
+
+    real, dimension(:,:),allocatable :: kseigenvalues
+    integer :: i,j, I1, is ,n
+    real :: ro_a, ro_b
+
+    write(ifu_log,*)'--------------------------------------------------'
+    write(ifu_log,*)'---  Self-consistent Diagonalized Hamiltonian  ---'
+    write(ifu_log,*)'--------------------------------------------------'
+
+    
+    !open(ifu_diagham,file='V.'//trim(xxx)//'.dat',status='unknown')
+    !write(ifu_log,*)'---------'
+    !write(ifu_log,*)'Left lead'
+    !write(ifu_log,*)'---------'
+    !I1=0
+    do j=1,NAOrbs
+       !ro_a=0.0d0
+       !ro_b=0.0d0
+       !do i=I1+1,I1+NAOAtom(j)
+       !   ro_a=ro_a+hd(1,i,i)
+       !   if(NSpin==2) ro_b=ro_b+hd(2,i,i)
+       !end do
+       !ro_a=ro_a/NAOAtom(j)
+       !ro_b=ro_b/NAOAtom(j)
+       if(NSpin ==1 ) write(ifu_log,1011)'Atom:',j, kseigenvalues(1,j)
+       if(NSpin ==2 ) write(ifu_log,1011)'Atom:',j, kseigenvalues(2,j)
+       IF (Hamilton) THEN
+       if(NSpin ==1 ) write(ifu_diagham,1012)j,kseigenvalues(1,j),(hd(1,i,j),i=1,NAOrbs)
+       if(NSpin ==2 ) write(ifu_diagham,1012)j,kseigenvalues(2,j),(hd(2,i,j),i=1,NAOrbs)
+       END IF
+       !I1 = I1 + NAOAtom(j)
+    end do
+
+1012 format(4f10.5)
+1011 format(a6,i4,f12.6)
+     !close(ifu_diagham)
+  end subroutine DiagHamiltonian
+  
+    
 
   !******************************!
   ! Mulliken population analysis !
@@ -5037,6 +5964,495 @@ end subroutine CompLocalMu
     if(NSpin==1) TrGS = TrGS * 2.0d0
     DDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
   end function DDOS
+  
+
+  !
+  ! *** Integrand for charge integration on complex contour ***
+  !
+  real function CDOS( E0, R, phi )
+    use constants, only: c_zero, ui, d_pi
+
+    real, intent(in) :: phi, E0, R
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal
+    complex*16 :: TrGS, z
+
+    z = E0 - R*(cos(phi) - ui*sin(phi)) 
+
+    TrGS=c_zero
+    !do ispin=1,NSpin
+       call gplus(z,green,gammar,gammal) ! Depends on ispin.
+       !do i=1,NAOrbs
+       do i=NCDAO1,NCDAO2
+          do j=1,NAOrbs
+             TrGS = TrGS + green(i,j)*SD(j,i)
+          end do
+       end do
+    !end do ! The ispin loop is in WorkEnergy.
+    ! Account for spin degeneracy
+    !if(NSpin==1) TrGS = TrGS * 2.0d0 ! I will call this for each spin component.
+    CDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
+    !print *, "E0=", E0, " CDOS", CDOS
+  end function CDOS
+
+  !
+  ! *** Integrand for charge integration on real contour ***
+  !
+  real function RDOS( E0 )
+    use Cluster, only : hiaorbno, loaorbno
+    use g09Common, only: GetNAtoms
+    !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
+    use constants, only: c_zero, ui, d_pi, d_zero
+
+    real :: DOS
+    real, intent(in) :: E0
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal,SG
+    complex*16 :: TrGS, z
+
+    z=dcmplx(E0)
+    DOS=d_zero
+    !AtomDOS=d_zero
+    do ispin=1,NSpin
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+          !call gplus(z,green,GammaR,GammaL)
+          call glesser(z,green)
+          ! Mulliken DOS 
+          SG = matmul( SD, green )
+          ! computing total DOS
+          DOS=d_zero
+          !AtomDOS=d_zero
+          do j=1,GetNAtoms()
+            do i=LoAOrbNo(j),HiAOrbNo(j)
+              !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+              !DOS=DOS-dimag(SG(i,i))/d_pi
+              DOS=DOS+dimag(SG(i,i))/d_pi
+            end do
+          end do
+    end do
+    ! Account for spin degeneracy
+    !if(NSpin==1) TrGS = TrGS * 2.0d0
+    !if(NSpin==1) DOS = DOS * 2.0d0 ! I do this later.
+    RDOS=DOS
+    !print *, "E0=", E0, " RDOS", RDOS
+  end function RDOS
+
+  !
+  ! *** Integrand for charge integration on complex contour ***
+  !
+  real function CDOSE( E0, R, phi )
+    use constants, only: c_zero, ui, d_pi
+
+    real, intent(in) :: phi, E0, R
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal
+    complex*16 :: TrGS, z
+
+    real :: CDOS
+
+    z = E0 - R*(cos(phi) - ui*sin(phi)) 
+
+    TrGS=c_zero
+    !do ispin=1,NSpin
+       call gplus(z,green,gammar,gammal) ! Depends on ispin.
+       !call glesser(z,green) ! As seen in Stefanucci.
+       !do i=1,NAOrbs
+       do i=NCDAO1,NCDAO2
+          do j=1,NAOrbs
+             TrGS = TrGS + green(i,j)*SD(j,i)
+          end do
+       end do
+    !end do ! The ispin loop is in WorkEnergy.
+    ! Account for spin degeneracy
+    !if(NSpin==1) TrGS = TrGS * 2.0d0 ! I will call this for each spin component.
+    CDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
+!    CDOSE = CDOS*E0
+    !print *, "E0=", E0, " CDOS", CDOS
+    if( NSpin == 2 .and. SPINLOCK )then
+      if( ispin == 1 )CDOSE = CDOS*(E0-shiftup)
+      if( ispin == 2 )CDOSE = CDOS*(E0-shiftdown)
+    else if( NSpin == 2 .and. .not. SPINLOCK )then
+      CDOSE = CDOS*(E0-shift)
+    else if ( NSpin == 1 )then
+      CDOSE = CDOS*(E0-shift)
+    end if
+  end function CDOSE
+
+  !
+  ! *** Integrand for charge integration on real contour ***
+  !
+  real function RDOSE( E0 )
+    use Cluster, only : hiaorbno, loaorbno
+    use g09Common, only: GetNAtoms
+    !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
+    use constants, only: c_zero, ui, d_pi, d_zero
+
+    real :: DOS
+    real, intent(in) :: E0
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal,SG
+    complex*16 :: TrGS, z
+
+    z=dcmplx(E0)
+    DOS=d_zero
+    !AtomDOS=d_zero
+    do ispin=1,NSpin
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+          call gplus(z,green,GammaR,GammaL)
+          !call glesser(z,green) ! As seen in Stefanucci.
+          ! Mulliken DOS 
+          SG = matmul( SD, green )
+          ! computing total DOS
+          DOS=d_zero
+          !AtomDOS=d_zero
+          do j=1,GetNAtoms()
+            do i=LoAOrbNo(j),HiAOrbNo(j)
+              !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+              !DOS=DOS-dimag(SG(i,i))/d_pi
+              DOS=DOS+dimag(SG(i,i))/d_pi
+            end do
+          end do
+    end do
+    ! Account for spin degeneracy
+    !if(NSpin==1) TrGS = TrGS * 2.0d0
+    !if(NSpin==1) DOS = DOS * 2.0d0 ! I do this later.
+!    RDOSE=DOS*E0
+    !print *, "E0=", E0, " RDOS", RDOS
+    if( NSpin == 2 .and. SPINLOCK )then
+      if( ispin == 1 )RDOSE = DOS*(E0-shiftup)
+      if( ispin == 2 )RDOSE = DOS*(E0-shiftdown)
+    else if( NSpin == 2 .and. .not. SPINLOCK )then
+      RDOSE = DOS*(E0-shift)
+    else if ( NSpin == 1 )then
+      RDOSE = DOS*(E0-shift)
+    end if
+  end function RDOSE
+
+  !
+  ! *** Integrand for charge integration on real contour ***
+  !
+  real function RDOSOld( E0 )
+    use Cluster, only : hiaorbno, loaorbno
+    use g09Common, only: GetNAtoms
+    !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
+    use constants, only: c_zero, ui, d_pi, d_zero
+
+    real :: DOS
+    real, intent(in) :: E0
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal,SG
+    complex*16 :: TrGS, z
+
+    !z = E0 - R*(cos(phi) - ui*sin(phi)) 
+    !z = E0 +ui*d_zero
+    !z = E0
+    !z = E0 - Ex
+    !cenergy=dcmplx(energy)
+    !z=dcmplx(E0 - Ex)
+    z=dcmplx(E0)
+    DOS=d_zero
+    do ispin=1,NSpin
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+          !call gplus(z,green,gammar,gammal)
+          call glesser(z,green)
+          ! Mulliken DOS 
+          SG = matmul( SD, green )
+          ! computing total DOS
+
+          !AtomDOS=d_zero
+          !do j=1,GetNAtoms()
+          !  do i=LoAOrbNo(j),HiAOrbNo(j)
+          !   !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+          !   DOS=DOS-dimag(SG(i,i))/d_pi
+          !  end do
+          !end do
+       do i=NCDAO1,NCDAO2
+          do j=1,NAOrbs
+             DOS = DOS-dimag(green(i,j)*SD(j,i))/d_pi
+          end do
+       end do
+    end do
+    !DDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
+    !print *, "E0 = ", E0,"RDOS =", -DIMAG(E0*TrGS)/d_pi
+    !RDOS = -DIMAG(E0*TrGS)/d_pi
+    ! Account for spin degeneracy
+    !if(NSpin==1) TrGS = TrGS * 2.0d0
+    if(NSpin==1) DOS = DOS * 2.0d0 ! I do this later.
+    RDOSOld=DOS
+    !print *, "E0=", E0, " RDOS", RDOS
+  end function RDOSOld
+
+
+!
+  ! *** Integrand for charge integration on real contour ***
+  !
+  real function RDOStimesE( E0 )
+    use Cluster, only : hiaorbno, loaorbno
+    use g09Common, only: GetNAtoms
+    !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
+    use constants, only: c_zero, ui, d_pi, d_zero
+
+    real :: DOS, RDOS
+    real, intent(in) :: E0
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal,SG
+    complex*16 :: TrGS, z
+
+    !z = E0 - R*(cos(phi) - ui*sin(phi)) 
+    !z = E0 +ui*d_zero
+    !z = E0
+    
+    !cenergy=dcmplx(energy)
+    z=dcmplx(E0)
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+          call gplus(z,green,gammar,gammal)
+          !call glesser(z,green)
+
+          ! Mulliken DOS 
+          SG = matmul( SD, green )
+          ! computing total DOS
+          DOS=d_zero
+          !AtomDOS=d_zero
+          do j=1,GetNAtoms()
+            do i=LoAOrbNo(j),HiAOrbNo(j)
+             !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+             DOS=DOS-dimag(SG(i,i))/d_pi
+            end do
+          end do
+
+    !DDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
+    !print *, "E0 = ", E0,"RDOS =", -DIMAG(E0*TrGS)/d_pi
+    !RDOS = -DIMAG(E0*TrGS)/d_pi
+    ! Account for spin degeneracy
+    !if(NSpin==1) TrGS = TrGS * 2.0d0
+    if(NSpin==1) DOS = DOS * 2.0d0 ! DO IT HERE
+    !print *, "E0=", E0, " DOS", DOS
+    RDOS=DOS
+    ! I have to substract the Fermi level.
+    RDOStimesE = RDOS*(E0 - shift)
+    !RDOStimesE = RDOS*(E0)
+  end function RDOStimesE  
+  
+  ! 
+  ! *** Total charge up to energy E ***
+  ! 
+  ! Integrates Green's function along imaginary
+  ! axis so that no lower energy bound is needed.
+  ! Uses routine qromo of Num. Rec. with midpnt
+  ! rule up to some point on the path and midinf 
+  ! rule for the tail.
+  !
+  real function TotEnergyOld( E )
+    use constants, only: d_pi
+   !use parameters, only: ChargeAcc
+    use numeric, only: midpnt, midinf, qromoc
+    implicit none
+    
+    real, intent(in) :: E
+    integer omp_get_thread_num
+    real :: s, q, y0, y1
+    real :: E0, intDOSE, R
+    integer :: i, iwindow, nwindow
+    real :: windowwidth
+
+    print *, "I am in TotEnergy"
+    !    R  = 0.5*(E - EMin)
+    !R  = (E - EMin)
+    !y0 = EMin
+    E0 = E
+    !write(ifu_log,*)omp_get_thread_num(),'in TotCharge',E0
+
+    IntDOSE = 0.0d0
+    ! integration from [0:y0] with midpnt rule
+    ! and from [y0:inf] with midinf rule 
+    ! (assumes integrand decaying approx. ~1/x)
+    !y0=-20.0d0
+    !y0=-25.0d0
+    !y0 = (EMin-E0)/2.0d0
+
+    !y1=E0
+
+
+    print *, "[EMin,EMax] [", EMin,",", EMax,"]"
+
+    windowwidth = 5.0
+    nwindow = floor(abs(EMin/windowwidth))
+
+    do iwindow=1,nwindow
+      !y0=-10.0d0
+      !y1=0.0d0
+      y0 = -windowwidth*(iwindow)
+      y1 = -windowwidth*(iwindow-1)
+      !y1 = E0
+      print *, "Integrating interval nr.", iwindow
+      print *, "Integrating interval [y0,y1] [", y0,",", y1,"]"
+      s = 0.0d0
+      !call qromoc( RDOStimesE,y0,1.d30,s,midinf)
+      !call qromoc( RDOStimesE,y0,0.0d0,s,midpnt)
+      call qromoc( RDOStimesE,y0,y1,s,midpnt)
+      !do i=1,SIZE(s)
+      !  Write(ifu_diagham,*)i,s(i),
+      print *, "Partial Integral =",s
+      IntDOSE = IntDOSE + s
+    print *, "Accumulated Integral =",IntDOSE
+    end do
+
+    y0=EMin
+    y1 = -windowwidth*(nwindow)
+    !y1=-60.0d0
+      print *, "Integrating interval nr.", iwindow
+    print *, "Integrating interval [y0,y1] [", y0,",", y1,"]"
+    s = 0.0d0
+    !call qromoc( RDOStimesE,y0,1.d30,s,midinf)
+    !call qromoc( RDOStimesE,y0,0.0d0,s,midpnt)
+    call qromoc( RDOStimesE,y0,y1,s,midpnt)
+    print *, "Partial Integral =",s
+    IntDOSE = IntDOSE + s
+    print *, "Accumulated Integral =",IntDOSE
+
+    !q = q + LeadBL(WhichLead)%NAOrbs
+
+    !!print *, "Whichlead = ", WhichLead
+    !!PRINT *, " E=", E, "    TotCharge=", q
+
+    !TotCharge = q-ChargeOffSet
+    TotEnergyOld = IntDOSE
+  end function TotEnergyOld
+
+  ! 
+  ! *** Total charge up to energy E ***
+  ! 
+  ! Integrates Green's function along imaginary
+  ! axis so that no lower energy bound is needed.
+  ! Uses routine qromo of Num. Rec. with midpnt
+  ! rule up to some point on the path and midinf 
+  ! rule for the tail.
+  !
+real function FullEnergy( E )
+    use constants, only: d_zero, d_pi
+    use parameters, only: ChargeAcc, biasvoltage
+    use numeric, only: midpnt, midinf, qromoc, gauleg
+    implicit none
+    
+    real, intent(in) :: E
+    integer omp_get_thread_num
+    real :: s, q, y0, y1
+    real :: E0, intDOSE, R
+    integer :: i
+    real :: Chrg
+
+!-------------------------------------------------------------------------------
+    integer, parameter :: nmax = 1023
+    real :: qq, w_j, phi_j
+    integer :: n, n1, n2, j
+    
+    real, dimension(nmax) :: x, w
+!-------------------------------------------------------------------------------
+
+    print *, "I am in FullEnergy"
+
+    Chrg = 0.0d0
+    IntDOSE = 0.0d0
+    q = 0.0d0
+
+
+  !do ispin=1,NSpin
+    !    R  = 0.5*(E - EMin)
+    !R  = (E - EMin)
+    !y0 = EMin
+    !E0 = E
+    !write(ifu_log,*)omp_get_thread_num(),'in TotCharge',E0
+    IntDOSE = 0.0d0
+    ! integration from [0:y0] with midpnt rule
+    ! and from [y0:inf] with midinf rule 
+    ! (assumes integrand decaying approx. ~1/x)
+    !y0=-20.0d0
+    !y0=-25.0d0
+    !y0 = (EMin-E0)/2.0d0
+
+    !y1=E0
+    print *, "ispin", ispin
+    print *, "[EMin,EMax] [", EMin,",", EMax,"]"
+
+    !---------------------------------------------------------------------
+    !----------- BELOW THE BIAS WINDOW -----------------------------------
+    !---------------------------------------------------------------------
+    ! Integration contour parameters:
+    !E0 = 0.5*(E + EMin) ! Non-modified code.
+    !R  = 0.5*(E - EMin) ! Non-modified code.
+    E0 = 0.5*(E-dabs(biasvoltage/2.0) + EMin)
+    R  = 0.5*(E-dabs(biasvoltage/2.0) - EMin)
+    !E0 = 0.5*(d_zero-dabs(biasvoltage/2.0) + EMin)
+    !R  = 0.5*(d_zero-dabs(biasvoltage/2.0) - EMin)
+    ! Computing integral of DOS over 
+    ! complex contour using Gauss-Legendre 
+    ! quadrature
+    n=1
+    do  
+       q = d_zero
+       do j=1,n
+          call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
+          !q = q + w(j)*CDOS( E0, R, x(j) )
+          q = q + w(j)*CDOSE( E0, R, x(j) )
+       end do
+       !print *, "j:",j,"TotCharge", q
+       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*NCDEl ) ) exit  
+       n=2*n+1
+       if( n > nmax )then
+          print *, "TotCharge/gaussian quadrature has not converged after", nmax, " steps."
+          Chrg = 2.0d0*(NCDAO2-NCDAO1+1) - 10.0d0*ChargeAcc*NCDEl
+          return
+       end if
+       qq = q
+    end do
+    !print *, "gaussian quadrature converged after", n, " steps. Error:", abs(q-qq)
+
+    Chrg = q
+    IntDOSE = q
+    print *, "Partial Integral =",IntDOSE
+    !---------------------------------------------------------------------
+    !----------- WITHIN THE BIAS WINDOW ----------------------------------
+    !---------------------------------------------------------------------
+    if (biasvoltage /= 0.d0) then
+      q = d_zero
+      y0 = E-dabs(biasvoltage/2.0)
+      y1 = E+dabs(biasvoltage/2.0)
+      !y0 = d_zero-dabs(biasvoltage/2.0)
+      !y1 = d_zero+dabs(biasvoltage/2.0)
+      !y1 = E0
+      print *, "Integrating interval [y0,y1] [", y0,",", y1,"]"
+      !call qromoc( RDOS,y0,y1,s,midpnt)
+      call qromoc( RDOSE,y0,y1,s,midpnt)
+      print *, "Partial Integral =",s
+      q = q + s
+      print *, "Accumulated Integral =",q
+      
+      Chrg = Chrg + q
+      IntDOSE = IntDOSE + q
+
+    end if
+  !end do ! ispin loop.
+    !q = q + LeadBL(WhichLead)%NAOrbs
+
+    !!print *, "Whichlead = ", WhichLead
+    !!PRINT *, " E=", E, "    TotCharge=", q
+
+    PRINT *, " ispin=", ispin, "    TotCharge=", Chrg
+    PRINT *, " ispin=", ispin, "    TotEnergy=", IntDOSE
+    !PRINT *, " E=", d_zero, "    TotCharge=", q
+    !PRINT *, " E=", d_zero, "    TotEnergy=", IntDOSE
+
+    !TotCharge = q-Charg
+    FullEnergy = IntDOSE
+end function FullEnergy  
 
   ! 
   ! *** Total charge up to energy E, lower bound is EMin ***
@@ -5082,6 +6498,124 @@ end subroutine CompLocalMu
 
     TotCharge = q
   end function TotCharge
+  
+!-------------------------------------------------------------------------------
+  ! This function based on DDOS is the integrand for E*DOS. Written by C. Salgado.
+  real function DDOStimesE0( E0, R, phi )
+!    use Cluster, only : hiaorbno, loaorbno
+!#ifdef G03ROOT
+!    use g03Common, only: GetNAtoms
+!#endif
+!#ifdef 1
+!    use g09Common, only: GetNAtoms
+!#endif
+    use constants, only: c_zero, ui, d_pi
+
+    real, intent(in) :: phi, E0, R
+    real :: DDOS
+    integer :: i, j !!, ispin 
+    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal
+    complex*16 :: TrGS, z
+    complex*16,dimension(NAOrbs,NAOrbs) :: SG
+    real :: DOS
+
+    !z = E0 - R*(cos(phi) - ui*sin(phi)) 
+    z = dcmplx(E0)
+!--------------------------------------------------------------------
+!--------------------------------------------------------------------
+!------ ALTERNATIVE 1 -----------------------------------------------
+    TrGS=c_zero
+    do ispin=1,NSpin
+       call gplus(z,green,gammar,gammal)
+       !do i=1,NAOrbs
+       do i=NCDAO1,NCDAO2
+          do j=1,NAOrbs
+             TrGS = TrGS + green(i,j)*SD(j,i)
+          end do
+       end do
+    end do
+    ! Account for spin degeneracy
+    if(NSpin==1) TrGS = TrGS * 2.0d0
+!--------------------------------------------------------------------
+!--------------------------------------------------------------------
+!------ ALTERNATIVE 2 -----------------------------------------------
+ !   SG = matmul( SD, green )
+ !   ! computing total DOS
+ !   DOS=d_zero
+ !   !AtomDOS=d_zero
+ !   do j=1,GetNAtoms()
+ !     do i=LoAOrbNo(j),HiAOrbNo(j)
+ !       !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+ !       DOS=DOS-dimag(SG(i,i))/d_pi
+ !     end do
+ !   end do
+ !   ! Account for spin degeneracy
+ !   !if(NSpin==1) DOS = DOS * 2.0d0
+!--------------------------------------------------------------------
+!--------------------------------------------------------------------
+    DDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
+    !DDOStimesE0 = DDOS*E0
+    !DDOStimesE0 = DDOS*(E0 - R*(cos(phi)))
+    DDOStimesE0 = DDOS*(E0 - shift)
+  end function DDOStimesE0
+
+  ! 
+  ! *** Total charge up to energy E, lower bound is EMin ***
+  ! 
+  real function IntDDOStimesE( E )
+    use constants, only: d_zero, d_pi
+    use parameters, only: ChargeAcc
+    use numeric, only: gauleg 
+    implicit none
+    
+    real, intent(in) :: E
+
+    integer, parameter :: nmax = 2047
+    
+    real :: q,qq, E0, R, w_j, phi_j
+    real :: intDOSE, intDOSEE
+    integer :: n, n1, n2, j, i
+    
+    real, dimension(nmax) :: x, w
+    
+    print *, "I am in IntDDOStimesE" 
+
+    ! Integration contour parameters:
+    E0 = 0.5*(E + EMin)
+    R  = 0.5*(E - EMin)
+    ! Computing integral of DOS*E over 
+    ! complex contour using Gauss-Legendre 
+    ! quadrature
+    n=1
+    do  
+       !q = d_zero
+       intDOSE = d_zero
+       do j=1,n
+          !call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
+   call gauleg(EMin,E0,x(1:n),w(1:n),n)
+          !q = q + w(j)*DDOS( E0, R, x(j) )
+          intDOSE = intDOSE + w(j)*DDOStimesE0( E0, R, x(j) )
+   print *, "j",j,"intDOSE", intDOSE
+          
+       end do
+       !if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*NCDEl ) ) exit  
+       if( n > 1 .and. (intDOSE == d_zero .or. abs(intDOSE-intDOSEE) < 1.0d-6 ) ) exit 
+       n=2*n+1
+       if( n > nmax )then
+          print *, "IntDDOStimesE/gaussian quadrature has not converged after", nmax, " steps."
+          !TotCharge = 2.0d0*(NCDAO2-NCDAO1+1) - 10.0d0*ChargeAcc*NCDEl
+          IntDDOStimesE = intDOSE
+          return
+       end if
+       !qq = q
+       intDOSEE = intDOSE
+    end do
+    !print *, "gaussian quadrature converged after", n, " steps. Error:", abs(q-qq)
+
+    !TotCharge = q
+    IntDDOStimesE = intDOSE
+  end function IntDDOStimesE
+  !-----------------------------------------------------------  
 
   ! *************************************
   !  Estimates upper/lower energy 
@@ -5112,6 +6646,1135 @@ end subroutine CompLocalMu
     print *, "--------------------------------------------------"
 
   end subroutine FindEnergyBounds
+  
+!----------------------------------------------------------------------------------------------------------------
+!-------------- ADAPTED ROUTINES TO INTEGRATE ENERGY ------------------------------------------------------------
+!----------------------------------------------------------------------------------------------------------------
+
+!ccccccccccccccccccccccccccccccc
+!    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!    second kind                                                               c
+!        eps: Tolerance                                                        c
+!        M:   On input, maximum number of points allowed                       c
+!             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!        F(): External function to be integrated.                              c
+!        CH:  The value of the integral. Interval [-1,1]                       c
+!        IntDOSE:  The value of the energy integral. Interval [-1,1]           c
+!ccccccccccccccccccccccccccccccc
+  !subroutine intchenergy(Er,El,M)
+  real function intchenergy(Er,El,M)
+    use constants, only: ui,d_pi,d_zero
+    use parameters, only: PAcc 
+   
+    real,intent(in) :: Er,El
+    integer,intent(inout) :: M
+    real, dimension(M) :: xs,xcc
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm 
+    complex*16, dimension(NAOrbs,NAOrbs) :: p,q
+    complex*16, dimension(NAOrbs,NAOrbs) :: PDP
+    complex*16 :: E0,Em,Ep
+    integer :: n,i,j,l,k,k1
+    real :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+
+    complex*16, dimension(NAOrbs,NAOrbs) :: gammar, gammal
+    real :: DOS
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/intchenergy"
+      intchenergy = d_zero
+
+      pi=d_pi
+
+! Initializing M, n, S0, C0, CH and p
+
+      M = (M-1)*0.5d0
+      n = 1
+      S0=1
+      C0=0
+      E0=edex3(El,Er,d_zero)
+      !call glesser(E0,green)
+      call gplus(E0,green,gammal,gammar)
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        LocPDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
+        p(i,j) = LocPDOUT(ispin,i,j)
+        DOS = DOS-ui*green(i,j)/(2*pi)
+       enddo
+      enddo
+      intchenergy = intchenergy + DOS*E0
+! Computing the (2n+1) points quadrature formula ...
+! ... updating q, p, C1, S1, C0, S0, s and c
+1     continue
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+         q(i,j) = 2*p(i,j)
+         p(i,j) = 2*LocPDOUT(ispin,i,j)
+       enddo
+      enddo
+      C1 = C0
+      S1 = S0
+      C0 = sqrt((1+C1)*0.5d0)
+      S0 = S1/(2*C0)
+      !s = S0
+      !cc = C0
+      xs(1) = S0
+      xcc(1) = C0
+      do l=1,n,2
+         xs(l+2)=xs(l)*C1+xcc(l)*S1
+         xcc(l+2)=xcc(l)*C1-xs(l)*S1
+      end do
+! ... computing F() at the new points
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+       PDP=d_zero
+!$OMP DO SCHEDULE(STATIC,1)
+      do l=1,n,2
+        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+        Em=edex3(El,Er,-xx)
+        Ep=edex3(El,Er,xx)
+!!$OMP  PARALLEL DEFAULT(SHARED)
+!!$OMP  SECTIONS
+!!$OMP  SECTION
+       !call glesser(Em,greenm)
+       call gplus(Em,greenm,gammal,gammar)
+!!$OMP  SECTION
+       !call glesser(Ep,greenp)
+       call gplus(Ep,greenp,gammal,gammar)
+!!$OMP  END SECTIONS
+!!$OMP  END PARALLEL
+          do i=1,NAOrbs
+           do j=1,NAOrbs
+            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+            DOS=DOS-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+           enddo
+          enddo
+          intchenergy=intchenergy+DOS*(0.5d0*Em+0.5d0*Ep)
+      enddo
+!$OMP END DO
+!$OMP CRITICAL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             LocPDOUT(ispin,i,j)=LocPDOUT(ispin,i,j)+PDP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+
+! ... replacing n by 2n+1
+         n = n + n + 1
+! Stopping?
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        rCHp=dble(LocPDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(LocPDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(LocPDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(LocPDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+       enddo
+      enddo
+! Test for successfullness and integral final value
+      M = 0
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+        rCHp=dble(LocPDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(LocPDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(LocPDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(LocPDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl) M = 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl) M = 1
+        LocPDOUT(ispin,i,j) = 16*LocPDOUT(ispin,i,j)/(3*(n+1))
+        LocPDOUT(ispin,i,j) = LocPDOUT(ispin,i,j)*(El-Er)/2
+      enddo
+      enddo
+      DOS = 16*DOS/(3*(n+1))
+      DOS = DOS*(El-Er)/2
+      intchenergy = 16*intchenergy/(3*(n+1))
+      intchenergy = intchenergy*(El-Er)/2
+      write(ifu_log,'(A51,i4)')' Integration of POUT has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+      return
+    !end subroutine intchenergy
+    end function intchenergy
+
+  !ccccccccccccccccccccccccccccccc
+  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+  !c second kind                                                                  c
+  !c        eps: Tolerance                                                        c
+  !c        b: parameter of the change of variable                                c
+  !c        Em: maximum value of the energy range                                 c
+  !c        M:   On input, maximum number of points allowed                       c
+  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
+  !c        dn:  On output, the density matrix                                    c
+  !c        CH:  On output, the value of the integral (charge density).           c
+  !c             Interval [-1,1]                                                  c
+  !c        IntDOSE:  On output, the value of the integral (energy density).      c
+  !c             Interval [-1,1]                                                  c
+  !c        Eq:  On output, the value of the upper bound of the integral.         c
+  !c        The rest of arguments are neeed by the subrtn. gplus                  c
+  !ccccccccccccccccccccccccccccccc
+  !subroutine intpjenergy(rrr,bi,Emi,M,Eq,intpjIntDOSE)
+  real function intpjenergy(rrr,bi,Emi,M,Eq)
+    use parameters, only: PAcc 
+    use constants, only: d_pi, d_zero, ui
+
+    implicit none
+
+    real,intent(in) :: rrr, bi, Emi, Eq
+    integer,intent(inout) :: M
+    real, dimension(NAOrbs,NAOrbs) :: PDP
+
+    real :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
+    integer :: n,i,j,l,k,k1,chunk,omp_get_thread_num,omp_get_num_threads
+    real, dimension(M) :: xs,xcc
+
+    complex*16 :: E0,E
+    complex*16, dimension(2) :: EE
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn 
+
+    logical :: omp_get_nested
+
+    complex*16, dimension(NAOrbs,NAOrbs) :: SG,gammar, gammal
+    real :: DOS
+
+    !real,intent(out) :: intpjIntDOSE
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/intpjenergy"
+ 
+    a = 1.d0/d_pi
+    b = bi   ! This is input 0.0
+    Em = Emi   ! This is input pi
+    LocPD(ispin,:,:) = d_zero
+    M = (M-1)*0.5
+    n = 1
+    S0 = 1
+    C0 = 0
+    x0 = 0.d0
+    er0 = edex3(Em,b,x0)
+    der0 = 0.5d0*(Em-b)
+    E0 = rrr*exp(ui*er0)-rrr+Eq
+    !call gplus0(E0,green)
+    call gplus(E0,green,gammar,gammal)
+    CH = 0.d0
+    intpjenergy = 0.d0
+    !---------------------------------------------------------------------------
+    !-------------- OLD CODE ---------------------------------------------------
+    !---------------------------------------------------------------------------
+    !do i = 1,NAOrbs
+    !   do j =1,NAOrbs
+    !      LocPD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+    !      CH = CH + LocPD(ispin,i,j)*SD(j,i)
+    !      !intpjIntDOSE = intpjIntDOSE + (real(E0)-shift)*PD(ispin,i,j)*SD(j,i)
+    !      !intpjIntDOSE = intpjIntDOSE + (real(E0))*PD(ispin,i,j)*SD(j,i)
+    !   enddo
+    !enddo
+    !---------------------------------------------------------------------------
+    !-------------- NEW CODE ---------------------------------------------------
+    !---------------------------------------------------------------------------
+    !SG = matmul( SD, green ) ! Not necessary.
+    ! computing total DOS
+    DOS=d_zero
+    !AtomDOS=d_zero
+    do i = 1,NAOrbs
+      do j =1,NAOrbs
+        LocPD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+        CH = CH + LocPD(ispin,i,j)*SD(j,i)
+        !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+        !DOS=DOS-dimag(SD(i,j)*green(j,i))/d_pi
+        DOS=DOS-a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+        
+      end do
+    end do
+    intpjenergy=DOS*E0
+
+    xp = CH
+1   q = xp + xp
+    xp = CH + CH
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(C0+C0)
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
+    !call omp_set_nested(.true.)
+    !call omp_set_num_threads(2)
+    !print *, omp_get_nested()
+    !print *,'--------------------------' 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp)
+    PDP=d_zero
+    !chunk=max(((n+1)/2)/omp_get_num_threads(),1)
+     chunk=1
+!$OMP DO SCHEDULE(STATIC,chunk)
+    do l=1,n,2
+       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
+       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+       erp = 0.5d0*((Em-b)*x + (Em+b))
+       erm = 0.5d0*(-(Em-b)*x + (Em+b))
+       EE(1) = rrr*exp(ui*erp)-rrr+Eq
+       EE(2) = rrr*exp(ui*erm)-rrr+Eq
+! Useful in case of nesting is allowed
+!!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!!$OMP  DO SCHEDULE(DYNAMIC,1)
+       do k=1,2
+          !print *,'l',l,'k',k,omp_get_thread_num()
+          !call gplus0(EE(k),greenn(k,:,:))
+          call gplus(EE(k),greenn(k,:,:),gammar,gammal)
+       end do
+!!$OMP  END DO
+!!$OMP  END PARALLEL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+             !intpjIntDOSE = intpjIntDOSE + (real((EE(1)+EE(2))/2.0)-shift)*PDP(i,j)*SD(j,i)
+             DOS=DOS-a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+          end do
+       end do
+       intpjenergy = intpjenergy + DOS*(0.5d0*real(EE(1)) + 0.5d0*real(EE(2)))
+    end do
+!$OMP END DO
+!$OMP CRITICAL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             LocPD(ispin,i,j)=LocPD(ispin,i,j)+PDP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+    CH = 0.d0
+    !intpjIntDOSE = 0.d0
+    do k=1,NAOrbs
+       ! Non-orthogonal basis: Ch = Tr[P*SD]   
+       do k1=1,NAOrbs
+          CH = CH + LocPD(ispin,k,k1)*SD(k1,k)
+          !intpjIntDOSE = intpjIntDOSE + (real((EE(1)+EE(2))/2.0)-shift)*PD(ispin,k,k1)*SD(k1,k)
+          !intpjIntDOSE = intpjIntDOSE + (real((EE(1)+EE(2))/2.0))*PD(ispin,k,k1)*SD(k1,k)
+       end do
+    enddo
+    ! ... replacing n by 2n+1
+    n = n + n + 1
+    ! Stopping?
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl.and.n.le.M) goto 1
+    !if ((CH-xp)*(CH-xp)*16.gt.(3*(n+1)*abs(CH-q)*PAcc*NCDEl)/1000000.and.n.le.M*1000000) goto 1   ! TOLERANCE REDUCED BY A FACTOR OF 10, TO GET A BETTER ACCURACY.
+    ! Test for successfullness and integral final value
+    M = 0
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl) M = 1
+    !if ((CH-xp)*(CH-xp)*16.gt.(3*(n+1)*abs(CH-q)*PAcc*NCDEl)/1000000) M = 1
+    CH = 16*CH/(3*(n+1))
+    !intpjIntDOSE = 16*intpjIntDOSE/(3*(n+1))
+    DOS = 16*DOS/(3*(n+1))
+    intpjenergy = 16*intpjenergy/(3*(n+1))
+    do k=1,NAOrbs
+       do l=1,NAOrbs
+          LocPD(ispin,k,l) = 16*LocPD(ispin,k,l)/(3*(n+1))
+       enddo
+    enddo
+    write(ifu_log,'(A47,I4)')' Integration of P has needed a max no. of loops=',(((n-1)/2)+1)/2
+    !print*,"intpjenergy IntDOSE = ", intpjIntDOSE
+    return
+  !end subroutine intpjenergy
+  end function intpjenergy
+
+
+!-----------------------------------------------------------------------------------------------
+!----------- LOCALINTCH AND LOCALINTPJ ---------------------------------------------------------
+!-----------------------------------------------------------------------------------------------
+
+!ccccccccccccccccccccccccccccccc
+!    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!    second kind                                                               c
+!        eps: Tolerance                                                        c
+!        M:   On input, maximum number of points allowed                       c
+!             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!        F(): External function to be integrated.                              c
+!        CH:  The value of the integral. Interval [-1,1]                       c
+!ccccccccccccccccccccccccccccccc
+  subroutine localintch(Er,El,M)
+
+    use constants, only: ui,d_pi,d_zero
+    use parameters, only: PAcc 
+   
+    use cluster, only: LoAOrbNo, HiAOrbNo,NAOAtom
+    use g09Common, only: GetNAtoms, GetAtmChg
+
+    real,intent(in) :: Er,El
+    integer,intent(inout) :: M
+    real, dimension(M) :: xs,xcc
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm
+    complex*16, dimension(NAOrbs,NAOrbs) :: p,q
+    complex*16, dimension(NAOrbs,NAOrbs) :: PDP
+    complex*16 :: E0,Em,Ep
+    integer :: n,i,j,l,k,k1
+    real :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+
+    complex*16, dimension(NAOrbs,NAOrbs) :: gammar, gammal
+
+    !integer,intent(in) :: iatom
+
+    !print*,"I am in intch" 
+    !write(ifu_log,*)'-------------------------------------'
+    !write(ifu_log,*)'------- I am in localintch ----------'
+    !write(ifu_log,*)'-------------------------------------'
+
+      pi=d_pi
+
+! Initializing M, n, S0, C0, CH and p
+
+      M = (M-1)*0.5d0
+      n = 1
+      S0=1
+      C0=0
+      E0=edex3(El,Er,d_zero)
+      !call glesser(E0,green)
+      call gplus(E0,green,gammar,gammal)
+      !do i=1,NAOrbs
+      do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+       do j=1,NAOrbs
+        LocPDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
+        p(i,j) = LocPDOUT(ispin,i,j)
+       enddo
+      enddo
+! Computing the (2n+1) points quadrature formula ...
+! ... updating q, p, C1, S1, C0, S0, s and c
+1     continue
+      !do i=1,NAOrbs
+      do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+       do j=1,NAOrbs
+         q(i,j) = 2*p(i,j)
+         p(i,j) = 2*LocPDOUT(ispin,i,j)
+       enddo
+      enddo
+      C1 = C0
+      S1 = S0
+      C0 = sqrt((1+C1)*0.5d0)
+      S0 = S1/(2*C0)
+      !s = S0
+      !cc = C0
+      xs(1) = S0
+      xcc(1) = C0
+      do l=1,n,2
+         xs(l+2)=xs(l)*C1+xcc(l)*S1
+         xcc(l+2)=xcc(l)*C1-xs(l)*S1
+      end do
+! ... computing F() at the new points
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+       PDP=d_zero
+!$OMP DO SCHEDULE(STATIC,1)
+      do l=1,n,2
+        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+        Em=edex3(El,Er,-xx)
+        Ep=edex3(El,Er,xx)
+!!$OMP  PARALLEL DEFAULT(SHARED)
+!!$OMP  SECTIONS
+!!$OMP  SECTION
+       !call glesser(Em,greenm)
+       call gplus(Em,green,gammar,gammal)
+!!$OMP  SECTION
+       !call glesser(Ep,greenp)
+       call gplus(Ep,green,gammar,gammal)
+!!$OMP  END SECTIONS
+!!$OMP  END PARALLEL
+          !do i=1,NAOrbs
+          do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+           do j=1,NAOrbs
+            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+           enddo
+          enddo
+      enddo
+!$OMP END DO
+!$OMP CRITICAL
+       !do i = 1,NAOrbs
+       do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+          do j = 1,NAOrbs
+             LocPDOUT(ispin,i,j)=LocPDOUT(ispin,i,j)+PDP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+
+! ... replacing n by 2n+1
+         n = n + n + 1
+! Stopping?
+      !do i=1,NAOrbs
+      do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+       do j=1,NAOrbs
+        rCHp=dble(LocPDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(LocPDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(LocPDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(LocPDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+        !if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*(GetAtmChg(spinatom)).and.n.le.M) goto 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+        !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*(GetAtmChg(spinatom)).and.n.le.M) goto 1
+       enddo
+      enddo
+! Test for successfullness and integral final value
+      M = 0
+      !do i=1,NAOrbs
+      do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+      do j=1,NAOrbs
+        rCHp=dble(LocPDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(LocPDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(LocPDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(LocPDOUT(ispin,i,j)-q(i,j))
+        !if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl) M = 1
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*(GetAtmChg(spinatom))) M = 1
+        !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl) M = 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*(GetAtmChg(spinatom))) M = 1
+        LocPDOUT(ispin,i,j) = 16*LocPDOUT(ispin,i,j)/(3*(n+1))
+        LocPDOUT(ispin,i,j) = LocPDOUT(ispin,i,j)*(El-Er)/2
+      enddo
+      enddo
+      write(ifu_log,'(A51,i4)')' Integration of POUT has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+      return
+    end subroutine localintch
+
+  !ccccccccccccccccccccccccccccccc
+  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+  !c second kind                                                                  c
+  !c        eps: Tolerance                                                        c
+  !c        b: parameter of the change of variable                                c
+  !c        Em: maximum value of the energy range                                 c
+  !c        M:   On input, maximum number of points allowed                       c
+  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
+  !c        dn:  On output, the density matrix                                    c
+  !c        CH:  On output, the value of the integral (charge density).           c
+  !c             Interval [-1,1]                                                  c
+  !c        Eq:  On output, the value of the upper bound of the integral.         c
+  !c        The rest of arguments are neeed by the subrtn. gplus                  c
+  !ccccccccccccccccccccccccccccccc
+  subroutine localintpj(rrr,bi,Emi,M,Eq)
+    use parameters, only: PAcc 
+    use constants, only: d_pi, d_zero, ui
+
+    use cluster, only: LoAOrbNo, HiAOrbNo,NAOAtom
+    use g09Common, only: GetNAtoms, GetAtmChg
+
+
+    implicit none
+    real,intent(in) :: rrr, bi, Emi, Eq
+    integer,intent(inout) :: M
+    real, dimension(NAOrbs,NAOrbs) :: PDP
+
+    real :: a,b,Em,S0,c0,x0,er0,der0,CH,xp,q,c1,s1,s,cc,x,erp,erm
+    integer :: n,i,j,l,k,k1,chunk,omp_get_thread_num,omp_get_num_threads
+    real, dimension(M) :: xs,xcc
+
+    complex*16 :: E0,E
+    complex*16, dimension(2) :: EE
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn 
+
+    complex*16, dimension(NAOrbs,NAOrbs) :: gammar, gammal
+
+    logical :: omp_get_nested
+
+    !integer,intent(in) :: iatom
+
+    !print*,"I am in intpj" 
+    !write(ifu_log,*)'-------------------------------------'
+    !write(ifu_log,*)'------- I am in localintpj ----------'
+    !write(ifu_log,*)'-------------------------------------'
+ 
+    a = 1.d0/d_pi
+    b = bi
+    Em = Emi
+    LocPD(ispin,:,:) = d_zero
+    M = (M-1)*0.5
+    n = 1
+    S0 = 1
+    C0 = 0
+    x0 = 0.d0
+    er0 = edex3(Em,b,x0)
+    der0 = 0.5d0*(Em-b)
+    E0 = rrr*exp(ui*er0)-rrr+Eq
+    
+
+    !--------------------------------------------------------------------------------
+    !------------- ORIGINAL CODE ----------------------------------------------------
+    !--------------------------------------------------------------------------------
+    !call gplus0(E0,green)  
+    !CH = 0.d0
+    !do i = 1,NAOrbs
+    !   do j =1,NAOrbs
+    !      PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+    !      CH = CH + PD(ispin,i,j)*SD(j,i)
+    !   enddo
+    !enddo
+    !do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+    !   do j =1,NAOrbs
+    !      PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+    !      CH = CH + PD(ispin,i,j)*SD(j,i)
+    !   enddo
+    !enddo
+    !-------------------------------------------------------------------------------
+    !-------------------------------------------------------------------------------
+
+    !-------------------------------------------------------------------------------
+    !------------ MODIFIED CODE ----------------------------------------------------
+    !-------------------------------------------------------------------------------
+    !cenergy=dcmplx(energy)
+
+    !*********************************************************************
+    !* Evaluation of the retarded "Green" function and coupling matrices *
+    !*********************************************************************
+    !call gplus(cenergy,Green,GammaR,GammaL)
+    call gplus(E0,green,gammar,gammal)
+    !call gplus0(E0,green)
+    ! Mulliken DOS 
+!$O!MP CRITICAL
+    !SG = matmul( SD, green ) !Not necessary
+    ! computing total DOS
+    !DOS=d_zero
+    !AtomDOS=d_zero
+    !do j=1,GetNAtoms()
+    !  do i=LoAOrbNo(j),HiAOrbNo(j)
+    !    AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+    !    DOS=DOS-dimag(SG(i,i))/d_pi
+    !  end do
+    !end do
+    CH = 0.d0
+    do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom)
+       do j =1,NAOrbs 
+          LocPD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+          CH = CH + LocPD(ispin,i,j)*SD(j,i)
+      end do
+    end do
+    !-------------------------------------------------------------------------------
+    !-------------------------------------------------------------------------------
+
+    xp = CH
+1   q = xp + xp
+    xp = CH + CH
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(C0+C0)
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
+    !call omp_set_nested(.true.)
+    !call omp_set_num_threads(2)
+    !print *, omp_get_nested()
+    !print *,'--------------------------' 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp)
+    PDP=d_zero
+    !chunk=max(((n+1)/2)/omp_get_num_threads(),1)
+     chunk=1
+!$OMP DO SCHEDULE(STATIC,chunk)
+    do l=1,n,2
+       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
+       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+       erp = 0.5d0*((Em-b)*x + (Em+b))
+       erm = 0.5d0*(-(Em-b)*x + (Em+b))
+       EE(1) = rrr*exp(ui*erp)-rrr+Eq
+       EE(2) = rrr*exp(ui*erm)-rrr+Eq
+! Useful in case of nesting is allowed
+!!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!!$OMP  DO SCHEDULE(DYNAMIC,1)
+       do k=1,2
+          !print *,'l',l,'k',k,omp_get_thread_num()
+          !call gplus0(EE(k),greenn(k,:,:))
+          call gplus(EE(k),greenn(k,:,:),gammar,gammal)
+       end do
+!!$OMP  END DO
+!!$OMP  END PARALLEL
+       !do i = 1,NAOrbs
+       do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+          do j = 1,NAOrbs
+             PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+          end do
+       end do
+
+    end do
+!$OMP END DO
+!$OMP CRITICAL
+       !do i = 1,NAOrbs
+       do i=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+          do j = 1,NAOrbs
+             LocPD(ispin,i,j)=LocPD(ispin,i,j)+PDP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+    CH = 0.d0
+    !do k=1,NAOrbs
+    do k=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+       ! Non-orthogonal basis: Ch = Tr[P*SD]   
+       do k1=1,NAOrbs
+          CH = CH + LocPD(ispin,k,k1)*SD(k1,k)
+       end do
+    enddo
+    ! ... replacing n by 2n+1
+    n = n + n + 1
+    ! Stopping?
+    !if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl.and.n.le.M) goto 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*(GetAtmChg(spinatom)).and.n.le.M) goto 1 
+    ! Test for successfullness and integral final value
+    M = 0
+    !if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl) M = 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*(GetAtmChg(spinatom))) M = 1 
+    CH = 16*CH/(3*(n+1))
+    !do k=1,NAOrbs
+    do k=LoAOrbNo(spinatom), HiAOrbNo(spinatom) 
+       do l=1,NAOrbs
+          LocPD(ispin,k,l) = 16*LocPD(ispin,k,l)/(3*(n+1))
+       enddo
+    enddo
+    write(ifu_log,'(A47,I4)')' Integration of P has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+    return
+  end subroutine localintpj
+
+!-----------------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------------
+
+
+
+!----------------------------------------------------------------------------------------------------------------
+
+!ccccccccccccccccccccccccccccccc
+!    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!    second kind                                                               c
+!        eps: Tolerance                                                        c
+!        M:   On input, maximum number of points allowed                       c
+!             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!        F(): External function to be integrated.                              c
+!        CH:  The value of the integral. Interval [-1,1]                       c
+!ccccccccccccccccccccccccccccccc
+  subroutine intch(Er,El,M)
+
+    use constants, only: ui,d_pi,d_zero
+    use parameters, only: PAcc 
+    use omp_lib
+   
+    implicit none
+    real,intent(in) :: Er,El
+    integer,intent(inout) :: M
+    real, dimension(M) :: xs,xcc
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm 
+    complex*16, dimension(NAOrbs,NAOrbs) :: p,q
+    complex*16, dimension(NAOrbs,NAOrbs) :: PDP
+    complex*16 :: E0,Em,Ep
+    integer :: n,i,j,l,k,k1
+    real :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+
+      if(DebugDev)Write(*,'(A)')"ENTERED Device/intch"
+
+      pi=d_pi
+
+! Initializing M, n, S0, C0, CH and p
+
+      M = (M-1)*0.5d0
+      n = 1
+      S0=1
+      C0=0
+      E0=edex3(El,Er,d_zero)
+      call glesser(E0,green)
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
+        p(i,j) = PDOUT(ispin,i,j)
+       enddo
+      enddo
+! Computing the (2n+1) points quadrature formula ...
+! ... updating q, p, C1, S1, C0, S0, s and c
+1     continue
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+         q(i,j) = 2*p(i,j)
+         p(i,j) = 2*PDOUT(ispin,i,j)
+       enddo
+      enddo
+      C1 = C0
+      S1 = S0
+      C0 = sqrt((1+C1)*0.5d0)
+      S0 = S1/(2*C0)
+      !s = S0
+      !cc = C0
+      xs(1) = S0
+      xcc(1) = C0
+      do l=1,n,2
+         xs(l+2)=xs(l)*C1+xcc(l)*S1
+         xcc(l+2)=xcc(l)*C1-xs(l)*S1
+      end do
+! ... computing F() at the new points
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+       PDP=d_zero
+!$OMP DO SCHEDULE(STATIC,1)
+      do l=1,n,2
+        if(DebugDev)Write(*,'(A,I4)')"Device/intch l = ",l
+        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+        Em=edex3(El,Er,-xx)
+        Ep=edex3(El,Er,xx)
+!!$OMP  PARALLEL DEFAULT(SHARED)
+!!$OMP  SECTIONS
+!!$OMP  SECTION
+       call glesser(Em,greenm)
+!!$OMP  SECTION
+       call glesser(Ep,greenp)
+!!$OMP  END SECTIONS
+!!$OMP  END PARALLEL
+          do i=1,NAOrbs
+           do j=1,NAOrbs
+            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+           enddo
+          enddo
+      enddo
+!$OMP END DO
+!$OMP CRITICAL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PDOUT(ispin,i,j)=PDOUT(ispin,i,j)+PDP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+
+! ... replacing n by 2n+1
+         n = n + n + 1
+! Stopping?
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+       enddo
+      enddo
+! Test for successfullness and integral final value
+      M = 0
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl) M = 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl) M = 1
+        PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
+        PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
+      enddo
+      enddo
+      write(ifu_log,'(A51,i4)')' Integration of POUT has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+      return
+    end subroutine intch
+
+!ccccccccccccccccccccccccccccccc
+!    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!    second kind                                                               c
+!        eps: Tolerance                                                        c
+!        M:   On input, maximum number of points allowed                       c
+!             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!        F(): External function to be integrated.                              c
+!        CH:  The value of the integral. Interval [-1,1]                       c
+!ccccccccccccccccccccccccccccccc
+  subroutine intchHW(Er,El,M)
+
+    use constants, only: ui,d_pi,d_zero
+    use parameters, only: PAcc
+    use omp_lib
+
+    implicit none
+    real,intent(in) :: Er,El
+    integer,intent(inout) :: M
+    real, dimension(M) :: xs,xcc
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm
+    complex*16, dimension(NAOrbs,NAOrbs) :: p,q
+    complex*16, dimension(NAOrbs,NAOrbs) :: PDP, HWP ! HWP ADDED FOR FOCK PULAY FORCES INTEGRATION.
+    complex*16 :: E0,Em,Ep
+    integer :: n,i,j,l,k,k1
+    real :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+
+      pi=d_pi
+
+! Initializing M, n, S0, C0, CH and p
+
+      M = (M-1)*0.5d0
+      n = 1
+      S0=1
+      C0=0
+      E0=edex3(El,Er,d_zero)
+      call glesser(E0,green)
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
+        HWOUT(ispin,i,j) = -DREAL(E0)*ui*green(i,j)/(2*pi)
+        p(i,j) = PDOUT(ispin,i,j)
+       enddo
+      enddo
+! Computing the (2n+1) points quadrature formula ...
+! ... updating q, p, C1, S1, C0, S0, s and c
+1     continue
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+         q(i,j) = 2*p(i,j)
+         p(i,j) = 2*PDOUT(ispin,i,j)
+       enddo
+      enddo
+      C1 = C0
+      S1 = S0
+      C0 = sqrt((1+C1)*0.5d0)
+      S0 = S1/(2*C0)
+      !s = S0
+      !cc = C0
+      xs(1) = S0
+      xcc(1) = C0
+      do l=1,n,2
+         xs(l+2)=xs(l)*C1+xcc(l)*S1
+         xcc(l+2)=xcc(l)*C1-xs(l)*S1
+      end do
+! ... computing F() at the new points
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+       PDP=d_zero
+       HWP=d_zero
+!$OMP DO SCHEDULE(STATIC,1)
+      do l=1,n,2
+        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+        Em=edex3(El,Er,-xx)
+        Ep=edex3(El,Er,xx)
+!!$OMP  PARALLEL DEFAULT(SHARED)
+!!$OMP  SECTIONS
+!!$OMP  SECTION
+       call glesser(Em,greenm)
+!!$OMP  SECTION
+       call glesser(Ep,greenp)
+!!$OMP  END SECTIONS
+!!$OMP  END PARALLEL
+          do i=1,NAOrbs
+           do j=1,NAOrbs
+            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+            HWP(i,j) = HWP(i,j)-ui*(DREAL(Em)*greenm(i,j)+DREAL(Ep)*greenp(i,j))*xs(l)**4/(2*pi)
+           enddo
+          enddo
+      enddo
+!$OMP END DO
+!$OMP CRITICAL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PDOUT(ispin,i,j)=PDOUT(ispin,i,j)+PDP(i,j)
+             HWOUT(ispin,i,j)=HWOUT(ispin,i,j)+HWP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+
+! ... replacing n by 2n+1
+         n = n + n + 1
+! Stopping?
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+       enddo
+      enddo
+! Test for successfullness and integral final value
+      M = 0
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl) M = 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl) M = 1
+        PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
+        HWOUT(ispin,i,j) = 16*HWOUT(ispin,i,j)/(3*(n+1))
+        PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
+        HWOUT(ispin,i,j) = HWOUT(ispin,i,j)*(El-Er)/2
+      enddo
+      enddo
+      write(ifu_log,'(A51,i4)')' Integration of POUT/HWOUT has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+      return
+    end subroutine intchHW
+
+  !ccccccccccccccccccccccccccccccc
+!    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!    second kind                                                               c
+!        eps: Tolerance                                                        c
+!        M:   On input, maximum number of points allowed                       c
+!             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!        F(): External function to be integrated.                              c
+!        CH:  The value of the integral. Interval [-1,1]                       c
+!ccccccccccccccccccccccccccccccc
+  subroutine intchCGibbsY(Er,El,M)
+
+    use constants, only: ui,d_pi,d_zero
+    use parameters, only: PAcc
+    use omp_lib
+
+    implicit none
+    real,intent(in) :: Er,El
+    integer,intent(inout) :: M
+    real, dimension(M) :: xs,xcc
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm
+    complex*16, dimension(NAOrbs,NAOrbs) :: p,q
+    complex*16, dimension(NAOrbs,NAOrbs) :: PDP, HWP, CGibbsYP, CGibbsYPm, CGibbsYPp, CGibbsYPr  ! HWP ADDED FOR FOCK PULAY FORCES INTEGRATION.
+    complex*16, dimension(NAOrbs,NAOrbs) :: CGibbsYKernel1P, CGibbsYKernel1Pm, CGibbsYKernel1Pp, CGibbsYKernel1Pr
+    complex*16, dimension(NAOrbs,NAOrbs) :: CGibbsYKernel2P, CGibbsYKernel2Pm, CGibbsYKernel2Pp, CGibbsYKernel2Pr
+!    complex*16, dimension(NAOrbs,NAOrbs) :: GibbsYL, GibbsYR
+    complex*16 :: E0,Em,Ep
+    integer :: n,i,j,l,k,k1
+    real :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+
+    write(ifu_log,'(A51,i4)')' ENTERING intchCGibbsY(Er,El,M)'
+
+      pi=d_pi
+
+! Initializing M, n, S0, C0, CH and p
+
+      M = (M-1)*0.5d0
+      n = 1
+      S0=1
+      C0=0
+      E0=edex3(El,Er,d_zero)
+!      call glesser(E0,green) ! COMMENTED ON 2018-04-23 BECAUSE WITH NEW CompCGibbsY(E0,green,GibbsYL,GibbsYR) I ALREADY COMPUTE green.
+!      call CompCGibbsY(greenm,CGibbsYPr)
+      call CompCGibbsY(E0,green,CGibbsYPr,CGibbsYKernel1Pr,CGibbsYKernel2Pr) ! ADDED ON 2018-04-23 IT ALSO PROVIDES green BUT WITH THE ADDITIONAL GibbsYL, GibbsYR.
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        PDOUTGIBBS(ispin,i,j) = -ui*green(i,j)/(2*pi)
+!        YOUT(ispin,i,j) = -DREAL(E0)*ui*green(i,j)/(2*pi)
+!        CGibbsY(ispin,i,j) = CGibbsYPr(i,j) ! COMMENTED ON 2018-04-23 BECAUSE WITH NEW CompCGibbsY(E0,green,GibbsYL,GibbsYR) I ALREADY COMPUTE green.
+        CGibbsY(ispin,i,j) = CGibbsYPr(i,j) !GibbsYL(i,j)+GibbsYR(i,j)
+        CGibbsYKernel1(ispin,i,j) = CGibbsYKernel1Pr(i,j)
+        CGibbsYKernel2(ispin,i,j) = CGibbsYKernel2Pr(i,j)
+        p(i,j) = PDOUTGIBBS(ispin,i,j)
+       enddo
+      enddo
+! Computing the (2n+1) points quadrature formula ...
+! ... updating q, p, C1, S1, C0, S0, s and c
+1     continue
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+         q(i,j) = 2*p(i,j)
+         p(i,j) = 2*PDOUTGIBBS(ispin,i,j)
+       enddo
+      enddo
+      C1 = C0
+      S1 = S0
+      C0 = sqrt((1+C1)*0.5d0)
+      S0 = S1/(2*C0)
+      !s = S0
+      !cc = C0
+      xs(1) = S0
+      xcc(1) = C0
+      do l=1,n,2
+         xs(l+2)=xs(l)*C1+xcc(l)*S1
+         xcc(l+2)=xcc(l)*C1-xs(l)*S1
+      end do
+! ... computing F() at the new points
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+       PDP=d_zero
+       HWP=d_zero
+       CGibbsYP=d_zero
+       CGibbsYKernel1P=d_zero
+       CGibbsYKernel2P=d_zero
+!$OMP DO SCHEDULE(STATIC,1)
+      do l=1,n,2
+        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+        Em=edex3(El,Er,-xx)
+        Ep=edex3(El,Er,xx)
+!!$OMP  PARALLEL DEFAULT(SHARED)
+!!$OMP  SECTIONS
+!!$OMP  SECTION
+!       call glesser(Em,greenm) ! COMMENTED ON 2018-04-23 BECAUSE WITH NEW CompCGibbsY(E0,green,GibbsYL,GibbsYR) I ALREADY COMPUTE green.
+       call CompCGibbsY(Em,greenm,CGibbsYPm,CGibbsYKernel1Pm,CGibbsYKernel2Pm)
+!!$OMP  SECTION
+!       call glesser(Ep,greenp) ! COMMENTED ON 2018-04-23 BECAUSE WITH NEW CompCGibbsY(E0,green,GibbsYL,GibbsYR) I ALREADY COMPUTE green.
+       call CompCGibbsY(Ep,greenp,CGibbsYPp,CGibbsYKernel1Pp,CGibbsYKernel2Pp)
+!!$OMP  END SECTIONS
+!!$OMP  END PARALLEL
+!       call CompCGibbsY(greenm,CGibbsYPm)
+!       call CompCGibbsY(greenp,CGibbsYPp)
+          do i=1,NAOrbs
+           do j=1,NAOrbs
+            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+!            HWP(i,j) = HWP(i,j)-ui*(DREAL(Em)*greenm(i,j)+DREAL(Ep)*greenp(i,j))*xs(l)**4/(2*pi)
+!            CGibbsYP(i,j) = CGibbsYP(i,j) + CGibbsYPm(i,j) + CGibbsYPp(i,j)
+            CGibbsYP(i,j) = CGibbsYP(i,j)-(CGibbsYPm(i,j)+CGibbsYPp(i,j))*xs(l)**4/(2*pi)
+            CGibbsYKernel1P(i,j) = CGibbsYKernel1P(i,j)-(CGibbsYKernel1Pm(i,j)+CGibbsYKernel1Pp(i,j))*xs(l)**4/(2*pi)
+            CGibbsYKernel2P(i,j) = CGibbsYKernel2P(i,j)-(CGibbsYKernel2Pm(i,j)+CGibbsYKernel2Pp(i,j))*xs(l)**4/(2*pi)
+           enddo
+          enddo
+
+      enddo
+!$OMP END DO
+!$OMP CRITICAL
+       ! FILLING PDOUT AND HWOUT WAS ALREADY DONE IN intchHW BUT NOW WE ARE FILLING PDOUTGIBBS AND CGibbsY.
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PDOUTGIBBS(ispin,i,j)=PDOUTGIBBS(ispin,i,j)+PDP(i,j)
+!             HWOUT(ispin,i,j)=HWOUT(ispin,i,j)+HWP(i,j)
+             CGibbsY(ispin,i,j)=CGibbsY(ispin,i,j)+CGibbsYP(i,j)
+             CGibbsYKernel1(ispin,i,j)=CGibbsYKernel1(ispin,i,j)+CGibbsYKernel1P(i,j)
+             CGibbsYKernel2(ispin,i,j)=CGibbsYKernel2(ispin,i,j)+CGibbsYKernel2P(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+
+! ... replacing n by 2n+1
+         n = n + n + 1
+! Stopping?
+      do i=1,NAOrbs
+       do j=1,NAOrbs
+        rCHp=dble(PDOUTGIBBS(ispin,i,j)-p(i,j))
+        aCHp=dimag(PDOUTGIBBS(ispin,i,j)-p(i,j))
+        rCHq=dble(PDOUTGIBBS(ispin,i,j)-q(i,j))
+        aCHq=dimag(PDOUTGIBBS(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl.and.n.le.M) goto 1
+       enddo
+      enddo
+! Test for successfullness and integral final value
+      M = 0
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+        rCHp=dble(PDOUTGIBBS(ispin,i,j)-p(i,j))
+        aCHp=dimag(PDOUTGIBBS(ispin,i,j)-p(i,j))
+        rCHq=dble(PDOUTGIBBS(ispin,i,j)-q(i,j))
+        aCHq=dimag(PDOUTGIBBS(ispin,i,j)-q(i,j))
+        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc*NCDEl) M = 1
+        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc*NCDEl) M = 1
+        PDOUTGIBBS(ispin,i,j) = 16*PDOUTGIBBS(ispin,i,j)/(3*(n+1))
+!        HWOUT(ispin,i,j) = 16*HWOUT(ispin,i,j)/(3*(n+1))
+        CGibbsY(ispin,i,j) = 16*CGibbsY(ispin,i,j)/(3*(n+1))
+        CGibbsYKernel1(ispin,i,j) = 16*CGibbsYKernel1(ispin,i,j)/(3*(n+1))
+        CGibbsYKernel2(ispin,i,j) = 16*CGibbsYKernel2(ispin,i,j)/(3*(n+1))
+        PDOUTGIBBS(ispin,i,j) = PDOUTGIBBS(ispin,i,j)*(El-Er)/2
+!        HWOUT(ispin,i,j) = HWOUT(ispin,i,j)*(El-Er)/2
+        CGibbsY(ispin,i,j) = CGibbsY(ispin,i,j)*(El-Er)/2
+        CGibbsYKernel1(ispin,i,j) = CGibbsYKernel1(ispin,i,j)*(El-Er)/2
+        CGibbsYKernel2(ispin,i,j) = CGibbsYKernel2(ispin,i,j)*(El-Er)/2
+      enddo
+      enddo
+      write(ifu_log,'(A51,i4)')' Integration of POUTGIBBS/CGibbsY has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+      return
+    end subroutine intchCGibbsY  
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
@@ -5650,6 +8313,306 @@ end subroutine CompLocalMu
 
     return
   end subroutine IntCompPlane_SOC
+  
+  !ccccccccccccccccccccccccccccccc
+  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+  !c second kind                                                                  c
+  !c        eps: Tolerance                                                        c
+  !c        b: parameter of the change of variable                                c
+  !c        Em: maximum value of the energy range                                 c
+  !c        M:   On input, maximum number of points allowed                       c
+  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
+  !c        dn:  On output, the density matrix                                    c
+  !c        CH:  On output, the value of the integral (charge density).           c
+  !c             Interval [-1,1]                                                  c
+  !c        Eq:  On output, the value of the upper bound of the integral.         c
+  !c        The rest of arguments are neeed by the subrtn. gplus                  c
+  !ccccccccccccccccccccccccccccccc
+  subroutine intpjHW(rrr,bi,Emi,M,Eq)
+    use parameters, only: PAcc
+    use constants, only: d_pi, d_zero, ui
+    use omp_lib
+
+    implicit none
+
+    real,intent(in) :: rrr, bi, Emi, Eq
+    integer,intent(inout) :: M
+    real, dimension(NAOrbs,NAOrbs) :: PDP, HWP ! HWP ADDED FOR FOCK PULAY FORCES INTEGRATION.
+
+    real :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
+    integer :: n,i,j,l,k,k1,chunk
+    real, dimension(M) :: xs,xcc
+
+    complex*16 :: E0,E
+    complex*16, dimension(2) :: EE
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/intpjHW"
+
+    !logical :: omp_get_nested
+
+    !call omp_set_nested(.true.)
+    !call mkl_set_dynamic(.false.)
+    a = 1.d0/d_pi
+    b = bi ! bi is 0.0d0
+    Em = Emi ! Emi is d_pi
+    PD(ispin,:,:) = d_zero
+    HW(ispin,:,:) = d_zero
+    M = (M-1)*0.5
+    n = 1
+    S0 = 1
+    C0 = 0
+    x0 = 0.d0
+    er0 = edex3(Em,b,x0) ! Em is d_pi inherited from Emi and b is 0.0d0 inherited from bi.
+    ! er0 seems to be d_pi/2 because: edex3 = 0.5d0*((Em-b)*x + (Em+b)) = 0.5d0*((Em-0.0)*0.0 + (Em+0.0))
+    der0 = 0.5d0*(Em-b)
+    E0 = rrr*exp(ui*er0)-rrr+Eq ! rrr = 0.5*abs(EMin)+10.0d0;
+    call gplus0(E0,green)
+    CH = 0.d0
+    do i = 1,NAOrbs
+       do j =1,NAOrbs
+          PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+          HW(ispin,i,j)=DREAL(E0)*PD(ispin,i,j)
+          CH = CH + PD(ispin,i,j)*SD(j,i)
+       enddo
+    enddo
+
+    xp = CH
+1   q = xp + xp
+    xp = CH + CH
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(C0+C0)
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
+    !call omp_set_num_threads(2)
+    !print *, omp_get_nested()
+    !print *,'--------------------------'
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp)
+    PDP=d_zero
+    HWP=d_zero
+    !chunk=max(((n+1)/2)/omp_get_num_threads(),1)
+     chunk=1
+!$OMP DO SCHEDULE(STATIC,chunk)
+    do l=1,n,2
+       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
+       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+       erp = 0.5d0*((Em-b)*x + (Em+b))
+       erm = 0.5d0*(-(Em-b)*x + (Em+b))
+       EE(1) = rrr*exp(ui*erp)-rrr+Eq
+       EE(2) = rrr*exp(ui*erm)-rrr+Eq
+! Useful in case of nesting is allowed
+!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!$OMP  DO SCHEDULE(STATIC,1)
+       do k=1,2
+          !print *,'l',l,'k',k,omp_get_thread_num()
+          call gplus0(EE(k),greenn(k,:,:))
+       end do
+!$OMP  END DO
+!$OMP  END PARALLEL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+             HWP(i,j) = HWP(i,j) + a*(DREAL(EE(1))*dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +DREAL(EE(2))*dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+          end do
+       end do
+    end do
+!$OMP END DO
+!$OMP CRITICAL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PD(ispin,i,j)=PD(ispin,i,j)+PDP(i,j)
+             HW(ispin,i,j)=HW(ispin,i,j)+HWP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+    CH = 0.d0
+    do k=1,NAOrbs
+       ! Non-orthogonal basis: Ch = Tr[P*SD]
+       do k1=1,NAOrbs
+          CH = CH + PD(ispin,k,k1)*SD(k1,k)
+       end do
+    enddo
+    ! ... replacing n by 2n+1
+    n = n + n + 1
+    ! Stopping?
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl.and.n.le.M) goto 1
+    ! Test for successfullness and integral final value
+    M = 0
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl) M = 1
+    CH = 16*CH/(3*(n+1))
+    do k=1,NAOrbs
+       do l=1,NAOrbs
+          PD(ispin,k,l) = 16*PD(ispin,k,l)/(3*(n+1))
+          HW(ispin,k,l) = DREAL(E0)*PD(ispin,k,l)
+       enddo
+    enddo
+    write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+    !call mkl_set_dynamic(.true.)
+    return
+  end subroutine intpjHW
+
+
+  !ccccccccccccccccccccccccccccccc
+  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+  !c second kind                                                                  c
+  !c        eps: Tolerance                                                        c
+  !c        b: parameter of the change of variable                                c
+  !c        Em: maximum value of the energy range                                 c
+  !c        M:   On input, maximum number of points allowed                       c
+  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
+  !c        dn:  On output, the density matrix                                    c
+  !c        CH:  On output, the value of the integral (charge density).           c
+  !c             Interval [-1,1]                                                  c
+  !c        Eq:  On output, the value of the upper bound of the integral.         c
+  !c        The rest of arguments are neeed by the subrtn. gplus                  c
+  !ccccccccccccccccccccccccccccccc
+  subroutine intpjCGibbsY(rrr,bi,Emi,M,Eq)
+    use parameters, only: PAcc
+    use constants, only: d_pi, d_zero, ui
+    use omp_lib
+
+    implicit none
+
+    real,intent(in) :: rrr, bi, Emi, Eq
+    integer,intent(inout) :: M
+    real, dimension(NAOrbs,NAOrbs) :: PDP, HWP ! HWP ADDED FOR FOCK PULAY FORCES INTEGRATION.
+
+    real :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
+    integer :: n,i,j,l,k,k1,chunk
+    real, dimension(M) :: xs,xcc
+
+    complex*16 :: E0,E
+    complex*16, dimension(2) :: EE
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/intpjCGibbsY"
+
+    !logical :: omp_get_nested
+
+    !call omp_set_nested(.true.)
+    !call mkl_set_dynamic(.false.)
+    a = 1.d0/d_pi
+    b = bi ! bi is 0.0d0
+    Em = Emi ! Emi is d_pi
+    PD(ispin,:,:) = d_zero
+    HW(ispin,:,:) = d_zero
+    M = (M-1)*0.5
+    n = 1
+    S0 = 1
+    C0 = 0
+    x0 = 0.d0
+    er0 = edex3(Em,b,x0) ! Em is d_pi inherited from Emi and b is 0.0d0 inherited from bi.
+    ! er0 seems to be d_pi/2 because: edex3 = 0.5d0*((Em-b)*x + (Em+b)) = 0.5d0*((Em-0.0)*0.0 + (Em+0.0))
+    der0 = 0.5d0*(Em-b)
+    E0 = rrr*exp(ui*er0)-rrr+Eq ! rrr = 0.5*abs(EMin)+10.0d0;
+    call gplus0(E0,green)
+    CH = 0.d0
+    do i = 1,NAOrbs
+       do j =1,NAOrbs
+          PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+          HW(ispin,i,j)=DREAL(E0)*PD(ispin,i,j)
+          !HW(ispin,i,j)=DREAL(-shift)*PD(ispin,i,j)
+          CH = CH + PD(ispin,i,j)*SD(j,i)
+       enddo
+    enddo
+
+    xp = CH
+1   q = xp + xp
+    xp = CH + CH
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(C0+C0)
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
+    !call omp_set_num_threads(2)
+    !print *, omp_get_nested()
+    !print *,'--------------------------'
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp)
+    PDP=d_zero
+    HWP=d_zero
+    !chunk=max(((n+1)/2)/omp_get_num_threads(),1)
+     chunk=1
+!$OMP DO SCHEDULE(STATIC,chunk)
+    do l=1,n,2
+       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
+       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+       erp = 0.5d0*((Em-b)*x + (Em+b))
+       erm = 0.5d0*(-(Em-b)*x + (Em+b))
+       EE(1) = rrr*exp(ui*erp)-rrr+Eq
+       EE(2) = rrr*exp(ui*erm)-rrr+Eq
+! Useful in case of nesting is allowed
+!$OMP  PARALLEL SHARED(l) PRIVATE(k)
+!$OMP  DO SCHEDULE(STATIC,1)
+       do k=1,2
+          !print *,'l',l,'k',k,omp_get_thread_num()
+          call gplus0(EE(k),greenn(k,:,:))
+       end do
+!$OMP  END DO
+!$OMP  END PARALLEL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+             HWP(i,j) = HWP(i,j) + a*(DREAL(EE(1))*dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+                  &   +DREAL(EE(2))*dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+             !HWP(i,j) = HWP(i,j) + a*(DREAL(-shift)*dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
+             !     &   +DREAL(-shift)*dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
+          end do
+       end do
+    end do
+!$OMP END DO
+!$OMP CRITICAL
+       do i = 1,NAOrbs
+          do j = 1,NAOrbs
+             PD(ispin,i,j)=PD(ispin,i,j)+PDP(i,j)
+             HW(ispin,i,j)=HW(ispin,i,j)+HWP(i,j)
+          end do
+       end do
+!$OMP END CRITICAL
+!$OMP END PARALLEL
+    CH = 0.d0
+    do k=1,NAOrbs
+       ! Non-orthogonal basis: Ch = Tr[P*SD]
+       do k1=1,NAOrbs
+          CH = CH + PD(ispin,k,k1)*SD(k1,k)
+       end do
+    enddo
+    ! ... replacing n by 2n+1
+    n = n + n + 1
+    ! Stopping?
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl.and.n.le.M) goto 1
+    ! Test for successfullness and integral final value
+    M = 0
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc*NCDEl) M = 1
+    CH = 16*CH/(3*(n+1))
+    do k=1,NAOrbs
+       do l=1,NAOrbs
+          PD(ispin,k,l) = 16*PD(ispin,k,l)/(3*(n+1))
+          HW(ispin,k,l) = DREAL(E0)*PD(ispin,k,l)
+       enddo
+    enddo
+    write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of loops=',(((n-1)/2)+1)/2
+
+    !call mkl_set_dynamic(.true.)
+    return
+  end subroutine intpjCGibbsY  
 
 
   !*********************************************************************
