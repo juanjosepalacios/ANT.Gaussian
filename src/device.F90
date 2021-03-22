@@ -36,6 +36,7 @@
 !  and transport                                          !
 !*********************************************************!
   use ANTCommon
+  use parameters, only: Debug, DebugDev  
   implicit none
   save
 
@@ -1383,7 +1384,7 @@
         do ispin=1,NSpin
             !if ((ispin == 1)) upOHD=OHD(ispin,:,:)+sigl+sigr
             if ((ispin == 1))then
-              call CompSelfEnergies( ispin, cshiftup, sigl, sigr )
+              call CompSelfEnergies( ispin, cshiftup, sigl, sigr, 1 )
               sigr = glue*sigr
               sigl = glue*sigl
               upCOHD=dcmplx(OHD(ispin,:,:))+sigl+sigr
@@ -1391,7 +1392,7 @@
             !if(DMImag)
             !if ((ispin == 2)) downOHD=OHD(ispin,:,:)+sigl+sigr
             if ((ispin == 2))then
-              call CompSelfEnergies( ispin, cshiftdown, sigl, sigr )
+              call CompSelfEnergies( ispin, cshiftdown, sigl, sigr, 1 )
               sigr = glue*sigr
               sigl = glue*sigl
               downCOHD=dcmplx(OHD(ispin,:,:))+sigl+sigr
@@ -3154,7 +3155,7 @@ end subroutine CompLocalMu
     sigr=-ui*eta*SD
     sigl=-ui*eta*SD
 
-    call CompSelfEnergies( ispin, z, sigl, sigr )
+    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
     sigl=glue*sigl
 
@@ -3335,7 +3336,7 @@ end subroutine CompLocalMu
     sigr=-ui*eta*SD
     sigl=-ui*eta*SD
 
-    call CompSelfEnergies( ispin, z, sigl, sigr )
+    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
     sigl=glue*sigl
 
@@ -4206,6 +4207,325 @@ end subroutine CompLocalMu
     if(x.lt.0.0d0) theta=1.0
     return
   end function theta
+  
+    !****************************************
+  ! Function gives excess charge of device
+  ! in dependence of Fermi energy x
+  !****************************************
+  double precision function f(x)
+    use parameters, only: biasvoltage,QExcess
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: chargeup, chargedown, rrr, a, b, Q
+    integer :: i,j,M
+
+    shift=x
+    
+    ! Radius of complex contour integration
+    ! add 10eV just in case 
+    rrr = 0.5*abs(EMin)+10.0d0;
+
+    !c c Integral limits ... (a,b)
+    a = 0.d0
+    b = d_pi
+    M=1000
+    call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+      
+    ! Density matrix out of equilibirum
+    if (biasvoltage /= 0.0) then
+       M=100
+       call intch(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+    !  print *,PDOUT
+       do i=1,NAOrbs
+          do j=1,NAOrbs
+             PD(ispin,i,j)=PD(ispin,i,j)+PDOUT(ispin,i,j)
+          end do
+       end do
+    end if
+    ! Density matrix out of equilibirum
+      
+    Q=d_zero
+    !do i=1,NAOrbs
+    do i=NCDAO1, NCDAO2
+       do j=1,NAOrbs
+          Q=Q+PD(ispin,i,j)*SD(j,i)
+       end do
+    end do
+    if (ispin.eq.1) QAlpha = Q
+    if (ispin.eq.2) QBeta  = Q
+ !if (ispin.eq.1) f = QAlpha - dble(GetNAE())
+ !if (ispin.eq.2) f = QBeta  - dble(GetNBE())
+    if (ispin.eq.1) f = QAlpha - dble(GetNAE()*NCDEl)/dble(GetNAE()+GetNBE()) -QExcess/2.0
+    if (ispin.eq.2) f = QBeta  - dble(GetNBE()*NCDEl)/dble(GetNAE()+GetNBE()) -QExcess/2.0
+    return
+  end function f
+  
+  !****************************************
+  ! Function gives excess charge of device
+  ! in dependence of Fermi energy x
+  !****************************************
+  double precision function QXTot(x)
+    use parameters, only: biasvoltage,QExcess
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE
+    use cluster, only: NembedBL
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: rrr, a, b, Q
+    integer :: i,j,M,omp_get_thread_num
+
+    if(DebugDev)Write(*,'(A)')"ENTERED Device/QxTot"
+    do ispin=1,NSpin
+       shift=x
+    !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
+       Q = d_zero
+
+       ! Radius of complex contour integration
+       ! add 10eV just in case 
+       rrr = 0.5*abs(EMin)+10.0d0;
+
+       !c c Integral limits ... (a,b)
+       a = 0.d0
+       b = d_pi
+       M=1000
+       call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+
+       ! Density matrix out of equilibirum
+       if (biasvoltage /= 0.0) then
+          M=100
+          if(NembedBL(1)==1)M=1000
+          call intch(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                PD(ispin,i,j)=PD(ispin,i,j)+PDOUT(ispin,i,j)
+             end do
+          end do
+       end if
+       ! Density matrix out of equilibirum
+
+       !do i=1,NAOrbs
+       do i=NCDAO1, NCDAO2
+          do j=1,NAOrbs
+             Q=Q+PD(ispin,i,j)*SD(j,i)
+          end do
+       end do
+       if( ispin == 1 ) QAlpha = Q
+       if( ispin == 2 ) QBeta  = Q
+    end do
+
+    if( NSpin == 1 ) QBeta = QAlpha
+    !QXTot = QAlpha + QBeta -dble(GetNAE()) -dble(GetNBE())
+    QXTot = QAlpha + QBeta - dble(NCDEl) - QExcess
+    if(DebugDev)Write(*,'(A,g16.6,A,g16.6)')"QXTot(",x,") = ",QXTot
+    return
+  end function QXTot
+
+  !****************************************
+  ! Function gives excess charge of device
+  ! in dependence of Fermi energy x
+  ! and integrates FOCK HW
+  ! in parallel to PD for Pulay Forces.
+  !****************************************
+  double precision function QHWTot(x)
+    use parameters, only: biasvoltage,QExcess
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: rrr, a, b, Q
+    integer :: i,j,M,omp_get_thread_num
+
+    do ispin=1,NSpin
+       shift=x
+    !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
+       Q = d_zero
+
+       ! Radius of complex contour integration
+       ! add 10eV just in case
+       rrr = 0.5*abs(EMin)+10.0d0;
+
+       !c c Integral limits ... (a,b)
+       a = 0.d0
+       b = d_pi
+       M=1000
+       call intpjHW(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+
+       ! Density matrix out of equilibirum
+       if (biasvoltage /= 0.0) then
+          M=100
+          call intchHW(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                PD(ispin,i,j)=PD(ispin,i,j)+PDOUT(ispin,i,j)
+                HW(ispin,i,j)=HW(ispin,i,j)+HWOUT(ispin,i,j)
+             end do
+          end do
+       end if
+       ! Density matrix out of equilibirum
+
+       !do i=1,NAOrbs
+       do i=NCDAO1, NCDAO2
+          do j=1,NAOrbs
+             Q=Q+PD(ispin,i,j)*SD(j,i)
+          end do
+       end do
+       if( ispin == 1 ) QAlpha = Q
+       if( ispin == 2 ) QBeta  = Q
+    end do
+
+    if( NSpin == 1 ) QBeta = QAlpha
+    !QXTot = QAlpha + QBeta -dble(GetNAE()) -dble(GetNBE())
+    QHWTot = QAlpha + QBeta - dble(NCDEl) - QExcess
+    return
+  end function QHWTot
+
+  !****************************************
+  ! Function gives excess charge of device
+  ! in dependence of Fermi energy x
+  ! and integrates FOCK HW
+  ! in parallel to PD for Pulay Forces.
+  ! ADDED OM 2018-04-23 IN REPLACEMENT OF QCGibbsYTotOld to integrate glesserL/R from bottom instead bias window.
+  !****************************************
+  double precision function QCGibbsYTot(x)
+    use parameters, only: biasvoltage,QExcess
+    use constants, only: d_pi, d_zero
+    use g09Common, only: GetNAE, GetNBE
+    implicit none
+
+    real, intent(in) :: x
+
+    real :: rrr, a, b, Q
+    integer :: i,j,M,omp_get_thread_num
+
+    write(ifu_log,'(A51,i4)')' ENTERING QCGibbsYTot(x)'
+
+    do ispin=1,NSpin
+       shift=x
+    !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
+       Q = d_zero
+
+       ! Radius of complex contour integration
+       ! add 10eV just in case
+       !rrr = 0.5*abs(EMin)+10.0d0; ! ORIGINAL CODE COMMENTED ON 2018-04.23
+       rrr = 0.5*abs(EMin)+4.0d0;
+
+       !c c Integral limits ... (a,b)
+       a = 0.d0
+       b = d_pi
+       M=1000
+       !call intpjHW(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0)) ! EL 2019-04-25 ME LO HE ENCONTRADO COMENTADO, PERO ESO NO ES COMPATIBLE CON EL RESULTADO TEÓRICO.
+
+       ! Density matrix out of equilibirum
+       !if (biasvoltage /= 0.0) then
+          !M=100
+          !call intchCGibbsY(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          !M=1000
+          M=10000
+          call intchCGibbsY(d_zero-dabs(biasvoltage/2.0)-rrr,dabs(biasvoltage/2.0),M)
+
+!          THE DENSITY MATRIX PD WAS ALREADY FILLED, THIS IS ONLY QCGibbsYTot POSTPROCESSING.
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                PDGIBBS(ispin,i,j)=PDGIBBS(ispin,i,j)+PDOUTGIBBS(ispin,i,j)
+                !HW(ispin,i,j)=HW(ispin,i,j)+HWOUT(ispin,i,j)
+             end do
+          end do
+          if(DebugDev)then
+          if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsY(1,:,:)"
+          if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsY(2,:,:)"
+          Write(*,*)DREAL(CGibbsY(iSpin,1,1))
+          Write(*,*)DIMAG(CGibbsY(iSpin,1,1))
+          Write(*,*)DREAL(CGibbsY(iSpin,1,2))
+          Write(*,*)DIMAG(CGibbsY(iSpin,1,2))
+          call PrintCMatrix(CGibbsY(iSpin,:,:))
+
+          if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsYKernel1(1,:,:)"
+          if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsYKernel1(2,:,:)"
+          Write(*,*)DREAL(CGibbsYKernel1(iSpin,1,1))
+          Write(*,*)DIMAG(CGibbsYKernel1(iSpin,1,1))
+          Write(*,*)DREAL(CGibbsYKernel1(iSpin,1,2))
+          Write(*,*)DIMAG(CGibbsYKernel1(iSpin,1,2))
+          call PrintCMatrix(CGibbsYKernel1(iSpin,:,:))
+
+          if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsYKernel2(1,:,:)"
+          if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsYKernel2(2,:,:)"
+          Write(*,*)DREAL(CGibbsYKernel2(iSpin,1,1))
+          Write(*,*)DIMAG(CGibbsYKernel2(iSpin,1,1))
+          Write(*,*)DREAL(CGibbsYKernel2(iSpin,1,2))
+          Write(*,*)DIMAG(CGibbsYKernel2(iSpin,1,2))
+          call PrintCMatrix(CGibbsYKernel2(iSpin,:,:))
+
+          end if
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+             !   Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)'),iSpin,i,j,"(",DREAL(CGibbsY(iSpin,i,j)),") + i*(",DIMAG(CGibbsY(iSpin,i,j)),")"
+             end do
+            !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(CGibbsY(iSpin,i,j)),") +i*(",DIMAG(CGibbsY(iSpin,i,j)),")") ,j=1,NAOrbs)
+          end do
+          if(MAXVAL(ABS(DIMAG(CGibbsY(iSpin,:,:)))) > 1.0D-3)then
+            Write(*,'(A)')"***************************************************************************"
+            Write(*,'(A,I1,A)')"******** CGibbsY(",iSpin,",:,:) CONTAINS NON-VANISHING IMAGINARY PART ********"
+            Write(*,'(A)')"***************************************************************************"
+          end if
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                DGibbsY(ispin,i,j)=CGibbsY(ispin,i,j)
+             end do
+          end do
+          if(MAXVAL(ABS(DIMAG(CGibbsYKernel1(iSpin,:,:)))) > 1.0D-3)then
+            Write(*,'(A)')"***************************************************************************"
+            Write(*,'(A,I1,A)')"***** CGibbsYKernel1(",iSpin,",:,:) CONTAINS NON-VANISHING IMAGINARY PART ****"
+            Write(*,'(A)')"***************************************************************************"
+          end if
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                DGibbsYKernel1(ispin,i,j)=CGibbsYKernel1(ispin,i,j)
+             end do
+          end do
+          if(MAXVAL(ABS(DIMAG(CGibbsYKernel2(iSpin,:,:)))) > 1.0D-3)then
+            Write(*,'(A)')"***************************************************************************"
+            Write(*,'(A,I1,A)')"***** CGibbsYKernel2(",iSpin,",:,:) CONTAINS NON-VANISHING IMAGINARY PART ****"
+            Write(*,'(A)')"***************************************************************************"
+          end if
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                DGibbsYKernel2(ispin,i,j)=CGibbsYKernel2(ispin,i,j)
+             end do
+          end do
+       !else
+       !   do i=1,NAOrbs
+       !      do j=1,NAOrbs
+       !         DGibbsY(ispin,i,j)=(-shift)*PD(ispin,i,j)
+       !      end do
+       !   end do
+       !end if
+       ! Density matrix out of equilibirum
+
+       !do i=1,NAOrbs
+       do i=NCDAO1, NCDAO2
+          do j=1,NAOrbs
+             Q=Q+PDGIBBS(ispin,i,j)*SD(j,i)
+          end do
+       end do
+
+       ! COMMENT THIS BECAUSE DON'T WANT TO REPLACE THE CORRECT QAlpha AND  Qbeta.
+       !if( ispin == 1 ) QAlpha = Q
+       !if( ispin == 2 ) QBeta  = Q
+    end do
+
+    if( NSpin == 1 ) QBeta = QAlpha
+    !QXTot = QAlpha + QBeta -dble(GetNAE()) -dble(GetNBE())
+    QCGibbsYTot = QAlpha + QBeta - dble(NCDEl) - QExcess
+    return
+  end function QCGibbsYTot  
 
   !****************************************
   ! Function gives excess charge of device
@@ -5159,7 +5479,7 @@ end subroutine CompLocalMu
        if (DMIMAG) then
           call CompDensMat2(ADDP)
        else
-          call CompDensMat(ADDP)
+          call CompDensMat(ADDP,.false.,.false.)
        end if 
     end if 
 

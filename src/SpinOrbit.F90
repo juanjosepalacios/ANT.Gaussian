@@ -564,7 +564,7 @@ CONTAINS
     REAL*8, PARAMETER :: e=1.602177e-19 !Coulomb
     REAL*8, PARAMETER :: me=9.1093897e-31 !kg
     REAL*8, PARAMETER :: c=2.99792458e8 !m/s
-    REAL*8, PARAMETER :: hbar=1.054571800e-34 !J.s
+    REAL*8, PARAMETER :: hb=1.054571800e-34 !J.s
     REAL*8, PARAMETER :: Ke=8.987552e9 ! 1/(4*pi*epsilon0)
     REAL*8, PARAMETER :: a0 = 5.29e-11 ! bohr radius    
     
@@ -634,7 +634,7 @@ CONTAINS
     A=1.0e-12/a0
     B=1.0e-9/a0    
     
-    zz = (1.0/a0**3)*(hbar**2)*(Ke/e)*((e**2)/(2.*(me*c)**2)) ! Divide by e to convert from Joules to eV     
+    zz = (1.0/a0**3)*(hb**2)*(Ke/e)*((e**2)/(2.*(me*c)**2)) ! Divide by e to convert from Joules to eV     
                 
     !PRINT *, "Spin-orbit constants within each atom:"
     !PRINT '(a10,2(a15),a20)', 'Atom No.','Shell type 1','Shell type 2','Spin-orbit constant'   

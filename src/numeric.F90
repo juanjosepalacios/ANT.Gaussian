@@ -63,6 +63,317 @@
     CInv=info
   END function CInv
   
+  ! *******************************************************************
+  ! Inversion of real matrix based on LAPACK routines dgetrf, dgetri 
+  ! *******************************************************************
+  integer function RInv( Z )
+!    USE lapack_blas, ONLY: zgetri,zgetrf
+!    use mkl_blas, ONLY: zgetri,zgetrf
+    IMPLICIT NONE
+    real, DIMENSION(:,:),INTENT(inout) :: Z
+!    complex*16, DIMENSION(:,:) :: CZ
+    complex*16, DIMENSION(SIZE( Z, 1),SIZE( Z, 2)) :: CZ
+    integer :: n, ipiv(SIZE( CZ, 1)), info
+    complex*16, DIMENSION( 4*SIZE( CZ, 1) ) :: work
+    n = SIZE( Z, 1)
+    CZ = dcmplx(Z)
+    CALL zgetrf(n,n,CZ,n,ipiv,info)
+!    CALL zgetrf(n,n,CZ,n+1,ipiv,info)
+    CALL zgetri(n,CZ,n,ipiv,work,4*n,info)
+!    CALL zgetri(n,CZ,n+1,ipiv,work,4*n+1,info)
+    Z=real(CZ)
+    RInv=info
+  END function RInv
+
+SUBROUTINE GAUSSJOLD(a,n,np,b,m,mp,ierr)
+
+!   Purpose: Solution of the system of linear equations AX = B by
+!      Gauss-Jordan elimination, where A is a matrix of order N and B is
+!      an N x M matrix.  On output A is replaced by its matrix inverse
+!      and B is preplaced by the corresponding set of solution vectors.
+
+!   Source: W.H. Press et al, "Numerical Recipes," 1989, p. 28.
+
+!   Modifications: 
+!      1. Double  precision.
+!      2. Error parameter IERR included.  0 = no error. 1 = singular 
+!         matrix encountered; no inverse is returned.
+
+!   Prepared by J. Applequist, 8/17/91.
+
+!      implicit real(a-h,o-z)
+
+!        Set largest anticipated value of N.
+IMPLICIT NONE
+
+real, DIMENSION(:,:), INTENT(INOUT) :: a,b
+integer, INTENT(IN) :: n, np, m, mp
+!integer, INTENT(IN) :: ierr
+integer, INTENT(OUT) :: ierr
+!Linear equation solution by Gauss-Jordan elimination, equation (2.1.1). a is an N ×N input
+!coefficient matrix. b is an N × M input matrix containing M right-hand-side vectors. On
+!output, a is replaced by its matrix inverse, and b is replaced by the corresponding set of
+!solution vectors.
+integer*4, DIMENSION(size(a,1)) :: ipiv,indxr,indxc
+!These arrays are used for bookkeeping on the pivoting.
+logical, DIMENSION(size(a,1)) :: lpiv
+real :: pivinv, big, dum
+real, DIMENSION(size(a,1)) :: dumc
+integer*4, TARGET :: irc(2)
+integer :: i,l,nmax,j,k,ll
+integer*4, POINTER :: irow,icol
+
+
+      !parameter (nmax=500)
+nmax=500
+      !dimension a(np,np),b(np,mp),ipiv(nmax),indxr(nmax),indxc(nmax)
+      ierr=0
+do 11 j=1,n
+  ipiv(j)=0
+ 11   continue
+  do 22 i=1,n
+    big=0.d0
+    do 13 j=1,n
+      if (ipiv(j).ne.1) then
+        do 12 k=1,n
+          if (ipiv(k).eq.0) then
+            if (dabs(a(j,k)).ge.big) then
+              big=dabs(a(j,k))
+              irow=j
+              icol=k
+            endif
+          else if (ipiv(k).gt.1) then
+            ierr=1
+            return
+          endif
+ 12   continue
+        endif
+ 13   continue
+        ipiv(icol)=ipiv(icol)+1
+        if (irow.ne.icol) then
+          do 14 l=1,n
+            dum=a(irow,l)
+            a(irow,l)=a(icol,l)
+            a(icol,l)=dum
+ 14   continue
+            do 15 l=1,m
+              dum=b(irow,l)
+              b(irow,l)=b(icol,l)
+              b(icol,l)=dum
+ 15   continue
+        endif
+        indxr(i)=irow
+        indxc(i)=icol
+        if (a(icol,icol).eq.0.d0) then
+          ierr=1
+          return
+        endif
+        pivinv=1.d0/a(icol,icol)
+        a(icol,icol)=1.d0
+        do 16 l=1,n
+          a(icol,l)=a(icol,l)*pivinv
+ 16   continue
+          do 17 l=1,m
+            b(icol,l)=b(icol,l)*pivinv
+ 17   continue
+            do 21 ll=1,n
+              if (ll.ne.icol) then
+                dum=a(ll,icol)
+                a(ll,icol)=0.d0
+                do 18 l=1,n
+                  a(ll,l)=a(ll,l)-a(icol,l)*dum
+ 18   continue
+                  do 19 l=1,m
+                    b(ll,l)=b(ll,l)-b(icol,l)*dum
+ 19   continue
+              endif
+ 21   continue
+ 22   continue
+              do 24 l=n,1,-1
+                if (indxr(l).ne.indxc(l)) then
+                  do 23 k=1,n
+                    dum=a(k,indxr(l))
+                    a(k,indxr(l))=a(k,indxc(l))
+                    a(k,indxc(l))=dum
+ 23   continue
+                endif
+ 24   continue
+                return
+      END SUBROUTINE
+
+! !ROUTINE: gaussj
+!
+! !INTERFACE:
+      subroutine gaussj(a,n,np,b,m,mp)
+      
+! !DESCRIPTION:
+!
+! Linear equation solution by Gauss-Jordan elimination, equation
+!{gaussj-1} below.
+!{a(1:n,1:n)}
+! is an imput matrix stored in an array of physical dimensions {np}
+! by {np}.{b(1:n,1:m)} is an input matrix containing the
+! {m} right-hand side vectors, stored in an array of physical
+! dimensions {np} by {mp}. On output, {a(1:n,1:n)} is
+! replaced by its matrix inverse, and {b(1:n,1:m)} is replaced by
+! the corresponding set of solution vectors.
+!
+! !INPUT PARAMETERS:
+      
+      implicit none
+      integer, intent(in) :: m
+      integer, intent(in) :: mp
+      integer, intent(in) :: n
+      integer, intent(in) :: np
+      
+! !INPUT/OUTPUT PARAMETERS:
+
+      real, intent(inout) :: a(1:np,1:np)
+      real, intent(inout) :: b(1:np,1:mp)
+
+! !LOCAL VARIABLES:
+      
+      integer :: i
+      integer :: icol
+      integer :: irow
+      integer :: j
+      integer :: k
+      integer :: l
+      integer :: ll
+      integer :: indxc(1:np) ! Used for bookkeeping on the pivoting
+      integer :: indxr(1:np) ! Used for bookkeeping on the pivoting
+      integer :: ipiv(1:np) ! Used for bookkeeping on the pivoting
+      
+      real :: big
+      real :: dum
+      real :: pivinv
+
+! !REVISION HISTORY:
+!
+! Original subroutine: gaussj.for (c) copr. 1986-92 numerical recipes
+! software &30i..
+! Last modified: 7th. Jul. 2005 by RGA
+!
+!EOP
+!BOC
+      do j=1,n
+        ipiv(j)=0
+      enddo ! j
+!
+! This is the main loop over the columns to be reduced
+!
+      do i=1,n
+        big=0.0d0
+!
+! This is the outer loop of the search for a pivot element
+!
+        do j=1,n
+          if(ipiv(j).ne.1)then
+do k=1,n
+              if (ipiv(k).eq.0) then
+if (abs(a(j,k)).ge.big)then
+big=abs(a(j,k))
+                  irow=j
+                  icol=k
+                endif
+else if (ipiv(k).gt.1) then
+stop 'singular matrix in gaussj'
+              endif
+enddo ! k
+          endif
+enddo ! j
+        ipiv(icol)=ipiv(icol)+1
+!
+! We now have the pivot element, so we interchange rows, if needed,
+! to put the pivot element on the diagonal. The columns are not
+! physically interchanged, only relabeled: indxc(i), the column of
+! the ith pivot element, is the ith column that is reduced, while
+! indxr(i) is the row in which that pivot element was originally
+! located. If indxr(i) neq indxc(i) there is an implied column
+! interchange. With this form of bookkeeping, the solution b's will
+! end up in the correct order, and the inverse matrix will be
+! scrambled by columns.
+!
+        if (irow.ne.icol) then
+do l=1,n
+            dum=a(irow,l)
+            a(irow,l)=a(icol,l)
+            a(icol,l)=dum
+          enddo ! l
+          do l=1,m
+            dum=b(irow,l)
+            b(irow,l)=b(icol,l)
+            b(icol,l)=dum
+          enddo ! l
+        endif
+indxr(i)=irow
+        indxc(i)=icol
+!
+! We are now ready to divide the pivot row by the pivot element,
+! located at irow and icol.
+!
+        if (a(icol,icol).eq.0.0d0) stop 'singular matrix in gaussj'
+        pivinv=1./a(icol,icol)
+        a(icol,icol)=1.
+        do l=1,n
+          a(icol,l)=a(icol,l)*pivinv
+        enddo ! l
+        do l=1,m
+          b(icol,l)=b(icol,l)*pivinv
+        enddo ! l
+!
+! Next, we reduce the rows...
+!
+        do ll=1,n
+          if(ll.ne.icol)then ! ... except for the pivor one, of course.
+            dum=a(ll,icol)
+            a(ll,icol)=0.0d0
+            do l=1,n
+              a(ll,l)=a(ll,l)-a(icol,l)*dum
+            enddo ! l
+            do l=1,m
+              b(ll,l)=b(ll,l)-b(icol,l)*dum
+            enddo ! l
+          endif
+enddo ! ll
+      enddo ! i
+!
+! This is the end of the main loop over columns of the reduction. It
+! only remains to unscramble the solution in view of the column
+! interchanges. We do this by interchanging pairs of columns in the
+! reverse order that the permutation was bilt up.
+!
+      do l=n,1,-1
+        if(indxr(l).ne.indxc(l))then
+do k=1,n
+            dum=a(k,indxr(l))
+            a(k,indxr(l))=a(k,indxc(l))
+            a(k,indxc(l))=dum
+          enddo ! k
+        endif
+enddo ! l
+
+      return
+
+end subroutine gaussj
+
+SUBROUTINE GaussInverse(A)
+IMPLICIT NONE
+      real, dimension(:,:), intent(inout) :: A
+      !real, dimension(:,:), intent(out) :: Ainv
+      real, allocatable, dimension(:,:) :: Apiv
+      integer :: i,n
+      n=size(A,2)
+      allocate(Apiv(n,n))
+        Apiv(:,:) = 0.0
+        do i=1,n
+          Apiv(i,i) = 1.0
+        end do
+        call GAUSSJ(A,n,n,Apiv,n,n)
+      return
+      deallocate(Apiv)
+END SUBROUTINE GaussInverse  
+  
 
   ! *************************
   ! Trace of a complex matrix
@@ -266,7 +577,116 @@
     STOP
   END SUBROUTINE qromo
   
+  ! *************************************
+  ! Romberg integration on open interval
+  ! *************************************
+  SUBROUTINE qromo1DBL(func,a,b,ss,rule)
 
+    IMPLICIT NONE
+
+    real, EXTERNAL :: func
+    real, INTENT(in) :: a,b
+    real, INTENT(inout) :: ss
+
+    integer, PARAMETER :: jmax=14, jmaxp=jmax+1, k=5, km=k-1 ! ORIGINAL jmax=14
+!    integer, PARAMETER :: jmax=28, jmaxp=jmax+1, k=5, km=k-1 ! ORIGINAL jmax=14
+!    real, PARAMETER :: eps = 1.0d-12 ! ORIGINAL CODE.
+    real, PARAMETER :: eps = 1.0d-9 ! ORIGINAL THIS OR 1.0d-12
+!    real, PARAMETER :: eps = 1.0d-4 ! ADDED BY C.SALGADO ON 2017-03-28.
+    integer :: j
+    real :: dss
+    real, DIMENSION(jmaxp) :: h, s
+
+    h(1) = 1.0d0
+    DO j=1,jmax
+       CALL rule(func,a,b,s(j),j)
+       IF( j >= k )THEN
+          CALL polint(h(j-km),s(j-km),k,0.0d0,ss,dss)
+          Write(*,'(g15.5,A,g15.5,A)')ABS(dss),"  <",eps*ABS(ss)," ?"
+          IF(ABS(dss)<=eps*ABS(ss))RETURN
+       END IF
+       s(j+1)=s(j)
+       h(j+1)=h(j)/9.0d0
+    END DO
+
+    PRINT *, "QROMO1DBL/Too many quadrature steps."
+    STOP
+  END SUBROUTINE qromo1DBL
+
+  ! *************************************
+  ! Romberg integration on open interval 
+  ! *************************************
+  SUBROUTINE qromo1DBLOLD(func,a,b,ss,rule)
+
+    IMPLICIT NONE
+
+    REAL*8, EXTERNAL :: func
+    REAL*8, INTENT(in) :: a,b
+    REAL*8, INTENT(inout) :: ss
+
+!    INTEGER, PARAMETER :: jmax=14, jmaxp=jmax+1, k=5, km=k-1 ! ORIGINAL jmax=14
+    INTEGER, PARAMETER :: jmax=28, jmaxp=jmax+1, k=5, km=k-1
+!    REAL*8, PARAMETER :: eps = 1.0d-6 ! ORIGINAL THIS OR 1.0d-12
+    REAL*8, PARAMETER :: eps = 2.0d-4
+    
+    INTEGER :: j
+    REAL*8 :: dss
+    REAL*8, DIMENSION(jmaxp) :: h, s
+
+    h(1) = 1.0d0
+    DO j=1,jmax
+       CALL rule(func,a,b,s(j),j)
+       IF( j >= k )THEN
+          CALL polint(h(j-km),s(j-km),k,0.0d0,ss,dss)
+          Write(*,*)dss
+          Write(*,*)ss
+          Write(*,'(g15.5,A,g15.5,A)')ABS(dss),"  <",eps*ABS(ss)," ?"
+          Write(*,'(F16.12,A,F16.12,A)')ABS(dss),"  <",eps*ABS(ss)," ?"
+          IF(ABS(dss)<=eps*ABS(ss))RETURN
+       END IF
+       s(j+1)=s(j)
+       h(j+1)=h(j)/9.0d0
+    END DO
+
+    PRINT *, "QROMO/Too many quadrature steps."
+    STOP
+  END SUBROUTINE qromo1DBLOLD
+
+  SUBROUTINE qromoc(func,a,b,ss,rule)
+    IMPLICIT NONE
+
+    real, EXTERNAL :: func
+    real, INTENT(in) :: a,b
+    real, INTENT(inout) :: ss
+
+    EXTERNAL rule
+
+    integer, PARAMETER :: jmax=14, jmaxp=jmax+1, k=9, km=k-1
+    !integer, PARAMETER :: jmax=140, jmaxp=jmax+1, k=5, km=k-1
+    !real, PARAMETER :: eps = 1.0d-6
+    real, PARAMETER :: eps = 1.0d-12
+    
+    integer :: j
+    real :: dss
+    real, DIMENSION(jmaxp) :: h, s
+
+    !PRINT *, "I am in QROMOC"
+
+    h(1) = 1.0d0
+    DO j=1,jmax
+       CALL rule(func,a,b,s(j),j)
+       !PRINT *, j,s(j),h(j)
+       IF( j >= k )THEN
+          CALL polint(h(j-km),s(j-km),k,0.0d0,ss,dss)
+          IF(ABS(dss)<=eps*ABS(ss))RETURN
+       END IF
+       s(j+1)=s(j)
+       h(j+1)=h(j)/9.0d0
+    END DO
+    PRINT *, "QROMO/Too many quadrature steps."
+    STOP
+  END SUBROUTINE qromoc
+  
   ! **********************************
   ! Midpoint rule for finite intervals
   ! **********************************
@@ -548,7 +968,339 @@
     CALL ZGEEV('N','N',N,     A,N, w,   VL,1,VR,1,  WORK,4*N,  RWORK, INFO ) 
   END SUBROUTINE CDiag
 
+!----------------------------------------------------------------------------------------------
+!------- Main code to call jacobi diagonalization of a real symmetric matrix ------------------
+!---------------------------------------------------------------------------------------------- 
+!====================================================================
+!  eigenvalues and eigenvectors of a real symmetric matrix
+!  Method: calls Jacobi
+!====================================================================
+!
+!  call Jacobi(a,x,abserr,n)
+!
+SUBROUTINE JacobiOld(a,x,abserr,n)
+!===========================================================
+! Evaluate eigenvalues and eigenvectors
+! of a real symmetric matrix a(n,n): a*x = lambda*x 
+! method: Jacoby method for symmetric matrices 
+! Alex G. (December 2009)
+!-----------------------------------------------------------
+! input ...
+! a(n,n) - array of coefficients for matrix A
+! n      - number of equations
+! abserr - abs tolerance [sum of (off-diagonal elements)^2]
+! output ...
+! a(i,i) - eigenvalues
+! x(i,j) - eigenvectors
+! comments ...
+!===========================================================
+implicit none
+integer i, j, k, n
+double precision a(n,n),x(n,n)
+double precision abserr, b2, bar
+double precision beta, coeff, c, s, cs, sc
 
+! initialize x(i,j)=0, x(i,i)=1
+! *** the array operation x=0.0 is specific for Fortran 90/95
+x = 0.0
+do i=1,n
+  x(i,i) = 1.0
+end do
+
+! find the sum of all off-diagonal elements (squared)
+b2 = 0.0
+do i=1,n
+  do j=1,n
+    if (i.ne.j) b2 = b2 + a(i,j)**2
+  end do
+end do
+
+if (b2 <= abserr) return
+
+! average for off-diagonal elements /2
+!bar = 0.5*b2/float(n*n)
+bar = 0.5*b2/dfloat(n*n)
+
+do while (b2.gt.abserr)
+  do i=1,n-1
+    do j=i+1,n
+      if (a(j,i)**2 <= bar) cycle  ! do not touch small elements
+      b2 = b2 - 2.0*a(j,i)**2
+      bar = 0.5*b2/dfloat(n*n)
+! calculate coefficient c and s for Givens matrix
+      beta = (a(j,j)-a(i,i))/(2.0*a(j,i))
+      coeff = 0.5*beta/sqrt(1.0+beta**2)
+      s = sqrt(max(0.5+coeff,0.0))
+      c = sqrt(max(0.5-coeff,0.0))
+! recalculate rows i and j
+      do k=1,n
+        cs =  c*a(i,k)+s*a(j,k)
+        sc = -s*a(i,k)+c*a(j,k)
+        a(i,k) = cs
+        a(j,k) = sc
+      end do
+! new matrix a_{k+1} from a_{k}, and eigenvectors 
+      do k=1,n
+        cs =  c*a(k,i)+s*a(k,j)
+        sc = -s*a(k,i)+c*a(k,j)
+        a(k,i) = cs
+        a(k,j) = sc
+        cs =  c*x(k,i)+s*x(k,j)
+        sc = -s*x(k,i)+c*x(k,j)
+        x(k,i) = cs
+        x(k,j) = sc
+      end do
+    end do
+  end do
+end do
+return
+END SUBROUTINE
+!----------------------------------------------------------------------------------------------
+!---------- NUMERICAL RECIPES IN F90 JACOBI IMPLEMENTATION- -----------------------------------
+!----------------------------------------------------------------------------------------------
+!---------- Necessary to symmetrize for Jacobi ------------------------------------------------
+SUBROUTINE balanc(a)
+!USE nrtype; USE nrutil
+IMPLICIT NONE
+real, DIMENSION(:,:), INTENT(INOUT) :: a
+real, PARAMETER :: RADX=radix(a),SQRADX=RADX**2
+!Given an N × N matrix a, this routine replaces it by a balanced matrix with identical
+!eigenvalues. A symmetric matrix is already balanced and is unaffected by this procedure.
+!The parameter RADX is the machine’s floating-point radix.
+integer :: i,last,ndum
+real :: c,f,g,r,s
+!ndum=assert_eq(size(a,1),size(a,2),’balanc’)
+do
+ last=1
+ do i=1,size(a,1)
+  c=sum(abs(a(:,i)))-a(i,i)
+  r=sum(abs(a(i,:)))-a(i,i)
+  if (c /= 0.0 .and. r /= 0.0) then
+   g=r/RADX
+   f=1.0
+   s=c+r
+   do
+    if (c >= g) exit
+    f=f*RADX
+    c=c*SQRADX
+   end do
+   g=r*RADX
+   do
+    if (c <= g) exit
+    f=f/RADX
+    c=c/SQRADX
+   end do
+   if ((c+r)/f < 0.95*s) then
+    last=0
+    g=1.0/f
+    a(i,:)=a(i,:)*g
+    a(:,i)=a(:,i)*f
+   end if
+  end if
+ end do
+ if (last /= 0) exit
+end do
+END SUBROUTINE balanc
+
+!*************************************************************
+!* This subroutine computes all eigenvalues and eigenvectors *
+!* of a real symmetric square matrix A(N,N). On output, ele- *
+!* ments of A above the diagonal are destroyed. D(N) returns *
+!* the eigenvalues of matrix A. V(N,N) contains, on output,  *
+!* the eigenvectors of A by columns. THe normalization to    *
+!* unity is made by main program before printing results.    *
+!* NROT returns the number of Jacobi matrix rotations which  *
+!* were required.                                            *
+!* --------------------------------------------------------- *
+!* Ref.:"NUMERICAL RECIPES, Cambridge University Press, 1986,*
+!*       chap. 11, pages 346-348" [BIBLI 08].                *
+!*************************************************************
+Subroutine Jacobi(A,N,D,V,NROT)
+integer N,NROT,ip,iq,i,j
+real  A(1:N,1:N),D(1:N),V(1:N,1:N)
+real, pointer :: B(:), Z(:)
+real  c,g,h,s,sm,t,tau,theta,tresh
+
+!integer*WORDSIZE malloc !added by Carlos Salgado
+
+!allocate(B(1:100),stat=ialloc) !original
+!allocate(Z(1:100),stat=ialloc) !original
+!allocate(B(1:100))
+!allocate(Z(1:100))
+!allocate(B(1:100),stat=malloc)
+!allocate(Z(1:100),stat=malloc)
+allocate(B(1:N))
+allocate(Z(1:N))
+
+  do ip=1, N    !initialize V to identity matrix
+    do iq=1, N
+      V(ip,iq)=0.d0 
+    end do
+      V(ip,ip)=1.d0
+  end do  
+  do ip=1, N
+    B(ip)=A(ip,ip)
+    D(ip)=B(ip)
+    Z(ip)=0.d0    
+  end do
+  NROT=0
+  do i=1, 50
+    sm=0.d0
+    do ip=1, N-1     !sum off-diagonal elements
+      do iq=ip+1, N
+        sm=sm+DABS(A(ip,iq))
+      end do
+    end do
+    if(sm==0.d0) return  !normal return
+    if(i.lt.4) then
+      tresh=0.2d0*sm**2
+    else
+      tresh=0.d0
+    end if
+    do ip=1, N-1
+      do iq=ip+1, N
+        g=100.d0*DABS(A(ip,iq))
+!write(*,*)'g=100.d0*DABS(A(ip,iq))',i
+! after 4 sweeps, skip the rotation if the off-diagonal element is small
+        if((i.gt.4).and.(DABS(D(ip))+g.eq.DABS(D(ip))) &
+  .and.(DABS(D(iq))+g.eq.DABS(D(iq)))) then
+    A(ip,iq)=0.d0
+        else if(DABS(A(ip,iq)).gt.tresh) then
+   h=D(iq)-D(ip)
+   if(DABS(h)+g.eq.DABS(h)) then
+     t=A(ip,iq)/h
+          else
+     theta=0.5d0*h/A(ip,iq)  
+            t=1.d0/(DABS(theta)+DSQRT(1.d0+theta**2))
+     if(theta.lt.0.d0) t=-t
+          end if
+   c=1.d0/DSQRT(1.d0+t**2)
+!write(*,*)'c=1.d0/DSQRT(1.d0+t**2)',i
+   s=t*c
+          tau=s/(1.d0+c)
+   h=t*A(ip,iq)
+   Z(ip)=Z(ip)-h
+   Z(iq)=Z(iq)+h
+   D(ip)=D(ip)-h
+   D(iq)=D(iq)+h
+   A(ip,iq)=0.d0
+   do j=1, ip-1
+     g=A(j,ip)
+     h=A(j,iq)
+     A(j,ip)=g-s*(h+g*tau)
+     A(j,iq)=h+s*(g-h*tau)
+          end do
+   do j=ip+1, iq-1
+     g=A(ip,j)
+     h=A(j,iq)
+     A(ip,j)=g-s*(h+g*tau)
+     A(j,iq)=h+s*(g-h*tau)
+          end do		      
+   do j=iq+1, N
+     g=A(ip,j)
+     h=A(iq,j)
+     A(ip,j)=g-s*(h+g*tau)
+     A(iq,j)=h+s*(g-h*tau)
+          end do		  
+   do j=1, N
+     g=V(j,ip)
+     h=V(j,iq)
+     V(j,ip)=g-s*(h+g*tau)
+     V(j,iq)=h+s*(g-h*tau)
+          end do		  
+          NROT=NROT+1
+        end if !if ((i.gt.4)...
+      end do !main iq loop
+    end do !main ip loop
+    do ip=1, N
+      B(ip)=B(ip)+Z(ip)
+      D(ip)=B(ip)
+      Z(ip)=0.d0
+    end do
+!write(*,*)'end do main i loop',i
+  end do !main i loop
+  !pause ' 50 iterations !'
+  return
+END SUBROUTINE
+
+! end of file ujacobi.f90
+
+SUBROUTINE eigsrt(d,v)
+!USE nrtype; USE nrutil, ONLY : assert_eq,imaxloc,swap
+IMPLICIT NONE
+real, DIMENSION(:), INTENT(INOUT) :: d
+real, DIMENSION(:,:), INTENT(INOUT) :: v
+!Given the eigenvalues d and eigenvectors v as output from jacobi (§11.1) or tqli (§11.3),
+!this routine sorts the eigenvalues into descending order, and rearranges the columns of v
+!correspondingly. The method is straight insertion.
+integer :: i,j,n
+!n=assert_eq(size(d),size(v,1),size(v,2),’eigsrt’)
+n = SIZE(d,1)
+do i=1,n-1
+j=imaxloc_r(d(i:n))+i-1
+if (j /= i) then
+call swap_r(d(i),d(j))
+call swap_rv(v(:,i),v(:,j))
+end if
+end do
+END SUBROUTINE eigsrt
+
+SUBROUTINE ordks(d,v)
+!USE nrtype; USE nrutil, ONLY : assert_eq,imaxloc,swap
+IMPLICIT NONE
+real, DIMENSION(:), INTENT(INOUT) :: d
+real, DIMENSION(:), INTENT(INOUT) :: v
+!Given the eigenvalues d and eigenvectors v as output from jacobi (§11.1) or tqli (§11.3),
+!this routine sorts the eigenvalues into descending order, and rearranges the columns of v
+!correspondingly. The method is straight insertion.
+integer :: i,j,n
+!n=assert_eq(size(d),size(v,1),size(v,2),’eigsrt’)
+n = SIZE(d,1)
+do i=1,n-1
+j=imaxloc_r(d(i:n))+i-1
+if (j /= i) then
+call swap_r(d(i),d(j))
+call swap_r(v(i),v(j))
+end if
+end do
+END SUBROUTINE ordks
+
+FUNCTION imaxloc_r(arr)
+real, DIMENSION(:), INTENT(IN) :: arr
+integer :: imaxloc_r
+integer, DIMENSION(1) :: imax
+imax=maxloc(arr(:))
+imaxloc_r=imax(1)
+END FUNCTION imaxloc_r
+FUNCTION imaxloc_i(iarr)
+integer, DIMENSION(:), INTENT(IN) :: iarr
+integer, DIMENSION(1) :: imax
+integer :: imaxloc_i
+imax=maxloc(iarr(:))
+imaxloc_i=imax(1)
+END FUNCTION imaxloc_i
+SUBROUTINE swap_i(a,b)
+integer, INTENT(INOUT) :: a,b
+integer :: dum
+dum=a
+a=b
+b=dum
+END SUBROUTINE swap_i
+SUBROUTINE swap_r(a,b)
+real, INTENT(INOUT) :: a,b
+real :: dum
+dum=a
+a=b
+b=dum
+END SUBROUTINE swap_r
+SUBROUTINE swap_rv(a,b)
+real, DIMENSION(:), INTENT(INOUT) :: a,b
+real, DIMENSION(SIZE(a)) :: dum
+dum=a
+a=b
+b=dum
+END SUBROUTINE swap_rv
+!----------------------------------------------------------------------------------------------
 
   ! *********************************
   ! Bisection method for root finding 

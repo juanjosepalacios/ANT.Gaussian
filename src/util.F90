@@ -30,6 +30,19 @@ contains
        print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
     end do
   end subroutine PrintRMatrix
+  
+  subroutine PrintCMatrix( A )
+    implicit none
+    complex*16,dimension(:,:),intent(in) :: A
+    integer :: i,j,dim1,dim2
+    dim1 = size(A,1)
+    dim2 = size(A,2)
+    do i=1,dim1
+       !print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
+       Write(*,'(100(g15.5,g15.5,2x))') ( real(A(i,j)),&
+                                        AIMAG(A(i,j)), j=1,dim2 )
+    end do
+  end subroutine PrintCMatrix  
   !
   ! Convert <name> to upper case (useful for parsing)
   !

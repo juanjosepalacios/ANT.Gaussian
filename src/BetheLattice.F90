@@ -769,7 +769,7 @@ contains
   !
   subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, sgn )
     use constants, only: c_zero, ui, c_one
-    use parameters, only: eta,selfacc
+    use parameters, only: eta,selfacc,NEmbed,NAtomEl
 #ifdef PGI
     use lapack_blas, only: zgemm,zgetri,zgetrf
 #endif
@@ -1045,7 +1045,7 @@ contains
   ! *** Self-consistent solver of Dyson equation for Bethe lattice ***
   !
   !subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, NNeighbs, NAOrbs )
-  subroutine SolveDysonBLDebug( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk )
+  subroutine SolveDysonBLDebug( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, sgn )
     use util, only: PrintCMatrix
     use constants, only: c_zero, ui, c_one
     use parameters, only: eta,selfacc,NEmbed,NAtomEl
@@ -1071,7 +1071,7 @@ contains
 
     integer :: k, i, j, NAOrbs, NNeighbs, ncycle, ipiv(size( SigmaK, 3 )), info, AllocErr
 !    integer :: k, i, j, ncycle, ipiv(size( Vk, 3 )), info, AllocErr
-    integer, intent(in) :: LeadNo
+    integer, intent(in) :: LeadNo, sgn
 
     ! auxiliary directional self energy for self-consistent calculation
     complex*16, dimension( size(SigmaK,1), size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux
@@ -1110,7 +1110,7 @@ contains
     
     do i=1,NAOrbs
        do k=1,NNeighbs
-          Sigmak(k,i,i)=-1.0d0*ui
+          Sigmak(k,i,i)=-sgn*ui
        enddo
     end do
 
@@ -1397,7 +1397,7 @@ contains
   ! 
   subroutine CompGreensFunc( BL, Spin, energy, G0, sgn )
     use constants, only: c_zero, ui
-    use parameters, only: eta, DD, UD, DU
+    use parameters, only: eta, DD, UD, DU, Nembed
 #ifdef PGI
     use lapack_blas, only: zgetri,zgetrf
 #endif
@@ -1899,11 +1899,11 @@ contains
     ReTrG01DBL = d_zero
     do ispin = 1, NSpin
        if( LeadBL(WhichLead)%Overlap )then
-          call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X )
+          call CompG0X( LeadBL(WhichLead), ispin, zenergy, G0X, 1 )
           GS0X = MATMUL( G0X, S0X )
           ReTrG01DBL = ReTrG01DBL + real(CTrace(GS0X(1:NAO,1:NAO)))
        else
-          call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0 )
+          call CompGreensFunc( LeadBL(WhichLead), ispin, zenergy, G0, 1 )
           ReTrG01DBL = ReTrG01DBL + real(CTrace(G0))
        end if
     end do

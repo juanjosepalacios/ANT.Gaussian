@@ -29,21 +29,16 @@
 !*     03690 Alicante (SPAIN)                             *
 !*                                                        *
 !**********************************************************
-  MODULE ANT
-  
-  PUBLIC :: ANT
-
-CONTAINS
   !SUBROUTINE ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn,NBasis)
-  SUBROUTINE ANT (UHF,JCycle,inputNCycles,Cinputjobname,Cinputjobname_len,NBasis,&
-                 outHWFockA,outHWFockB,outGibbsYA,outGibbsYB,outGibbsYKernel1A,outGibbsYKernel1B,outGibbsYKernel2A,outGibbsYKernel2B,&
+  SUBROUTINE ANT (UHF,JCycle,NBasis,outHWFockA,outHWFockB,outGibbsYA,outGibbsYB,outGibbsYKernel1A,&
+                  outGibbsYKernel1B,outGibbsYKernel2A,outGibbsYKernel2B,&
                  IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn)   
 !**********************************************************************************************************************
 !* Interface subroutine with Gaussian                                                                                 *
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT, IntEnergy, DiagFock, SpinMu
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT, IntEnergy, DiagFock, SpinMu, CompFock
   USE constants, ONLY: Hart
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
@@ -741,5 +736,4 @@ END SUBROUTINE ANT
        print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
     end do
   end subroutine PrintRMatrix
-  
-END MODULE ANT  
+
