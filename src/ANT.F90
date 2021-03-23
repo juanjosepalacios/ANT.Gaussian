@@ -29,10 +29,7 @@
 !*     03690 Alicante (SPAIN)                             *
 !*                                                        *
 !**********************************************************
-  !SUBROUTINE ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn,NBasis)
-  SUBROUTINE ANT (UHF,JCycle,NBasis,outHWFockA,outHWFockB,outGibbsYA,outGibbsYB,outGibbsYKernel1A,&
-                  outGibbsYKernel1B,outGibbsYKernel2A,outGibbsYKernel2B,&
-                 IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn)   
+  SUBROUTINE ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn,NBasis)
 !**********************************************************************************************************************
 !* Interface subroutine with Gaussian                                                                                 *
 !**********************************************************************************************************************
@@ -57,9 +54,7 @@
   IMPLICIT NONE
 
   ! dummy arguments
-  LOGICAL, INTENT(in)      :: UHF   
-  REAL*8,DIMENSION(NBasis,NBasis),INTENT(out) :: outHWFockA, outHWFockB
-  REAL*8,DIMENSION(NBasis,NBasis),INTENT(out) :: outGibbsYA, outGibbsYB, outGibbsYKernel1A, outGibbsYKernel1B, outGibbsYKernel2A, outGibbsYKernel2B       
+  LOGICAL, INTENT(in)      :: UHF        
   REAL*8,INTENT(in)        :: denerrj, Crit
   INTEGER, INTENT(in)    :: NBasis,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig
   INTEGER, INTENT(inout) :: JCycle
@@ -194,7 +189,7 @@
      OPEN(ifu_xyz,file=trim(jobname)//'.xyz',status='unknown')
      IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. (SOC .or. ROT)) OPEN(ifu_tra,file='T.'//trim(jobname)//'.SOC.dat',status='unknown')
      IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. (.not. SOC) .and. (.not. ROT)) OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
-     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
+     !IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
      IF (RedTransmB < RedTransmE) OPEN(ifu_red,file='t.'//trim(jobname)//'.dat',status='unknown')
      IF (Hamilton) OPEN(ifu_ham,file='V.'//trim(jobname)//'.dat',status='unknown')
      IF (Mulliken) OPEN(ifu_mul,file='Q.'//trim(jobname)//'.dat',status='unknown')
@@ -474,55 +469,74 @@
   
   if( jcycle.EQ.1000)THEN
     if(CompFock)then
-      Write(*,'(A)')"outHWFockA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
-      Write(*,'(A)')"ALPHA HWFOCK outHWFockA(:,:)"
+      !Write(*,'(A)')"outHWFockA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      !Write(*,'(A)')"ALPHA HWFOCK outHWFockA(:,:)"
+      Write(*,'(A)')"DevHWFockMat(1 or 2,i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      Write(*,'(A)')"ALPHA HWFOCK DevHWFockA(1,:,:)"
       do i=1,NBasis
-        do j=1,NBasis
-          outHWFockA(i,j)=DevHWFockMat(1,i,j)
-        end do
-        Write(*, '(10F8.4)')( outHWFockA(i,j) ,j=1,NBasis)
+        !do j=1,NBasis
+        !  outHWFockA(i,j)=DevHWFockMat(1,i,j)
+        !end do
+        !Write(*, '(10F8.4)')( outHWFockA(i,j) ,j=1,NBasis)
+        Write(*, '(10F8.4)')( DevHWFockMat(1,i,j) ,j=1,NBasis)
       end do
       if(NSpin==2)then
-        Write(*,'(A)')"BETA HWFOCK outHWFockB(:,:)"
+        !Write(*,'(A)')"BETA HWFOCK outHWFockB(:,:)"
+        Write(*,'(A)')"BETA HWFOCK DevHWFockMat(2,:,:)"
         do i=1,NBasis
-          do j=1,NBasis
-            outHWFockB(i,j)=DevHWFockMat(2,i,j)
-          end do
-          Write(*, '(10F8.4)')( outHWFockB(i,j) ,j=1,NBasis)
+          !do j=1,NBasis
+          !  outHWFockB(i,j)=DevHWFockMat(2,i,j)
+          !end do
+          !Write(*, '(10F8.4)')( outHWFockB(i,j) ,j=1,NBasis)
+          Write(*, '(10F8.4)')( DevHWFockMat(2,i,j) ,j=1,NBasis)
         end do
       end if
-      Write(*,'(A)')"END outHWFockA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
-
-      Write(*,'(A)')"outGibbsYA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
-      Write(*,'(A)')"ALPHA GibbsY outGibbsYA(:,:)"
+      !Write(*,'(A)')"END outHWFockA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      Write(*,'(A)')"END DevHWFockMat(1 or 2, i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+  
+      !Write(*,'(A)')"outGibbsYA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      !Write(*,'(A)')"ALPHA GibbsY outGibbsYA(:,:)"
+      Write(*,'(A)')"DevDGibbsYMat(1 or 2, i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      Write(*,'(A)')"ALPHA GibbsY DevDGibbsYMat(1,:,:)"
       do i=1,NBasis
-        do j=1,NBasis
-          outGibbsYA(i,j)=DevDGibbsYMat(1,i,j)
-          outGibbsYKernel1A(i,j)=DevDGibbsYKernel1Mat(1,i,j)
-          outGibbsYKernel2A(i,j)=DevDGibbsYKernel2Mat(1,i,j)
-        end do
-        Write(*, '(10F8.4)')( outGibbsYA(i,j) ,j=1,NBasis)
+        !do j=1,NBasis
+        !  outGibbsYA(i,j)=DevDGibbsYMat(1,i,j)
+        !  outGibbsYKernel1A(i,j)=DevDGibbsYKernel1Mat(1,i,j)
+        !  outGibbsYKernel2A(i,j)=DevDGibbsYKernel2Mat(1,i,j)
+        !end do
+        !Write(*, '(10F8.4)')( outGibbsYA(i,j) ,j=1,NBasis)
+        Write(*, '(10F8.4)')( DevDGibbsYMat(1,i,j) ,j=1,NBasis)
       end do
-      Write(*,'(A)')"ALPHA GibbsY outGibbsYKernel1A(:,:)"
-      call PrintRMatrix(outGibbsYKernel1A)
-      Write(*,'(A)')"ALPHA GibbsY outGibbsYKernel2A(:,:)"
-      call PrintRMatrix(outGibbsYKernel2A)
+      !Write(*,'(A)')"ALPHA GibbsY outGibbsYKernel1A(:,:)"
+      !call PrintRMatrix(outGibbsYKernel1A)
+      !Write(*,'(A)')"ALPHA GibbsY outGibbsYKernel2A(:,:)"
+      !call PrintRMatrix(outGibbsYKernel2A)
+      !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel1Mat(1,:,:)"
+      !call PrintRMatrix(DevDGibbsYKernel1Mat(1,:,:))
+      !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel2Mat(1,:,:)"
+      !call PrintRMatrix(DevDGibbsYKernel2Mat(1,:,:))
       if(NSpin==2)then
-        Write(*,'(A)')"BETA GibbsY outGibbsYB(:,:)"
+        !Write(*,'(A)')"BETA GibbsY outGibbsYB(:,:)"
+        Write(*,'(A)')"BETA GibbsY DevDGibbsYMat(2,:,:)"
         do i=1,NBasis
-          do j=1,NBasis
-            outGibbsYB(i,j)=DevDGibbsYMat(2,i,j)
-            outGibbsYKernel1B(i,j)=DevDGibbsYKernel1Mat(2,i,j)
-            outGibbsYKernel2B(i,j)=DevDGibbsYKernel2Mat(2,i,j)
-          end do
-          Write(*, '(10F8.4)')( outGibbsYB(i,j) ,j=1,NBasis)
+          !do j=1,NBasis
+          !  outGibbsYB(i,j)=DevDGibbsYMat(2,i,j)
+          !  outGibbsYKernel1B(i,j)=DevDGibbsYKernel1Mat(2,i,j)
+          !  outGibbsYKernel2B(i,j)=DevDGibbsYKernel2Mat(2,i,j)
+          !end do
+          !Write(*, '(10F8.4)')( outGibbsYB(i,j) ,j=1,NBasis)
+          Write(*, '(10F8.4)')( DevDGibbsYMat(2,i,j) ,j=1,NBasis)
         end do
-        Write(*,'(A)')"BETA GibbsY outGibbsYKernel1B(:,:)"
-        call PrintRMatrix(outGibbsYKernel1B)
-        Write(*,'(A)')"BETA GibbsY outGibbsYKernel2B(:,:)"
-        call PrintRMatrix(outGibbsYKernel2B)
+        !Write(*,'(A)')"BETA GibbsY outGibbsYKernel1B(:,:)"
+        !call PrintRMatrix(outGibbsYKernel1B)
+        !Write(*,'(A)')"BETA GibbsY outGibbsYKernel2B(:,:)"
+        !call PrintRMatrix(outGibbsYKernel2B)
+      !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel1Mat(2,:,:)"        
+      !call PrintRMatrix(DevDGibbsYKernel1Mat(2,:,:))        
+      !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel2Mat(2,:,:)"        
+      !call PrintRMatrix(DevDGibbsYKernel2Mat(2,:,:))        
       end if
-      Write(*,'(A)')"END outGibbsYA/B(i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
+      Write(*,'(A)')"END DevDGibbsYMat(1 or 2,i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
     end if
   end if  
   
@@ -726,14 +740,14 @@
   RETURN
 END SUBROUTINE ANT
 
-  subroutine PrintRMatrix( A )
-    implicit none
-    real,dimension(:,:),intent(in) :: A
-    integer :: i,j,dim1,dim2
-    dim1 = size(A,1)
-    dim2 = size(A,2)
-    do i=1,dim1
-       print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
-    end do
-  end subroutine PrintRMatrix
+!  subroutine PrintRMatrix( A )
+!    implicit none
+!    real,dimension(:,:),intent(in) :: A
+!    integer :: i,j,dim1,dim2
+!    dim1 = size(A,1)
+!    dim2 = size(A,2)
+!    do i=1,dim1
+!       print '(1000(ES14.4))', ( A(i,j), j=1,dim2 )
+!    end do
+!  end subroutine PrintRMatrix
 
