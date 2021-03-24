@@ -116,8 +116,8 @@ CONTAINS
     REAL*8, DIMENSION(2,NAOs,NAOs), INTENT(IN) :: HD
     REAL*8, DIMENSION(NAOs,NAOs), INTENT(IN) :: SD
 
-    INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin
-    REAL*8 :: theta_atom, phi_atom
+    INTEGER :: i, j, k, q, s1, s2, ish1, ish2, acount
+    REAL*8 :: theta_atom1, phi_atom1, theta_atom2, phi_atom2 
     
     COMPLEX*16 :: u, v, ustar, vstar, HROT1temp11, HROT1temp12, HROT1temp21, HROT1temp22, SROT1temp11, SROT1temp22
     COMPLEX*16 :: HROT2temp11, HROT2temp12, HROT2temp21, HROT2temp22, SROT2temp11, SROT2temp22
@@ -130,6 +130,7 @@ CONTAINS
                 
     ish1 = 1
     ish2 = 1
+    acount = 1
     
     DO i = 1, NShell
       ShellT1 = GetShellT(i)        
@@ -139,15 +140,15 @@ CONTAINS
             ShellT2 = GetShellT(k)                 
             AtomID2 = GetAtm4Sh(k)   
           	DO q=1,2*ShellT2+1
-          	  IF (AtomID2 == AtomID1) THEN 
+          	  IF (AtomID2 == AtomID1 .and. ShellT1==ShellT2) THEN 
                     IF( NSpinRotAtom > 0) THEN
-                      theta_atom = SpinRotAtomTheta(AtomID2)
-                      phi_atom = SpinRotAtomPhi(AtomID2)
+                      theta_atom1 = SpinRotAtomTheta(AtomID1)
+                      phi_atom1 = SpinRotAtomPhi(AtomID1)
                     ELSE
-                      theta_atom = theta
-                      phi_atom = phi	
+                      theta_atom1 = theta
+                      phi_atom1 = phi	
                     END IF                   	    
-                    CALL Rot_Matrices( theta_atom, phi_atom, u, v, ustar, vstar )                     	        
+                    CALL Rot_Matrices( theta_atom1, phi_atom1, u, v, ustar, vstar )                     	        
                     ! Rotate INTRA-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space
                     !Hamiltonian                                                                
                        ! Up-Up
@@ -166,9 +167,20 @@ CONTAINS
                        overlaprot (ish1+NAOs,ish2+NAOs) =  v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                        
                   ! Rotate INTER-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space    
-                  ELSE
-                      
-                      CALL Rot_Matrices( SpinRotAtomTheta(AtomID1), SpinRotAtomPhi(AtomID1), u, v, ustar, vstar )
+                  ELSE  IF (ShellT1==ShellT2) THEN
+                      IF( NSpinRotAtom > 0) THEN
+                        theta_atom1 = SpinRotAtomTheta(AtomID1)
+                        phi_atom1 = SpinRotAtomPhi(AtomID1)
+                        theta_atom2 = SpinRotAtomTheta(AtomID2)
+                        phi_atom2 = SpinRotAtomPhi(AtomID2)                        
+                      ELSE
+                        theta_atom1 = theta
+                        phi_atom1 = phi	
+                        theta_atom2 = theta 
+                        phi_atom2 = phi 
+                      END IF 
+                                              
+                      CALL Rot_Matrices( theta_atom1, phi_atom1, u, v, ustar, vstar )
                       ! Hamiltonian
                       HROT1temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                       HROT1temp12 = ustar*vstar*(dcmplx(HD(1,ish1,ish2)-HD(2,ish1,ish2),0.0d0))
@@ -178,7 +190,7 @@ CONTAINS
                       SROT1temp11 = u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
                       SROT1temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                                                                                                                                       
-                      CALL Rot_Matrices( SpinRotAtomTheta(AtomID2), SpinRotAtomPhi(AtomID2), u, v, ustar, vstar )
+                      CALL Rot_Matrices( theta_atom2, phi_atom2, u, v, ustar, vstar )
                       ! Hamiltonian
                       HROT2temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                       HROT2temp12 = ustar*vstar*(dcmplx(HD(1,ish1,ish2)-HD(2,ish1,ish2),0.0d0))
@@ -187,7 +199,7 @@ CONTAINS
                       ! Overlap matrix
                       SROT2temp11 = u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
                       SROT2temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-				  
+                    
                       ! Average Hamiltonian elements                      
                       hamilrot (ish1, ish2) = (HROT1temp11 + HROT2temp11)/2.0d0
                       hamilrot (ish1, ish2+NAOs) = (HROT1temp12 + HROT2temp12)/2.0d0
@@ -196,8 +208,7 @@ CONTAINS
                       
                       ! Average Overlap matrix elemnets                     
                       overlaprot (ish1,ish2) = (SROT1temp11 + SROT2temp11)/2.0d0
-                      overlaprot (ish1+NAOs,ish2+NAOs) = (SROT1temp22 + SROT2temp22)/2.0d0 
-                                          
+                      overlaprot (ish1+NAOs,ish2+NAOs) = (SROT1temp22 + SROT2temp22)/2.0d0                   
                   END IF  
                 ish2 = ish2 + 1
                 END DO    
@@ -205,7 +216,7 @@ CONTAINS
              ish1 = ish1 + 1       
              !Print *, ish1, ish2, NAOs             
              ish2 = 1
-           END DO
+           END DO   
     END DO                                                                                                                                          
          
    CALL FLUSH(6)
