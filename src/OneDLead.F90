@@ -257,7 +257,7 @@ CONTAINS
        END DO
        CLOSE(10)
     END IF
-    STOP
+    !STOP
   END SUBROUTINE Init1DLead
 
 
@@ -452,7 +452,7 @@ CONTAINS
     print*, "Q(Emin)=", TotCharge( EMin )
     print*, "Q(Emax)=", TotCharge( L1D%EMax )
     
-    STOP
+    !STOP
 
     ChargeOffset = L1D%NElectrons
     CALL MULLER(TotCharge,E0,E1,E2,Delta,Epsilon,Max,EFermi,Z,K,Cond)

@@ -409,11 +409,11 @@
     shiftup = shift
     shiftdown = shift
 
-    IF( ElType(1) == "BETHE" .and. ElType(2) == "BETHE" ) THEN 
+    IF( (ElType(1) == "BETHE" .and. ElType(2) == "BETHE") .or.  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD")) THEN 
       call AnalyseCluster
-    ELSE IF  (ElType(1) == "BETHE" .and. ElType(2) == "GHOST" ) THEN
+    ELSE IF  ((ElType(1) == "BETHE" .or. ElType(1) == "1DLEAD") .and. ElType(2) == "GHOST" ) THEN
       call AnalyseClusterElectrodeOne
-    ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "BETHE" ) THEN
+    ELSE IF  (ElType(1) == "GHOST" .and. (ElType(2) == "BETHE" .or. ElType(2) == "1DLEAD")) THEN
       call AnalyseClusterElectrodeTwo
     ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST" ) THEN
       continue                           
@@ -905,7 +905,7 @@
         end if
       end if       
 
-       IF( ANT1DInp ) call WriteANT1DInput
+       !IF( ANT1DInp ) call WriteANT1DInput
 
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )

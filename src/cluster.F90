@@ -326,31 +326,31 @@ CONTAINS
        end if
     end do
 
-    if(ANT1DInp)then
-       open( ifu_ant, file=trim(ant1dname)//'.ant', status='unknown' )
-       write( ifu_ant, '(A)'),    "&Parameters"
-       write( ifu_ant, '(A,A)'),  "Lead1File = ", 'bl1.'//trim(ant1dname)//'.dat'
-       write( ifu_ant, '(A,A)'),  "Lead2File = ", 'bl2.'//trim(ant1dname)//'.dat'
-       write( ifu_ant, '(A,A)'),  "Lead1XYZ = ", 'bl1.'//trim(ant1dname)//'.xyz'      
-       write( ifu_ant, '(A,A)'),  "Lead2XYZ = ", 'bl2.'//trim(ant1dname)//'.xyz'      
-       write( ifu_ant, '(A,A)'),  "DevFile = ", 'dev.'//trim(ant1dname)//'.dat'
-       write( ifu_ant, '(A,A)'),  "DevXYZ = ", 'dev.'//trim(ant1dname)//'.xyz'      
-       write( ifu_ant, '(A)'), "Bethe = .true."       
-       write( ifu_ant, '(A,I2)'), "NAtomData = ",NAtomData      
-       write( ifu_ant, '(A)'),    "/"      
-       do iatom=1,GetNAtoms()
-          do jatom=1,iatom-1
-             if( AN(iatom) == AN(jatom) ) exit
-          end do
-          if( jatom == iatom )then
-             write(ifu_ant, '(A)'), "&AtomData"
-             write(ifu_ant, '(A,I3)'), "AN = ", AN(iatom)
-             write(ifu_ant, '(A,100(A2))' ), "AtShells =", (ShAtm(i,iatom),i=1,NSh(iatom))
-             write(ifu_ant, '(A)'), "/"
-          end if
-       end do
-       close( ifu_ant )
-    end if
+    !if(ANT1DInp)then
+    !   open( ifu_ant, file=trim(ant1dname)//'.ant', status='unknown' )
+    !   write( ifu_ant, '(A)'),    "&Parameters"
+    !   write( ifu_ant, '(A,A)'),  "Lead1File = ", 'bl1.'//trim(ant1dname)//'.dat'
+    !   write( ifu_ant, '(A,A)'),  "Lead2File = ", 'bl2.'//trim(ant1dname)//'.dat'
+    !   write( ifu_ant, '(A,A)'),  "Lead1XYZ = ", 'bl1.'//trim(ant1dname)//'.xyz'      
+    !   write( ifu_ant, '(A,A)'),  "Lead2XYZ = ", 'bl2.'//trim(ant1dname)//'.xyz'      
+    !   write( ifu_ant, '(A,A)'),  "DevFile = ", 'dev.'//trim(ant1dname)//'.dat'
+    !   write( ifu_ant, '(A,A)'),  "DevXYZ = ", 'dev.'//trim(ant1dname)//'.xyz'      
+    !   write( ifu_ant, '(A)'), "Bethe = .true."       
+    !   write( ifu_ant, '(A,I2)'), "NAtomData = ",NAtomData      
+    !   write( ifu_ant, '(A)'),    "/"      
+    !   do iatom=1,GetNAtoms()
+    !      do jatom=1,iatom-1
+    !         if( AN(iatom) == AN(jatom) ) exit
+    !      end do
+    !      if( jatom == iatom )then
+    !         write(ifu_ant, '(A)'), "&AtomData"
+    !         write(ifu_ant, '(A,I3)'), "AN = ", AN(iatom)
+    !         write(ifu_ant, '(A,100(A2))' ), "AtShells =", (ShAtm(i,iatom),i=1,NSh(iatom))
+    !         write(ifu_ant, '(A)'), "/"
+    !      end if
+    !   end do
+    !   close( ifu_ant )
+    !end if
 
     WRITE(IFU_LOG,*) '----------------------------------------------------------'
     WRITE(IFU_LOG,*) 'Analyzing cluster for the connection of the  Bethe Lattice'
@@ -1289,29 +1289,29 @@ CONTAINS
        end do
     !CLOSE(ifu_xyz)
 
-    if( ANT1DInp )then
-       OPEN(unit=ifu_ant,file='dev.'//trim(ant1dname)//'.xyz',status='unknown')
-       write(ifu_ant,*), GetNAtoms()
-       write(ifu_ant,*)
-       DO i=1,GetNAtoms()
-          WRITE(ifu_ant,'(I3,3(F11.6))') AN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-       END DO
-       close(ifu_ant)
-       OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
-       write(ifu_ant,*), nblatoms1
-       write(ifu_ant,*)
-       do ibl=1,nblatoms1
-          WRITE(ifu_ant,' (I3,3(F11.6))') AN(1), xbl1(ibl), ybl1(ibl), zbl1(ibl)
-       end do
-       close(ifu_ant)
-       OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
-       write(ifu_ant,*), nblatoms2
-       write(ifu_ant,*)
-       do ibl=1,nblatoms2
-          WRITE(ifu_ant,' (I3,3(F11.6))') AN(GetNAtoms()), xbl2(ibl), ybl2(ibl), zbl2(ibl)
-       end do
-       close(ifu_ant)
-    end if
+    !if( ANT1DInp )then
+    !   OPEN(unit=ifu_ant,file='dev.'//trim(ant1dname)//'.xyz',status='unknown')
+    !   write(ifu_ant,*), GetNAtoms()
+    !   write(ifu_ant,*)
+    !   DO i=1,GetNAtoms()
+    !      WRITE(ifu_ant,'(I3,3(F11.6))') AN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+    !   END DO
+    !   close(ifu_ant)
+    !   OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
+    !   write(ifu_ant,*), nblatoms1
+    !   write(ifu_ant,*)
+    !   do ibl=1,nblatoms1
+    !      WRITE(ifu_ant,' (I3,3(F11.6))') AN(1), xbl1(ibl), ybl1(ibl), zbl1(ibl)
+    !   end do
+    !   close(ifu_ant)
+    !   OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
+    !   write(ifu_ant,*), nblatoms2
+    !   write(ifu_ant,*)
+    !   do ibl=1,nblatoms2
+    !      WRITE(ifu_ant,' (I3,3(F11.6))') AN(GetNAtoms()), xbl2(ibl), ybl2(ibl), zbl2(ibl)
+    !   end do
+    !   close(ifu_ant)
+    !end if
 
   END SUBROUTINE AnalyseCluster
 
@@ -1803,22 +1803,22 @@ CONTAINS
        WRITE(ifu_xyz,'(A2,3(F11.6))') IEl(GetAN(i)), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
     END DO
     
-    if( ANT1DInp )then
-       OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
-       write(ifu_ant,*), GetNAtoms()
-       write(ifu_ant,*)
-       DO i=1,GetNAtoms()
-          WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-       END DO
-       close(ifu_ant)
-       OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
-       write(ifu_ant,*), nblatoms1
-       write(ifu_ant,*)
-       do ibl=1,nblatoms1
-          WRITE(ifu_ant,' (I2,3(F11.6))') ANLead1, xbl1(ibl), ybl1(ibl), zbl1(ibl)
-       end do
-       close(ifu_ant)
-    end if
+    !if( ANT1DInp )then
+    !   OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
+    !   write(ifu_ant,*), GetNAtoms()
+    !   write(ifu_ant,*)
+    !   DO i=1,GetNAtoms()
+    !      WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+    !   END DO
+    !   close(ifu_ant)
+    !   OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
+    !   write(ifu_ant,*), nblatoms1
+    !   write(ifu_ant,*)
+    !   do ibl=1,nblatoms1
+    !      WRITE(ifu_ant,' (I2,3(F11.6))') ANLead1, xbl1(ibl), ybl1(ibl), zbl1(ibl)
+    !   end do
+    !   close(ifu_ant)
+    !end if
 
   END SUBROUTINE AnalyseClusterElectrodeOne
 
@@ -2386,22 +2386,22 @@ CONTAINS
        end do
     !CLOSE(ifu_xyz)
 
-    if( ANT1DInp )then
-       OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
-       write(ifu_ant,*), GetNAtoms()
-       write(ifu_ant,*)
-       DO i=1,GetNAtoms()
-          WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-       END DO
-       close(ifu_ant)
-       OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
-       write(ifu_ant,*), nblatoms2
-       write(ifu_ant,*)
-       do ibl=1,nblatoms2
-          WRITE(ifu_ant,' (I2,3(F11.6))') ANLead2, xbl2(ibl), ybl2(ibl), zbl2(ibl)
-       end do
-       close(ifu_ant)
-    end if
+    !if( ANT1DInp )then
+    !   OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
+    !   write(ifu_ant,*), GetNAtoms()
+    !   write(ifu_ant,*)
+    !   DO i=1,GetNAtoms()
+    !      WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+    !   END DO
+    !   close(ifu_ant)
+    !   OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
+    !   write(ifu_ant,*), nblatoms2
+    !   write(ifu_ant,*)
+    !   do ibl=1,nblatoms2
+    !      WRITE(ifu_ant,' (I2,3(F11.6))') ANLead2, xbl2(ibl), ybl2(ibl), zbl2(ibl)
+    !   end do
+    !   close(ifu_ant)
+    !end if
 
   END SUBROUTINE AnalyseClusterElectrodeTwo
 
