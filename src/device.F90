@@ -74,15 +74,9 @@
   complex*16, dimension(:,:),allocatable :: SPH, SNH
   
   ! *** Hamiltonian and density matrix of device
-  real*8, dimension(:,:,:),allocatable :: HD
-  real*8, dimension(:,:,:),allocatable :: PD
-  real*8, dimension(:,:,:),allocatable :: PDGIBBS
-  real*8, dimension(:,:,:),allocatable :: HW
+  real*8, dimension(:,:,:),allocatable :: HD, PD, PDGIBBS, HW, LocPD
   real*8, dimension(:,:,:),allocatable :: DGibbsY, DGibbsYKernel1, DGibbsYKernel2  
-  complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:,:),allocatable :: PDOUTGIBBS
-  complex*16, dimension(:,:,:),allocatable :: HWOUT
-  complex*16, dimension(:,:,:),allocatable :: LiouvSOp
+  complex*16, dimension(:,:,:),allocatable :: PDOUT, PDOUTGIBBS, HWOUT, LiouvSOp, LocPDOUT
   complex*16, dimension(:,:,:),allocatable :: CGibbsY, CGibbsYKernel1, CGibbsYKernel2  
   complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC,PD_SOC_R,PD_SOC_A
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
@@ -127,9 +121,7 @@
   ! *** Number of electrons projected on atoms at the Fermi energy
   ! *** Actual electron charge for certain Fermi energy ***
   real*8 :: LocalQAlpha, LocalQBeta
-  real*8, dimension(:), allocatable :: alphaelec, betaelec, alphalocalshift, betalocalshift
-  real*8, dimension(:,:,:),allocatable :: LocPD
-  complex*16, dimension(:,:,:),allocatable :: LocPDOUT  
+  real*8, dimension(:), allocatable :: alphaelec, betaelec, alphalocalshift, betalocalshift 
   
 !!$OMP THREADPRIVATE(shift)
   contains
@@ -192,7 +184,7 @@
   end subroutine SetDevDensMat
   
   ! *** Get matrix Element of HWFock matrix ***
-  real function DevHWFockMat( is, i, j )
+  real*8 function DevHWFockMat( is, i, j )
     implicit none
     integer, intent(in) :: is, i, j
     DevHWFockMat = HW(is, i, j)
@@ -232,7 +224,7 @@
   subroutine SetDevDGibbsYKernel1Mat( is, i, j, DGibbsYKernel1ij )
     implicit none
     integer, intent(in) :: is, i, j
-    real, intent(in) :: DGibbsYKernel1ij
+    real*8, intent(in) :: DGibbsYKernel1ij
     DGibbsYKernel1(is, i, j) = DGibbsYKernel1ij
   end subroutine SetDevDGibbsYKernel1Mat
 
@@ -247,7 +239,7 @@
   subroutine SetDevDGibbsYKernel2Mat( is, i, j, DGibbsYKernel2ij )
     implicit none
     integer, intent(in) :: is, i, j
-    real, intent(in) :: DGibbsYKernel2ij
+    real*8, intent(in) :: DGibbsYKernel2ij
     DGibbsYKernel2(is, i, j) = DGibbsYKernel2ij
   end subroutine SetDevDGibbsYKernel2Mat  
 
@@ -323,7 +315,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, CompFock, SOC, biasvoltage
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, CompFock, BiasEnergy, SOC, biasvoltage
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -388,7 +380,16 @@
         print *, "DEVICE/Allocation error for PDGIBBS"
         stop
       end if
-    end if    
+    end if  
+    if(BiasEnergy)then
+      allocate( LocPD(NSpin,NAOrbs,NAOrbs), &
+         LocPDOUT(NSpin,NAOrbs,NAOrbs), &
+         STAT=AllocErr )
+      if( AllocErr /= 0 ) then
+        print *, "DEVICE/Allocation error for LocPD, LocPDOUT"
+        stop
+      end if
+    end if       
 
     SD = S
     call RMatPow( SD, -1.0d0, InvSD )
@@ -2904,7 +2905,7 @@ end subroutine CompLocalMu
   !
   ! - replaces old code in functions F(x) and QXTot(x)
   !
-  real function CompEnergy( mu )
+  real*8 function CompEnergy( mu )
      use constants
      use util
      use numeric, only: CHDiag, gauleg, RTrace
@@ -3210,7 +3211,7 @@ end subroutine CompLocalMu
 
      do i=1,NAOrbs
        do j=1,NAOrbs
-         auxPD(i,j)=PD(ispin,i,j)
+         auxPD(i,j)=PDGIBBS(ispin,i,j)
          aux1Kernel1(i,j) = (0.0,0.0)
          aux2Kernel1(i,j) = (0.0,0.0)
        end do
@@ -3226,7 +3227,7 @@ end subroutine CompLocalMu
 
      do i=1,NAOrbs
        do j=1,NAOrbs
-         auxPD(i,j)=PD(ispin,i,j)
+         auxPD(i,j)=PDGIBBS(ispin,i,j)
          aux1Kernel1(i,j) = (0.0,0.0)
          aux2Kernel1(i,j) = (0.0,0.0)
        end do
@@ -3637,7 +3638,7 @@ end subroutine CompLocalMu
   !****************************************
   double precision function QXTotEnergy(x)
     use parameters, only: biasvoltage,QExcess
-    use constants, only: d_pi, d_zero
+    use constants, only: d_pi, d_zero, c_zero
     use g09Common, only: GetNAE, GetNBE
     implicit none
 
@@ -3658,8 +3659,8 @@ end subroutine CompLocalMu
        !IntDOSE = d_zero
        !intchIntDOSE = d_zero
        !intpjIntDOSE = d_zero
-       LocPD = 0.d0
-       LocPDOUT = 0.d0
+       LocPD = d_zero
+       LocPDOUT = c_zero
 
        ! Radius of complex contour integration
        ! add 10eV just in case 
@@ -4415,61 +4416,68 @@ end subroutine CompLocalMu
        ! Radius of complex contour integration
        ! add 10eV just in case
        !rrr = 0.5*abs(EMin)+10.0d0; ! ORIGINAL CODE COMMENTED ON 2018-04.23
-       rrr = 0.5*abs(EMin)+4.0d0;
+       rrr = 0.5*abs(EMin)+10.0d0;
 
        !c c Integral limits ... (a,b)
        a = 0.d0
        b = d_pi
        M=1000
-       !call intpjHW(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0)) ! EL 2019-04-25 ME LO HE ENCONTRADO COMENTADO, PERO ESO NO ES COMPATIBLE CON EL RESULTADO TEÓRICO.
+       call intpjCGibbsY(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0)) ! EL 2019-04-25 ME LO HE ENCONTRADO COMENTADO, PERO ESO NO ES COMPATIBLE CON EL RESULTADO TEÓRICO.
 
        ! Density matrix out of equilibirum
-       !if (biasvoltage /= 0.0) then
-          !M=100
-          !call intchCGibbsY(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
-          !M=1000
-          M=10000
-          call intchCGibbsY(d_zero-dabs(biasvoltage/2.0)-rrr,dabs(biasvoltage/2.0),M)
-
-!          THE DENSITY MATRIX PD WAS ALREADY FILLED, THIS IS ONLY QCGibbsYTot POSTPROCESSING.
+       if (biasvoltage /= 0.0) then
+          M=100
+          call intchCGibbsY(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
           do i=1,NAOrbs
              do j=1,NAOrbs
                 PDGIBBS(ispin,i,j)=PDGIBBS(ispin,i,j)+PDOUTGIBBS(ispin,i,j)
-                !HW(ispin,i,j)=HW(ispin,i,j)+HWOUT(ispin,i,j)
+                HW(ispin,i,j)=HW(ispin,i,j)+HWOUT(ispin,i,j)
              end do
-          end do
+          end do          
+          !M=1000
+          !M=10000
+          !call intchCGibbsY(d_zero-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+       end if   
+
+!          THE DENSITY MATRIX PD WAS ALREADY FILLED, THIS IS ONLY QCGibbsYTot POSTPROCESSING.
+          !do i=1,NAOrbs
+          !   do j=1,NAOrbs
+          !      PDGIBBS(ispin,i,j)=PDGIBBS(ispin,i,j)+PDOUTGIBBS(ispin,i,j)
+          !      !HW(ispin,i,j)=HW(ispin,i,j)+HWOUT(ispin,i,j)
+          !   end do
+          !end do
           if(DebugDev)then
-          if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsY(1,:,:)"
-          if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsY(2,:,:)"
-          Write(*,*)DREAL(CGibbsY(iSpin,1,1))
-          Write(*,*)DIMAG(CGibbsY(iSpin,1,1))
-          Write(*,*)DREAL(CGibbsY(iSpin,1,2))
-          Write(*,*)DIMAG(CGibbsY(iSpin,1,2))
-          call PrintCMatrix(CGibbsY(iSpin,:,:))
-
-          if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsYKernel1(1,:,:)"
-          if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsYKernel1(2,:,:)"
-          Write(*,*)DREAL(CGibbsYKernel1(iSpin,1,1))
-          Write(*,*)DIMAG(CGibbsYKernel1(iSpin,1,1))
-          Write(*,*)DREAL(CGibbsYKernel1(iSpin,1,2))
-          Write(*,*)DIMAG(CGibbsYKernel1(iSpin,1,2))
-          call PrintCMatrix(CGibbsYKernel1(iSpin,:,:))
-
-          if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsYKernel2(1,:,:)"
-          if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsYKernel2(2,:,:)"
-          Write(*,*)DREAL(CGibbsYKernel2(iSpin,1,1))
-          Write(*,*)DIMAG(CGibbsYKernel2(iSpin,1,1))
-          Write(*,*)DREAL(CGibbsYKernel2(iSpin,1,2))
-          Write(*,*)DIMAG(CGibbsYKernel2(iSpin,1,2))
-          call PrintCMatrix(CGibbsYKernel2(iSpin,:,:))
+             if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsY(1,:,:)"
+             if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsY(2,:,:)"
+             Write(*,*)DREAL(CGibbsY(iSpin,1,1))
+             Write(*,*)DIMAG(CGibbsY(iSpin,1,1))
+             Write(*,*)DREAL(CGibbsY(iSpin,1,2))
+             Write(*,*)DIMAG(CGibbsY(iSpin,1,2))
+             call PrintCMatrix(CGibbsY(iSpin,:,:))
+		     
+             if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsYKernel1(1,:,:)"
+             if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsYKernel1(2,:,:)"
+             Write(*,*)DREAL(CGibbsYKernel1(iSpin,1,1))
+             Write(*,*)DIMAG(CGibbsYKernel1(iSpin,1,1))
+             Write(*,*)DREAL(CGibbsYKernel1(iSpin,1,2))
+             Write(*,*)DIMAG(CGibbsYKernel1(iSpin,1,2))
+             call PrintCMatrix(CGibbsYKernel1(iSpin,:,:))
+		     
+             if(iSpin==1)Write(*,'(A)')"WRITE ALPHA COMPLEX CGibbsYKernel2(1,:,:)"
+             if(iSpin==2)Write(*,'(A)')"WRITE BETA COMPLEX CGibbsYKernel2(2,:,:)"
+             Write(*,*)DREAL(CGibbsYKernel2(iSpin,1,1))
+             Write(*,*)DIMAG(CGibbsYKernel2(iSpin,1,1))
+             Write(*,*)DREAL(CGibbsYKernel2(iSpin,1,2))
+             Write(*,*)DIMAG(CGibbsYKernel2(iSpin,1,2))
+             call PrintCMatrix(CGibbsYKernel2(iSpin,:,:))
 
           end if
-          do i=1,NAOrbs
-             do j=1,NAOrbs
-             !   Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)'),iSpin,i,j,"(",DREAL(CGibbsY(iSpin,i,j)),") + i*(",DIMAG(CGibbsY(iSpin,i,j)),")"
-             end do
-            !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(CGibbsY(iSpin,i,j)),") +i*(",DIMAG(CGibbsY(iSpin,i,j)),")") ,j=1,NAOrbs)
-          end do
+          !do i=1,NAOrbs
+          !   do j=1,NAOrbs
+          !   !   Write(*,'(I4,I4,I4,A,F12.8,A,F12.8,A)'),iSpin,i,j,"(",DREAL(CGibbsY(iSpin,i,j)),") + i*(",DIMAG(CGibbsY(iSpin,i,j)),")"
+          !   end do
+          !  !Write(*, '(10(A,F12.8,A,F12.8,A))')( ("(",DREAL(CGibbsY(iSpin,i,j)),") +i*(",DIMAG(CGibbsY(iSpin,i,j)),")") ,j=1,NAOrbs)
+          !end do
           if(MAXVAL(ABS(DIMAG(CGibbsY(iSpin,:,:)))) > 1.0D-3)then
             Write(*,'(A)')"***************************************************************************"
             Write(*,'(A,I1,A)')"******** CGibbsY(",iSpin,",:,:) CONTAINS NON-VANISHING IMAGINARY PART ********"
@@ -6289,7 +6297,7 @@ end subroutine CompLocalMu
   !
   ! *** Integrand for charge integration on complex contour ***
   !
-  real function CDOS( E0, R, phi )
+  real*8 function CDOS( E0, R, phi )
     use constants, only: c_zero, ui, d_pi
 
     real, intent(in) :: phi, E0, R
@@ -6318,7 +6326,7 @@ end subroutine CompLocalMu
   !
   ! *** Integrand for charge integration on real contour ***
   !
-  real function RDOS( E0 )
+  real*8 function RDOS( E0 )
     use Cluster, only : hiaorbno, loaorbno
     use g09Common, only: GetNAtoms
     !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
@@ -6362,7 +6370,7 @@ end subroutine CompLocalMu
   !
   ! *** Integrand for charge integration on complex contour ***
   !
-  real function CDOSE( E0, R, phi )
+  real*8 function CDOSE( E0, R, phi )
     use constants, only: c_zero, ui, d_pi
 
     real, intent(in) :: phi, E0, R
@@ -6403,7 +6411,7 @@ end subroutine CompLocalMu
   !
   ! *** Integrand for charge integration on real contour ***
   !
-  real function RDOSE( E0 )
+  real*8 function RDOSE( E0 )
     use Cluster, only : hiaorbno, loaorbno
     use g09Common, only: GetNAtoms
     !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
@@ -6455,7 +6463,7 @@ end subroutine CompLocalMu
   !
   ! *** Integrand for charge integration on real contour ***
   !
-  real function RDOSOld( E0 )
+  real*8 function RDOSOld( E0 )
     use Cluster, only : hiaorbno, loaorbno
     use g09Common, only: GetNAtoms
     !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
@@ -6512,7 +6520,7 @@ end subroutine CompLocalMu
 !
   ! *** Integrand for charge integration on real contour ***
   !
-  real function RDOStimesE( E0 )
+  real*8 function RDOStimesE( E0 )
     use Cluster, only : hiaorbno, loaorbno
     use g09Common, only: GetNAtoms
     !complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
@@ -6570,7 +6578,7 @@ end subroutine CompLocalMu
   ! rule up to some point on the path and midinf 
   ! rule for the tail.
   !
-  real function TotEnergyOld( E )
+  real*8 function TotEnergyOld( E )
     use constants, only: d_pi
    !use parameters, only: ChargeAcc
     use numeric, only: midpnt, midinf, qromoc
@@ -6656,7 +6664,7 @@ end subroutine CompLocalMu
   ! rule up to some point on the path and midinf 
   ! rule for the tail.
   !
-real function FullEnergy( E )
+real*8 function FullEnergy( E )
     use constants, only: d_zero, d_pi
     use parameters, only: ChargeAcc, biasvoltage
     use numeric, only: midpnt, midinf, qromoc, gauleg
@@ -6821,7 +6829,7 @@ end function FullEnergy
   
 !-------------------------------------------------------------------------------
   ! This function based on DDOS is the integrand for E*DOS. Written by C. Salgado.
-  real function DDOStimesE0( E0, R, phi )
+  real*8 function DDOStimesE0( E0, R, phi )
 !    use Cluster, only : hiaorbno, loaorbno
 !#ifdef G03ROOT
 !    use g03Common, only: GetNAtoms
@@ -6882,7 +6890,7 @@ end function FullEnergy
   ! 
   ! *** Total charge up to energy E, lower bound is EMin ***
   ! 
-  real function IntDDOStimesE( E )
+  real*8 function IntDDOStimesE( E )
     use constants, only: d_zero, d_pi
     use parameters, only: ChargeAcc
     use numeric, only: gauleg 
@@ -6982,26 +6990,27 @@ end function FullEnergy
 !        IntDOSE:  The value of the energy integral. Interval [-1,1]           c
 !ccccccccccccccccccccccccccccccc
   !subroutine intchenergy(Er,El,M)
-  real function intchenergy(Er,El,M)
+  real*8 function intchenergy(Er,El,M)
     use constants, only: ui,d_pi,d_zero
     use parameters, only: PAcc 
+    use omp_lib    
    
-    real,intent(in) :: Er,El
+    real*8,intent(in) :: Er,El
     integer,intent(inout) :: M
-    real, dimension(M) :: xs,xcc
+    real*8, dimension(M) :: xs,xcc
     complex*16, dimension(NAOrbs,NAOrbs) :: green
     complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm 
     complex*16, dimension(NAOrbs,NAOrbs) :: p,q
     complex*16, dimension(NAOrbs,NAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
     integer :: n,i,j,l,k,k1
-    real :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
 
     complex*16, dimension(NAOrbs,NAOrbs) :: gammar, gammal
-    real :: DOS
+    real*8 :: DOS, intchenergytmp
 
     if(DebugDev)Write(*,'(A)')"ENTERED Device/intchenergy"
-      intchenergy = d_zero
+      intchenergytmp = d_zero
 
       pi=d_pi
 
@@ -7021,7 +7030,7 @@ end function FullEnergy
         DOS = DOS-ui*green(i,j)/(2*pi)
        enddo
       enddo
-      intchenergy = intchenergy + DOS*E0
+      intchenergytmp = intchenergytmp + DOS*E0
 ! Computing the (2n+1) points quadrature formula ...
 ! ... updating q, p, C1, S1, C0, S0, s and c
 1     continue
@@ -7067,7 +7076,7 @@ end function FullEnergy
             DOS=DOS-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
            enddo
           enddo
-          intchenergy=intchenergy+DOS*(0.5d0*Em+0.5d0*Ep)
+          intchenergytmp=intchenergytmp+DOS*(0.5d0*Em+0.5d0*Ep)
       enddo
 !$OMP END DO
 !$OMP CRITICAL
@@ -7108,8 +7117,8 @@ end function FullEnergy
       enddo
       DOS = 16*DOS/(3*(n+1))
       DOS = DOS*(El-Er)/2
-      intchenergy = 16*intchenergy/(3*(n+1))
-      intchenergy = intchenergy*(El-Er)/2
+      intchenergytmp = 16*intchenergytmp/(3*(n+1))
+      intchenergy = intchenergytmp*(El-Er)/2
       write(ifu_log,'(A51,i4)')' Integration of POUT has needed a max no. of loops=',(((n-1)/2)+1)/2
 
       return
@@ -7133,29 +7142,30 @@ end function FullEnergy
   !c        The rest of arguments are neeed by the subrtn. gplus                  c
   !ccccccccccccccccccccccccccccccc
   !subroutine intpjenergy(rrr,bi,Emi,M,Eq,intpjIntDOSE)
-  real function intpjenergy(rrr,bi,Emi,M,Eq)
+  real*8 function intpjenergy(rrr,bi,Emi,M,Eq)
     use parameters, only: PAcc 
-    use constants, only: d_pi, d_zero, ui
+    use constants, only: d_pi, d_zero, ui, c_zero
+    use omp_lib    
 
     implicit none
 
-    real,intent(in) :: rrr, bi, Emi, Eq
+    real*8,intent(in) :: rrr, bi, Emi, Eq
     integer,intent(inout) :: M
-    real, dimension(NAOrbs,NAOrbs) :: PDP
+    real*8, dimension(NAOrbs,NAOrbs) :: PDP
 
-    real :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
-    integer :: n,i,j,l,k,k1,chunk,omp_get_thread_num,omp_get_num_threads
-    real, dimension(M) :: xs,xcc
+    real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
+    integer :: n,i,j,l,k,k1,chunk!,omp_get_thread_num,omp_get_num_threads
+    real*8, dimension(M) :: xs,xcc
 
     complex*16 :: E0,E
     complex*16, dimension(2) :: EE
     complex*16, dimension(NAOrbs,NAOrbs) :: green
     complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn 
 
-    logical :: omp_get_nested
+    !logical :: omp_get_nested
 
-    complex*16, dimension(NAOrbs,NAOrbs) :: SG,gammar, gammal
-    real :: DOS
+    !complex*16, dimension(NAOrbs,NAOrbs) :: SG, SG1, SG2!,gammar, gammal
+    real*8 :: DOS, intpjenergytmp
 
     !real,intent(out) :: intpjIntDOSE
 
@@ -7173,39 +7183,40 @@ end function FullEnergy
     er0 = edex3(Em,b,x0)
     der0 = 0.5d0*(Em-b)
     E0 = rrr*exp(ui*er0)-rrr+Eq
-    !call gplus0(E0,green)
-    call gplus(E0,green,gammar,gammal)
-    CH = 0.d0
-    intpjenergy = 0.d0
-    !---------------------------------------------------------------------------
-    !-------------- OLD CODE ---------------------------------------------------
-    !---------------------------------------------------------------------------
-    !do i = 1,NAOrbs
-    !   do j =1,NAOrbs
-    !      LocPD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
-    !      CH = CH + LocPD(ispin,i,j)*SD(j,i)
-    !      !intpjIntDOSE = intpjIntDOSE + (real(E0)-shift)*PD(ispin,i,j)*SD(j,i)
-    !      !intpjIntDOSE = intpjIntDOSE + (real(E0))*PD(ispin,i,j)*SD(j,i)
-    !   enddo
-    !enddo
-    !---------------------------------------------------------------------------
-    !-------------- NEW CODE ---------------------------------------------------
-    !---------------------------------------------------------------------------
+    call gplus0(E0,green)
+    !call gplus(E0,green,gammar,gammal)
+    CH = d_zero
+    intpjenergytmp = d_zero
+    !!---------------------------------------------------------------------------
+    !!-------------- OLD CODE ---------------------------------------------------
+    !!---------------------------------------------------------------------------
+    !!do i = 1,NAOrbs
+    !!   do j =1,NAOrbs
+    !!      LocPD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+    !!      CH = CH + LocPD(ispin,i,j)*SD(j,i)
+    !!      !intpjIntDOSE = intpjIntDOSE + (real(E0)-shift)*PD(ispin,i,j)*SD(j,i)
+    !!      !intpjIntDOSE = intpjIntDOSE + (real(E0))*PD(ispin,i,j)*SD(j,i)
+    !!   enddo
+    !!enddo
+    !!---------------------------------------------------------------------------
+    !!-------------- NEW CODE ---------------------------------------------------
+    !!---------------------------------------------------------------------------
     !SG = matmul( SD, green ) ! Not necessary.
     ! computing total DOS
     DOS=d_zero
     !AtomDOS=d_zero
     do i = 1,NAOrbs
-      do j =1,NAOrbs
-        LocPD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+      do j = 1,NAOrbs
+        LocPD(ispin,i,j) = a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
         CH = CH + LocPD(ispin,i,j)*SD(j,i)
         !AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
         !DOS=DOS-dimag(SD(i,j)*green(j,i))/d_pi
         DOS=DOS-a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
-        
       end do
+      !DOS=DOS-dimag(SG(i,i))/d_pi
     end do
-    intpjenergy=DOS*E0
+    !print*,'DOS = ', DOS
+    intpjenergytmp=DOS*E0
 
     xp = CH
 1   q = xp + xp
@@ -7241,9 +7252,11 @@ end function FullEnergy
 !!$OMP  DO SCHEDULE(DYNAMIC,1)
        do k=1,2
           !print *,'l',l,'k',k,omp_get_thread_num()
-          !call gplus0(EE(k),greenn(k,:,:))
-          call gplus(EE(k),greenn(k,:,:),gammar,gammal)
+          call gplus0(EE(k),greenn(k,:,:))
+          !call gplus(EE(k),greenn(k,:,:),gammar,gammal)
        end do
+       !SG1 = matmul( SD, greenn(1,:,:) ) 
+       !SG2 = matmul( SD, greenn(2,:,:) ) 
 !!$OMP  END DO
 !!$OMP  END PARALLEL
        do i = 1,NAOrbs
@@ -7254,8 +7267,9 @@ end function FullEnergy
              DOS=DOS-a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
                   &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
           end do
+          !DOS=DOS-dimag(SG1(i,i)+SG2(i,i))/d_pi 
        end do
-       intpjenergy = intpjenergy + DOS*(0.5d0*real(EE(1)) + 0.5d0*real(EE(2)))
+       intpjenergytmp = intpjenergytmp + DOS*(0.5d0*real(EE(1)) + 0.5d0*real(EE(2)))
     end do
 !$OMP END DO
 !$OMP CRITICAL
@@ -7288,7 +7302,7 @@ end function FullEnergy
     CH = 16*CH/(3*(n+1))
     !intpjIntDOSE = 16*intpjIntDOSE/(3*(n+1))
     DOS = 16*DOS/(3*(n+1))
-    intpjenergy = 16*intpjenergy/(3*(n+1))
+    intpjenergytmp = 16*intpjenergytmp/(3*(n+1))
     do k=1,NAOrbs
        do l=1,NAOrbs
           LocPD(ispin,k,l) = 16*LocPD(ispin,k,l)/(3*(n+1))
@@ -7296,6 +7310,7 @@ end function FullEnergy
     enddo
     write(ifu_log,'(A47,I4)')' Integration of P has needed a max no. of loops=',(((n-1)/2)+1)/2
     !print*,"intpjenergy IntDOSE = ", intpjIntDOSE
+    intpjenergy = intpjenergytmp
     return
   !end subroutine intpjenergy
   end function intpjenergy
@@ -7317,10 +7332,11 @@ end function FullEnergy
   subroutine localintch(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
-    use parameters, only: PAcc 
+    use parameters, only: PAcc     
    
     use cluster, only: LoAOrbNo, HiAOrbNo,NAOAtom
     use g09Common, only: GetNAtoms, GetAtmChg
+    use omp_lib    
 
     real,intent(in) :: Er,El
     integer,intent(inout) :: M
@@ -7476,6 +7492,7 @@ end function FullEnergy
 
     use cluster, only: LoAOrbNo, HiAOrbNo,NAOAtom
     use g09Common, only: GetNAtoms, GetAtmChg
+    use omp_lib      
 
 
     implicit none
@@ -7484,7 +7501,7 @@ end function FullEnergy
     real, dimension(NAOrbs,NAOrbs) :: PDP
 
     real :: a,b,Em,S0,c0,x0,er0,der0,CH,xp,q,c1,s1,s,cc,x,erp,erm
-    integer :: n,i,j,l,k,k1,chunk,omp_get_thread_num,omp_get_num_threads
+    integer :: n,i,j,l,k,k1,chunk!,omp_get_thread_num,omp_get_num_threads
     real, dimension(M) :: xs,xcc
 
     complex*16 :: E0,E
@@ -7494,7 +7511,7 @@ end function FullEnergy
 
     complex*16, dimension(NAOrbs,NAOrbs) :: gammar, gammal
 
-    logical :: omp_get_nested
+    !logical :: omp_get_nested
 
     !integer,intent(in) :: iatom
 
@@ -8091,7 +8108,7 @@ end function FullEnergy
         CGibbsYKernel2(ispin,i,j) = CGibbsYKernel2(ispin,i,j)*(El-Er)/2
       enddo
       enddo
-      write(ifu_log,'(A51,i4)')' Integration of POUTGIBBS/CGibbsY has needed a max no. of loops=',(((n-1)/2)+1)/2
+      write(ifu_log,'(A51,i4)')' Integration of PDOUTGIBBS/CGibbsY has needed a max no. of loops=',(((n-1)/2)+1)/2
 
       return
     end subroutine intchCGibbsY  
@@ -8773,7 +8790,7 @@ end function FullEnergy
     do k=1,NAOrbs
        do l=1,NAOrbs
           PD(ispin,k,l) = 16*PD(ispin,k,l)/(3*(n+1))
-          HW(ispin,k,l) = DREAL(E0)*PD(ispin,k,l)
+          HW(ispin,k,l) = 16*HW(ispin,k,l)/(3*(n+1))
        enddo
     enddo
     write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of loops=',(((n-1)/2)+1)/2
@@ -8826,7 +8843,7 @@ end function FullEnergy
     a = 1.d0/d_pi
     b = bi ! bi is 0.0d0
     Em = Emi ! Emi is d_pi
-    PD(ispin,:,:) = d_zero
+    PDGIBBS(ispin,:,:) = d_zero
     HW(ispin,:,:) = d_zero
     M = (M-1)*0.5
     n = 1
@@ -8841,7 +8858,7 @@ end function FullEnergy
     CH = 0.d0
     do i = 1,NAOrbs
        do j =1,NAOrbs
-          PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
+          PDGIBBS(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
           HW(ispin,i,j)=DREAL(E0)*PD(ispin,i,j)
           !HW(ispin,i,j)=DREAL(-shift)*PD(ispin,i,j)
           CH = CH + PD(ispin,i,j)*SD(j,i)
@@ -8901,7 +8918,7 @@ end function FullEnergy
 !$OMP CRITICAL
        do i = 1,NAOrbs
           do j = 1,NAOrbs
-             PD(ispin,i,j)=PD(ispin,i,j)+PDP(i,j)
+             PDGIBBS(ispin,i,j)=PDGIBBS(ispin,i,j)+PDP(i,j)
              HW(ispin,i,j)=HW(ispin,i,j)+HWP(i,j)
           end do
        end do
@@ -8911,7 +8928,7 @@ end function FullEnergy
     do k=1,NAOrbs
        ! Non-orthogonal basis: Ch = Tr[P*SD]
        do k1=1,NAOrbs
-          CH = CH + PD(ispin,k,k1)*SD(k1,k)
+          CH = CH + PDGIBBS(ispin,k,k1)*SD(k1,k)
        end do
     enddo
     ! ... replacing n by 2n+1
@@ -8924,8 +8941,8 @@ end function FullEnergy
     CH = 16*CH/(3*(n+1))
     do k=1,NAOrbs
        do l=1,NAOrbs
-          PD(ispin,k,l) = 16*PD(ispin,k,l)/(3*(n+1))
-          HW(ispin,k,l) = DREAL(E0)*PD(ispin,k,l)
+          PDGIBBS(ispin,k,l) = 16*PDGIBBS(ispin,k,l)/(3*(n+1))
+          HW(ispin,k,l) = 16*HW(ispin,k,l)/(3*(n+1))
        enddo
     enddo
     write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of loops=',(((n-1)/2)+1)/2

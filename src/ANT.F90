@@ -515,6 +515,14 @@
       !call PrintRMatrix(DevDGibbsYKernel1Mat(1,:,:))
       !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel2Mat(1,:,:)"
       !call PrintRMatrix(DevDGibbsYKernel2Mat(1,:,:))
+      Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel1Mat(1,:,:)"
+      do i=1,NBasis
+        Write(*, '(10F8.4)')( DevDGibbsYKernel1Mat(1,i,j) ,j=1,NBasis)      
+      end do  
+      Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel2Mat(1,:,:)"
+      do i=1,NBasis
+        Write(*, '(10F8.4)')( DevDGibbsYKernel2Mat(1,i,j) ,j=1,NBasis)      
+      end do        
       if(NSpin==2)then
         !Write(*,'(A)')"BETA GibbsY outGibbsYB(:,:)"
         Write(*,'(A)')"BETA GibbsY DevDGibbsYMat(2,:,:)"
@@ -534,7 +542,15 @@
       !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel1Mat(2,:,:)"        
       !call PrintRMatrix(DevDGibbsYKernel1Mat(2,:,:))        
       !Write(*,'(A)')"ALPHA GibbsY DevDGibbsYKernel2Mat(2,:,:)"        
-      !call PrintRMatrix(DevDGibbsYKernel2Mat(2,:,:))        
+      !call PrintRMatrix(DevDGibbsYKernel2Mat(2,:,:)) 
+      Write(*,'(A)')"BETA GibbsY DevDGibbsYKernel1Mat(2,:,:)"
+      do i=1,NBasis
+        Write(*, '(10F8.4)')( DevDGibbsYKernel1Mat(2,i,j) ,j=1,NBasis)      
+      end do  
+      Write(*,'(A)')"BETA GibbsY DevDGibbsYKernel2Mat(2,:,:)"
+      do i=1,NBasis
+        Write(*, '(10F8.4)')( DevDGibbsYKernel2Mat(2,i,j) ,j=1,NBasis)      
+      end do                  
       end if
       Write(*,'(A)')"END DevDGibbsYMat(1 or 2,i,j) AFTER TRANSPORT IN EVALUATION->COMPFOCK"
     end if
