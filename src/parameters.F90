@@ -70,7 +70,81 @@
 
   ! Imaginary part
   REAL*8 :: eta = 1.0d-10         
-  CHARACTER(len=10), PARAMETER :: eta_keyw = "ETA"       
+  CHARACTER(len=10), PARAMETER :: eta_keyw = "ETA"
+  
+  !
+  ! Broadening for printing out 1D DOS and transmission on real axis
+  !
+  REAL*8 :: Gamma = 1.0d-2  
+  
+  ! -Infty = Lower integration limit for charge integration 
+  REAL*8 :: Infty = 100.0
+  
+  !
+  ! Convergence criterion for iterative solution of Dyson equation for self-energy
+  !
+  REAL*8 :: L1DConv = 1.0d-6
+  integer :: L1DMaxCyc = 1000
+  !
+  ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation
+  !
+  REAL*8 :: L1DAlpha = 0.5d0  
+  
+  ! 
+  integer :: NAtomData = 0           
+  
+  ! Input files for device and leads/absorbing boundary conditions
+  character(len=100) :: DevFile='device.dev'
+  character(len=100) :: Lead1File='lead1.elc'
+  character(len=100) :: Lead2File='lead2.elc'  
+  character(len=100), parameter :: DevFile_keyw = "DEVFILE"
+  character(len=100), parameter :: Lead1File_keyw = "LEAD1FILE"
+  character(len=100), parameter :: Lead2File_keyw = "LEAD2FILE" 
+  
+  ! Geometry input files for device and leads
+  character(len=100) :: DevXYZ='device.xyz'
+  character(len=100) :: Lead1XYZ='lead1.xyz'
+  character(len=100) :: Lead2XYZ='lead2.xyz'  
+  character(len=100), parameter :: DevXYZ_keyw = "DEVXYZ"
+  character(len=100), parameter :: Lead1XYZ_keyw = "LEAD1XYZ"
+  character(len=100), parameter :: Lead2XYZ_keyw = "LEAD2XYZ"   
+  !
+  ! Switch on Bethe lattice electrodes
+  ! 
+  logical :: Bethe= .false.
+
+  !sf absorbing boundary conditions parameters
+  !sf parameter to switch on absorbing boundary conditions
+  logical :: abc= .false.
+  
+  !
+  ! whether to find Fermi level in leads and/or device
+  ! 0:  do not find Fermi level (default)
+  ! 1:  Bisec method
+  ! 2:  Muller method
+  ! 3:  Secant method
+  !
+  integer :: FindEFL = 0  
+  
+  !
+  ! Whether to print hamiltonian and overlap information
+  ! 0: do not print
+  ! 1: print real part only
+  ! 2: print as complex matrix
+  !
+  integer :: PRINTHS = 0  
+  
+  !
+  ! Whether the basis set is already orthogonal
+  ! Then device and lead overlap matrices are 
+  ! not read from file and set to identity
+  !
+  logical :: OrthogonalBS = .false. 
+  
+  !
+  ! Number of points in energy window on regular mesh
+  ! 
+  integer :: NPoints = 1000     
 
   ! Bethe lattice glue parameter
   REAL*8 :: Glue = 1.0     
@@ -470,7 +544,7 @@ CONTAINS
 
        END SELECT
        
-    CASE ( ElType_keyw(1), ElType_keyw(2), BLPar_keyw(1), BLPar_keyw(2) )
+    CASE ( DevFile_keyw, Lead1File_keyw, Lead2File_keyw, DevXYZ_keyw, Lead1XYZ_keyw, Lead2XYZ_keyw, ElType_keyw(1), ElType_keyw(2), BLPar_keyw(1), BLPar_keyw(2) )
        !
        ! 3. looking for string variables
        !
@@ -481,6 +555,18 @@ CONTAINS
        call upcase(keyword)
 
        SELECT CASE ( keyword )
+       CASE( DevFile_keyw ) 
+          DevFile = strval
+       CASE( Lead1File_keyw )
+          Lead1File = strval
+       CASE( Lead2File_keyw )
+          Lead2File = strval
+       CASE( DevXYZ_keyw ) 
+          DevXYZ = strval
+       CASE( Lead1XYZ_keyw )
+          Lead1XYZ = strval
+       CASE( Lead2XYZ_keyw )
+          Lead2XYZ = strval     
        CASE( ElType_keyw(1) ) 
           ElType(1) = strval
        CASE( ElType_keyw(2) )
@@ -765,6 +851,15 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
+    WRITE(unit=logfile,fmt=*) "******************"
+    WRITE(unit=logfile,fmt=*) "1D lead parameters"
+    WRITE(unit=logfile,fmt=*) "******************"    
+    WRITE(unit=logfile,fmt=*) DevFile_keyw, " = ", DevFile
+    WRITE(unit=logfile,fmt=*) Lead1File_keyw, " = ", Lead1File
+    WRITE(unit=logfile,fmt=*) Lead2File_keyw, " = ", Lead2File
+    WRITE(unit=logfile,fmt=*) DevXYZ_keyw, " = ", DevXYZ
+    WRITE(unit=logfile,fmt=*) Lead1XYZ_keyw, " = ", Lead1XYZ
+    WRITE(unit=logfile,fmt=*) Lead2XYZ_keyw, " = ", Lead2XYZ     
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
     WRITE(unit=logfile,fmt=*) "************************"

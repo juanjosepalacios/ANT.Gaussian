@@ -507,26 +507,26 @@ contains
     call AdjustFermi( BL )
 
     if( ANT1DInp )then
-
+	
        if(LeadNo==1) open(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.dat',status='unknown')
        if(LeadNo==2) open(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.dat',status='unknown')
-
+	
        n = BL%NAOrbs
        nnn = BL%NNeighbs
-
+	
        write(ifu_ant,'(A)') '&BLParams'
        write(ifu_ant,'(A,I3)') 'NAOBL= ', BL%NAOrbs
        write(ifu_ant,'(A,I1)') 'NSpinBL= ', BL%NSpin
        write(ifu_ant,'(A,I2)') 'NNNBL= ', BL%NNeighbs
        write(ifu_ant,'(A,I3)') 'NConnect = ', NConnect(LeadNo) 
- 
+	   
        do k=1,nnn
           write(ifu_ant,'(A,I2,A,3(F10.5))') 'VNN(', k,',:) = ', VPB( LeadNo, 1, k ), VPB( LeadNo, 2, k ), VPB( LeadNo, 3, k )
        end do
-
+	
        write(ifu_ant,'(A)') '/'
        write(ifu_ant,*) 
-
+	
        do ispin=1,BL%NSpin
           if( BL%NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)') "! spin-up "
           if( BL%NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)') "! spin-down "
@@ -714,7 +714,7 @@ contains
   !
   subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, sgn )
     use constants, only: c_zero, ui, c_one
-    use parameters, only: eta,selfacc
+    use parameters, only: eta,selfacc,NEmbed
 #ifdef PGI
     use lapack_blas, only: zgemm,zgetri,zgetrf
 #endif
@@ -736,6 +736,7 @@ contains
     
     ! auxiliary directional self energy for self-consistent calculation
     complex*16, dimension( size(SigmaK,1), size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux
+    complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux_aux    
     ! temporary matrix for multiplication and Energy matrix E(i,j) = ( energy + ui*eta )*delta(i,j)
     ! and Total self-energy 
     complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: temp, E, Sigma_T, G0, Vkeff, Sigma_TA, Sigma_TB
@@ -868,6 +869,110 @@ contains
        Sigmak=Sigma_aux
        error=error/(NAOrbs*NAOrbs*NNeighbs)
     enddo ! End of self-consistency loop
+    
+  ELSE IF(Nembed(LeadNo)==1)THEN
+    !Write(*,'(A)')"3rd case: (Nembed(LeadNo)==1)"
+      ! Write(ifu_log,'(A,I2)')"1D BL for LeadNo = ",LeadNo
+      !Write(*,'(A)') "Computing 1D Bethe Lattice."
+      !Write(*,'(A)') "Press any key to continue..."
+      !if(DebugBethe)Pause
+      ! Selfconsistency NOT NECESSARY IN THE 1D CASE.
+      Sigmak = c_zero
+      Sigma_T = c_zero
+    if(.false.)then
+      ! ADDED ONLY FOR 1DBL BEACUSE SELF-CONSISTENCY NOT NECESSARY.
+      do k=1, NNeighbs
+        Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+            Sigma_aux_aux(i,j) = E(i,j) - H0(i,j) - Vk(k,i,j)
+          end do
+        end do
+      ! Inverting to obtain (E-H-(Vkeff(-k)))^-1
+      !call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+      !call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+      call zgetrf(NAOrbs,NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,info)
+      call zgetri(NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,work,4*NAOrbs,info)
+      !
+      ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+      !
+      !Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+      !
+      !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
+      call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+           !c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+           c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
+           c_zero,temp,NAOrbs )
+      call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+           c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+           c_zero,Sigma_aux(k,:,:),NAOrbs )
+
+        !call PrintCMatrix(Sigma_aux_aux)
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+            Sigmak(k,i,j)=Sigma_aux_aux(i,j)
+          end do
+        end do
+      end do
+      return ! EXIT FROM IF BECAUSE Sigmak(k,i,j) IS CORRECT.
+    end if
+      !NNeighbs = 2
+      do while (error.gt.selfacc) !ncycle=1,MaxCycle
+        ncycle = ncycle + 1
+        ! Compute total self-energy
+        !  = sum of directional self-energies
+        do i=1,NAOrbs
+          do j=1,NAOrbs
+             Sigma_T(i,j)= c_zero
+             do k=1,NNeighbs
+                Sigma_T(i,j)=Sigma_T(i,j)+Sigmak(k,i,j)
+             enddo
+          enddo
+        enddo
+        do k=1, NNeighbs
+          ! Computing Self energy for direction k
+
+!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j)
+!!$OMP DO SCHEDULE(STATIC,1)
+          do i=1,NAOrbs
+          !write(ifu_log,*)omp_get_thread_num()
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigma_T(i,j) + Sigmak(k-(-1)**k,i,j)
+                !Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigmak(k,i,j)
+             enddo
+          enddo
+!!$OMP END DO
+!!$OMP END PARALLEL
+          ! Inverting to obtain (E-H-(Sigma_T-Sigma_(-k)))^-1
+          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
+          call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
+          !
+          ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
+          !
+          Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
+          !
+          !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
+          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
+               !c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
+               c_zero,temp,NAOrbs )
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
+               c_one,Vkeff,NAOrbs,temp,NAOrbs, &
+               c_zero,Sigma_aux(k,:,:),NAOrbs )
+               !c_zero,Sigma_aux_aux,NAOrbs )
+          !Sigma_aux(k,:,:)=Sigma_aux_aux(:,:)
+          ! Mixing with old self-energy matrix 50:50
+          do i=1,NAOrbs
+             do j=1,NAOrbs
+                Sigma_aux(k,i,j) = 0.5d0*(Sigma_aux(k,i,j)+Sigmak(k,i,j))
+                error=error+abs(Sigma_aux(k,i,j)-Sigmak(k,i,j))
+             end do
+          end do
+       enddo ! End of k-Loop
+       ! Actualization of dir. self-energies
+       Sigmak=Sigma_aux
+       error=error/(NAOrbs*NAOrbs*NNeighbs)
+    enddo ! End of self-consistency loop    
 
     ELSE 
 
@@ -921,7 +1026,7 @@ contains
   ! 
   subroutine CompGreensFunc( BL, Spin, energy, G0, sgn )
     use constants, only: c_zero, ui
-    use parameters, only: eta, DD, UD, DU
+    use parameters, only: eta, DD, UD, DU, Nembed
 #ifdef PGI
     use lapack_blas, only: zgetri,zgetrf
 #endif
@@ -957,8 +1062,11 @@ contains
 
     if (NNeighbs == 6) then
         nj=2
-    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4) then
+    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2) then
         nj=1
+    else if (Nembed(BL%LeadNo)==1) then
+        !Write(ifu_log,'(A,I1)')"1D BL in electrode BL%LeadNo=",BL%LeadNo
+        nj=1        
     else
         print *,"Incorrect number of directions: Error n. 1"
         stop
@@ -1042,7 +1150,7 @@ contains
        end do
     enddo
 
-    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 ) THEN
+    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2 ) THEN
 
     do k1=1,NNeighbs  ! Loop over outer cluster atoms
        do k2=1,NNeighbs ! Loop over all BL directions connected to that atom

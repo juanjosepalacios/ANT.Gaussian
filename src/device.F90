@@ -127,7 +127,7 @@
     implicit none
     DevNAOrbs=NAOrbs
   end function DevNAOrbs
-
+  
   ! *** Number of non-degenerate spin bands ***
   integer function DevNSpin() 
     implicit none
@@ -234,7 +234,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -297,13 +297,13 @@
     shiftup = shift
     shiftdown = shift
 
-    IF( (ElType(1) == "BETHE" .and. ElType(2) == "BETHE") .or.  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD")) THEN 
+    IF( (ElType(1) == "BETHE" .and. ElType(2) == "BETHE")  .or. (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD")) THEN 
       call AnalyseCluster
     ELSE IF  ((ElType(1) == "BETHE" .or. ElType(1) == "1DLEAD") .and. ElType(2) == "GHOST" ) THEN
       call AnalyseClusterElectrodeOne
     ELSE IF  (ElType(1) == "GHOST" .and. (ElType(2) == "BETHE" .or. ElType(2) == "1DLEAD")) THEN
-      call AnalyseClusterElectrodeTwo
-    ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST" ) THEN
+      call AnalyseClusterElectrodeTwo  
+    ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST") THEN
       continue                           
     ELSE 
       print *, 'These electrodes are not implemented yet !!!'
@@ -311,6 +311,8 @@
     END IF
 
     call InitElectrodes
+    
+    IF( ANT1DInp ) call WriteANT1DInput
 
     EMin = 0.0d0
     EMax = 0.0d0
@@ -670,7 +672,7 @@
   !*************************
   subroutine InitElectrodes
     use BetheLattice, only: InitBetheLattice, LeadBL, BL_EMin, BL_EMax
-    use OneDLead, only: Init1DLead, Lead1d, L1D_EMin, L1D_EMax
+    use OneDLead, only: Init1DLead, Lead1D, L1D_EMin, L1D_EMax
     use parameters, only: ElType
     implicit none 
     integer :: LeadNo
@@ -683,7 +685,7 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead( Lead1d(LeadNo), LeadNo )
+          call Init1DLead ( LeadNo )
           EMin(LeadNo) = L1D_EMin( Lead1d(LeadNo) )
           EMax(LeadNo) = L1D_EMax( Lead1d(LeadNo) )
        case( "GHOST" )
@@ -698,7 +700,6 @@
     EMinEc = min( Emin(1),EMin(2) )
     EMaxEc = max( EMax(1),EMax(2) )
   end subroutine InitElectrodes
-
   
   !***************************
   !* Solve transport problem *
@@ -763,7 +764,7 @@
        print *, "****************************************** "
        print *
 
-       IF( ANT1DInp ) call WriteANT1DInput
+       !IF( ANT1DInp ) call WriteANT1DInput
 
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
@@ -3576,7 +3577,7 @@
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma1, NAOrbs)
        endif
     case( "1DLEAD" )
-       call CompSelfEnergy1D( Lead1D(1), is, cenergy, Sigma1 )
+       call CompSelfEnergy1D( Lead1D(1), is, cenergy, Sigma1, NAOrbs, 1 )
     case( "GHOST" )
         continue
     end select
@@ -3599,7 +3600,7 @@
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma2, NAOrbs)
        endif
     case( "1DLEAD" )
-       call CompSelfEnergy1D( Lead1D(2), is, cenergy, Sigma2 )
+       call CompSelfEnergy1D( Lead1D(2), is, cenergy, Sigma2, NAOrbs, 2 )
     case( "GHOST" )
         continue
     end select

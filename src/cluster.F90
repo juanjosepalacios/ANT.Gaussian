@@ -26,7 +26,7 @@
 !  input file .com                                        !
 !**********************************************************
   USE preproc !, ONLY: MaxAtm, MaxSh
-  USE parameters, ONLY: NEmbed,NAtomEl
+  USE parameters, ONLY: NEmbed,NAtomEl,ElType
   IMPLICIT NONE
   SAVE
   PRIVATE
@@ -799,7 +799,7 @@ CONTAINS
        nneig1 = 6
     end if
        
-    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /=4) then
+    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /=4 .and. nneig1 /=2 .and. ElType(1) /= "1DLEAD") then
        write(ifu_log,*)'Problem finding lattice directions in electrode 1 !!!!!'
        stop
     else
@@ -864,7 +864,7 @@ CONTAINS
        nneig2 = 6
     end if
     
-    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4) then
+    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4 .and. nneig2 /=2 .and. ElType(2) /= "1DLEAD") then
        write(ifu_log,*)'Problem finding lattice directions in electrode 2 !!!!!'
        stop
     else
@@ -1456,7 +1456,7 @@ CONTAINS
        nneig1 = 6
     end if
        
-    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /= 4) then
+    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /= 4 .and. nneig1 /= 2 .and. ElType(1) /= "1DLEAD") then
        write(ifu_log,'(A6,i10,A20)')'Found ',nneig1, 'lattice directions'
        write(ifu_log,*)'Problem finding lattice directions in electrode 1 !!!!!'
        stop
@@ -1964,7 +1964,7 @@ CONTAINS
        nneig2 = 6
     end if
 
-    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4) then
+    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4 .and. nneig2 /=2 .and. ElType(2) /= "1DLEAD") then
        write(ifu_log,'(A6,i10,A20)')'Found ',nneig2, 'lattice directions'
        write(ifu_log,*)'Problem finding lattice directions in electrode 2 !!!!!'
        stop

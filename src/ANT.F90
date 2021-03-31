@@ -38,6 +38,7 @@
   USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
   USE constants, ONLY: Hart
   USE preproc
+  use OneDLead  
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
        SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, &
        SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
@@ -238,12 +239,12 @@
            S(j,i) = TS(acount)
            acount = acount+1
         END DO
-     END DO
+     END DO  
 
      ! 
      ! Initialize module device 
      !
-     CALL InitDevice( NBasis, UHF, S )
+     CALL InitDevice( NBasis, UHF, S )           
 
      CLOSE(ifu_xyz)
 
