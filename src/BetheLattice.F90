@@ -686,10 +686,10 @@ contains
     if( BL%NSpin==1 .and. spin == 2 )ispin=1
 
     NAO = BL%NAOrbs
-    NNeighbs=BL%NNeighbs
+    NNeighbs=BL%NNeighbs    
 
     !call SolveDysonBL( BL%Sigmak(ispin,1:NNeighbs,1:NAO,1:NAO), cenergy, BL%H0(ispin,1:NAO,1:NAO), &
-    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )
+    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )   
 
     !Sigma_n = c_zero
     do ia = 1,GetNAtoms()
@@ -714,7 +714,7 @@ contains
   !
   subroutine SolveDysonBL( LeadNo, Sigmak, Energy, H0, Vk, S0, Sk, sgn )
     use constants, only: c_zero, ui, c_one
-    use parameters, only: eta,selfacc,NEmbed
+    use parameters, only: eta,selfacc
 #ifdef PGI
     use lapack_blas, only: zgemm,zgetri,zgetrf
 #endif
@@ -759,9 +759,9 @@ contains
     end do
 
     error = 1.0d0
-    ncycle = 0
+    ncycle = 0   
 
-    IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 .or. (NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) /=6) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) /=6)) then
+    IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 .or. NNeighbs == 2 .or. (NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) /=6) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) /=6)) then
 
     ! Selfconsistency 
     do while (error.gt.selfacc) !ncycle=1,MaxCycle
@@ -868,111 +868,7 @@ contains
        ! Actualization of dir. self-energies
        Sigmak=Sigma_aux
        error=error/(NAOrbs*NAOrbs*NNeighbs)
-    enddo ! End of self-consistency loop
-    
-  ELSE IF(Nembed(LeadNo)==1)THEN
-    !Write(*,'(A)')"3rd case: (Nembed(LeadNo)==1)"
-      ! Write(ifu_log,'(A,I2)')"1D BL for LeadNo = ",LeadNo
-      !Write(*,'(A)') "Computing 1D Bethe Lattice."
-      !Write(*,'(A)') "Press any key to continue..."
-      !if(DebugBethe)Pause
-      ! Selfconsistency NOT NECESSARY IN THE 1D CASE.
-      Sigmak = c_zero
-      Sigma_T = c_zero
-    if(.false.)then
-      ! ADDED ONLY FOR 1DBL BEACUSE SELF-CONSISTENCY NOT NECESSARY.
-      do k=1, NNeighbs
-        Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
-        do i=1,NAOrbs
-          do j=1,NAOrbs
-            Sigma_aux_aux(i,j) = E(i,j) - H0(i,j) - Vk(k,i,j)
-          end do
-        end do
-      ! Inverting to obtain (E-H-(Vkeff(-k)))^-1
-      !call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
-      !call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
-      call zgetrf(NAOrbs,NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,info)
-      call zgetri(NAOrbs,Sigma_aux_aux,NAOrbs,ipiv,work,4*NAOrbs,info)
-      !
-      ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
-      !
-      !Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
-      !
-      !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
-      call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
-           !c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
-           c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
-           c_zero,temp,NAOrbs )
-      call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
-           c_one,Vkeff,NAOrbs,temp,NAOrbs, &
-           c_zero,Sigma_aux(k,:,:),NAOrbs )
-
-        !call PrintCMatrix(Sigma_aux_aux)
-        do i=1,NAOrbs
-          do j=1,NAOrbs
-            Sigmak(k,i,j)=Sigma_aux_aux(i,j)
-          end do
-        end do
-      end do
-      return ! EXIT FROM IF BECAUSE Sigmak(k,i,j) IS CORRECT.
-    end if
-      !NNeighbs = 2
-      do while (error.gt.selfacc) !ncycle=1,MaxCycle
-        ncycle = ncycle + 1
-        ! Compute total self-energy
-        !  = sum of directional self-energies
-        do i=1,NAOrbs
-          do j=1,NAOrbs
-             Sigma_T(i,j)= c_zero
-             do k=1,NNeighbs
-                Sigma_T(i,j)=Sigma_T(i,j)+Sigmak(k,i,j)
-             enddo
-          enddo
-        enddo
-        do k=1, NNeighbs
-          ! Computing Self energy for direction k
-
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j)
-!!$OMP DO SCHEDULE(STATIC,1)
-          do i=1,NAOrbs
-          !write(ifu_log,*)omp_get_thread_num()
-             do j=1,NAOrbs
-                Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigma_T(i,j) + Sigmak(k-(-1)**k,i,j)
-                !Sigma_aux(k,i,j) = E(i,j) - H0(i,j) - Sigmak(k,i,j)
-             enddo
-          enddo
-!!$OMP END DO
-!!$OMP END PARALLEL
-          ! Inverting to obtain (E-H-(Sigma_T-Sigma_(-k)))^-1
-          call zgetrf(NAOrbs,NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,info)
-          call zgetri(NAOrbs,Sigma_aux(k,:,:),NAOrbs,ipiv,work,4*NAOrbs,info)
-          !
-          ! Matrix multiplication: V_k * (E-H-(Sigma_T-Sigma_(-k)))^-1 * V_k^*
-          !
-          Vkeff = Vk(k,:,:)-Energy*Sk(k,:,:)
-          !
-          !Sigma_aux_aux(:,:)=Sigma_aux(k,:,:)
-          call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs, &
-               c_one,Sigma_aux(k,:,:),NAOrbs,Vkeff, NAOrbs,&
-               !c_one,Sigma_aux_aux,NAOrbs,Vkeff, NAOrbs,&
-               c_zero,temp,NAOrbs )
-          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs, &
-               c_one,Vkeff,NAOrbs,temp,NAOrbs, &
-               c_zero,Sigma_aux(k,:,:),NAOrbs )
-               !c_zero,Sigma_aux_aux,NAOrbs )
-          !Sigma_aux(k,:,:)=Sigma_aux_aux(:,:)
-          ! Mixing with old self-energy matrix 50:50
-          do i=1,NAOrbs
-             do j=1,NAOrbs
-                Sigma_aux(k,i,j) = 0.5d0*(Sigma_aux(k,i,j)+Sigmak(k,i,j))
-                error=error+abs(Sigma_aux(k,i,j)-Sigmak(k,i,j))
-             end do
-          end do
-       enddo ! End of k-Loop
-       ! Actualization of dir. self-energies
-       Sigmak=Sigma_aux
-       error=error/(NAOrbs*NAOrbs*NNeighbs)
-    enddo ! End of self-consistency loop    
+    enddo ! End of self-consistency loop 
 
     ELSE 
 
