@@ -177,7 +177,7 @@ CONTAINS
   !*                                                 *
   !***************************************************
   SUBROUTINE AnalyseCluster
-    use parameters, only: ANT1DInp, smalld, small
+    use parameters, only: ANT1DInp, smalld, small, ElType, NBulkLead, Bulk1DLead
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms, &
        GetShellT, GetShellC
@@ -317,7 +317,7 @@ CONTAINS
        end if
     end do
 
-    if(ANT1DInp)then
+    if(ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
        open( ifu_ant, file=trim(ant1dname)//'.ant', status='unknown' )
        write( ifu_ant, '(A)'),    "&Parameters"
        write( ifu_ant, '(A,A)'),  "Lead1File = ", 'bl1.'//trim(ant1dname)//'.dat'
@@ -342,7 +342,7 @@ CONTAINS
        end do
        close( ifu_ant )
     end if
-
+    
     WRITE(IFU_LOG,*) '----------------------------------------------------------'
     WRITE(IFU_LOG,*) 'Analyzing cluster for the connection of the  Bethe Lattice'
     WRITE(IFU_LOG,*) '----------------------------------------------------------'
@@ -1033,7 +1033,7 @@ CONTAINS
        end do
     !CLOSE(ifu_xyz)
 
-    if( ANT1DInp )then
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
        OPEN(unit=ifu_ant,file='dev.'//trim(ant1dname)//'.xyz',status='unknown')
        write(ifu_ant,*), GetNAtoms()
        write(ifu_ant,*)
@@ -1056,11 +1056,21 @@ CONTAINS
        end do
        close(ifu_ant)
     end if
+    
+    if( Bulk1DLead .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
+       OPEN(unit=ifu_ant,file='1dlead.'//trim(ant1dname)//'.xyz',status='unknown')
+       write(ifu_ant,*), NBulkLead(2)-NBulkLead(1)
+       write(ifu_ant,*)
+       DO i=1,GetNAtoms()
+          if (i>NBulkLead(1) .and. i <= NBulkLead(2)) WRITE(ifu_ant,'(I3,3(F11.6))') AN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+       END DO
+       close(ifu_ant)
+    end if    
 
   END SUBROUTINE AnalyseCluster
 
   SUBROUTINE AnalyseClusterElectrodeOne
-    use parameters, only: ANT1DInp, smalld, small
+    use parameters, only: ANT1DInp, smalld, small, ElType
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
     use ANTCommon
@@ -1543,7 +1553,7 @@ CONTAINS
        WRITE(ifu_xyz,'(A2,3(F11.6))') IEl(GetAN(i)), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
     END DO
     
-    if( ANT1DInp )then
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
        OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
        write(ifu_ant,*), GetNAtoms()
        write(ifu_ant,*)
@@ -1563,7 +1573,7 @@ CONTAINS
   END SUBROUTINE AnalyseClusterElectrodeOne
 
   SUBROUTINE AnalyseClusterElectrodeTwo
-    use parameters, only: ANT1DInp, small, smalld
+    use parameters, only: ANT1DInp, small, smalld, ElType
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
     use ANTCommon
@@ -2058,7 +2068,7 @@ CONTAINS
        end do
     !CLOSE(ifu_xyz)
 
-    if( ANT1DInp )then
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
        OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
        write(ifu_ant,*), GetNAtoms()
        write(ifu_ant,*)

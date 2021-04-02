@@ -234,7 +234,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp, Bulk1DLead
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -312,7 +312,9 @@
 
     call InitElectrodes
     
-    IF( ANT1DInp ) call WriteANT1DInput
+    IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
+    
+    IF( Bulk1DLead .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteBulk1DLead
 
     EMin = 0.0d0
     EMax = 0.0d0
@@ -831,6 +833,12 @@
   subroutine WriteANT1DInput
     use parameters, only: eta
     use AntCommon
+#ifdef G03ROOT
+    use g03Common, only: GetNAtoms, GetAtmChg
+#endif
+#ifdef G09ROOT
+    use g09Common, only: GetNAtoms, GetAtmChg
+#endif    
     implicit none
 
     real*8 :: dsmall
@@ -856,7 +864,7 @@
        if( NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)'),       "! Spin-up"
        if( NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)'),       "! Spin-down"
        do i=1,NAOrbs
-          do j=1,NAOrbs
+          do j=1,NAOrbs        
              if(abs(HD(ispin,i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, HD(ispin,i,j)
           enddo
        enddo
@@ -866,13 +874,104 @@
     write(ifu_ant,'(A)'),       "! Overlap"
     do i=1,NAOrbs
        do j=1,NAOrbs
-          if(abs(SD(i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, SD(i,j)
+           if(abs(SD(i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, SD(i,j)      
        enddo
     enddo
     write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
     write(ifu_ant,*)
     close(ifu_ant)
-  end subroutine WriteANT1DInput
+  end subroutine WriteANT1DInput  
+  
+  subroutine WriteBulk1DLead
+    use parameters, only: eta, Overlap, NBulkLead, Bulk1DLead
+    use cluster, only: NAOAtom
+    use AntCommon
+#ifdef G03ROOT
+    use g03Common, only: GetNAtoms, GetAtmChg
+#endif
+#ifdef G09ROOT
+    use g09Common, only: GetNAtoms, GetAtmChg
+#endif    
+    implicit none
+
+    real*8 :: dsmall
+    integer :: i,j,iatom,NCLEl,NCLAO1,NCLAO2 
+
+    CHARACTER(len=55) :: fname
+
+    dsmall = eta
+    
+    fname='1dlead.'//trim(ant1dname)//'.dat'
+    open(ifu_ant,file=fname,status='unknown')
+    
+    print *, "---------------------------------------------------"
+    print *, " Details on bulk lead for 1D calculation ----------"
+    print *, "---------------------------------------------------"
+
+    print *, "NBulkLead(1) =", NBulkLead(1)
+    print *, "NBulkLead(2) =", NBulkLead(2)
+
+    NCLEl = 0
+    do iatom=NBulkLead(1)+1,NBulkLead(2)
+      NCLEl = NCLEl + GetAtmChg(iatom)
+    end do
+    
+    print *, "Number of electrons in neutral reduced bulk lead"
+    print *, "NCLEl = ", NCLEl
+    
+    print *, "First and last orbital in reduced bulk lead"
+    IF (Overlap < 0.01) THEN
+       NCLAO1 = 1
+    ELSE
+       NCLAO1 = 0
+    END IF
+    do iatom=1,NBulkLead(1)
+       NCLAO1 = NCLAO1 + NAOAtom(iatom) 
+    end do
+
+    print *, "NCLAO1 = ", NCLAO1
+
+    NCLAO2 = NCLAO1-1
+    do iatom = NBulkLead(1)+1,NBulkLead(2)
+       NCLAO2 = NCLAO2 + NAOAtom(iatom) 
+    end do
+    
+    print *, "NCLAO2 = ", NCLAO2    
+
+    write(ifu_ant,'(A)'),       "&LeadParams"
+    write(ifu_ant,'(A,I1)'),    "NDSpin = ", NSpin
+    write(ifu_ant,'(A,I4)'),    "NDAO = ", NCLAO2-NCLAO1
+    write(ifu_ant,'(A,I4)'),    "NDEl = ", NCDEl
+    write(ifu_ant,'(A,F12.8)'), "EFermi = ", -shift
+    write(ifu_ant,'(A)'),       "sparse = .true."
+    write(ifu_ant,'(A)'),       "/"
+    write(ifu_ant,*)
+    write(ifu_ant,'(A)'),       "! Hamiltonian"
+    do ispin=1,NSpin
+       if( NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)'),       "! Spin-up"
+       if( NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)'),       "! Spin-down"
+       do i=1,NAOrbs
+          do j=1,NAOrbs
+             if ((i>NCLAO1 .or. i<NCLAO2) .and. (j>NCLAO1 .or. j<NCLAO2)) then          
+               if(abs(HD(ispin,i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, HD(ispin,i,j)
+             end if
+          enddo
+       enddo
+       write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
+       write(ifu_ant,*)
+    end do
+    write(ifu_ant,'(A)'),       "! Overlap"
+    do i=1,NAOrbs
+       do j=1,NAOrbs
+          if ((i>NCLAO1 .or. i<NCLAO2) .and. (j>NCLAO1 .or. j<NCLAO2)) then          
+             if(abs(SD(i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, SD(i,j)
+          end if          
+       enddo
+    enddo
+    write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
+    write(ifu_ant,*)
+    close(ifu_ant)
+  end subroutine WriteBulk1DLead
   
   !**************************************************************
   !* Subroutine for determining Fermi energy and density matrix *

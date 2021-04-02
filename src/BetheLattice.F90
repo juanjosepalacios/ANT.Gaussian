@@ -179,7 +179,7 @@ contains
   subroutine InitBetheLattice( BL, LeadNo )
     use cluster, only: LeadAtmNo, LeadNAOrbs, NNeigBL, vpb, NConnect
     use constants, only: c_zero, ui
-    use Parameters, only : leaddos, estep, Overlap, ANT1DInp, eta
+    use Parameters, only : leaddos, estep, Overlap, ANT1DInp, eta, ElType
     use numeric, only:  ctrace
     use ANTCommon
 #ifdef G03ROOT
@@ -506,7 +506,7 @@ contains
     !
     call AdjustFermi( BL )
 
-    if( ANT1DInp )then
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(2) /= "1DLEAD")then
 	
        if(LeadNo==1) open(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.dat',status='unknown')
        if(LeadNo==2) open(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.dat',status='unknown')

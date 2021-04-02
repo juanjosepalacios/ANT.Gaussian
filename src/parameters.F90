@@ -132,7 +132,14 @@
   ! 1: print real part only
   ! 2: print as complex matrix
   !
-  integer :: PRINTHS = 0  
+  integer :: PRINTHS = 0
+  
+  !
+  ! Whether to shrink the central device region
+  ! or to extend by one unit cell of each lead
+  !
+  logical :: ShrDev = .false.
+  logical :: ExtDev = .false.    
   
   !
   ! Whether the basis set is already orthogonal
@@ -348,6 +355,10 @@
   CHARACTER(len=10), PARAMETER :: LDOS_Beg_keyw = "LDOS_BEG" 
   INTEGER :: LDOS_End = 0      
   CHARACTER(len=10), PARAMETER :: LDOS_End_keyw = "LDOS_END" 
+  
+  ! Manual selection of number of atoms in bulk electrode for one-dimensional calculation
+  CHARACTER(LEN=10), DIMENSION(2), PARAMETER :: NBulkLead_keyw = (/"NBULKLEAD1","NBULKLEAD2"/)
+  INTEGER, DIMENSION(2) :: NBulkLead = (/1,0/)  
 
   ! Use hermitian expression for transmission matrix.
   LOGICAL :: HTransm = .FALSE. 
@@ -370,6 +381,10 @@
   ! Whether to generate input for ANT.1D program
   LOGICAL :: ANT1DInp = .FALSE.
   CHARACTER(len=10), PARAMETER :: ANT1DInp_keyw = "ANT1D"
+  
+  ! Whether to generate input for 1D calculation with a bulk lead
+  LOGICAL :: Bulk1DLead = .FALSE.
+  CHARACTER(len=10), PARAMETER :: Bulk1DLead_keyw = "BULK1DLEAD"  
 
   ! Number of atom whose Hamiltonian to print out
   INTEGER :: PrtHatom = 1     
@@ -496,7 +511,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
+         NBulkLead_keyw(1), NBulkLead_keyw(2), NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
        !
        ! 2. looking for integer variables
        !
@@ -533,6 +548,10 @@ CONTAINS
           NAtomEl(1) = ival
        CASE( NAtomEl_keyw(2) )
           NAtomEl(2) = ival
+       CASE( NBulkLead_keyw(1) )
+          NBulkLead(1) = ival
+       CASE( NBulkLead_keyw(2) )
+          NBulkLead(2) = ival          
        CASE( NPulay_keyw )
           NPulay = ival
        CASE( Max_keyw )
@@ -597,6 +616,8 @@ CONTAINS
        FullAcc = .TRUE.
     CASE ( ANT1DInp_keyw )
        ANT1DInp = .TRUE.
+    CASE ( Bulk1DLead_keyw )
+       Bulk1DLead = .TRUE.       
     CASE ( DFTU_keyw )
        DFTU = .true.
     CASE ( HybFunc_keyw )
@@ -887,6 +908,16 @@ CONTAINS
     else
     WRITE(unit=logfile,fmt=*) NAtomEl_keyw(2), " = ", NAtomEl(2)
     end if
+    if (NBulkLead(1) == 0) then
+    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(1), " = ? "
+    else
+    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(1), " = ", NBulkLead(1)
+    end if
+    if (NBulkLead(2) == 0) then
+    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(2), " = ? "
+    else
+    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(2), " = ", NBulkLead(2)
+    end if    
     if (Overlap < 0.0) then
     WRITE(unit=logfile,fmt=*) Overlap_keyw, " = System Overlap"
     else
@@ -955,6 +986,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels
     WRITE(unit=logfile,fmt=*) LeadDOS_keyw, " = ", LeadDOS
     WRITE(unit=logfile,fmt=*) ANT1DInp_keyw, " = ", ANT1DInp
+    WRITE(unit=logfile,fmt=*) Bulk1DLead_keyw, " = ", Bulk1DLead    
     WRITE(unit=logfile,fmt=*) PrtHatom_keyw, " = ", PrtHatom
 
     IF (NAtomEl(1)/=0 .and. (NAtomEl(2)==0.and.ElType(2)/='GHOST')) THEN
