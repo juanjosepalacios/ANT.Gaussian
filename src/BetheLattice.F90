@@ -134,7 +134,7 @@ MODULE BetheLattice
   ! Routine to deallocate dynamic memory occupied by TBethelattice variable
   public :: CleanUpBL
   ! Access functions to read out values of some TBethelattice data
-  public :: BL_AtmNo, BL_NAOrbs, BL_NNeighbs, BL_NSpin, BL_NElectrons, BL_EMin, BL_EMax
+  public :: BL_AtmNo, BL_NAOrbs, BL_NNeighbs, BL_NSpin, BL_NElectrons, BL_EMin, BL_EMax, BL_H0, BL_VK
 
   
   !*****************************
@@ -657,6 +657,22 @@ contains
     type(TBetheLattice),intent(IN) :: BL
     BL_EMax = BL%EMax
   end function BL_EMax
+  
+  ! *** Get matrix Element of Hamiltonian matrix ***
+  real*8 function BL_H0( BL, is, i, j )
+    implicit none
+    type(TBetheLattice),intent(IN) :: BL
+    integer, intent(in) :: is, i, j
+    BL_H0 = real(BL%H0(is, i, j))
+  end function BL_H0
+  
+  ! *** Get matrix Element of Hamiltonian matrix ***
+  real*8 function BL_VK( BL, is, k, i, j )
+    implicit none
+    type(TBetheLattice),intent(IN) :: BL
+    integer, intent(in) :: is, k, i, j
+    BL_VK = real(BL%Vk(is, k, i, j))
+  end function BL_VK  
 
 
   !

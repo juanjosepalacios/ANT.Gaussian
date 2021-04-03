@@ -142,67 +142,74 @@ contains
     print *, "*    Initializing 1D Leads    *"
     print *, "*******************************"
     print *    
-    !do ilead=1,2
-       print * 
-       print '(A,I1,A)', " *** Lead No. ", ilead, " ***"
-       print *
-       !
-       ! Read lead parameters from file
-       !
-       if(ilead==1)inpf=fopen(Lead1File, 'old', ios)
-       if(ilead==2)inpf=fopen(Lead2File, 'old', ios)
-       if( ilead==1 .and. ios /= 0 )call FileErr( "Init1DLeads", Lead1File )
-       if( ilead==2 .and. ios /= 0 )call FileErr( "Init1DLeads", Lead1File )
-       print *, "inpf = ", inpf
-       call ReadParameters( inpf, ilead )
-       call fclose(inpf)
-       !
-       ! Read xyz file to obtain atomic structure of leads
-       !
-       if( NAtomData > 0 )then
-          if(ilead==1) ixyzf =fopen( Lead1XYZ, 'old', ios )
-          if(ilead==2) ixyzf =fopen( Lead2XYZ, 'old', ios )
-          Lead1D(ilead)%NPCAtoms = ReadXYZFile( ixyzf, Lead1D(ilead)%PCAtoms )
-          call fclose( ixyzf )
-       end if
-       !
-       ! Compute number of orbitals and electrons per (non-primitive) unit cell
-       !
+    print * 
+    print '(A,I1,A)', " *** Lead No. ", ilead, " ***"
+    print *
+    !
+    ! Read lead parameters from file or ANT internal variables
+    !
+    if(ilead==1)inpf=fopen(Lead1File, 'old', ios)
+    if(ilead==2)inpf=fopen(Lead2File, 'old', ios)
+    if (ios /= 0) then
+       call readHamiltonian (ilead)
        Lead1D(ilead)%NAOrbs     = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCAO
        Lead1D(ilead)%NElectrons = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCEl
        Lead1D(ilead)%SO = 0
        Lead1D(ilead)%LeadNo = ilead
-       if( PrintHS>0 )call PrintMatrices( ilead )
-       if( FindEFL>0 .or. LeadDOS .or. MakeDevice)then
-          !
-          ! Extend supercell by one primitive cell to each side 
-          ! in order to compute charge and DOS in the case of 
-          ! non-orthogonal basis set
-          !
-          call CreateXSC( Lead1D(ilead) )
-          if(MakeDevice) call PrintDeviceInp          
-          !
-          ! If no Energy boundaries have been defined in input find them
-          !
-          if( Lead1D(ilead)%EMin == Lead1D(ilead)%EMax )call FindEBounds( Lead1D(ilead) )
-          !
-          ! Find Fermi level of lead if requested
-          !
-          if( FindEFL > 0 ) call FindFermi( Lead1D(ilead) )
-          !
-          ! Print out DOS of bulk Lead if requested
-          !
-          if( LeadDOS ) call PrintDOS( ilead )
-          !
-          ! Deallocate all extended supercell matrices
-          !
-          deallocate( HX, SX, GX, Sigma1, Sigma2 )
-       end if
+       Lead1D(ilead)%EMin     = -100.0
+       Lead1D(ilead)%EMax     = 100.0
+       Lead1D(ilead)%EFermi   = 0.0       
+    else
+      print *, "inpf = ", inpf
+      call ReadParameters( inpf, ilead )
+      call fclose(inpf)
+      !
+      ! Read xyz file to obtain atomic structure of leads
+      !
+      if( NAtomData > 0 )then
+         if(ilead==1) ixyzf =fopen( Lead1XYZ, 'old', ios )
+         if(ilead==2) ixyzf =fopen( Lead2XYZ, 'old', ios )
+         Lead1D(ilead)%NPCAtoms = ReadXYZFile( ixyzf, Lead1D(ilead)%PCAtoms )
+         call fclose( ixyzf )
+      end if
+      !
+      ! Compute number of orbitals and electrons per (non-primitive) unit cell
+      !
+      Lead1D(ilead)%NAOrbs     = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCAO
+      Lead1D(ilead)%NElectrons = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCEl
+      Lead1D(ilead)%SO = 0
+      Lead1D(ilead)%LeadNo = ilead
+    end if
+    if( PrintHS>0 )call PrintMatrices( ilead )
+    if( FindEFL>0 .or. LeadDOS .or. MakeDevice)then
        !
-       ! Shift Hamiltonian to adjust Fermi level to zero
+       ! Extend supercell by one primitive cell to each side 
+       ! in order to compute charge and DOS in the case of 
+       ! non-orthogonal basis set
        !
-       call AdjustFermi( ilead ) 
-    !end do
+       call CreateXSC( Lead1D(ilead) )
+       if(MakeDevice) call PrintDeviceInp          
+       !
+       ! If no Energy boundaries have been defined in input find them
+       !
+       if( Lead1D(ilead)%EMin == Lead1D(ilead)%EMax )call FindEBounds( Lead1D(ilead) )
+       !
+       ! Find Fermi level of lead if requested
+       !
+       if( FindEFL > 0 ) call FindFermi( Lead1D(ilead) )
+       !
+       ! Print out DOS of bulk Lead if requested
+       !
+       if( LeadDOS ) call PrintDOS( ilead )
+       !
+       ! Deallocate all extended supercell matrices
+       !
+       deallocate( HX, SX, GX, Sigma1, Sigma2 )
+    end if
+    !
+    ! Shift Hamiltonian to adjust Fermi level to zero
+    !
+    call AdjustFermi( ilead ) 
   end subroutine Init1DLead
 
 
@@ -558,6 +565,155 @@ contains
        end do
     end if
   end subroutine ReadParameters
+  
+  !********************************
+  ! Read lead parameters from file 
+  !********************************
+  subroutine ReadHamiltonian(ilead )
+    use device, only: DevNSpin, DevFockMat, DevOverlapMat  
+    use BetheLattice, only: InitBetheLattice, LeadBL, BL_NAOrbs, BL_NNeighbs, BL_NSpin, BL_H0, BL_VK  
+    use parameters, only: NEmbed, smalld
+    use cluster, only: LoAOrbNo,  HiAOrbNo, LeadAtmNo, LeadNAOrbs, NALead
+#ifdef G03ROOT
+    use g03Common, only: GetNAtoms, GetAtmChg, GetAN, GetAtmCo
+#endif
+#ifdef G09ROOT
+    use g09Common, only: GetNAtoms, GetAtmChg, GetAN, GetAtmCo
+#endif  
+    use numeric, only: CSetId
+    use util
+    use messages    
+    use atomdata
+    implicit none
+    
+    integer, intent(in) :: ilead
+
+    ! Number of atoms per PUC
+    integer :: NPCAtoms = 1
+    ! Atom data indices
+    integer, dimension(MaxPCAtoms) :: PCAtoms = 0
+    ! Number of non-degenerate Spin bands
+    integer :: NSpin = 1
+    ! Number of primitive unit cells
+    integer :: NPC = 1
+    ! Number of atomic orbitals in PRIMITIVE unit cell
+    integer :: NPCAO = 1
+    ! Number of electrons in PRIMITIVE unit cell     
+    integer :: NPCEl = 1
+    ! Energy boundaries
+!!$    real(double) :: EMin = -100.0d0, EMax = 100.0d0, EFermi = 0.0d0
+
+    integer :: ierr, ispin, ipc, ios, iatom, AN, i, j, k, firstao, lastao
+    character(len=10) :: ANStr
+    logical :: initzero
+    
+    if (NAtomData > 0) then 
+      firstao = 1
+	  
+      do iatom=1,NEmbed(ilead)
+         !
+         ! Find index to Atomic Data array 
+         !
+         AN = GetAN(iatom) 
+         Lead1D(ilead)%PCAtoms(iatom)%x = GetAtmCo(iatom,1) 
+         Lead1D(ilead)%PCAtoms(iatom)%y = GetAtmCo(iatom,2)
+         Lead1D(ilead)%PCAtoms(iatom)%z = GetAtmCo(iatom,3)
+         
+          
+         Lead1D(ilead)%PCAtoms(iatom)%index = FindAtomData( AN )
+         if( Lead1D(ilead)%PCAtoms(iatom)%index <= 0 )then
+            call int2str( AN, ANStr )
+            call ErrMessage( "Geom/ReadParameters", "No atomic data found for AN "//trim(ANStr)//".", .true. )
+         end if
+         !
+         ! First and last atomic orbital on Atom
+         !
+         Lead1D(ilead)%PCAtoms(iatom)%firstao=firstao
+         firstao = firstao + AtomDataArr(Lead1D(ilead)%PCAtoms(iatom)%index)%NAO
+         Lead1D(ilead)%PCAtoms(iatom)%lastao= firstao - 1
+         print *, iatom, AN, Lead1D(ilead)%PCAtoms(iatom)%index, Lead1D(ilead)%PCAtoms(iatom)%firstao, Lead1D(ilead)%PCAtoms(iatom)%lastao
+      end do
+    end if
+
+    Lead1D(ilead)%LeadNo   = ilead
+    Lead1D(ilead)%NSpin    = DevNSpin()
+    Lead1D(ilead)%NPC      = NPC
+    Lead1D(ilead)%NPCAO    = NPCAtoms*LeadNAOrbs(ilead)
+    if (ilead ==1 ) then
+      Lead1D(ilead)%NPCEl    = NPCAtoms*GetAtmChg(1)
+    else 
+      Lead1D(ilead)%NPCEl    = NPCAtoms*GetAtmChg(GetNAtoms())  
+    end if    
+    
+
+!!$    if( ilead == 1 )write( unit=*, nml=Lead1 )
+!!$    if( ilead == 2 )write( unit=*, nml=Lead2 )
+    !
+    ! Allocate Hoppings and overlaps
+    !
+    if( ilead == 1 )then
+       allocate( vn1(2,2,0:NPC,NPCAO,NPCAO),sn1(0:NPC,NPCAO,NPCAO), stat=ierr)
+       if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn1,sn1")
+       Lead1D(1)%vn => vn1
+       Lead1D(1)%sn => sn1
+       vn1 = 0
+       sn1 = 0
+    endif
+    if( ilead == 2 )then
+       allocate( vn2(2,2,0:NPC,NPCAO,NPCAO),sn2(0:NPC,NPCAO,NPCAO), stat=ierr)
+       if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn2,sn2")
+       Lead1D(2)%vn => vn2
+       Lead1D(2)%sn => sn2
+       vn2 = 0
+       sn2 = 0
+    endif
+    
+    initzero = .false.
+    !
+    ! Read in Hamiltonian
+    !
+    do ispin=1,NSpin
+       do ipc=0,NPC
+          do i=1,NPCAO
+             do j=1,NPCAO
+                Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i,j)
+                print *, Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)
+                if (abs(DevFockMat(ispin,i,j))<smalld) initzero = .true.
+             end do  
+          end do
+       end do
+    end do
+    
+    if (initzero) then
+       call InitBetheLattice( LeadBL(ilead), ilead )
+       do ispin=1,BL_NSpin(LeadBL(ilead))
+          do k=0,BL_NNeighbs(LeadBL(ilead))
+             do i=1,BL_NAOrbs(LeadBL(ilead))
+                do j=1,BL_NAOrbs(LeadBL(ilead))
+                   if( k == 0 ) Lead1D(ilead)%vn(ispin,ispin,k,i,j) = BL_H0(LeadBL(ilead),ispin,i,j)
+                   if( k == 1 ) Lead1D(ilead)%vn(ispin,ispin,k,i,j) = BL_VK(LeadBL(ilead),ispin,k,i,j)
+                end do
+             end do
+          end do
+       end do  
+    end if         
+          
+   
+    ! Set overlap of unit cell to identity
+    call CSetId( Lead1D(ilead)%sn(0,1:NPCAO,1:NPCAO) )
+    !
+    ! Read in Overlap matrices if non-orthogonal basis set
+    !
+    if( .not. OrthogonalBS )then
+       do ipc=0,NPC
+          do i=1,NPCAO
+             do j=1,NPCAO
+               Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i,j) 
+             end do  
+          end do       
+       end do
+    end if
+  end subroutine ReadHamiltonian  
 
 
   !********************************************

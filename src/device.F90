@@ -41,7 +41,7 @@
 
   private
 
-  public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevDensMat, SetDevDensMat
+  public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevOverlapMat, DevDensMat, SetDevDensMat
   public :: LeadsOn, SwitchOnLeads, SecantOn, SwitchOnSecant, SwitchOffSecant
   public :: EvaluationOn, SwitchOnEvaluation
   public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock
@@ -140,12 +140,19 @@
     DevShift=-shift
   end function DevShift
 
-  ! *** Get matrix Element of Density matrix ***
+  ! *** Get matrix Element of Hamiltonian matrix ***
   real*8 function DevFockMat( is, i, j )
     implicit none
     integer, intent(in) :: is, i, j
     DevFockMat = HD(is, i, j)
   end function DevFockMat
+  
+  ! *** Get matrix Element of Hamiltonian matrix ***
+  real*8 function DevOverlapMat( i, j )
+    implicit none
+    integer, intent(in) :: i, j
+    DevOverlapMat = SD( i, j)
+  end function DevOverlapMat 
 
   ! *** Get matrix Element of Density matrix ***
   real*8 function DevDensMat( is, i, j )
@@ -314,7 +321,7 @@
     
     IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
     
-    IF( Bulk1DLead .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteBulk1DLead
+    !IF( Bulk1DLead .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteBulk1DLead
 
     EMin = 0.0d0
     EMax = 0.0d0
@@ -953,7 +960,7 @@
        do i=1,NAOrbs
           do j=1,NAOrbs
              if ((i>NCLAO1 .or. i<NCLAO2) .and. (j>NCLAO1 .or. j<NCLAO2)) then          
-               if(abs(HD(ispin,i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, HD(ispin,i,j)
+               write(ifu_ant,'(I6,I6,ES20.8)'), i, j, HD(ispin,i,j)
              end if
           enddo
        enddo
