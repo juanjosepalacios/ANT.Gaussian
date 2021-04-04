@@ -111,6 +111,65 @@ contains
        if( ios /= 0 ) call ReadErr("Util/ReadMatrix", "A(i,j)")
     end do
   end subroutine ReadMatrix
+  
+  !******************************
+  ! Read a matrix A from 
+  ! an internal ANT matrix 
+  ! with normal matrix format: 
+  !
+  !  A11 A12 ... A1N
+  !  A21 A22 ... A2N
+  !   :   :       :
+  !  AM1 AM2 ... AMN
+  !*****************************
+  subroutine ReadHamilMatrix(is, HD, A )
+    use constants
+    use messages
+    implicit none
+
+    integer, intent(in) :: is
+    real(double),dimension(:,:,:),intent(in) :: HD
+    complex(double),dimension(:,:),intent(out) :: A
+
+    integer :: i,j, dim1, dim2
+
+    dim1 = size(A,1) 
+    dim2 = size(A,2) 
+    do i=1,dim1
+      do j=1,dim2
+        A(i,j)=HD(is,i,j)
+      end do 
+    end do
+  end subroutine ReadHamilMatrix  
+  
+  !******************************
+  ! Read a matrix A from 
+  ! an internal ANT matrix 
+  ! with normal matrix format: 
+  !
+  !  A11 A12 ... A1N
+  !  A21 A22 ... A2N
+  !   :   :       :
+  !  AM1 AM2 ... AMN
+  !*****************************
+  subroutine ReadOverlapMatrix( SD, A )
+    use constants
+    use messages
+    implicit none
+
+    real(double),dimension(:,:),intent(in) :: SD
+    complex(double),dimension(:,:),intent(out) :: A
+
+    integer :: i,j, dim1, dim2
+
+    dim1 = size(A,1) 
+    dim2 = size(A,2) 
+    do i=1,dim1
+      do j=1,dim2
+        A(i,j)=SD(i,j)
+      end do 
+    end do
+  end subroutine ReadOverlapMatrix   
   !
   ! Pretty print a real Matrix on standard output
   !

@@ -50,6 +50,7 @@ module OneDLead
   !Public module procedures
   !************************
   public :: Init1DLead
+  public :: ReadHamiltonian
   public :: CleanUp1DLead
   public :: CompSelfEnergy1D
   public :: L1D_NSpin, L1D_NAOrbs, L1D_NElectrons
@@ -133,33 +134,36 @@ contains
     use filemaster
     use messages    
     use parameters
+    use device, only: LeadsOn
     implicit none
     integer :: inpf,ios
     integer, intent(in) :: ilead
     integer :: ixyzf
-    print *    
-    print *, "*******************************"
-    print *, "*    Initializing 1D Leads    *"
-    print *, "*******************************"
-    print *    
-    print * 
-    print '(A,I1,A)', " *** Lead No. ", ilead, " ***"
-    print *
-    !
-    ! Read lead parameters from file or ANT internal variables
-    !
-    if(ilead==1)inpf=fopen(Lead1File, 'old', ios)
-    if(ilead==2)inpf=fopen(Lead2File, 'old', ios)
-    if (ios /= 0) then
+    if (.not. LeadsOn()) then
+      print *    
+      print *, "*******************************"
+      print *, "*    Initializing 1D Leads    *"
+      print *, "*******************************"
+      print *    
+      print * 
+      print '(A,I1,A)', " *** Lead No. ", ilead, " ***"
+      print *
+      !
+      ! Read lead parameters from file or ANT internal variables
+      !
+      if(ilead==1)inpf=fopen(Lead1File, 'old', ios)
+      if(ilead==2)inpf=fopen(Lead2File, 'old', ios)
+    end if
+    if (ios /= 0 .or. LeadsOn()) then
        call readHamiltonian (ilead)
        Lead1D(ilead)%NAOrbs     = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCAO
        Lead1D(ilead)%NElectrons = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCEl
        Lead1D(ilead)%SO = 0
        Lead1D(ilead)%LeadNo = ilead
-       Lead1D(ilead)%EMin     = -100.0
-       Lead1D(ilead)%EMax     = 100.0
+       Lead1D(ilead)%EMin     = 0.0
+       Lead1D(ilead)%EMax     = 0.0
        Lead1D(ilead)%EFermi   = 0.0       
-    else
+    else if (.not. LeadsOn()) then
       print *, "inpf = ", inpf
       call ReadParameters( inpf, ilead )
       call fclose(inpf)
@@ -181,7 +185,7 @@ contains
       Lead1D(ilead)%LeadNo = ilead
     end if
     if( PrintHS>0 )call PrintMatrices( ilead )
-    if( FindEFL>0 .or. LeadDOS .or. MakeDevice)then
+    if((.not. LeadsOn()) .and. (FindEFL>0 .or. LeadDOS .or. MakeDevice))then
        !
        ! Extend supercell by one primitive cell to each side 
        ! in order to compute charge and DOS in the case of 
@@ -570,10 +574,9 @@ contains
   ! Read lead parameters from file 
   !********************************
   subroutine ReadHamiltonian(ilead )
-    use device, only: DevNSpin, DevFockMat, DevOverlapMat  
-    use BetheLattice, only: InitBetheLattice, LeadBL, BL_NAOrbs, BL_NNeighbs, BL_NSpin, BL_H0, BL_VK  
-    use parameters, only: NEmbed, smalld
-    use cluster, only: LoAOrbNo,  HiAOrbNo, LeadAtmNo, LeadNAOrbs, NALead
+    use device, only: DevNSpin, DevFockMat, DevOverlapMat, DevNAOrbs, LeadsOn  
+    use parameters, only: NEmbed
+    use cluster, only: LoAOrbNo,  HiAOrbNo, LeadAtmNo, LeadNAOrbs, NALead,  NAOAtom
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg, GetAN, GetAtmCo
 #endif
@@ -586,26 +589,29 @@ contains
     use atomdata
     implicit none
     
+    real(double), dimension(:,:,:), allocatable :: HD
+    real(double), dimension(:,:), allocatable :: SD
+    
     integer, intent(in) :: ilead
 
     ! Number of atoms per PUC
-    integer :: NPCAtoms = 1
+    integer :: NPCAtoms
     ! Atom data indices
-    integer, dimension(MaxPCAtoms) :: PCAtoms = 0
+    integer, dimension(MaxPCAtoms) :: PCAtoms
     ! Number of non-degenerate Spin bands
-    integer :: NSpin = 1
+    integer :: NSpin
     ! Number of primitive unit cells
-    integer :: NPC = 1
+    integer :: NPC
     ! Number of atomic orbitals in PRIMITIVE unit cell
-    integer :: NPCAO = 1
+    integer :: NPCAO
     ! Number of electrons in PRIMITIVE unit cell     
-    integer :: NPCEl = 1
-    ! Energy boundaries
-!!$    real(double) :: EMin = -100.0d0, EMax = 100.0d0, EFermi = 0.0d0
-
-    integer :: ierr, ispin, ipc, ios, iatom, AN, i, j, k, firstao, lastao
+    integer :: NPCEl
+ 
+    integer :: ierr, ispin, ipc, iatom, jatom, AN, i, j, k, firstao, lastao
     character(len=10) :: ANStr
     logical :: initzero
+    
+   namelist/LeadParams/NSpin,NPC,NPCAtoms,NPCAO,NPCEl
     
     if (NAtomData > 0) then 
       firstao = 1
@@ -637,21 +643,25 @@ contains
 
     Lead1D(ilead)%LeadNo   = ilead
     Lead1D(ilead)%NSpin    = DevNSpin()
-    Lead1D(ilead)%NPC      = NPC
-    Lead1D(ilead)%NPCAO    = NPCAtoms*LeadNAOrbs(ilead)
+    NSpin = Lead1D(ilead)%NSpin
+    Lead1D(ilead)%NPC      = 1
+    NPC = Lead1D(ilead)%NPC
+    Lead1D(ilead)%NPCAtoms  = NEmbed(ilead)
+    NPCAtoms = Lead1D(ilead)%NPCAtoms
+    Lead1D(ilead)%NPCAO    = NEmbed(ilead)*LeadNAOrbs(ilead)
+    NPCAO = Lead1D(ilead)%NPCAO
     if (ilead ==1 ) then
-      Lead1D(ilead)%NPCEl    = NPCAtoms*GetAtmChg(1)
+      Lead1D(ilead)%NPCEl    = NEmbed(ilead)*GetAtmChg(1)
     else 
-      Lead1D(ilead)%NPCEl    = NPCAtoms*GetAtmChg(GetNAtoms())  
-    end if    
-    
+      Lead1D(ilead)%NPCEl    = NEmbed(ilead)*GetAtmChg(GetNAtoms())  
+    end if      
+    NPCEl = Lead1D(ilead)%NPCEl
 
-!!$    if( ilead == 1 )write( unit=*, nml=Lead1 )
-!!$    if( ilead == 2 )write( unit=*, nml=Lead2 )
     !
     ! Allocate Hoppings and overlaps
     !
     if( ilead == 1 )then
+       if (LeadsOn()) deallocate( vn1, sn1 )
        allocate( vn1(2,2,0:NPC,NPCAO,NPCAO),sn1(0:NPC,NPCAO,NPCAO), stat=ierr)
        if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn1,sn1")
        Lead1D(1)%vn => vn1
@@ -660,6 +670,7 @@ contains
        sn1 = 0
     endif
     if( ilead == 2 )then
+       if (LeadsOn()) deallocate( vn2, sn2 )
        allocate( vn2(2,2,0:NPC,NPCAO,NPCAO),sn2(0:NPC,NPCAO,NPCAO), stat=ierr)
        if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn2,sn2")
        Lead1D(2)%vn => vn2
@@ -668,51 +679,81 @@ contains
        sn2 = 0
     endif
     
-    initzero = .false.
+    allocate( HD(2,DevNAOrbs(),DevNAOrbs()),SD(DevNAOrbs(),DevNAOrbs()), stat=ierr)
+    if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","HD,SD")
+    HD = 0
+    SD = 0
+    
+    initzero = .true.
     !
     ! Read in Hamiltonian
-    !
+    !   
     do ispin=1,NSpin
-       do ipc=0,NPC
-          do i=1,NPCAO
-             do j=1,NPCAO
-                Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i,j)
-                print *, Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)
-                if (abs(DevFockMat(ispin,i,j))<smalld) initzero = .true.
-             end do  
+       do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+                do i=LoAOrbNo(iAtom),HiAOrbNo(iAtom)
+                   do j=LoAOrbNo(jAtom),HiAOrbNo(jAtom)
+                      HD(ispin,i,j) = DevFockMat(ispin,i,j)
+                   end do
+                end do       
           end do
        end do
-    end do
+       !if (LeadsOn()) call PrintRMatrix(HD(ispin,:,:))          
+    end do   
     
-    if (initzero) then
-       call InitBetheLattice( LeadBL(ilead), ilead )
-       do ispin=1,BL_NSpin(LeadBL(ilead))
-          do k=0,BL_NNeighbs(LeadBL(ilead))
-             do i=1,BL_NAOrbs(LeadBL(ilead))
-                do j=1,BL_NAOrbs(LeadBL(ilead))
-                   if( k == 0 ) Lead1D(ilead)%vn(ispin,ispin,k,i,j) = BL_H0(LeadBL(ilead),ispin,i,j)
-                   if( k == 1 ) Lead1D(ilead)%vn(ispin,ispin,k,i,j) = BL_VK(LeadBL(ilead),ispin,k,i,j)
-                end do
-             end do
-          end do
-       end do  
-    end if         
-          
+    do ispin=1,NSpin
+       do ipc=0,NPC        
+          call ReadHamilMatrix(ispin, HD, Lead1D(ilead)%vn(ispin,ispin,ipc,1:NPCAO,1:NPCAO) )
+       end do
+    end do           
+    
+    !do ispin=1,NSpin
+    !   do ipc1=0,NPC
+    !     do ipc2=0,NPC
+    !       do i=1,NPCAO
+    !         do j=1,NPCAO
+    !            if (ipc1 == ipc2) Lead1D(ilead)%vn(ispin,ispin,ipc1,i,j)=DevFockMat(ispin,i+ipc1*NAOAtom(NPCAtoms+1) ,j+ipc2*NAOAtom(NPCAtoms+1) )
+    !            if (ipc1 > 0 .and. ipc2 == 0) then 
+    !               Lead1D(ilead)%vn(ispin,ispin,ipc1,i,j)=DevFockMat(ispin,i+ipc1*NAOAtom(NPCAtoms+1) ,j )
+    !            else if (ipc2 > 0 .and. ipc1 == 0 ) then
+    !               Lead1D(ilead)%vn(ispin,ispin,ipc2,i,j)=DevFockMat(ispin,i ,j+ipc2*NAOAtom(NPCAtoms+1) )
+    !            end if   
+    !            print *, Lead1D(ilead)%vn(ispin,ispin,ipc1,i,j)
+    !            if (abs(DevFockMat(ispin,i,j))<smalld) initzero = .true.
+    !         end do  
+    !       end do
+    !     end do  
+    !   end do
+    !end do          
    
     ! Set overlap of unit cell to identity
     call CSetId( Lead1D(ilead)%sn(0,1:NPCAO,1:NPCAO) )
     !
     ! Read in Overlap matrices if non-orthogonal basis set
-    !
+
     if( .not. OrthogonalBS )then
-       do ipc=0,NPC
-          do i=1,NPCAO
-             do j=1,NPCAO
-               Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i,j) 
-             end do  
-          end do       
+    
+      do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+                do i=LoAOrbNo(iAtom),HiAOrbNo(iAtom)
+                   do j=LoAOrbNo(jAtom),HiAOrbNo(jAtom)
+                      SD(i,j) = DevOverlapMat(i,j)
+                   end do
+                end do       
+          end do
        end do
-    end if
+       
+       !if (LeadsOn()) call PrintRMatrix(SD)              
+
+       do ipc=0,NPC    
+         call ReadOverlapMatrix( SD, Lead1D(ilead)%sn(ipc,1:NPCAO ,1:NPCAO))
+       end do
+    end if     
+    
+  if (.not. LeadsOn()) write(unit=*,nml=Leadparams)  
+  
+  deallocate( HD, SD )
+    
   end subroutine ReadHamiltonian  
 
 
@@ -1265,6 +1306,7 @@ contains
   ! Shifts Lead Hamiltonian to adjust Fermi level to zero
   !
   subroutine AdjustFermi( ilead )
+    use device, only: LeadsOn
     implicit none
     
     integer, intent(in) :: ilead
@@ -1295,7 +1337,7 @@ contains
     !
     Lead1D(ilead)%EMin = Lead1D(ilead)%EMin - Lead1D(ilead)%EFermi
     Lead1D(ilead)%EMax = Lead1D(ilead)%EMax - Lead1D(ilead)%EFermi       
-    print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
+    if (.not. LeadsOn()) print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
     !! Lead1D(ilead)%EFermi = 0.0d0
   end subroutine AdjustFermi
 

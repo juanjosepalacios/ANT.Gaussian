@@ -737,6 +737,10 @@
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F
+    
+    IF ((ElType(1) == "1DLEAD" .or. ELType(2) == "1DLEAD")) THEN
+       call InitElectrodes
+    end if    
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
@@ -3793,7 +3797,7 @@
   !  to be zero
   ! *************************************
   subroutine FindEnergyBounds
-    use parameters, only: ChargeAcc,eta
+    use parameters, only: ChargeAcc,eta,ElType
 
     integer :: i, cond,k 
     real*8 :: EStep, Q
@@ -3803,15 +3807,27 @@
 
     EStep = 10.0d0 +10000.0 *eta
 
-    do
-       Q = TotCharge( EMax )
-       print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-       if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-          exit
-       end if
-       EMin = EMin - EStep
-       EMax = EMax + EStep
-    end do
+    if (Eltype(1) == "1DLEAD" .or. Eltype(2) == "1DLEAD") then
+       do i=1,1000
+          Q = TotCharge( EMax )
+          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
+          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
+             exit
+          end if
+          EMin = EMin - EStep
+          EMax = EMax + EStep
+       end do
+    else
+       do
+          Q = TotCharge( EMax )
+          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
+          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
+             exit
+          end if
+          EMin = EMin - EStep
+          EMax = EMax + EStep
+       end do    
+    end if
     print *, "--------------------------------------------------"
 
   end subroutine FindEnergyBounds
