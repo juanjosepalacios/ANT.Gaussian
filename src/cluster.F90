@@ -177,7 +177,7 @@ CONTAINS
   !*                                                 *
   !***************************************************
   SUBROUTINE AnalyseCluster
-    use parameters, only: ANT1DInp, smalld, small, ElType, NBulkLead, Bulk1DLead
+    use parameters, only: ANT1DInp, smalld, small, ElType
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms, &
        GetShellT, GetShellC
@@ -1056,16 +1056,6 @@ CONTAINS
        end do
        close(ifu_ant)
     end if
-    
-    if( Bulk1DLead .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
-       OPEN(unit=ifu_ant,file='1dlead.'//trim(ant1dname)//'.xyz',status='unknown')
-       write(ifu_ant,*), NBulkLead(2)-NBulkLead(1)
-       write(ifu_ant,*)
-       DO i=1,GetNAtoms()
-          if (i>NBulkLead(1) .and. i <= NBulkLead(2)) WRITE(ifu_ant,'(I3,3(F11.6))') AN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-       END DO
-       close(ifu_ant)
-    end if    
 
   END SUBROUTINE AnalyseCluster
 

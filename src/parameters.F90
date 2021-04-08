@@ -124,9 +124,14 @@
   ! 2:  Muller method
   ! 3:  Secant method
   !
-
   INTEGER :: FindEFL = 0
-  CHARACTER(len=10), PARAMETER ::  FindEFL_keyw = "FINDEFL"     
+  CHARACTER(len=10), PARAMETER ::  FindEFL_keyw = "FINDEFL"  
+
+  !
+  ! Number of primitive unit cells in the 1D electrodes
+  !   
+  INTEGER :: NPC = 1
+  CHARACTER(len=10), PARAMETER ::  NPC_keyw = "NPC"       
   
   !
   ! Whether to print hamiltonian and overlap information
@@ -358,10 +363,6 @@
   INTEGER :: LDOS_End = 0      
   CHARACTER(len=10), PARAMETER :: LDOS_End_keyw = "LDOS_END" 
   
-  ! Manual selection of number of atoms in bulk electrode for one-dimensional calculation
-  CHARACTER(LEN=10), DIMENSION(2), PARAMETER :: NBulkLead_keyw = (/"NBULKLEAD1","NBULKLEAD2"/)
-  INTEGER, DIMENSION(2) :: NBulkLead = (/1,0/)  
-
   ! Use hermitian expression for transmission matrix.
   LOGICAL :: HTransm = .FALSE. 
   CHARACTER(len=10), PARAMETER :: HTransm_keyw = "HTRANSM"
@@ -383,10 +384,6 @@
   ! Whether to generate input for ANT.1D program
   LOGICAL :: ANT1DInp = .FALSE.
   CHARACTER(len=10), PARAMETER :: ANT1DInp_keyw = "ANT1D"
-  
-  ! Whether to generate input for 1D calculation with a bulk lead
-  LOGICAL :: Bulk1DLead = .FALSE.
-  CHARACTER(len=10), PARAMETER :: Bulk1DLead_keyw = "BULK1DLEAD"  
 
   ! Number of atom whose Hamiltonian to print out
   INTEGER :: PrtHatom = 1     
@@ -513,7 +510,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NBulkLead_keyw(1), NBulkLead_keyw(2), NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, FindEFL_keyw  )
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, FindEFL_keyw , NPC_keyw )
        !
        ! 2. looking for integer variables
        !
@@ -549,11 +546,7 @@ CONTAINS
        CASE( NAtomEl_keyw(1) )
           NAtomEl(1) = ival
        CASE( NAtomEl_keyw(2) )
-          NAtomEl(2) = ival
-       CASE( NBulkLead_keyw(1) )
-          NBulkLead(1) = ival
-       CASE( NBulkLead_keyw(2) )
-          NBulkLead(2) = ival          
+          NAtomEl(2) = ival      
        CASE( NPulay_keyw )
           NPulay = ival
        CASE( Max_keyw )
@@ -563,7 +556,9 @@ CONTAINS
        CASE( PrtHatom_keyw )
           PrtHatom = ival 
        CASE( FindEFL_keyw )
-          FindEFL = ival              
+          FindEFL = ival
+       CASE( NPC_keyw )
+          NPC = ival                           
 
        END SELECT
        
@@ -619,9 +614,7 @@ CONTAINS
     CASE ( FullAcc_keyw )
        FullAcc = .TRUE.
     CASE ( ANT1DInp_keyw )
-       ANT1DInp = .TRUE.
-    CASE ( Bulk1DLead_keyw )
-       Bulk1DLead = .TRUE.       
+       ANT1DInp = .TRUE.      
     CASE ( DFTU_keyw )
        DFTU = .true.
     CASE ( HybFunc_keyw )
@@ -886,6 +879,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) Lead1XYZ_keyw, " = ", Lead1XYZ
     WRITE(unit=logfile,fmt=*) Lead2XYZ_keyw, " = ", Lead2XYZ
     WRITE(unit=logfile,fmt=*) FindEFL_keyw, " = ", FindEFL
+    WRITE(unit=logfile,fmt=*) NPC_keyw, " = ", NPC
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
     WRITE(unit=logfile,fmt=*) "************************"
@@ -913,16 +907,6 @@ CONTAINS
     else
     WRITE(unit=logfile,fmt=*) NAtomEl_keyw(2), " = ", NAtomEl(2)
     end if
-    if (NBulkLead(1) == 0) then
-    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(1), " = ? "
-    else
-    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(1), " = ", NBulkLead(1)
-    end if
-    if (NBulkLead(2) == 0) then
-    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(2), " = ? "
-    else
-    WRITE(unit=logfile,fmt=*) NBulkLead_keyw(2), " = ", NBulkLead(2)
-    end if    
     if (Overlap < 0.0) then
     WRITE(unit=logfile,fmt=*) Overlap_keyw, " = System Overlap"
     else
@@ -990,8 +974,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) RedTransmE_keyw, " = ",RedTransmE
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels
     WRITE(unit=logfile,fmt=*) LeadDOS_keyw, " = ", LeadDOS
-    WRITE(unit=logfile,fmt=*) ANT1DInp_keyw, " = ", ANT1DInp
-    WRITE(unit=logfile,fmt=*) Bulk1DLead_keyw, " = ", Bulk1DLead    
+    WRITE(unit=logfile,fmt=*) ANT1DInp_keyw, " = ", ANT1DInp 
     WRITE(unit=logfile,fmt=*) PrtHatom_keyw, " = ", PrtHatom
 
     IF (NAtomEl(1)/=0 .and. (NAtomEl(2)==0.and.ElType(2)/='GHOST')) THEN
