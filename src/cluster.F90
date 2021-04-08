@@ -607,7 +607,7 @@ CONTAINS
                & + bb(2)*bb(2) &
                & + bb(3)*bb(3) )
 
-          IF (ABS(bbnorm).LT.smallp) then
+          IF (ABS(bbnorm).LT.smallp .and. ElType(2) /= "1DLEAD") then
               write(ifu_log,*)'Last 3 atoms in line in electrode 2 !!!!'
               dos =dos +1
               goto 14
@@ -1788,7 +1788,7 @@ CONTAINS
                & + bb(2)*bb(2) &
                & + bb(3)*bb(3) )
 
-          IF (ABS(bbnorm).LT.smallp) then
+          IF (ABS(bbnorm).LT.smallp .and. ElType(1) /= "1DLEAD") then
               write(ifu_log,*)'Last 3 atoms in line in electrode 2 !!!!'
               dos =dos +1
               goto 13

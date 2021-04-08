@@ -717,6 +717,7 @@
     use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, ROT, PrtHatom
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
+    use OneDLead, only: ReadHamiltonian
     use correlation
     use orthogonalization
 #ifdef G03ROOT
@@ -734,12 +735,15 @@
     real*8, dimension(:,:),allocatable :: SPM
 
     real*8 :: diff !!,TrP,QD
-    integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
+    integer :: i,j,is, info, AllocErr, iatom, jatom, Atom, LeadNo
 
     HD = F
     
     IF ((ElType(1) == "1DLEAD" .or. ELType(2) == "1DLEAD")) THEN
-       call InitElectrodes
+      call InitElectrodes
+    !do LeadNo=1,2  
+    !   call ReadHamiltonian (LeadNo)
+    !end do   
     end if    
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
@@ -3798,6 +3802,7 @@
   ! *************************************
   subroutine FindEnergyBounds
     use parameters, only: ChargeAcc,eta,ElType
+    use OneDLead, only:  Lead1D, L1D_NElectrons
 
     integer :: i, cond,k 
     real*8 :: EStep, Q
@@ -3807,27 +3812,15 @@
 
     EStep = 10.0d0 +10000.0 *eta
 
-    if (Eltype(1) == "1DLEAD" .or. Eltype(2) == "1DLEAD") then
-       do i=1,1000
-          Q = TotCharge( EMax )
-          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-             exit
-          end if
-          EMin = EMin - EStep
-          EMax = EMax + EStep
-       end do
-    else
-       do
-          Q = TotCharge( EMax )
-          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-             exit
-          end if
-          EMin = EMin - EStep
-          EMax = EMax + EStep
-       end do    
-    end if
+    do
+       Q = TotCharge( EMax )
+       print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
+       if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
+          exit
+       end if
+       EMin = EMin - EStep
+       EMax = EMax + EStep
+    end do   
     print *, "--------------------------------------------------"
 
   end subroutine FindEnergyBounds

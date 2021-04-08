@@ -124,7 +124,9 @@
   ! 2:  Muller method
   ! 3:  Secant method
   !
-  integer :: FindEFL = 0  
+
+  INTEGER :: FindEFL = 0
+  CHARACTER(len=10), PARAMETER ::  FindEFL_keyw = "FINDEFL"     
   
   !
   ! Whether to print hamiltonian and overlap information
@@ -511,7 +513,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NBulkLead_keyw(1), NBulkLead_keyw(2), NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
+         NBulkLead_keyw(1), NBulkLead_keyw(2), NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, FindEFL_keyw  )
        !
        ! 2. looking for integer variables
        !
@@ -559,7 +561,9 @@ CONTAINS
        !CASE( SOCFAC_keyw )
        !   socfac = ival     
        CASE( PrtHatom_keyw )
-          PrtHatom = ival     
+          PrtHatom = ival 
+       CASE( FindEFL_keyw )
+          FindEFL = ival              
 
        END SELECT
        
@@ -880,7 +884,8 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) Lead2File_keyw, " = ", Lead2File
     WRITE(unit=logfile,fmt=*) DevXYZ_keyw, " = ", DevXYZ
     WRITE(unit=logfile,fmt=*) Lead1XYZ_keyw, " = ", Lead1XYZ
-    WRITE(unit=logfile,fmt=*) Lead2XYZ_keyw, " = ", Lead2XYZ     
+    WRITE(unit=logfile,fmt=*) Lead2XYZ_keyw, " = ", Lead2XYZ
+    WRITE(unit=logfile,fmt=*) FindEFL_keyw, " = ", FindEFL
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
     WRITE(unit=logfile,fmt=*) "************************"
