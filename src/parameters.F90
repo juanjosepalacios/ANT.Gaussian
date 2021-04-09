@@ -83,6 +83,7 @@
   
   ! -Infty = Lower integration limit for charge integration 
   REAL*8 :: Infty = 100.0
+  CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"    
   
   !
   ! Convergence criterion for iterative solution of Dyson equation for self-energy
@@ -450,7 +451,8 @@ CONTAINS
          & THETA_keyw   ,&
          & PHI_keyw   ,&
          & EW1_keyw       ,&
-         & EW2_keyw   )
+         & EW2_keyw
+         & Infty_keyw   )
        !
        ! 1. looking for real variables
        !
@@ -511,6 +513,8 @@ CONTAINS
           EW1 = rval
        CASE ( EW2_keyw ) 
           EW2 = rval
+       CASE ( INFTY_keyw ) 
+          Infty = rval          
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
@@ -888,6 +892,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) FindEFL_keyw, " = ", FindEFL
     WRITE(unit=logfile,fmt=*) NPC_keyw, " = ", NPC
     WRITE(unit=logfile,fmt=*) PrintHS_keyw, " = ", PrintHS
+    WRITE(unit=logfile,fmt=*) Infty_keyw, " = ", Infty    
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
     WRITE(unit=logfile,fmt=*) "************************"
