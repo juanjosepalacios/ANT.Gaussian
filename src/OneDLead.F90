@@ -154,7 +154,7 @@ contains
       if(ilead==1)inpf=fopen(Lead1File, 'old', ios)
       if(ilead==2)inpf=fopen(Lead2File, 'old', ios)
     end if
-    if (ios /= 0 .or. LeadsOn()) then
+    if (LeadsOn() .or. ios /= 0) then
        call readHamiltonian (ilead)
        Lead1D(ilead)%NAOrbs     = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCAO
        Lead1D(ilead)%NElectrons = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCEl
@@ -184,8 +184,8 @@ contains
       Lead1D(ilead)%SO = 0
       Lead1D(ilead)%LeadNo = ilead
     end if
-    if( PrintHS>0 )call PrintMatrices( ilead )
-    if(FindEFL>0 .or. LeadDOS .or. MakeDevice)then
+    call PrintMatrices( ilead )
+    !if(FindEFL>0 .or. LeadDOS .or. MakeDevice)then
        !
        ! Extend supercell by one primitive cell to each side 
        ! in order to compute charge and DOS in the case of 
@@ -209,7 +209,7 @@ contains
        ! Deallocate all extended supercell matrices
        !
        deallocate( HX, SX, GX, Sigma1, Sigma2 )
-    end if
+    !end if
     !
     ! Shift Hamiltonian to adjust Fermi level to zero
     !
@@ -479,8 +479,6 @@ contains
     integer, dimension(MaxPCAtoms) :: PCAtoms = 0
     ! Number of non-degenerate Spin bands
     integer :: NSpin = 1
-    ! Number of primitive unit cells
-    integer :: NPC = 1
     ! Number of atomic orbitals in PRIMITIVE unit cell
     integer :: NPCAO = 1
     ! Number of electrons in PRIMITIVE unit cell     
@@ -507,7 +505,7 @@ contains
 !!$    if( ilead == 2 )read( unit=inpf, nml=Lead2 )
 
     read( unit=inpf, nml=LeadParams )
-    write( unit=*, nml=LeadParams )
+    !write( unit=*, nml=LeadParams )
  
     Lead1D(ilead)%LeadNo   = ilead
 !!$    Lead1D(ilead)%NPCAtoms = NPCAtoms
@@ -563,23 +561,7 @@ contains
           if(sparse) call ReadSparseMatrix( inpf, Lead1D(ilead)%vn(ispin,ispin,ipc,1:NPCAO,1:NPCAO) )
           if(.NOT. sparse) call ReadMatrix( inpf, Lead1D(ilead)%vn(ispin,ispin,ipc,1:NPCAO,1:NPCAO) )
        end do
-    end do
-    
-    print *, "Onsite energy and hoppings for lead ", ilead
-    do ipc=0,NPC
-      tmpVn = 0        
-      do i=1,NPCAO
-        do j=1,NPCAO
-          do ispin=1,NSpin
-             tmpVn(ispin,i,j)=Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)
-          end do
-         end do  
-       end do
-      do ispin=1,NSpin
-        print *, "V",ipc," = " 
-        call PrintRMatrix(tmpVn(ispin,:,:))                   
-      end do  
-    end do       
+    end do     
         
     ! Set overlap of unit cell to identity
     call CSetId( Lead1D(ilead)%sn(0,1:NPCAO,1:NPCAO) )
@@ -590,20 +572,7 @@ contains
        do ipc=0,NPC
           if(sparse) call ReadSparseMatrix( inpf, Lead1D(ilead)%sn(ipc,1:NPCAO,1:NPCAO) )
           if(.NOT. sparse) call ReadMatrix( inpf, Lead1D(ilead)%sn(ipc,1:NPCAO,1:NPCAO) )
-       end do
-       
-       print *, "Onsite and interatomic overlap for lead ", ilead
-       do ipc=0,NPC
-         tmpSn = 0        
-         do i=1,NPCAO
-           do j=1,NPCAO
-             tmpSn(i,j)=Lead1D(ilead)%sn(ipc,i,j)
-           end do
-         end do
-         print *, "S",ipc," = " 
-         call PrintRMatrix(tmpSn)                  
-       end do
-       
+       end do       
     end if
     
     deallocate( tmpVn, tmpSn )
@@ -615,7 +584,7 @@ contains
   !********************************
   subroutine ReadHamiltonian(ilead )
     use device, only: DevNSpin, DevFockMat, DevOverlapMat, DevNAOrbs, LeadsOn  
-    use parameters, only: NEmbed
+    use parameters, only: NEmbed, NPC
     use cluster, only: LoAOrbNo,  HiAOrbNo, LeadAtmNo, LeadNAOrbs, NALead,  NAOAtom
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg, GetAN, GetAtmCo
@@ -628,10 +597,7 @@ contains
     use messages    
     use atomdata
     implicit none
-    
-    real(double), dimension(:,:,:), allocatable :: tmpVn
-    real(double), dimension(:,:), allocatable :: tmpSn
-    
+
     integer, intent(in) :: ilead
 
     ! Number of atoms per PUC
@@ -640,17 +606,15 @@ contains
     integer, dimension(MaxPCAtoms) :: PCAtoms
     ! Number of non-degenerate Spin bands
     integer :: NSpin
-    ! Number of primitive unit cells
-    integer :: NPC
     ! Number of atomic orbitals in PRIMITIVE unit cell
     integer :: NPCAO
     ! Number of electrons in PRIMITIVE unit cell     
     integer :: NPCEl
  
-    integer :: ierr, ispin, ipc, ipc1, ipc2, iatom, jatom, AN, i, j, k, firstao, lastao
+    integer :: ierr, ispin, ipc, ipc1, ipc2, iatom, jatom, AN, i, j, k, firstao, lastao, inpf,ios
     character(len=10) :: ANStr
     
-   namelist/LeadParams/NSpin,NPC,NPCAtoms,NPCAO,NPCEl
+   namelist/LeadParams/NSpin,NPC,NPCAO,NPCEl
     
     if (NAtomData > 0) then 
       firstao = 1
@@ -679,22 +643,29 @@ contains
          print *, iatom, AN, Lead1D(ilead)%PCAtoms(iatom)%index, Lead1D(ilead)%PCAtoms(iatom)%firstao, Lead1D(ilead)%PCAtoms(iatom)%lastao
       end do
     end if
+    
+    if(ilead==1)inpf=fopen(Lead1File, 'unknown', ios)
+    if(ilead==2)inpf=fopen(Lead2File, 'unknown', ios)    
 
     Lead1D(ilead)%LeadNo   = ilead
     Lead1D(ilead)%NSpin    = DevNSpin()
     NSpin = Lead1D(ilead)%NSpin
-    Lead1D(ilead)%NPC      = 1
-    NPC = Lead1D(ilead)%NPC
+    Lead1D(ilead)%NPC      = NPC
     Lead1D(ilead)%NPCAtoms  = NEmbed(ilead)
     NPCAtoms = Lead1D(ilead)%NPCAtoms
-    Lead1D(ilead)%NPCAO    = NEmbed(ilead)*LeadNAOrbs(ilead)
-    NPCAO = Lead1D(ilead)%NPCAO
     if (ilead ==1 ) then
       Lead1D(ilead)%NPCEl    = NEmbed(ilead)*GetAtmChg(1)
+      Lead1D(ilead)%NPCAO    = NEmbed(ilead)*NAOAtom(1)
     else 
       Lead1D(ilead)%NPCEl    = NEmbed(ilead)*GetAtmChg(GetNAtoms())  
+      Lead1D(ilead)%NPCAO    = NEmbed(ilead)*NAOAtom(GetNatoms())
     end if      
     NPCEl = Lead1D(ilead)%NPCEl
+    NPCAO = Lead1D(ilead)%NPCAO
+    
+    ! Write leadparams to file and update hamiltonian and overlap matrices 
+    write(unit=inpf,nml=Leadparams)
+    write(unit=inpf,fmt=*) 
 
     !
     ! Allocate Hoppings and overlaps
@@ -721,52 +692,51 @@ contains
     !
     ! Read in Hamiltonian
     !   
-  
-    allocate( tmpVn(2,NPCAO,NPCAO),tmpSn(NPCAO,NPCAO), stat=ierr)
-    if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","tmpH0,tmpV1,tmpS0,tmpS1")         
-    
-    if (ilead == 1) then
-      do ispin=1,NSpin
-        do ipc=0,NPC
-          do i=1,NPCAO
-            do j=1,NPCAO         
-                if (ipc == 0) Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i,j )
-                if (ipc > 0) then 
-                   Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i ,j+ipc*NPCAO )
-                   Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=DevFockMat(ispin,i+ipc*NPCAO,j)
-                end if   
-             end do   
-           end do
-        end do  
-      end do
-    else if (ilead == 2) then
-      do ispin=1,NSpin
-        do ipc=0,NPC
-          do i=1,NAOAtom(GetNAtoms())
-            do j=1,NAOAtom(GetNAtoms())
-                if (ipc == 0) Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,DevNAOrbs()+i-NAOAtom(GetNAtoms()),DevNAOrbs()+j-NAOAtom(GetNAtoms()))
-                if (ipc > 0) then 
-                   Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,DevNAOrbs()+i-NAOAtom(GetNAtoms()),DevNAOrbs()+j-(ipc+1)*NAOAtom(GetNAtoms()))
-                   Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=DevFockMat(ispin,DevNAOrbs()+i-(ipc+1)*NAOAtom(GetNAtoms()),DevNAOrbs()+j-NAOAtom(GetNAtoms()))
-                end if 
-             end do   
-           end do
-        end do  
-      end do
-    end if    
-    
-    print *, "Onsite energy and hoppings for lead ", ilead
     do ispin=1,NSpin
-      do ipc=0,NPC        
-        do i=1,NPCAO
-          do j=1,NPCAO
-             tmpVn(ispin,i,j)=Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)
-          end do
+      if( NSpin == 2 .and. ispin == 1 ) write(unit=inpf,fmt='(A)') "! spin-up "
+      if( NSpin == 2 .and. ispin == 2 ) write(unit=inpf,fmt='(A)') "! spin-down "
+      if (ilead == 1) then
+        do ipc=0,NPC
+           if (ipc == 0) write(unit=inpf,fmt='(A)') "! H0 = "  
+           if (ipc > 0) write(unit=inpf,fmt='(A,I2,A)') "! V", ipc, " = "
+           do i=1,NPCAO     
+             if (ipc == 0) then
+               do j=1,NPCAO
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i,j )
+               end do
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,0,i,j)), j=1,NPCAO)                 
+             else if (ipc > 0) then 
+               do j=1,NPCAO
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i ,j+ipc*NPCAO )
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=DevFockMat(ispin,i+ipc*NPCAO,j)
+               end do
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)), j=1,NPCAO)
+             end if   
+           end do   
+        end do
+        write(unit=inpf,fmt=*)   
+      else if (ilead == 2) then
+        do ipc=0,NPC
+          if (ipc == 0) write(unit=inpf,fmt='(A)') "! H0 = "  
+          if (ipc > 0) write(unit=inpf,fmt='(A,I2,A)') "! V", ipc, " = "        
+          do i=1,NPCAO
+             if (ipc == 0) then
+               do j=1,NPCAO
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,DevNAOrbs()+i-NPCAO,DevNAOrbs()+j-NPCAO)
+               end do
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,0,i,j)), j=1,NPCAO)
+             else if (ipc > 0) then 
+               do j=1,NPCAO
+                  Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i+(DevNAOrbs()-NPCAO)-ipc*NPCAO,j+(DevNAOrbs()-NPCAO))
+                  Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=DevFockMat(ispin,i+(DevNAOrbs()-NPCAO),j+(DevNAOrbs()-NPCAO)-ipc*NPCAO)
+               end do
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)), j=1,NPCAO)
+             end if 
+           end do
         end do  
-        print *, "V",ipc," = " 
-        call PrintRMatrix(tmpVn(ispin,:,:))          
-      end do                         
-    end do   
+        write(unit=inpf,fmt=*) 
+      end if
+    end do
       
     ! Set overlap of unit cell to identity
     call CSetId( Lead1D(ilead)%sn(0,1:NPCAO,1:NPCAO) )
@@ -775,49 +745,51 @@ contains
 
     if( .not. OrthogonalBS )then    
          
-    if (ilead == 1) then
-      do ipc=0,NPC
-        do i=1,NPCAO
-          do j=1,NPCAO         
-              if (ipc == 0) Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i,j )
-              if (ipc > 0) then 
+      if (ilead == 1) then
+        do ipc=0,NPC
+          if (ipc == 0) write(unit=inpf,fmt='(A)') "! S0 = "  
+          if (ipc > 0) write(unit=inpf,fmt='(A,I2,A)') "! S", ipc, " = "      
+          do i=1,NPCAO
+             if (ipc == 0) then
+               do j=1,NPCAO      
+                 Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i,j )
+               end do
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(0,i,j)), j=1,NPCAO)               
+             else if (ipc > 0) then 
+               do j=1,NPCAO      
                  Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i ,j+ipc*NPCAO )
                  Lead1D(ilead)%sn(ipc,j,i)=DevOverlapMat(i+ipc*NPCAO,j)
-              end if   
-           end do   
-         end do
-      end do  
-    else if (ilead == 2) then
-      do ipc=0,NPC
-          do i=1,NAOAtom(GetNAtoms())
-            do j=1,NAOAtom(GetNAtoms())
-              if (ipc == 0) Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(DevNAOrbs()+i-NAOAtom(GetNAtoms()),DevNAOrbs()+j-NAOAtom(GetNAtoms()))
-              if (ipc > 0) then
-                 Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(DevNAOrbs()+i-NAOAtom(GetNAtoms()),DevNAOrbs()+j-(ipc+1)*NAOAtom(GetNAtoms()))
-                 Lead1D(ilead)%sn(ipc,j,i)=DevOverlapMat(DevNAOrbs()+i-(ipc+1)*NAOAtom(GetNAtoms()),DevNAOrbs()+j-NAOAtom(GetNAtoms()))
-              end if
+               end do  
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(ipc,i,j)), j=1,NPCAO)              
+             end if    
            end do
-         end do
-      end do  
-    end if    
-             
-       print *, "Onsite and interatomic overlap for lead ", ilead
-       do ipc=0,NPC
-         tmpSn = 0        
-         do i=1,NPCAO
-           do j=1,NPCAO
-             tmpSn(i,j)=Lead1D(ilead)%sn(ipc,i,j)
+        end do
+        write(unit=inpf,fmt=*)         
+      else if (ilead == 2) then
+        do ipc=0,NPC
+          if (ipc == 0) write(unit=inpf,fmt='(A)') "! S0 = "  
+          if (ipc > 0) write(unit=inpf,fmt='(A,I2,A)') "! S", ipc, " = "            
+          do i=1,NPCAO
+             if (ipc == 0) then
+               do j=1,NPCAO   
+                 Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(DevNAOrbs()+i-NPCAO,DevNAOrbs()+j-NPCAO)
+               end do
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(0,i,j)), j=1,NPCAO)            
+             else if (ipc > 0) then
+               do j=1,NPCAO                 
+                  Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i+(DevNAOrbs()-NPCAO)-ipc*NPCAO,j+(DevNAOrbs()-NPCAO))
+                  Lead1D(ilead)%sn(ipc,j,i)=DevOverlapMat(i+(DevNAOrbs()-NPCAO),j+(DevNAOrbs()-NPCAO)-ipc*NPCAO)
+               end do  
+               write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(ipc,i,j)), j=1,NPCAO)                                
+             end if
            end do
-         end do
-         print *, "S",ipc," = " 
-         call PrintRMatrix(tmpSn)                  
-       end do
-       
-    end if     
+        end do  
+        write(unit=inpf,fmt=*)       
+      end if    
+      
+    end if
     
-    if (.not. LeadsOn()) write(unit=*,nml=Leadparams)  
-  
-    deallocate( tmpVn, tmpSn )
+    close(inpf)        
     
   end subroutine ReadHamiltonian  
 
@@ -883,9 +855,9 @@ contains
     type(T1DLead) :: L1D
     
     integer :: ierr, ispin, m, n, i, j
-    integer :: NPC, NPCAO
+    integer :: NPCS, NPCAO
 
-    NPC = L1D%NPC
+    NPCS = L1D%NPC
     NPCAO = L1D%NPCAO
     !
     ! Allocate extended supercell matrices
@@ -913,7 +885,7 @@ contains
     ! Compute Hamiltonian HX and overlap SX
     !
     ! Loop over all primitive cells 
-    do m=1,2*NPC+1
+    do m=1,2*NPCS+1
        !
        ! Diagonal blocks 
        !
@@ -925,8 +897,8 @@ contains
        !Off diagonal blocks:
        !
        ! 1) hoppings with PCs to the right of PC m: n > m
-       do n=m+1,2*NPC+1
-          if( n-m <= NPC )then
+       do n=m+1,2*NPCS+1
+          if( n-m <= NPCS )then
              do ispin = 1, NXSpin
                 HX( (m-1)*NPCAO+1:m*NPCAO, (n-1)*NPCAO+1:n*NPCAO, ispin ) = L1D%vn( ispin, ispin, n-m,:,:)
              end do
@@ -935,7 +907,7 @@ contains
        end do
        ! 2) hoppings with PCs to the left of PC m: n < m
        do n=1,m-1
-          if( m-n <= NPC )then
+          if( m-n <= NPCS )then
              do ispin=1,NXSpin 
                 HX( (m-1)*NPCAO+1:m*NPCAO, (n-1)*NPCAO+1:n*NPCAO, ispin ) = conjg(transpose(L1D%vn(  ispin, ispin, m-n,:,:)))
              end do
