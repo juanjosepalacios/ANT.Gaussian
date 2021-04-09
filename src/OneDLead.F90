@@ -130,16 +130,18 @@ contains
   !***************************
   !*** Initialize 1D Leads ***
   !***************************
-  subroutine Init1DLead ( ilead )
+  subroutine Init1DLead ( ilead,NSpin,HD,SD,NAOrbs,LeadsOn )
     use filemaster
     use messages    
     use parameters
-    use device, only: LeadsOn
     implicit none
     integer :: inpf,ios
-    integer, intent(in) :: ilead
+    integer, intent(in) :: ilead,NSpin,NAOrbs
+    real(double), dimension(:,:,:), intent(in) :: HD
+    real(double), dimension(:,:), intent(in) :: SD
+    logical, intent(in) :: LeadsOn
     integer :: ixyzf
-    if (.not. LeadsOn()) then
+    if (.not. LeadsOn) then
       print *    
       print *, "*******************************"
       print *, "*    Initializing 1D Leads    *"
@@ -154,8 +156,8 @@ contains
       if(ilead==1)inpf=fopen(Lead1File, 'old', ios)
       if(ilead==2)inpf=fopen(Lead2File, 'old', ios)
     end if
-    if (LeadsOn() .or. ios /= 0) then
-       call readHamiltonian (ilead)
+    if (LeadsOn .or. ios /= 0) then
+       call readHamiltonian (ilead,NSpin,HD,SD,NAOrbs,LeadsOn)
        Lead1D(ilead)%NAOrbs     = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCAO
        Lead1D(ilead)%NElectrons = Lead1D(ilead)%NPC * Lead1D(ilead)%NPCEl
        Lead1D(ilead)%SO = 0
@@ -163,7 +165,7 @@ contains
        Lead1D(ilead)%EMin     = 0.0
        Lead1D(ilead)%EMax     = 0.0
        Lead1D(ilead)%EFermi   = 0.0       
-    else if (.not. LeadsOn()) then
+    else if (.not. LeadsOn) then
       print *, "inpf = ", inpf
       call ReadParameters( inpf, ilead )
       call fclose(inpf)
@@ -184,32 +186,30 @@ contains
       Lead1D(ilead)%SO = 0
       Lead1D(ilead)%LeadNo = ilead
     end if
-    call PrintMatrices( ilead )
-    !if(FindEFL>0 .or. LeadDOS .or. MakeDevice)then
-       !
-       ! Extend supercell by one primitive cell to each side 
-       ! in order to compute charge and DOS in the case of 
-       ! non-orthogonal basis set
-       !
-       call CreateXSC( Lead1D(ilead) )
-       if(MakeDevice) call PrintDeviceInp          
-       !
-       ! If no Energy boundaries have been defined in input find them
-       !
-       if( Lead1D(ilead)%EMin == Lead1D(ilead)%EMax )call FindEBounds( Lead1D(ilead) )
-       !
-       ! Find Fermi level of lead if requested
-       !
-       if( FindEFL > 0 ) call FindFermi( Lead1D(ilead) )
-       !
-       ! Print out DOS of bulk Lead if requested
-       !
-       if( LeadDOS ) call PrintDOS( ilead )
-       !
-       ! Deallocate all extended supercell matrices
-       !
-       deallocate( HX, SX, GX, Sigma1, Sigma2 )
-    !end if
+    if (PrintHS > 0) call PrintMatrices( ilead )
+    !
+    ! Extend supercell by one primitive cell to each side 
+    ! in order to compute charge and DOS in the case of 
+    ! non-orthogonal basis set
+    !
+    call CreateXSC( Lead1D(ilead) )
+    if(MakeDevice) call PrintDeviceInp          
+    !
+    ! If no Energy boundaries have been defined in input find them
+    !
+    if( Lead1D(ilead)%EMin == Lead1D(ilead)%EMax )call FindEBounds( Lead1D(ilead) )
+    !
+    ! Find Fermi level of lead if requested
+    !
+    if( FindEFL > 0 ) call FindFermi( Lead1D(ilead) )
+    !
+    ! Print out DOS of bulk Lead if requested
+    !
+    if( LeadDOS ) call PrintDOS( ilead )
+    !
+    ! Deallocate all extended supercell matrices
+    !
+    deallocate( HX, SX, GX, Sigma1, Sigma2 )
     !
     ! Shift Hamiltonian to adjust Fermi level to zero
     !
@@ -220,9 +220,10 @@ contains
   !*****************************************
   !*** Subroutine for Cleaning up module ***
   !*****************************************
-  subroutine CleanUp1DLead
-    implicit none
-    deallocate( vn1, vn2, sn1, sn2 )
+  subroutine CleanUp1DLead(ilead)
+    integer, intent(in) :: ilead      
+    if (ilead == 1) deallocate( vn1, sn1 )
+    if (ilead == 2) deallocate( vn2, sn2 )
   end subroutine CleanUp1DLead
 
 
@@ -582,8 +583,7 @@ contains
   !********************************
   ! Read lead parameters from file 
   !********************************
-  subroutine ReadHamiltonian(ilead )
-    use device, only: DevNSpin, DevFockMat, DevOverlapMat, DevNAOrbs, LeadsOn  
+  subroutine ReadHamiltonian(ilead,NSpin,HD,SD,NAOrbs,LeadsOn )
     use parameters, only: NEmbed, NPC
     use cluster, only: LoAOrbNo,  HiAOrbNo, LeadAtmNo, LeadNAOrbs, NALead,  NAOAtom
 #ifdef G03ROOT
@@ -598,14 +598,19 @@ contains
     use atomdata
     implicit none
 
+    real(double), dimension(:,:,:), intent(in) :: HD
+    real(double), dimension(:,:), intent(in) :: SD
+    
+    ! Number of non-degenerate Spin bands
+    integer, intent(in) :: NSpin
     integer, intent(in) :: ilead
+    integer, intent(in) :: NAOrbs
+    logical, intent(in) :: LeadsOn
 
     ! Number of atoms per PUC
     integer :: NPCAtoms
     ! Atom data indices
     integer, dimension(MaxPCAtoms) :: PCAtoms
-    ! Number of non-degenerate Spin bands
-    integer :: NSpin
     ! Number of atomic orbitals in PRIMITIVE unit cell
     integer :: NPCAO
     ! Number of electrons in PRIMITIVE unit cell     
@@ -648,8 +653,7 @@ contains
     if(ilead==2)inpf=fopen(Lead2File, 'unknown', ios)    
 
     Lead1D(ilead)%LeadNo   = ilead
-    Lead1D(ilead)%NSpin    = DevNSpin()
-    NSpin = Lead1D(ilead)%NSpin
+    Lead1D(ilead)%NSpin    = NSpin
     Lead1D(ilead)%NPC      = NPC
     Lead1D(ilead)%NPCAtoms  = NEmbed(ilead)
     NPCAtoms = Lead1D(ilead)%NPCAtoms
@@ -671,7 +675,7 @@ contains
     ! Allocate Hoppings and overlaps
     !
     if( ilead == 1 )then
-       if (LeadsOn()) deallocate( vn1, sn1 )
+       if (LeadsOn) deallocate( vn1, sn1 )
        allocate( vn1(2,2,0:NPC,NPCAO,NPCAO),sn1(0:NPC,NPCAO,NPCAO), stat=ierr)
        if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn1,sn1")
        Lead1D(1)%vn => vn1
@@ -680,7 +684,7 @@ contains
        sn1 = 0
     endif
     if( ilead == 2 )then
-       if (LeadsOn()) deallocate( vn2, sn2 )
+       if (LeadsOn) deallocate( vn2, sn2 )
        allocate( vn2(2,2,0:NPC,NPCAO,NPCAO),sn2(0:NPC,NPCAO,NPCAO), stat=ierr)
        if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn2,sn2")
        Lead1D(2)%vn => vn2
@@ -702,13 +706,13 @@ contains
            do i=1,NPCAO     
              if (ipc == 0) then
                do j=1,NPCAO
-                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i,j )
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=HD(ispin,i,j )
                end do
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,0,i,j)), j=1,NPCAO)                 
              else if (ipc > 0) then 
                do j=1,NPCAO
-                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i ,j+ipc*NPCAO )
-                 Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=DevFockMat(ispin,i+ipc*NPCAO,j)
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=HD(ispin,i ,j+ipc*NPCAO )
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=HD(ispin,i+ipc*NPCAO,j)
                end do
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)), j=1,NPCAO)
              end if   
@@ -722,13 +726,13 @@ contains
           do i=1,NPCAO
              if (ipc == 0) then
                do j=1,NPCAO
-                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,DevNAOrbs()+i-NPCAO,DevNAOrbs()+j-NPCAO)
+                 Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=HD(ispin,NAOrbs+i-NPCAO,NAOrbs+j-NPCAO)
                end do
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,0,i,j)), j=1,NPCAO)
              else if (ipc > 0) then 
                do j=1,NPCAO
-                  Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=DevFockMat(ispin,i+(DevNAOrbs()-NPCAO)-ipc*NPCAO,j+(DevNAOrbs()-NPCAO))
-                  Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=DevFockMat(ispin,i+(DevNAOrbs()-NPCAO),j+(DevNAOrbs()-NPCAO)-ipc*NPCAO)
+                  Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)=HD(ispin,i+(NAOrbs-NPCAO)-ipc*NPCAO,j+(NAOrbs-NPCAO))
+                  Lead1D(ilead)%vn(ispin,ispin,ipc,j,i)=HD(ispin,i+(NAOrbs-NPCAO),j+(NAOrbs-NPCAO)-ipc*NPCAO)
                end do
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%vn(ispin,ispin,ipc,i,j)), j=1,NPCAO)
              end if 
@@ -752,13 +756,13 @@ contains
           do i=1,NPCAO
              if (ipc == 0) then
                do j=1,NPCAO      
-                 Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i,j )
+                 Lead1D(ilead)%sn(ipc,i,j)=SD(i,j )
                end do
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(0,i,j)), j=1,NPCAO)               
              else if (ipc > 0) then 
                do j=1,NPCAO      
-                 Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i ,j+ipc*NPCAO )
-                 Lead1D(ilead)%sn(ipc,j,i)=DevOverlapMat(i+ipc*NPCAO,j)
+                 Lead1D(ilead)%sn(ipc,i,j)=SD(i ,j+ipc*NPCAO )
+                 Lead1D(ilead)%sn(ipc,j,i)=SD(i+ipc*NPCAO,j)
                end do  
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(ipc,i,j)), j=1,NPCAO)              
              end if    
@@ -772,13 +776,13 @@ contains
           do i=1,NPCAO
              if (ipc == 0) then
                do j=1,NPCAO   
-                 Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(DevNAOrbs()+i-NPCAO,DevNAOrbs()+j-NPCAO)
+                 Lead1D(ilead)%sn(ipc,i,j)=SD(NAOrbs+i-NPCAO,NAOrbs+j-NPCAO)
                end do
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(0,i,j)), j=1,NPCAO)            
              else if (ipc > 0) then
                do j=1,NPCAO                 
-                  Lead1D(ilead)%sn(ipc,i,j)=DevOverlapMat(i+(DevNAOrbs()-NPCAO)-ipc*NPCAO,j+(DevNAOrbs()-NPCAO))
-                  Lead1D(ilead)%sn(ipc,j,i)=DevOverlapMat(i+(DevNAOrbs()-NPCAO),j+(DevNAOrbs()-NPCAO)-ipc*NPCAO)
+                  Lead1D(ilead)%sn(ipc,i,j)=SD(i+(NAOrbs-NPCAO)-ipc*NPCAO,j+(NAOrbs-NPCAO))
+                  Lead1D(ilead)%sn(ipc,j,i)=SD(i+(NAOrbs-NPCAO),j+(NAOrbs-NPCAO)-ipc*NPCAO)
                end do  
                write(unit=inpf,fmt='(1000(ES14.4))'), ( DREAL(Lead1D(ilead)%sn(ipc,i,j)), j=1,NPCAO)                                
              end if
@@ -822,12 +826,6 @@ contains
           do i=1,NAO
              print '(1000(E14.4))', ( DREAL( L1D_V1( Lead1D(ilead), ispin, i, ispin, j)), j=1,NAO )
           end do
-          !!if( NSpin == 1 .and. proc_id == 0) print *, "V1⁺ = "
-          !!if( NSpin == 2 .and. ispin == 1 .and. proc_id == 0) print *, "V1⁺ up = "
-          !!if( NSpin == 2 .and. ispin == 2 .and. proc_id == 0) print *, "V1⁺ down = "       
-          !!do i=1,NAO
-          !!   print '(1000(E14.4))', ( DREAL( L1D_V2( Lead1D(ilead), ispin, i, ispin, j)), j=1,NAO )
-          !!end do
        end do
        print *, "S0 = "
        do i=1,NAO
@@ -837,11 +835,6 @@ contains
        do i=1,NAO
           print '(1000(E14.4))', (DREAL(L1D_S1( Lead1D(ilead), i,j)), j=1,NAO )
        end do
-       !!if(proc_id == 0) print *, "S1⁺ = "
-       !!do i=1,NAO
-       !!  print '(1000(E14.4))', ( DREAL(L1D_S2( Lead1D(ilead), i,j)), j=1,NAO )
-       !!end do
-    !end if
     call FlUSH(6)
   end subroutine PrintMatrices
 
@@ -1008,6 +1001,9 @@ contains
   !*******************************************************
   subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim ) !!!z, H0, Vi, S0, Si, NAO )
     use parameters, only: eta, conv => L1DCONV, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
+#ifdef PGI
+    USE lapack_blas
+#endif    
     implicit none
 
     integer, intent(IN) :: NDim
@@ -1227,14 +1223,28 @@ contains
     ChargeOffSet = d_zero
     WhichLead = L1D%LeadNo
     
-    print *, "1. Searching upper and lower energy bound Emin, EMax "
-    print '(A,F4.0)', " such that DOS integrates to total number of orbitals = ", qmax
-    !
-    ! 1. Increase EMax until charge integration becomes number of spin orbitals
+    ! 1. Decrease EMin until charge integration becomes zero
     !
     L1D%EMin = 0.0d0
     L1D%EMax = 0.0d0
     EStep = 1.0d0
+    do
+       Q = TotCharge( L1D%EMin )
+       print *, "EMin = ", L1D%EMin, Q
+       call FLUSH(6)
+       if( abs(Q) <  ChargeAcc ) exit       
+       L1D%EMin = L1D%EMin - EStep
+       if( L1D%EMin < -Infty )then
+          print *, "Emin becomes smaller than -Infty. Decrease INFTY parameter."
+          call AbortProg
+       end if
+       EStep = 2.0d0*EStep +1.0d0
+    end do
+
+   print '(A,F4.0)', "Searching optimum Emin and EMax such that DOS integrates to total number of spin-orbitals in the PC = ", qmax
+    !
+    ! 1. Increase EMax until charge integration becomes number of spin orbitals
+    !
     do 
        Q = TotCharge( L1D%EMax )
        if( abs(Q) < ChargeAcc ) L1D%EMin = L1D%EMax
@@ -1247,36 +1257,20 @@ contains
     !
     ! 2. Try to decrease EMax if possible 
     !
-    if( L1D%EMax == 0.0d0 )then
-       EStep = 1.0d0
-       do 
-          L1D%EMax = L1D%EMax - EStep
-          if( L1D%EMax < -Infty )exit
-          Q = TotCharge( L1D%EMax )
-          print *, "EMax = ", L1D%EMax, Q
-          call FLUSH(6)
-          if( abs(Q - qmax) >  ChargeAcc ) exit
-          EStep = 2.0d0*EStep +1.0d0
-       end do
-       L1D%EMax = L1D%EMax + EStep
-    end if
+!   if( L1D%EMax == 0.0d0 )then
+!      EStep = 1.0d0
+!      do 
+!         L1D%EMax = L1D%EMax - EStep
+!         if( L1D%EMax < -Infty )exit
+!         Q = TotCharge( L1D%EMax )
+!         print *, "EMax = ", L1D%EMax, Q
+!         call FLUSH(6)
+!         if( abs(Q - qmax) >  ChargeAcc ) exit
+!         EStep = 2.0d0*EStep +1.0d0
+!      end do
+!      L1D%EMax = L1D%EMax + EStep
+!   end if
     !
-    ! 3. Decrease EMin until charge integration becomes zero
-    !
-    EStep = 1.0d0
-    do
-       Q = TotCharge( L1D%EMin )
-       print *, "EMin = ", L1D%EMin, Q
-       call FLUSH(6)
-       if( abs(Q) <  ChargeAcc ) exit       
-       L1D%EMin = L1D%EMin - EStep
-       if( L1D%EMax < -Infty )then
-          print *, "Emin becomes smaller than -Infty. Decrease INFTY parameter."
-          call AbortProg
-       end if
-       EStep = 2.0d0*EStep +1.0d0
-    end do
-
     print *, "EMin=", L1D%EMin, "  EMax=", L1D%EMax
     call FLUSH(6)
   end subroutine FindEBounds
@@ -1311,7 +1305,7 @@ contains
        L1D%EFermi = EFermi
     end if
 
-    print *, "Initial EFermi = ", L1D%EFermi
+   !print *, "Initial EFermi = ", L1D%EFermi
 
     EFermi = L1D%EFermi
     EF0 = EFermi
@@ -1322,13 +1316,13 @@ contains
     Delta=FermiAcc
     Epsilon=FermiAcc
     
-    print *, "Muller Method"
+   !print *, "Muller Method"
     call FLUSH(6)
     
     call MULLER(TotCharge,EF0,EF1,EF2,Delta,Epsilon,nsteps,EFermi,Z,K,Cond)
     L1D%EFermi = EFermi
 
-    print *, "EFermi = ", L1D%EFermi 
+    print *, "EFermi in the bulk electrodes= ", L1D%EFermi 
     call FLUSH(6)
 
     ChargeOffset = d_zero
@@ -1343,7 +1337,7 @@ contains
   ! Shifts Lead Hamiltonian to adjust Fermi level to zero
   !
   subroutine AdjustFermi( ilead )
-    use device, only: LeadsOn
+!   use device, only: LeadsOn
     implicit none
     
     integer, intent(in) :: ilead
@@ -1374,7 +1368,7 @@ contains
     !
     Lead1D(ilead)%EMin = Lead1D(ilead)%EMin - Lead1D(ilead)%EFermi
     Lead1D(ilead)%EMax = Lead1D(ilead)%EMax - Lead1D(ilead)%EFermi       
-    if (.not. LeadsOn()) print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
+   !print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
     !! Lead1D(ilead)%EFermi = 0.0d0
   end subroutine AdjustFermi
 

@@ -659,6 +659,10 @@
      RETURN
   END IF
   
+     if (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) then
+       CALL CleanUp1DLead(1)
+       CALL CleanUp1DLead(2)
+     end if   
   !*********
   ! BYE-BYE
   !*********

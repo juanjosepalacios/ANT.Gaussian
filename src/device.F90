@@ -241,7 +241,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp, NEmbed
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -304,20 +304,24 @@
     shiftup = shift
     shiftdown = shift
 
-    IF( (ElType(1) == "BETHE" .and. ElType(2) == "BETHE")  .or. (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD")) THEN 
+    IF (ElType(1) == "BETHE" .and. ElType(2) == "BETHE") THEN 
       call AnalyseCluster
-    ELSE IF  ((ElType(1) == "BETHE" .or. ElType(1) == "1DLEAD") .and. ElType(2) == "GHOST" ) THEN
+      call InitElectrodes
+    ELSE IF (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD") THEN 
+      call AnalyseCluster
+      call InitElectrodes
+    ELSE IF (ElType(1) == "BETHE" .and. ElType(2) == "GHOST" ) THEN
       call AnalyseClusterElectrodeOne
-    ELSE IF  (ElType(1) == "GHOST" .and. (ElType(2) == "BETHE" .or. ElType(2) == "1DLEAD")) THEN
+      call InitElectrodes
+    ELSE IF (ElType(1) == "GHOST" .and. ElType(2) == "BETHE") THEN
       call AnalyseClusterElectrodeTwo  
+      call InitElectrodes
     ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST") THEN
       continue                           
     ELSE 
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
-
-    call InitElectrodes
     
     IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
 
@@ -327,52 +331,44 @@
     LEV = 0.0d0
     HEV = 0.0d0
 
-    ! Compute number of electrons 
-    ! in central device region
-    
+    ! Compute number of electrons in central (reduced) device region
 
-    IF (Overlap < 0.01) THEN
-       NEmbed1=0
-       NEmbed2=0
-    ELSE
+    NEmbed1=0
+    NEmbed2=0
+    IF (Overlap >= 0.0 .and. (ElType(1) == "BETHE" .and. Eltype(2) == "BETHE")) THEN
        NEmbed1=NEmbedBL(1)
        NEmbed2=NEmbedBL(2)
+    ELSE IF  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) THEN 
+       NEmbed1=NEmbed(1)
+       NEmbed2=NEmbed(2)
     END IF
 
-   
     print *, "---------------------------------------------------"
     print *, " Details on device and contacting atoms -----------"
     print *, "---------------------------------------------------"
 
-    print *, "NEmbed(1) =", NEmbedBL(1)
-    print *, "NEmbed(2) =", NEmbedBL(2)
+    print *, "NEmbed(1) =", NEmbed1
+    print *, "NEmbed(2) =", NEmbed2
 
     NCDEl = 0
     do iatom=NEmbed1+1,GetNAtoms()-NEmbed2
       NCDEl = NCDEl + GetAtmChg(iatom)
     end do
+    print *, "Number of electrons in neutral reduced device (NCDEl) = ", NCDEl
     
-    print *, "Number of electrons in neutral reduced device"
-    print *, "NCDEl = ", NCDEl
-    
-    print *, "First and last orbital in reduced device"
-    IF (Overlap < 0.01) THEN
-       NCDAO1 = 1
-    ELSE
-       NCDAO1 = 0
-    END IF
+    NCDAO1 = 1
     do iatom=1,NEmbed1
        NCDAO1 = NCDAO1 + NAOAtom(iatom) 
     end do
-
-    print *, "NCDAO1 = ", NCDAO1
 
     NCDAO2 = NCDAO1-1
     do iatom = NEmbed1+1,GetNAtoms()-NEmbed2
        NCDAO2 = NCDAO2 + NAOAtom(iatom) 
     end do
 
-    IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST" ) NCDAO2 = NAOrbs
+
+    print *, "First and last orbital in reduced device"
+    print *, "NCDAO1 = ", NCDAO1
     print *, "NCDAO2 = ", NCDAO2
     print *, "---------------------------------------------------"
 
@@ -657,6 +653,7 @@
   !**************************
   subroutine CleanUpDevice
     use BetheLattice, only: CleanUpBL, LeadBL
+    use OneDLead, only: CleanUp1DLead
     use parameters, only: ElType
     integer :: AllocErr, LeadNo
 
@@ -669,6 +666,8 @@
        select case( ElType(LeadNo) )
        case( "BETHE" )
           call CleanUpBL( LeadBL(LeadNo) ) 
+       case( "1DLEAD" )
+          call CleanUp1DLead(LeadNo)
        end select
     end do
   end subroutine CleanUpDevice
@@ -683,6 +682,7 @@
     use parameters, only: ElType
     implicit none 
     integer :: LeadNo
+    logical :: AreLeadsOn
     real*8, dimension(2) :: EMin, EMax
 
     do LeadNo=1,2
@@ -692,7 +692,8 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead ( LeadNo )
+          AreLeadsOn = LeadsOn()
+          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs,AreLeadsOn )
           EMin(LeadNo) = L1D_EMin( Lead1d(LeadNo) )
           EMax(LeadNo) = L1D_EMax( Lead1d(LeadNo) )
        case( "GHOST" )
@@ -715,7 +716,6 @@
     use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, ROT, PrtHatom
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use OneDLead, only: ReadHamiltonian
     use correlation
     use orthogonalization
 #ifdef G03ROOT
@@ -737,25 +737,24 @@
 
     HD = F
     
-    IF ((ElType(1) == "1DLEAD" .or. ELType(2) == "1DLEAD")) THEN
-      call InitElectrodes
-    !do LeadNo=1,2  
-    !   call ReadHamiltonian (LeadNo)
-    !end do   
-    end if    
+    !Initializing 1D electrodes everytime we pass a SCF cycle 
+    IF (ElType(1) == "1DLEAD" .or. ELType(2) == "1DLEAD") call InitElectrodes
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
     if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1))
     if( NSpin == 2 ) EMax = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1)))
     EMin = -EMax
+       print *, "--------------------"
+       print *, "Intial Energy Bounds"
+       print *, "--------------------"
     print *, "EMin=", EMin
     print *, "EMax=", EMax
 
     if( .not. DMImag .and. ChargeCntr )then
-       print *, "--------------"
-       print *, "Charge Control"
-       print *, "--------------"
+       print *, "-----------------------"
+       print *, " Total DOS Point Check "
+       print *, "-----------------------"
        ! Find upper and lower energy bound 
        call FindEnergyBounds
     end if
@@ -3636,14 +3635,14 @@
 
     real*8, intent(in) :: phi, E0, R
     integer :: i, j !!, ispin 
-    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal
+    complex*16,dimension(NAOrbs,NAOrbs) :: green
     complex*16 :: TrGS, z
 
     z = E0 - R*(cos(phi) - ui*sin(phi)) 
 
     TrGS=c_zero
     do ispin=1,NSpin
-       call gplus(z,green,gammar,gammal)
+       call gplus0(z,green)
        !do i=1,NAOrbs
        do i=NCDAO1,NCDAO2
           do j=1,NAOrbs
@@ -3709,7 +3708,6 @@
   ! *************************************
   subroutine FindEnergyBounds
     use parameters, only: ChargeAcc,eta,ElType
-    use OneDLead, only:  Lead1D, L1D_NElectrons
 
     integer :: i, cond,k 
     real*8 :: EStep, Q
@@ -3719,15 +3717,27 @@
 
     EStep = 10.0d0 +10000.0 *eta
 
-    do
-       Q = TotCharge( EMax )
-       print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-       if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-          exit
-       end if
-       EMin = EMin - EStep
-       EMax = EMax + EStep
-    end do   
+    if (Eltype(1) == "1DLEAD" .or. Eltype(2) == "1DLEAD") then
+       do i=1,1000
+          Q = TotCharge( EMax )
+          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
+          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
+             exit
+          end if
+          EMin = EMin - EStep
+          EMax = EMax + EStep
+       end do
+    else
+       do
+          Q = TotCharge( EMax )
+          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
+          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
+             exit
+          end if
+          EMin = EMin - EStep
+          EMax = EMax + EStep
+       end do    
+    end if
     print *, "--------------------------------------------------"
 
   end subroutine FindEnergyBounds
