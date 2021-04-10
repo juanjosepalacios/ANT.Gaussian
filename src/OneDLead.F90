@@ -1,25 +1,35 @@
-!***************************************
-!*                                     *
-!*  ANT1D - OneDLead.f90               *
-!*                                     *
-!*  Calcluation of 1D self-energies    *
-!*                                     *
-!***************************************
-!*                                     *
-!*  This source file is part of the    *
-!*  ANT1D project.                     *
-!*                                     *
-!*  Copyright (c) 2006 - 2015 by       *
-!*                                     *
-!*  David Jacob                        *
-!*                                     *
-!*  MPI fuer Mikrostrukturphysik       *
-!*  Weinberg 2                         *
-!*  06120 Halle                        *
-!*  Germany                            *
-!*                                     *
-!***************************************
-
+!***********************************************************
+!***********************************************************
+!*********************  ANT.G-2.5.2  ***********************
+!***********************************************************
+!***********************************************************
+!*                                                         *
+!*  This source file was orginally part of the             *
+!*  ANT1D project.                                         *
+!*                                                         *
+!*  Copyright (c) 2006 - 2015 by                           *
+!*                                                         *
+!*  David Jacob (1)                                        *
+!*                                                         *
+!*  (1) MPI fuer Mikrostrukturphysik                       *
+!*  Weinberg 2                                             *
+!*  06120 Halle                                            *
+!*  Germany                                                *
+!*                                                         *
+!*  Other contributors:                                    *
+!*                                                         *
+!*  Juan Jose Palacios (2)                                 *
+!*  Wynand Dednam (3)                                      *
+!*                                                         *
+!*  (2) Departamento de Fisica de la Materia Condensada    *
+!*     Universidad Autonoma de Madrid                      *
+!*     28049 Madrid (SPAIN)                                *
+!*  (3) Departament of Physics                             *
+!*     University of South Africa                          *
+!*     1709 Roodepoort (South Africa)                      *
+!*                                                         *
+!*                                                         *
+!***********************************************************
 
 !****************************************************
 !*                                                  *
@@ -50,7 +60,6 @@ module OneDLead
   !Public module procedures
   !************************
   public :: Init1DLead
-  public :: ReadHamiltonian
   public :: CleanUp1DLead
   public :: CompSelfEnergy1D
   public :: L1D_NSpin, L1D_NAOrbs, L1D_NElectrons

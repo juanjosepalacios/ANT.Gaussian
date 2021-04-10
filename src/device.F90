@@ -681,7 +681,6 @@
     use parameters, only: ElType
     implicit none 
     integer :: LeadNo
-    logical :: AreLeadsOn
     real*8, dimension(2) :: EMin, EMax
 
     do LeadNo=1,2
@@ -691,8 +690,7 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          AreLeadsOn = LeadsOn()
-          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs,AreLeadsOn )
+          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
           EMin(LeadNo) = L1D_EMin( Lead1d(LeadNo) )
           EMax(LeadNo) = L1D_EMax( Lead1d(LeadNo) )
        case( "GHOST" )
