@@ -220,7 +220,7 @@ CONTAINS
     !END DO                                                                                                                                        
     
     DO i=1,GetNAtoms()
-      DO j=GetNAtoms(),i,-1
+      DO j=1,GetNAtoms()
         DO k=LoAOrbNo(i), HiAOrbNo(i)
           DO q=LoAOrbNo(j), HiAOrbNo(j)
              IF (i==j) THEN
