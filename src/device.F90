@@ -2647,7 +2647,8 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
+    use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
     use omp_lib
@@ -2662,22 +2663,50 @@
     real*8, dimension(10001) :: xxx
     real*8, dimension(MaxAtm) :: AtomDOS
     complex*16 :: cenergy,ctrans
-    integer :: n, nsteps, i, imin, imax, info ,j
+    integer :: n, nsteps, i, imin, imax, info ,j, AllocErr
+    logical :: ADDP    
     
-    complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: DGammaL, DGammaR, DGreen, DT, Dtemp, DSG
+    complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, SG
+    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DSG
 
     print *
     print *, "-------------------------"
     print *, "--- Calculating  LDOS ---"
     print *, "-------------------------"
     print *
+    
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
+
+       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
+       allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+
+       call spin_orbit
+       
+    else
+
+       allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(GammaR(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(Green(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(SG(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+
+    end if    
 
     allocate ( AtomDOSEF(2,MaxAtm) )
+    if( AllocErr /= 0 ) stop    
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if (.not. SOC .and. .not. ROT) then
+    if ((.not. SOC) .and. (.not. ROT)) then
     
     do ispin=1,NSpin
 
@@ -2752,6 +2781,13 @@
       end do ! End of spin loop
       
     else !SOC case
+    
+       if (DMIMAG) then
+          call RMatPow( S_SOC, -1.0d0, InvS_SOC )
+          call CompDensMat2_SOC(ADDP)
+       else   
+          call CompDensMat_SOC(ADDP)
+       end if     
       
       open(333,file='tempDOS',status='unknown')
 
@@ -2820,6 +2856,20 @@
       close(333,status='delete')
 
   end if !End of SOC if
+  
+      if (SOC .or. ROT) then
+         deallocate(DGammaL)
+         deallocate(DGammaR)
+         deallocate(DGreen)
+         deallocate(DSG)
+         !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
+         deallocate(H_SOC)
+      else 
+         deallocate(GammaL)
+         deallocate(GammaR)
+         deallocate(Green)
+         deallocate(SG)
+      end if  
 
 
 3333 format(f10.5,10000E14.5)
