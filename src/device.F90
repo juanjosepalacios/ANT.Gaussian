@@ -98,9 +98,6 @@
 
   ! *** Density of states projected on atoms at the Fermi energy
   real*8, dimension(:,:), allocatable :: AtomDOSEF
-  
-  ! *** Density of states with SOC projected on atoms at the Fermi energy
-  real*8, dimension(:), allocatable :: AtomDOSEF_SOC  
 
   ! *** Control Switches ***
   logical :: Leads       = .false.
