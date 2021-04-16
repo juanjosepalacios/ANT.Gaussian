@@ -38,10 +38,10 @@
   USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
   USE constants, ONLY: Hart
   USE preproc
-  use OneDLead  
+  USE OneDLead, only: CleanUp1DLead 
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
-       SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, &
-       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
+       SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, SwitchOn1DElectrodes, &
+       SwitchOff1DElectrodes, SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
 #ifdef G03ROOT
   USE g03Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
 #endif
@@ -462,9 +462,18 @@
   ! Turn on charge control every 5 steps in the first cycles
   IF(MOD(NCycLeadsOn-1,10) == 0 .and. NCycLeadsOn <= 21) CALL SwitchOnChargeCntr
   IF(MOD(NCycLeadsOn-1,20) == 0 .and. NCycLeadsOn > 21) CALL SwitchOnChargeCntr
-  
+    
   ! Call subroutine that solves transport problem
   CALL Transport(F,ADDP)
+  
+   if (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD") THEN
+       IF(MOD(NCycLeadsOn-1,10) == 0 .and. NCycLeadsOn >= 6) THEN
+          CALL CleanUp1DLead(1)
+          CALL CleanUp1DLead(2)
+          CALL SwitchOff1DElectrodes
+       END IF 
+   end if   
+
   CALL SwitchOffChargeCntr
   
   IF( SL <= 0.0d0 ) alpha = 1.0d0
@@ -659,10 +668,6 @@
      RETURN
   END IF
   
-     if (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) then
-       CALL CleanUp1DLead(1)
-       CALL CleanUp1DLead(2)
-     end if   
   !*********
   ! BYE-BYE
   !*********

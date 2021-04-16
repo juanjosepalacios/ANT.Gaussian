@@ -1,42 +1,59 @@
-!***********************************************************
-!***********************************************************
-!*********************  ANT.G-2.5.2  ***********************
-!***********************************************************
-!***********************************************************
-!*                                                         *
-!*  This source file was orginally part of the             *
-!*  ANT1D project.                                         *
-!*                                                         *
-!*  Copyright (c) 2006 - 2015 by                           *
-!*                                                         *
-!*  David Jacob (1)                                        *
-!*                                                         *
-!*  (1) MPI fuer Mikrostrukturphysik                       *
-!*  Weinberg 2                                             *
-!*  06120 Halle                                            *
-!*  Germany                                                *
-!*                                                         *
-!*  Other contributors:                                    *
-!*                                                         *
-!*  Juan Jose Palacios (2)                                 *
-!*  Wynand Dednam (3)                                      *
-!*                                                         *
-!*  (2) Departamento de Fisica de la Materia Condensada    *
-!*     Universidad Autonoma de Madrid                      *
-!*     28049 Madrid (SPAIN)                                *
-!*  (3) Departament of Physics                             *
-!*     University of South Africa                          *
-!*     1709 Roodepoort (South Africa)                      *
-!*                                                         *
-!*                                                         *
-!***********************************************************
-
+!*********************************************************!
+!*********************  ANT.G-2.6.0  *********************!
+!*********************************************************!
+!                                                         !
+!  Copyright (c) by                                       !
+!                                                         !
+!  Juan Jose Palacios (1)                                 !
+!  David Jacob (2)                                        !
+!  Maria Soriano (1)                                      !
+!  Angel J. Perez-Jimenez (3)                             !
+!  Emilio SanFabian (3)                                   !
+!  Jose Antonio Antonio Verges (4)                        !
+!  Enrique Louis (5)                                      !
+!  Wynand Dednam (5)                                      !
+!                                                         !
+! (1) Departamento de Fisica de la Materia Condensada     !
+!     Universidad Autonoma de Madrid                      !    
+!     28049 Madrid (SPAIN)                                !
+! (2) Theory Department                                   !
+!     Max-Planck-Institute for Microstructure Physics     !
+!     Halle, 06120 (GERMANY)                              !
+! (3) Departamento de Quimica Fisica                      !
+!     Universidad de Alicante                             !
+!     03690 Alicante (SPAIN)                              !
+! (4) Insto. de Ciencias de Materiales de Madrid (ICMM)   !
+!     Consejo Superior de Investigacion y Ciencia (CSIC)  !
+!     28049 Madrid (SPAIN)                                !
+! (5) Departamento de Fisica Aplicada                     !
+!     Universidad de Alicante                             !    
+!     03690 Alicante (SPAIN)                              !
+!                                                         !
+!*                                     *
+!*  ANT1D - OneDLead.f90               *
+!*                                     *
+!*  Calcluation of 1D self-energies    *
+!*                                     *
+!***************************************
+!*                                     *
+!*  This source file is part of the    *
+!*  ANT1D project.                     *
+!*                                     *
+!*  Copyright (c) 2006 - 2015 by       *
+!*                                     *
+!*  David Jacob                        *
+!*                                     *
+!*  MPI fuer Mikrostrukturphysik       *
+!*  Weinberg 2                         *
+!*  06120 Halle                        *
+!*  Germany                            *
+!*                                     *
 !****************************************************
 !*                                                  *
 !*  Module for description of one-dimensional lead  *
 !*                                                  *
 !****************************************************
-module OneDLead
+  module OneDLead
 !****************************************************
   use constants
   use geom
@@ -162,7 +179,7 @@ contains
     Lead1D(ilead)%SO = 0
     Lead1D(ilead)%LeadNo = ilead
 
-    if (PrintHS > 0) call PrintMatrices( ilead )
+    if (Prinths > 0) call PrintMatrices( ilead )
     !
     ! Extend supercell by one primitive cell to each side 
     ! in order to compute charge and DOS in the case of 
@@ -178,17 +195,21 @@ contains
     !
     call FindFermi( Lead1D(ilead) )
     !
+    ! Shift Hamiltonian to adjust Fermi level to zero
+    !
+    call AdjustFermi( ilead ) 
+    call CreateXSC( Lead1D(ilead) )
+    call PrintMatrices (ilead)
+    if( LeadDOS ) call PrintDOS( ilead )
+    !
     ! Print out DOS of bulk Lead if requested
     !
-    if( LeadDOS ) call PrintDOS( ilead )
+   !if( LeadDOS ) call PrintDOS( ilead )
     !
     ! Deallocate all extended supercell matrices
     !
     deallocate( HX, SX, GX, Sigma1, Sigma2 )
     !
-    ! Shift Hamiltonian to adjust Fermi level to zero
-    !
-    call AdjustFermi( ilead ) 
 
   end subroutine Init1DLead
 
@@ -254,7 +275,11 @@ contains
           Sigma( i, j ) = sig( i-AOrb1+1, j-AOrb1+1 )
        end do
     end do
-    deallocate( Veff1, Heff, Veff2, sig )
+    deallocate( Veff1, Heff, Veff2, sig, STAT=ierr )
+    if( ierr /= 0 )then
+       print *, "OneDLead/CompSelfEnergy1D/DEALLOCATION ERROR: Veff1, Heff, Veff2, sig"
+       call AbortProg
+       end if
   end subroutine CompSelfEnergy1D
   
   
@@ -593,8 +618,8 @@ contains
          GX(NXDim,NXDim), Sigma1(NXDim,NXDim), &
          Sigma2(NXDim,NXDim), STAT=ierr )
     if( ierr /= 0 )then
-       print *, "OneDLead/ERROR: HX, SX, GX, Sigma1, Sigma2 could not be allocated."
-       call AbortProg
+       print *, "OneDLead/Warning: HX, SX, GX, Sigma1, Sigma2 could not be allocated."
+      !call AbortProg
     end if
 
     HX = c_zero
@@ -712,7 +737,8 @@ contains
 
     iunit=fopen(file(ilead),'unknown', ios)
     do energy=EMin, EMax, DE 
-       zenergy=energy-Lead1D(ilead)%EFermi+gamma*ui
+      !zenergy=energy-Lead1D(ilead)%EFermi+gamma*ui
+       zenergy=energy
        write(UNIT=iunit,FMT='(F10.5,(1000(ES14.6)))'), energy,&
             ( BulkSDOS( Lead1D(ilead), ispin, zenergy ), ispin=1,NXSpin )
        call flush(iunit)
@@ -871,15 +897,15 @@ contains
     implicit none
     
     real(double), intent(in) :: E
-
-    integer, parameter :: nmax = 2047
+  
+    integer, parameter :: nmax = 4095
     
     real(double) :: q,qq, E0, R, phi
     integer :: n, j, ispin, k, l, NAO, NPCAO
     real(double), dimension(nmax) :: x, w
-
+  
     complex(double) :: z
-
+  
     NAO = Lead1D(WhichLead)%NAOrbs
     NPCAO = Lead1D(WhichLead)%NPCAO
     !
@@ -900,11 +926,11 @@ contains
          
           phi = x(j)
           z = E0 - R*(cos(phi) - ui*sin(phi))
-
+  
           do ispin=1, NXSpin
              
              call CompGreensFunc( Lead1D(WhichLead), ispin, z ) 
-
+  
              do k=NAO+1, NAO+NPCAO
                 do l=1,NXAO
                    !
@@ -932,7 +958,7 @@ contains
     call flush(6)
     TotCharge = q-ChargeOffSet
   end function TotCharge
-
+  
 
   !*****************************************************
   !*** Find upper and lower energy bounds for a lead ***
@@ -1065,15 +1091,12 @@ contains
   ! Shifts Lead Hamiltonian to adjust Fermi level to zero
   !
   subroutine AdjustFermi( ilead )
-!   use device, only: LeadsOn
+    use numeric, only : CsetId
     implicit none
     
     integer, intent(in) :: ilead
-
-    ! TYPE(T1DLead), INTENT(in) :: L1D
-    !type(T1DLead) :: L1D
-
     integer :: ispin, i, j, ipc, NSpin, NPC, NPCAO
+    complex(double), dimension(Lead1D(1)%NPCAO,Lead1D(1)%NPCAO) :: identity
 
     NSpin = Lead1D(ilead)%NSpin
     NPC = Lead1D(ilead)%NPC
@@ -1081,6 +1104,7 @@ contains
     !
     ! Shift Lead Hamiltonian so that EFermi becomes = 0
     !
+    call CSetId(identity)
     do ispin = 1, NSpin
        do ipc = 0, NPC
           do i = 1, NPCAO
@@ -1096,7 +1120,7 @@ contains
     !
     Lead1D(ilead)%EMin = Lead1D(ilead)%EMin - Lead1D(ilead)%EFermi
     Lead1D(ilead)%EMax = Lead1D(ilead)%EMax - Lead1D(ilead)%EFermi       
-   !print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
+    print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
     !! Lead1D(ilead)%EFermi = 0.0d0
   end subroutine AdjustFermi
 

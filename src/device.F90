@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.5.2  *********************!
+!*********************  ANT.G-2.6.0  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -43,7 +43,7 @@
 
   public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevOverlapMat, DevDensMat, SetDevDensMat
   public :: LeadsOn, SwitchOnLeads, SecantOn, SwitchOnSecant, SwitchOffSecant
-  public :: EvaluationOn, SwitchOnEvaluation
+  public :: EvaluationOn, SwitchOnEvaluation, SwitchOn1DElectrodes, SwitchOff1DElectrodes
   public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock
   public :: InitDevice, ReadDensMat, ReadFockMat, CleanUpDevice, InitElectrodes, Transport
 
@@ -106,6 +106,7 @@
   logical :: UDTrans     = .false.
   logical :: ChargeCntr  = .false.
   logical :: SpinLock    = .true.
+  logical :: Electrodes = .false.  
 
   ! Whether device Hamiltonain has been orthogonalized
   logical :: HDOrtho = .false.
@@ -233,6 +234,18 @@
     implicit none
     SpinLock = .true.
   end subroutine SwitchOnSpinLock
+  
+  ! ***
+  subroutine SwitchOn1DElectrodes()
+    implicit none
+    Electrodes = .true.
+  end subroutine SwitchOn1DElectrodes 
+  
+  ! ***
+  subroutine SwitchOff1DElectrodes()
+    implicit none
+    Electrodes = .false.
+  end subroutine SwitchOff1DElectrodes   
   
 
   !***********************************************
@@ -690,9 +703,9 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
-          EMin(LeadNo) = L1D_EMin( Lead1d(LeadNo) )
-          EMax(LeadNo) = L1D_EMax( Lead1d(LeadNo) )
+          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs,shift )
+          EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
+          EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
        case( "GHOST" )
           EMin(LeadNo) = -100.0                       
           EMax(LeadNo) =  100.0                       
@@ -735,16 +748,20 @@
     HD = F
     
     !Initializing 1D electrodes everytime we pass a SCF cycle 
-    IF (ElType(1) == "1DLEAD" .or. ELType(2) == "1DLEAD") call InitElectrodes
+   !IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr) call InitElectrodes
+    IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. Electrodes == .false. ) THEN 
+            call InitElectrodes
+            call SwitchOn1DElectrodes
+    end if 
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
     if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1))
     if( NSpin == 2 ) EMax = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1)))
     EMin = -EMax
-       print *, "--------------------"
-       print *, "Intial Energy Bounds"
-       print *, "--------------------"
+       print *, "---------------------"
+       print *, "Initial Energy Bounds"
+       print *, "---------------------"
     print *, "EMin=", EMin
     print *, "EMax=", EMax
 
@@ -3687,12 +3704,12 @@
        n=2*n+1
        if( n > nmax )then
           print *, "TotCharge/gaussian quadrature has not converged after", nmax, " steps."
-          TotCharge = 2.0d0*(NCDAO2-NCDAO1+1) - 10.0d0*ChargeAcc*NCDEl
+          !TotCharge = 2.0d0*(NCDAO2-NCDAO1+1) - 10.0d0*ChargeAcc*NCDEl
           return
        end if
        qq = q
     end do
-    !print *, "gaussian quadrature converged after", n, " steps. Error:", abs(q-qq)
+    print *, "gaussian quadrature converged after", n, " steps. Error:", abs(q-qq)
 
     TotCharge = q
   end function TotCharge
@@ -3714,27 +3731,13 @@
 
     EStep = 10.0d0 +10000.0 *eta
 
-    if (Eltype(1) == "1DLEAD" .or. Eltype(2) == "1DLEAD") then
-       do i=1,1000
-          Q = TotCharge( EMax )
-          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-             exit
-          end if
-          EMin = EMin - EStep
-          EMax = EMax + EStep
-       end do
-    else
-       do
-          Q = TotCharge( EMax )
-          print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-          if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-             exit
-          end if
-          EMin = EMin - EStep
-          EMax = EMax + EStep
-       end do    
-    end if
+    do i = 1,100
+       Q = TotCharge( EMax )
+       print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
+       if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
+       EMin = EMin - EStep
+       EMax = EMax + EStep
+    end do    
     print *, "--------------------------------------------------"
 
   end subroutine FindEnergyBounds
