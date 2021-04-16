@@ -2647,7 +2647,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT
     use preproc, only: MaxAtm
 !   USE IFLPORT
     use omp_lib
@@ -2665,6 +2665,7 @@
     integer :: n, nsteps, i, imin, imax, info ,j
     
     complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: DGammaL, DGammaR, DGreen, DT, Dtemp, DSG
 
     print *
     print *, "-------------------------"
@@ -2675,6 +2676,9 @@
     allocate ( AtomDOSEF(2,MaxAtm) )
 
     nsteps = (EW2-EW1)/EStep + 1
+    
+    if (.not. SOC .and. .not. ROT) then
+    
     do ispin=1,NSpin
 
        open(333,file='tempDOS',status='unknown')
@@ -2746,6 +2750,76 @@
 
         write(ifu_dos,*) '    '                    
       end do ! End of spin loop
+      
+    else !SOC case
+      
+      open(333,file='tempDOS',status='unknown')
+
+#ifdef PGI
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
+!$OMP DO SCHEDULE(STATIC,10)
+#endif
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          cenergy=dcmplx(energy)
+
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+
+#ifdef PGI
+!$OMP CRITICAL
+#endif
+
+   ! Mulliken DOS 
+          DSG = matmul( S_SOC, DGreen )
+          ! computing total DOS
+          DOS=d_zero
+          AtomDOS=d_zero
+          do j=1,GetNAtoms()
+          do i=LoAOrbNo(j),HiAOrbNo(j)
+             AtomDOS(j)=AtomDOS(j)-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs))/(2*d_pi)
+             DOS=DOS-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs))/(2*d_pi)
+          end do
+          end do
+
+          if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
+
+  ! print out DOS and atomic orbital resolved DOS ***
+          imin = LoAOrbNo(LDOS_Beg)
+          if( imin < 1 ) imin = 1
+          imax = HiAOrbNo(LDOS_End)
+          if( imax > NAOrbs ) imax = NAOrbs
+          call flush(333)
+          write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
+
+#ifdef PGI
+!$OMP END CRITICAL
+#endif
+       end do ! End of energy loop
+#ifdef PGI
+!$OMP END DO
+!$OMP END PARALLEL
+#endif
+
+  ! Reordering in energy for nice DOS output
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          rewind(333)
+          do i=1,10000000000
+          read(333,*)energ
+          if (dabs(energy-energ) < 0.000001) then
+             backspace(333)
+             read(333,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+             write(ifu_dos,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+             exit
+          end if
+          end do
+       end do
+      close(333,status='delete')
+
+  end if !End of SOC if
 
 
 3333 format(f10.5,10000E14.5)
