@@ -2612,7 +2612,8 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
+    use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
     use omp_lib
@@ -2628,6 +2629,7 @@
     real*8, dimension(MaxAtm) :: AtomDOS
     complex*16 :: cenergy,ctrans
     integer :: n, nsteps, i, imin, imax, info ,j, AllocErr
+    logical :: ADDP    
     
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, SG
     complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DSG
@@ -2647,6 +2649,7 @@
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2743,6 +2746,13 @@
       end do ! End of spin loop
       
     else !SOC case
+    
+       if (DMIMAG) then
+          call RMatPow( S_SOC, -1.0d0, InvS_SOC )
+          call CompDensMat2_SOC(ADDP)
+       else   
+          call CompDensMat_SOC(ADDP)
+       end if     
       
       open(333,file='tempDOS',status='unknown')
 
