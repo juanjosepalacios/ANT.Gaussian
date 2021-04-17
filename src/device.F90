@@ -2631,8 +2631,8 @@
     integer :: n, nsteps, i, imin, imax, info ,j, AllocErr
     logical :: ADDP    
     
-    complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, SG
-    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DSG
+    complex*16, dimension(:,:), allocatable :: Green, SG
+    complex*16, dimension(:,:), allocatable :: DGreen, DSG
 
     print *
     print *, "-------------------------"
@@ -2651,16 +2651,12 @@
        allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
        call spin_orbit
        
     else
 
-       allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaR(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(SG(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
@@ -2687,7 +2683,7 @@
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-          call gplus(cenergy,Green,GammaR,GammaL)
+          call gplus0(cenergy,Green)
 
           ! Mulliken DOS 
 #ifdef PGI
@@ -2767,7 +2763,7 @@
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+             call gplus0_SOC(cenergy,DGreen,1)
 
 #ifdef PGI
 !$OMP CRITICAL
@@ -2823,15 +2819,11 @@
   end if !End of SOC if
   
       if (SOC .or. ROT) then
-         deallocate(DGammaL)
-         deallocate(DGammaR)
          deallocate(DGreen)
          deallocate(DSG)
          !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
          deallocate(H_SOC)
       else 
-         deallocate(GammaL)
-         deallocate(GammaR)
          deallocate(Green)
          deallocate(SG)
       end if  
