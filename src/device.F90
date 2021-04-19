@@ -2789,7 +2789,7 @@
           imax = HiAOrbNo(LDOS_End)
           if( imax > NAOrbs ) imax = NAOrbs
           call flush(333)
-          write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
+          write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
 
 #ifdef PGI
 !$OMP END CRITICAL
@@ -3150,7 +3150,7 @@
              imax = HiAOrbNo(LDOS_End)
              if( imax > NAOrbs ) imax = NAOrbs
              call flush(333)
-             write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
+             write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
            end if
 
           ! computing transmission T
