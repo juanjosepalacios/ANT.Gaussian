@@ -1093,7 +1093,7 @@ contains
 
     real(double), intent(in) :: E
 
-    real(double) :: rrr, a, b, Q, E0, NAO, NPCAO, EMin, QAlpha, QBEta
+    real(double) :: rrr, a, b, Q, E0, NAO, NPCAO, EMin, QAlpha, QBEta, R
     integer :: i,j,M, ispin
     
     NAO = Lead1D(WhichLead)%NAOrbs
@@ -1111,8 +1111,13 @@ contains
        
        ! Radius of complex contour integration
        ! add 10eV just in case 
-       rrr = 0.5*abs(EMin)+10.0;
-
+        If (ChargeOffSet == 0.0d0) then    
+           R  = 0.5*(E - Infty)
+        else    
+           R  = 0.5*(E - EMin)       
+        end if
+        
+        rrr = 0.5*abs(R)+10.0;        
        !c c Integral limits ... (a,b)
        M=1000
        a = 0.d0
