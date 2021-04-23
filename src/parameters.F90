@@ -88,8 +88,8 @@
   !
   ! Convergence criterion for iterative solution of Dyson equation for self-energy
   !
-  REAL*8 :: L1DConv = 1.0d-6
-  INTEGER :: L1DMaxCyc = 1000
+  REAL*8 :: L1DConv = 1.0d-8
+  INTEGER :: L1DMaxCyc = 10000
   !
   ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation
   !
@@ -205,7 +205,7 @@
   CHARACTER(len=10), PARAMETER :: NFix_keyw = "NFIX"
   
   ! Keyword to determine the type of overlap in the Bethe lattice basis set
-  REAL*8 :: Overlap = 0.0d0           
+  REAL*8 :: Overlap = -1.0d0           
   CHARACTER(len=10), PARAMETER :: Overlap_keyw = "OVERLAP"
 
   ! Number of atoms to be connected to Bethe lattice

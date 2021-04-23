@@ -88,7 +88,7 @@
   integer  :: ispin
   
   ! *** Lowest and highest eigen value of Fock matrix ***
-  real*8 :: LEV,HEV
+  !real*8 :: LEV,HEV
  
   ! *** lower and upper band edge of electrode ***
   real*8 :: EMinEc, EMaxEc
@@ -340,8 +340,8 @@
     EMin = 0.0d0
     EMax = 0.0d0
 
-    LEV = 0.0d0
-    HEV = 0.0d0
+    !LEV = 0.0d0
+    !HEV = 0.0d0
 
     ! Compute number of electrons in central (reduced) device region
 
@@ -703,7 +703,7 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs,shift )
+          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
           EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
           EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
        case( "GHOST" )
@@ -743,7 +743,7 @@
     real*8, dimension(:,:),allocatable :: SPM
 
     real*8 :: diff !!,TrP,QD
-    integer :: i,j,is, info, AllocErr, iatom, jatom, Atom, LeadNo
+    integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F
     
@@ -756,12 +756,12 @@
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
-    if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1))
+    if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
     if( NSpin == 2 ) EMax = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1)))
     EMin = -EMax
-       print *, "---------------------"
-       print *, "Initial Energy Bounds"
-       print *, "---------------------"
+       print *, "-----------------------"
+       print *, "Estimated Energy Bounds"
+       print *, "-----------------------"
     print *, "EMin=", EMin
     print *, "EMax=", EMax
 
@@ -770,7 +770,7 @@
        print *, " Total DOS Point Check "
        print *, "-----------------------"
        ! Find upper and lower energy bound 
-       call FindEnergyBounds
+       call CheckEnergyBounds
     end if
 
     if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
@@ -1004,22 +1004,22 @@
        E1=shift
        E2=shift+Z
        if (root_fail) then
-          print*,'MULLER method'
-          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
-       end if
-       if (root_fail) then
-          print*,'SECANT method'
-          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-             root_fail = .true.
+          print*,'SECANT method'                                      
+            call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)    
+            if(k .eq. Max .or. E3<EMin .or. E3>EMax) then             
+               print *, 'Warning: SECANT method failed to find root. Using MULLER.'
+               root_fail = .true.                                     
+            else                                                      
+               shift = E3                                             
+               root_fail = .false.                                    
+            end if                                                    
+         end if                                                       
+         if (root_fail) then                                          
+            print*,'MULLER method'                                    
+            call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond) 
+            if(k .eq. Max .or. E2<EMin .or. E2>EMax) then             
+            print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+            root_fail = .true.
           else
              shift = E3
              root_fail = .false.
@@ -1152,7 +1152,7 @@
     
     logical :: root_fail
     
-    Z=0.1d0           
+    Z=1.0d0           
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
@@ -3827,16 +3827,40 @@
        if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*NCDEl ) ) exit  
        n=2*n+1
        if( n > nmax )then
-          print *, "TotCharge/gaussian quadrature has not converged after", nmax, " steps."
-          !TotCharge = 2.0d0*(NCDAO2-NCDAO1+1) - 10.0d0*ChargeAcc*NCDEl
+          print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
           return
        end if
        qq = q
     end do
-    print *, "gaussian quadrature converged after", n, " steps. Error:", abs(q-qq)
+    print '(A,I4,A,F10.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
 
     TotCharge = q
   end function TotCharge
+  
+  ! *************************************                             
+  !  Estimates upper/lower energy                                   
+  !  boundary EMin/EMax,                                            
+  !  above/below which DOS is gauranteed                            
+  !  to be zero                                                     
+  ! *************************************                           
+  subroutine CheckEnergyBounds                                      
+    use parameters, only: ChargeAcc                                 
+                                                                    
+    real*8 :: Q                                                     
+                                                                    
+    print *, "Checking energy bounds [EMin, EMax] such that ..."    
+    print '(A,I4)', " ...Total Integrated Spectral Weight (TISW)=",2*(NCDAO2-NCDAO1+1) 
+                                                                    
+    Q = TotCharge( EMax )                                           
+    if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) then                   
+        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' OK' 
+    else                                                            
+        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' not OK, please check' 
+    end if                                                          
+                                                                    
+    print *, "--------------------------------------------------"   
+                                                                    
+  end subroutine CheckEnergyBounds               
 
   ! *************************************
   !  Estimates upper/lower energy 
@@ -3850,10 +3874,10 @@
     integer :: i, cond,k 
     real*8 :: EStep, Q
     
-    print *, "Searching energy boundaries [EMin, EMax] such that"
-    print '(A,I4)', " Total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
+    print *, "Searching energy boundaries [EMin, EMax] such that ..."
+    print '(A,I4)', " ...total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
 
-    EStep = 10.0d0 +10000.0 *eta
+    EStep = 1.0 
 
     do i = 1,100
        Q = TotCharge( EMax )
@@ -3861,6 +3885,7 @@
        if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
        EMin = EMin - EStep
        EMax = EMax + EStep
+       EStep = Estep*2.0
     end do    
     print *, "--------------------------------------------------"
 
