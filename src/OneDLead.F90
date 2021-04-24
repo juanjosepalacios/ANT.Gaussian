@@ -143,10 +143,10 @@
  
   !eXtended supercell matrices 
   integer :: NXAO, NXDim, NXSpin
-  complex(double), dimension(:,:,:), allocatable :: HX
+  real(double), dimension(:,:,:), allocatable :: HX
   real(double), dimension(:,:,:), allocatable :: QD
-  complex(double), dimension(:,:),   allocatable :: GX, SX, InvSX
-  complex(double), dimension(:,:),   allocatable :: Sigma1, Sigma2
+  complex(double), dimension(:,:),   allocatable :: GX, Sigma1, Sigma2
+  real(double), dimension(:,:),   allocatable :: SX, InvSX
 
   ! whether to create a device input file from extended supercell
   logical :: MakeDevice = .false.
@@ -626,12 +626,12 @@ contains
       !call AbortProg
     end if
 
-    HX = c_zero
+    HX = d_zero
     GX = c_zero
-    SX = c_zero
+    SX = d_zero
     Sigma1 = c_zero
     Sigma2 = c_zero    
-    InvSX = c_zero
+    InvSX = d_zero
     !
     ! Compute Hamiltonian HX and overlap SX
     !
@@ -676,12 +676,12 @@ contains
           if( NXSpin == 2 .and. ispin == 2) print *, "HX spin-down = "
           if( NXSpin == 1) print *, "HX = "
           do i=1,NXDim
-             print '(1000(ES14.4))', ( DREAL(HX( i, j, ispin )), j=1,NXDim )
+             print '(1000(ES14.4))', ( (HX( i, j, ispin )), j=1,NXDim )
           end do
        end do
        print *, "SX = "
        do i=1,NXDim
-          print '(1000(ES14.4))', ( DREAL(SX(i,j)), j=1,NXDim )
+          print '(1000(ES14.4))', ( (SX(i,j)), j=1,NXDim )
        end do
        call FLUSH(6)
    end if
@@ -980,13 +980,13 @@ contains
   !*******************************************
   real(double) function TotCharge( E )
     use parameters, only: ChargeAcc, SOC
-    use numeric, only: gauleg, CMatPow 
+    use numeric, only: gauleg, RMatPow 
     implicit none
     
     real(double), intent(in) :: E
     real(double) :: EMin, EMax
   
-    integer, parameter :: nmax = 4095
+    integer, parameter :: nmax = 2047
     
     real(double) :: q,qq, dq, Ei, dEdx, phi, E0
     integer :: n, np, j, ispin, k, l, NAO, NPCAO
@@ -995,19 +995,11 @@ contains
     NAO = Lead1D(WhichLead)%NAOrbs
     NPCAO = Lead1D(WhichLead)%NPCAO
     
-    EMin = Lead1D(WhichLead)%EMin - 10.0d0    !-10.0 for safety 
-    EMax = Lead1D(WhichLead)%EMax + 10.0d0    !-10.0 for safety 
-    InvSX = c_zero
-    call CMatPow( SX, -1.0d0, InvSX ) 
+    EMin = Lead1D(WhichLead)%EMin
 
+    InvSX = d_zero
+    call RMatPow( SX, -1.0d0, InvSX ) 
 
-    If (ChargeOffSet == 0.0d0 .or. abs(EMax) - Infty > 0) then  
-       E0 = Infty
-    else if (abs(E) - abs(EMax) > 0) then       
-       E0 = abs(EMax)
-    else 
-       E0 = abs(E)   
-    end if  
     !
     ! Computing integral of Green's function
     ! along imaginary axis using Gauss-Legendre 
@@ -1023,10 +1015,10 @@ contains
        do j = 1,np    
             
           phi = x(j)
-          Ei = 2.0d0*E0*phi
-          if( phi > 0.5d0 ) Ei = 0.5d0*E0/(1.0d0-phi)
-          dEdx = 2.0d0*E0
-          if( phi > 0.5d0 ) dEdx = 0.5d0*E0/(1.0d0-phi)**2             
+          Ei = 2.0d0*abs(EMin)*phi
+          if( phi > 0.5d0 ) Ei = 0.5d0*abs(EMin)/(1.0d0-phi)
+          dEdx = 2.0d0*abs(EMin)
+          if( phi > 0.5d0 ) dEdx = 0.5d0*abs(EMin)/(1.0d0-phi)**2             
           
           do ispin=1, NXSpin       
           
@@ -1038,10 +1030,10 @@ contains
                    ! Charge = Tr[ P S ]
                    !
                    dq = w(j)*(dEdx*real(GX(k,l))/d_pi + 0.5d0*InvSX(k,l))
-                   q = q + real(dq*SX(l,k))
+                   q = q + (dq*SX(l,k))
                    if( SOC ) then 
                       dq = w(j)*(dEdx*real(GX(k+NXAO,l+NXAO))/d_pi + 0.5d0*InvSX(k+NXAO,l+NXAO))
-                      q = q + real(dq*SX(l+NXAO,k+NXAO))
+                      q = q + (dq*SX(l+NXAO,k+NXAO))
                    end if
                 end do
              end do     
@@ -1110,14 +1102,8 @@ contains
        Q = d_zero    
        
        ! Radius of complex contour integration
-       ! add 10eV just in case 
-        If (ChargeOffSet == 0.0d0) then    
-           R  = 0.5*(E - Infty)
-        else    
-           R  = 0.5*(E - EMin)       
-        end if
-        
-        rrr = 0.5*abs(R)+10.0;        
+       ! add 10eV just in case        
+       rrr = 0.5*abs(EMin)+10.0;        
        !c c Integral limits ... (a,b)
        M=1000
        a = 0.d0
@@ -1126,13 +1112,13 @@ contains
 
        do i=NAO+1, NAO+NPCAO
           do j=1,NXAO          
-             Q=Q+real(QD(ispin,i,j)*SX(j,i))
+             Q=Q+(QD(ispin,i,j)*SX(j,i))
           end do
        end do
        if ( NXSpin .eq. 1 .and. SOC) then
        do i=NAO+1, NAO+NPCAO
           do j=1,NXAO                 
-                Q=Q+real(QD(ispin,i+NXAO,j+NXAO)*SX(j+NXAO,i+NXAO))
+                Q=Q+(QD(ispin,i+NXAO,j+NXAO)*SX(j+NXAO,i+NXAO))
              end do
           end do
        end if
@@ -1207,7 +1193,7 @@ contains
     do i=NAO+1, NAO+NPCAO
        do j=1,NXAO 
           QD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*GX(i,j))*der0
-          CH = CH + abs(QD(ispin,i,j)*SX(j,i))
+          CH = CH + (QD(ispin,i,j)*SX(j,i))
        enddo
     enddo
     
@@ -1264,7 +1250,7 @@ contains
     CH = 0.d0
       do k=NAO+1, NAO+NPCAO
          do k1=1,NXAO 
-          CH = CH + abs(QD(ispin,k,k1)*SX(k1,k))
+          CH = CH + (QD(ispin,k,k1)*SX(k1,k))
        end do
     enddo
     !print*,'ch', 16*CH/(3*(n+1))
@@ -1310,8 +1296,8 @@ contains
     L1D%EMin = -Infty+10.0
     print '(A)', "Searching optimum Emin such that DOS integrates to zero"
     do
-       !Q = TotCharge( L1D%EMin )
-       Q = QTot( L1D%EMin)
+       Q = TotCharge( L1D%EMin )
+       !Q = QTot( L1D%EMin)
        print *, "EMin = ", L1D%EMin, Q
        call FLUSH(6)
        if( abs(Q) >  0.01 ) then       
@@ -1407,7 +1393,7 @@ contains
     if( root_fail )then
        print*,'Secant method'
        call FLUSH(6)
-       call SECANT(QTot,EF0,EF1,Delta,Epsilon,nsteps,EF2,Z,Cond,K)
+       call SECANT(TotCharge,EF0,EF1,Delta,Epsilon,nsteps,EF2,Z,Cond,K)
        if(K.eq.nsteps .or. EF2<EMin .or. EF2>EMax)then
           print *, 'Warning: Secant method failed to find root. Using MULLER.'
           root_fail = .true.
@@ -1419,7 +1405,7 @@ contains
     if( root_fail )then
        print*,'Muller method'
        call FLUSH(6)
-       call MULLER(QTot,EF0,EF1,EF2,Delta,Epsilon,nsteps,EFermi,Z,K,Cond)
+       call MULLER(TotCharge,EF0,EF1,EF2,Delta,Epsilon,nsteps,EFermi,Z,K,Cond)
        if(K.eq.nsteps .or. EFermi<EMin .or. EFermi>EMax)then
           print *, 'Warning: Muller method failed to find root. Using BISEC.'
           root_fail = .true.
@@ -1431,7 +1417,7 @@ contains
        print *, 'Bisec method'
        call FLUSH(6)
        print *, EMin, EMax
-       EFermi = BISEC(QTot,EMin,EMax,Delta,5*nsteps,K)
+       EFermi = BISEC(TotCharge,EMin,EMax,Delta,5*nsteps,K)
     end if    
     
     L1D%EFermi = EFermi    
