@@ -134,7 +134,7 @@ MODULE BetheLattice
   ! Routine to deallocate dynamic memory occupied by TBethelattice variable
   public :: CleanUpBL
   ! Access functions to read out values of some TBethelattice data
-  public :: BL_AtmNo, BL_NAOrbs, BL_NNeighbs, BL_NSpin, BL_NElectrons, BL_EMin, BL_EMax
+  public :: BL_AtmNo, BL_NAOrbs, BL_NNeighbs, BL_NSpin, BL_NElectrons, BL_EMin, BL_EMax, BL_H0, BL_VK
 
   
   !*****************************
@@ -179,7 +179,7 @@ contains
   subroutine InitBetheLattice( BL, LeadNo )
     use cluster, only: LeadAtmNo, LeadNAOrbs, NNeigBL, vpb, NConnect
     use constants, only: c_zero, ui
-    use Parameters, only : leaddos, estep, Overlap, ANT1DInp, eta
+    use Parameters, only : leaddos, estep, Overlap, ANT1DInp, eta, ElType
     use numeric, only:  ctrace
     use ANTCommon
 #ifdef G03ROOT
@@ -506,27 +506,27 @@ contains
     !
     call AdjustFermi( BL )
 
-    if( ANT1DInp )then
-
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(2) /= "1DLEAD")then
+	
        if(LeadNo==1) open(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.dat',status='unknown')
        if(LeadNo==2) open(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.dat',status='unknown')
-
+	
        n = BL%NAOrbs
        nnn = BL%NNeighbs
-
+	
        write(ifu_ant,'(A)') '&BLParams'
        write(ifu_ant,'(A,I3)') 'NAOBL= ', BL%NAOrbs
        write(ifu_ant,'(A,I1)') 'NSpinBL= ', BL%NSpin
        write(ifu_ant,'(A,I2)') 'NNNBL= ', BL%NNeighbs
        write(ifu_ant,'(A,I3)') 'NConnect = ', NConnect(LeadNo) 
- 
+	   
        do k=1,nnn
           write(ifu_ant,'(A,I2,A,3(F10.5))') 'VNN(', k,',:) = ', VPB( LeadNo, 1, k ), VPB( LeadNo, 2, k ), VPB( LeadNo, 3, k )
        end do
-
+	
        write(ifu_ant,'(A)') '/'
        write(ifu_ant,*) 
-
+	
        do ispin=1,BL%NSpin
           if( BL%NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)') "! spin-up "
           if( BL%NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)') "! spin-down "
@@ -657,6 +657,22 @@ contains
     type(TBetheLattice),intent(IN) :: BL
     BL_EMax = BL%EMax
   end function BL_EMax
+  
+  ! *** Get matrix Element of Hamiltonian matrix ***
+  real*8 function BL_H0( BL, is, i, j )
+    implicit none
+    type(TBetheLattice),intent(IN) :: BL
+    integer, intent(in) :: is, i, j
+    BL_H0 = real(BL%H0(is, i, j))
+  end function BL_H0
+  
+  ! *** Get matrix Element of Hamiltonian matrix ***
+  real*8 function BL_VK( BL, is, k, i, j )
+    implicit none
+    type(TBetheLattice),intent(IN) :: BL
+    integer, intent(in) :: is, k, i, j
+    BL_VK = real(BL%Vk(is, k, i, j))
+  end function BL_VK  
 
 
   !
@@ -686,10 +702,10 @@ contains
     if( BL%NSpin==1 .and. spin == 2 )ispin=1
 
     NAO = BL%NAOrbs
-    NNeighbs=BL%NNeighbs
+    NNeighbs=BL%NNeighbs    
 
     !call SolveDysonBL( BL%Sigmak(ispin,1:NNeighbs,1:NAO,1:NAO), cenergy, BL%H0(ispin,1:NAO,1:NAO), &
-    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )
+    call SolveDysonBL( BL%LeadNo, Sigmak, cenergy, BL%H0(ispin,1:NAO,1:NAO),BL%Vk(ispin,1:NNeighbs,1:NAO,1:NAO), BL%S0(1:NAO,1:NAO), BL%Sk(1:NNeighbs,1:NAO,1:NAO), sgn )   
 
     !Sigma_n = c_zero
     do ia = 1,GetNAtoms()
@@ -736,6 +752,7 @@ contains
     
     ! auxiliary directional self energy for self-consistent calculation
     complex*16, dimension( size(SigmaK,1), size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux
+    complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: Sigma_aux_aux    
     ! temporary matrix for multiplication and Energy matrix E(i,j) = ( energy + ui*eta )*delta(i,j)
     ! and Total self-energy 
     complex*16, dimension( size(SigmaK,2), size(SigmaK,2) ) :: temp, E, Sigma_T, G0, Vkeff, Sigma_TA, Sigma_TB
@@ -758,9 +775,9 @@ contains
     end do
 
     error = 1.0d0
-    ncycle = 0
+    ncycle = 0   
 
-    IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 .or. (NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) /=6) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) /=6)) then
+    IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 .or. NNeighbs == 2 .or. (NNeighbs == 6 .and. LeadNo == 1 .and. GetAN(1) /=6) .or. (NNeighbs == 6 .and. LeadNo == 2 .and. GetAN(GetNAtoms()) /=6)) then
 
     ! Selfconsistency 
     do while (error.gt.selfacc) !ncycle=1,MaxCycle
@@ -867,7 +884,7 @@ contains
        ! Actualization of dir. self-energies
        Sigmak=Sigma_aux
        error=error/(NAOrbs*NAOrbs*NNeighbs)
-    enddo ! End of self-consistency loop
+    enddo ! End of self-consistency loop 
 
     ELSE 
 
@@ -921,7 +938,7 @@ contains
   ! 
   subroutine CompGreensFunc( BL, Spin, energy, G0, sgn )
     use constants, only: c_zero, ui
-    use parameters, only: eta, DD, UD, DU
+    use parameters, only: eta, DD, UD, DU, Nembed
 #ifdef PGI
     use lapack_blas, only: zgetri,zgetrf
 #endif
@@ -957,8 +974,11 @@ contains
 
     if (NNeighbs == 6) then
         nj=2
-    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4) then
+    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2) then
         nj=1
+    else if (Nembed(BL%LeadNo)==1) then
+        !Write(ifu_log,'(A,I1)')"1D BL in electrode BL%LeadNo=",BL%LeadNo
+        nj=1        
     else
         print *,"Incorrect number of directions: Error n. 1"
         stop
@@ -1042,7 +1062,7 @@ contains
        end do
     enddo
 
-    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 ) THEN
+    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2 ) THEN
 
     do k1=1,NNeighbs  ! Loop over outer cluster atoms
        do k2=1,NNeighbs ! Loop over all BL directions connected to that atom
