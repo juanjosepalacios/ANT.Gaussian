@@ -1,0 +1,3672 @@
+/*
+
+     Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2011,
+                Gaussian, Inc.  All Rights Reserved.
+
+     This is part of the Gaussian(R) 09 program.  It is based on
+     the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+     the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+     the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+     the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+     the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+     the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+     the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+     University), and the Gaussian 82(TM) system (copyright 1983,
+     Carnegie Mellon University). Gaussian is a federally registered
+     trademark of Gaussian, Inc.
+
+     This software contains proprietary and confidential information,
+     including trade secrets, belonging to Gaussian, Inc.
+
+     This software is provided under written license and may be
+     used, copied, transmitted, or stored only in accord with that
+     written license.
+
+     The following legend is applicable only to US Government contracts
+     under DFARS:
+
+			RESTRICTED RIGHTS LEGEND
+
+     Use, duplication or disclosure by the US Government is subject to
+     restrictions as set forth in subparagraph (c)(1)(ii) of the Rights
+     in Technical Data and Computer Software clause at DFARS
+     252.227-7013.
+
+     Gaussian, Inc., 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+
+     The following legend is applicable only to US Government contracts
+     under FAR:
+
+			RESTRICTED RIGHTS LEGEND
+
+     Use, reproduction and disclosure by the US Government is subject
+     to restrictions as set forth in subparagraph (c) of the Commercial
+     Computer Software - Restricted Rights clause at FAR 52.227-19.
+
+     Gaussian, Inc., 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+
+  Unix operating system interface routines for Gaussian.  The following
+  externally callable routines are provided:
+
+  ifalph(chr) -- whether chr is alphanumerical.
+  intchr(chr,base) -- convert chr to integer using base.
+  appfp(x,n,bb,nbb) -- append floating point number in F?.n format to BB.
+  appfpd(x,n,bb,nbb) -- append floating point number in D?.n format to BB.
+  fixinout -- reopen stdin and stdout to connect to files.
+  fixstdin -- set buffering and file open across exec's for STDIN.
+  getexen (name,fullname,exedir) -- get full executable name given file name
+                                (both character).
+  gauexec(num) -- run link number num.
+  header -- generate header for link 1.
+  openwa(fname,itype) -- open file fname (itype=1/2, etc. as for ntropn)
+                         returning the fd as value.
+  closwa(n) -- close file descriptor n.
+  asynwa(n,asyn) -- [de]activate asynchronous i/o using file descriptor n.
+  ntrsiz(fd) -- return size in fortran ints of file given by fd.
+  ntrbks(fd) -- return block size in fortran ints of file given by fd.
+  ntrtru(fd,len) -- truncate file given by fd to at most len bytes.
+  ntrex1(fd,len) -- extend file given by fd by len fortran ints.
+  readwa(fd,da,nw,buf) -- read nw words from file given by fd at address da
+                          into buf.
+  writwa(fd,da,nw,buf) -- write nw words from buf into file given by fd at
+                          address da.
+  waitwa(fd) -- wait for I/O on fd to complete.
+  getscm -- as usual.
+  guname(n,b) -- return user name in character variable b.
+  d_int(x) -- return nearest integer to x ... this replaces the very slow
+              unix library routine, but has no range checking at all.
+  envfil (fenv, ffile, type, ffull) -- Take an environment variable and
+        and a file name, translate the env. variable and use as a path to
+        the file.  Return the full file name in ffull.
+  getprio (prio) -- Return the current process's priority.
+  setprio (prio) -- Set the current process's priority.
+  gauabt -- Call unix abort (instead of fortran abort).
+  gaufls -- Flush printed output streams.
+  fixenv(name,value)  -- initialize local environment pointer,
+      setting or adding name=value.
+  machin  -- return processor and os.
+  galloc(nwords,wordsize,iclear,refarray,offset)
+    -- allocate a (possibly shared) shared memory segment.
+  gfree -- free a shared memory segment.
+  mdpgsz -- return page size in wp words
+  mdsleep -- sleep for at least a specified number of seconds
+  lexec -- c callable routine to read a command line from a file
+           and exec the next link.
+  gsr48 -- fortran callable routine to call srand48 */
+
+#define FALSE 0
+#define TRUE 1
+#define MINPGSZ 128
+#ifdef __x86_64 /* AMD 64-bit processors */
+#define i386
+#ifndef amd_solaris2
+#ifndef intel_solaris2
+#define AMD_LIN
+#endif
+#endif
+#endif
+#ifdef sun_solaris2
+#define SVR4
+#define USE_SYSV
+#endif
+#ifdef gp7kf
+#define SVR4
+#define USE_SYSV
+#endif
+#ifdef USE_SYSV
+#ifndef NO_SBRK
+#define NO_SBRK
+#endif
+#ifndef SVR4
+#ifndef __hppa
+#ifndef ALPHA_VMS
+#ifndef _HITACHI_
+#ifndef IBM_OSX
+#ifndef LARGE_FILES
+#define USE_STATFS
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+#ifdef sgi
+#define EXTERN extern
+#ifdef I64
+typedef long f77_int;     /* Fortran integer type */
+#else
+typedef int f77_int;     /* Fortran integer type */
+#endif
+typedef long f77_ptr;     /* Fortran point type (for mixed 32/64) */
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef _IA64_
+#define EXTERN extern
+#ifdef I64
+typedef long f77_int;     /* Fortran integer type */
+#else
+typedef int f77_int;     /* Fortran integer type */
+#endif
+typedef long f77_ptr;     /* Fortran point type (for mixed 32/64) */
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef ALPHA_LINUX
+#define EXTERN extern
+#ifdef I64
+typedef long f77_int;     /* Fortran integer type */
+#else
+typedef int f77_int;     /* Fortran integer type */
+#endif
+typedef long f77_ptr;     /* Fortran point type (for mixed 32/64) */
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef _SUN_64
+#define EXTERN extern
+#define USE_LL
+typedef long f77_int;     /* Fortran integer type */
+typedef long f77_ptr;     /* Fortran point type for 64*/
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef _IBM64_
+#define EXTERN extern
+typedef long long f77_int;     /* Fortran integer type */
+typedef long long f77_ptr;     /* Fortran point type for 64*/
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef _HITACHI_
+#define EXTERN extern
+#ifdef _ILP64
+#define _LLTYPES
+#define USE_LL
+typedef long f77_int;     /* Fortran integer type */
+typedef long f77_ptr;     /* Fortran point type */
+#else
+typedef int f77_int;     /* Fortran integer type */
+typedef int f77_ptr;     /* Fortran point type */
+#endif
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef __hppa
+#define EXTERN extern
+#ifdef I64
+typedef long f77_int;     /* Fortran integer type */
+#else
+typedef int f77_int;     /* Fortran integer type */
+#endif
+typedef long f77_ptr;     /* Fortran point type (for mixed 32/64) */
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef AMD_LIN
+#ifndef NO_SBRK
+#define NO_SBRK
+#endif
+#endif
+#ifndef EXTERN
+#define EXTERN extern
+typedef long f77_int;     /* Fortran integer type */
+typedef long f77_ptr;     /* Fortran point type (for mixed 32/64) */
+typedef double f77_wp;    /* Fortran working precision type */
+#endif
+#ifdef _I386_
+#ifdef __APPLE__
+#define MALLOC_VOID
+#endif
+#endif
+#ifdef __MAC__
+#define MALLOC_VOID
+#define NEED_UNLINK
+#define NEED_FDATE
+#define NEED_TIME
+#define NEED_GETPID
+#define DO_GETCWD
+#ifndef NO_SBRK
+#define NO_SBRK
+#endif
+#define NEED_PUTENV
+#endif
+#ifdef ALPHA_VMS
+#define MALLOC_VOID
+#endif
+#ifdef sgi
+#define MALLOC_VOID
+#endif
+#ifdef _IA64_
+#define MALLOC_VOID
+#endif
+#ifdef AMD_LIN
+#define MALLOC_VOID
+#endif
+#if (defined IBM_RS6K) && (defined IBM_LINUX )
+#define MALLOC_VOID
+#endif
+#ifdef MALLOC_VOID
+typedef void malloc_type;
+#else
+typedef char malloc_type;
+#endif
+
+/* Minimum number of fs blocks by which to extend. */
+#define MINEXT (10*1024)
+#define MINEXBLK 2560
+#ifdef IBM_RS6K
+#define NEED_UNLINK
+#undef __STR__
+#ifdef IBM_LINUX
+#define _LARGEFILE64_SOURCE
+#define _FILE_OFFSET_BITS 64
+#include <unistd.h>
+#include <sys/times.h>
+#include <errno.h>
+#endif
+#include <sys/types.h>
+#ifdef IBM_AIX
+#include <sys/mode.h>
+#include <mon.h>
+#endif
+#define MAX_IO (2000*1024*1024)
+#endif
+#ifdef ALPHA_OSF1
+#undef __STR__
+#include <sys/sysinfo.h>
+#include <sys/types.h>
+#include <string.h>
+#include <mon.h>
+#include <malloc.h>
+#include <sys/types.h>
+#include <sys/times.h>
+#include <sys/time.h>
+#include <sys/mode.h>
+#define MAX_IO (2000*1024*1024)
+#endif
+#ifdef ALPHA_VMS
+#define NEED_GETPID
+#define NEED_FDATE
+#undef __STR__
+#include <unixlib.h>
+#include <unixio.h>
+#include <stdlib.h>
+#include <fibdef.h>
+#include <fab.h>
+#include <syidef.h>
+#include <iodef.h>
+#include <stddef.h>
+#include <starlet.h>
+#include <stdarg.h>
+#include <envdef.h>
+#include <descrip.h>
+#include <processes.h>
+#include <jpidef.h>
+#include <ssdef.h>
+#include <lib$routines.h>
+#include <libdef.h>
+#endif
+#ifdef USE_STATFS
+#ifdef ALPHA_OSF1
+#include <sys/mount.h>
+#else
+#include <sys/statfs.h>
+#endif
+#endif
+#ifdef ALPHA_LINUX
+#define NEED_GSR48
+#define NEED_PUTENV
+#endif
+#ifdef i386
+#ifndef _SUN_
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+#define _FILE_OFFSET_BITS 64
+#include <fcntl.h>
+#define USE_STATFS
+#ifdef __APPLE__
+#include <sys/param.h>
+#include <sys/mount.h>
+#else
+#include <sys/statfs.h>
+#endif
+#include <pthread.h>
+#ifdef __x86_64
+#define MAX_IO (2000*1024*1024)
+#endif
+#include <sys/times.h>
+#define NEED_AND
+#define NEED_ISHFT
+#define NEED_GSR48
+#define NEED_PUTENV
+#endif /* sun */
+#include <unistd.h>
+#include <errno.h>
+#include <time.h>
+#endif
+#ifdef _IA64_
+#include <unistd.h>
+#include <errno.h>
+#include <sys/times.h>
+#include <time.h>
+#include <sys/wait.h>
+#define MAX_IO (2000*1024*1024)
+#define NEED_GETPID
+#define NEED_EXIT
+#define NEED_UNLINK
+#define NEED_AND
+#define NEED_ISHFT
+#define NEED_GSR48
+#define NEED_TIME
+#define NEED_PUTENV
+#endif
+#ifdef EBUG1
+#define DPRINT1(x) fprintf x
+#else
+#define DPRINT1(x)
+#endif
+#include <stdio.h>
+#include <netdb.h>
+#include <ctype.h>
+#ifndef ALPHA_VMS
+#include <pwd.h>
+#endif
+#ifndef IBM_RS6K
+#include <sys/types.h>
+#endif
+#ifdef ALPHA_VMS
+#define unlink(X) delete(X)
+#define DUMMYMISC
+#define LOCK_SH         1       /* shared lock */
+#define LOCK_EX         2       /* exclusive lock */
+#define LOCK_NB         4       /* don't block when locking */
+#define LOCK_UN         8       /* unlock */
+#define L_XTND      SEEK_END
+#define L_SET       SEEK_SET
+#define uid_t unsigned int
+#endif
+#ifdef SVR4
+#define DUMMYMISC
+#define LOCK_SH         1       /* shared lock */
+#define LOCK_EX         2       /* exclusive lock */
+#define LOCK_NB         4       /* don't block when locking */
+#define LOCK_UN         8       /* unlock */
+#define L_XTND      SEEK_END
+#define L_SET       SEEK_SET
+#define NONBSD
+#include <sys/types.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <sys/systeminfo.h>
+#include <sys/times.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <netdb.h>
+#include <sys/wait.h>
+#endif
+#ifdef __hppa
+/* In HP-UX, this must be defined before the includes to get large files. */
+#ifdef __hppa_11
+#define _LARGEFILE64_SOURCE
+#endif
+#define NEED_PUTENV
+#define NONBSD
+#define NEED_FDATE
+#define DUMMYMISC
+#define LOCK_SH         1       /* shared lock */
+#define LOCK_EX         2       /* exclusive lock */
+#define LOCK_NB         4       /* don't block when locking */
+#define LOCK_UN         8       /* unlock */
+#include <sys/times.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
+#endif
+#ifdef _HITACHI_
+char *SYSOPT = "-FRUNST(FREC(512),DAMNONL),PORT(PRCNTL)";
+#define NONBSD
+#define DUMMYMISC
+#define NEED_TIME
+#define NEED_GETPID
+#define NEED_UNLINK
+#define NEED_GGEN
+#define NEED_FDATE
+#ifdef _HI_OSF_
+char *getenv();
+#endif
+#define LOCK_NB         4       /* don't block when locking */
+#include <sys/times.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
+#endif
+#ifdef __MAC__
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/times.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#endif
+
+#ifdef SVR4
+#define NO_SS
+#define NEED_GETPID
+#define NEED_UNLINK
+#define NEED_INDEX
+#endif
+#ifdef ALPHA_VMS
+#define NO_SS
+#endif
+#ifdef NO_SS
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+#include <sys/file.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <assert.h>
+#include <signal.h>
+#ifndef ALPHA_VMS
+#include <sys/param.h>
+#include <sys/resource.h>
+#endif
+extern int errno;
+#ifdef ASYNCH_IO
+#include <aio.h>
+#endif
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 80
+#endif
+#ifndef L_SET
+#define L_SET 0
+#define L_XTND 2
+#endif
+
+#ifdef __hppa
+/* In HP-UX 11.0, the enviroment variable for the number 
+of threads controls the number of threads spawned by the 
+executable.  This setup is part of having the executable
+set the number of threads. */
+#ifdef __hppa_11
+#define _LARGEFILE64_SOURCE
+#define __HPPA_PARALLEL
+#endif
+#ifdef __hppa_spp
+/* These are required for SPP-UX to use large files. */
+#include <sys/cnx_stat.h>
+#include <sys/cnx_fcntl.h>
+#include <sys/cnx_mman.h>
+#define __HPPA_PARALLEL
+#endif
+#ifdef __HPPA_PARALLEL
+#define OFFDEF_DONE
+#define STATDEF_DONE
+#define CONVEX_MACHINE
+typedef off64_t g_off_t;
+typedef struct stat64 g_stat;
+#define G_LSEEK lseek64
+#define G_FSTAT fstat64
+#define ftruncate ftruncate64
+/* SPP-UX must use open64 on large files.  Open fails. */
+#ifndef NO_SPPOPEN
+int spp_open (fname, open_type, protection)
+char *fname;
+int  open_type, protection;
+{
+  int fd;
+  fd = open (fname, open_type, protection);
+  if (fd < 0) {
+    fd = open64 (fname, open_type, protection);
+  }
+  return (fd);
+}
+#define open spp_open
+#endif
+#endif
+#endif
+#ifdef ALPHA_VMS
+#define OFFDEF_DONE
+typedef int g_off_t;
+#endif
+#ifdef sgi
+#ifdef LSTAT64
+#ifndef USE_LL
+#define USE_LL
+#endif
+#define OFFDEF_DONE
+#define STATDEF_DONE
+typedef off64_t g_off_t;
+typedef struct stat64 g_stat;
+#define G_LSEEK lseek64
+#define G_FSTAT fstat64
+#endif
+#endif
+#ifdef LARGE_FILES
+#define OFFDEF_DONE
+#define STATDEF_DONE
+typedef off64_t g_off_t;
+typedef struct stat64 g_stat;
+#define G_LSEEK lseek64
+#define G_FSTAT fstat64
+#define ftruncate ftruncate64
+#ifndef NO_SPPOPEN
+int spp_open (fname, open_type, protection)
+char *fname; int  open_type, protection;
+{return(open64 (fname, open_type));}
+#define open spp_open
+#endif
+#endif
+#ifndef OFFDEF_DONE
+typedef off_t g_off_t;
+#endif
+#ifndef STATDEF_DONE
+typedef struct stat g_stat;
+#endif
+#ifndef G_LSEEK
+#define G_LSEEK lseek
+#endif
+#ifndef G_FSTAT
+#define G_FSTAT fstat
+#endif
+#ifdef SEEKLEN_OFF
+typedef g_off_t seeklen;
+#else
+typedef int seeklen;
+#endif
+#ifndef MALLOC_ARG
+typedef size_t malloc_t;
+#endif
+#ifdef USE_STATFS
+typedef struct statfs g_fstatfsbuf;
+#else
+typedef g_stat g_fstatfsbuf;
+#endif
+
+#ifdef GAUSS_THPAR
+#ifndef PARINIT_DONE
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#endif
+#endif
+#ifdef GAUSS_THPAR
+#ifdef _OPENMP_
+#ifdef DO_FORK
+#define DO_SHM
+#endif
+#else
+#define DO_SHM
+#endif
+#endif
+#ifdef DO_SHM
+static char MEMENV[] = "GAUSS_MEMKEY";
+static char *shmaddr = (char *) NULL;
+static char CPUSTR[] = "GAUSS_NPROC";
+#endif
+static char LCPUSTR[] = "GAUSS_NPROCL";
+static int shmident = -1;
+static f77_wp *gauspace = (f77_wp *) NULL;
+static f77_int f77i_0 = 0;
+#ifdef SIG_RET
+#define SIG_RET_OK 1
+#define SIG_RET_FAIL 2
+#include <setjmp.h>
+static jmp_buf gau_jmp_buf;
+#endif
+
+#ifdef ALPHA_VMS
+#define FCHR_STRUCT
+typedef struct dsc$descriptor f77_char, *f77_char_ptr;
+#define CH_F2C(X) ((X)->dsc$a_pointer) /* How to get char ptr from F77 argument */
+#define CH_F2L(X,Y) ((X)->dsc$w_length) /* How to get length from F77 argument */
+#endif
+#ifndef CH_F2C
+typedef char f77_char, *f77_char_ptr;      /* Fortran character argument */
+#ifdef _IBM64_
+typedef int f77_char_len;   /* Type of extra length argument */
+#else
+typedef f77_int f77_char_len;   /* Type of extra length argument */
+#endif
+#define CH_F2C(X) ((char *) (X))  /* How to get char ptr from F77 argument */
+#define CH_F2L(X,Y) ((int) (Y))
+#endif
+
+#ifndef roundup
+#define roundup(x,y) ((((x)+((y)-1))/(y))*(y))
+#endif
+
+#ifdef sgi
+#define NEED_AND
+#ifdef DO_MONITOR
+#include <mon.h>
+#endif
+#endif
+#ifdef __hppa
+#define NAMES_DONE
+#define BLKSIZE statbuf.st_blksize
+#define NEED_EXIT
+#define NEED_AND
+#endif
+#ifdef sun
+#define NEED_PUTENV
+#define MAX_IO (2000*1024*1024)
+#ifndef sun_solaris2
+#ifndef gp7kf
+typedef int ssize_t;
+#endif
+#endif
+#endif
+#ifdef __HPPA_PARALLEL
+/* 
+Use mmap instead of shmat.  
+ Memory allocated with mmap is much faster than that 
+   allocated on SPP-UX.
+ Memory allocated with shmat must be deallocated with 
+   SPP-UX and HP-UX.  This does not happen if a user
+   kills a job with 'kill'.  There is a limited amount of
+   shared memory on a machine.  Using mmap prevents this
+   problem from occuring.
+   */
+#define shmat cvx_shmat
+#define shmctl cvx_shmctl
+#define shmget cvx_shmget
+#define shmdt cvx_shmdt
+char *shmat();
+#endif
+#ifdef IBM_RS6K
+#define NAMES_DONE
+#ifdef USE_STATFS
+#define BLKSIZE statbuf.f_bsize
+#else
+#define BLKSIZE statbuf.st_blksize
+#endif
+#ifdef IBM_AIX
+#define getenv _getenv
+#endif
+#ifdef IBM_LINUX
+#define NEED_ETIME
+#endif
+#define DO_FSYNC
+#define DO_GCTIME
+#define NEED_AND
+#define NEED_LOC
+#endif
+#ifdef ALPHA_OSF1
+#define NAMES_DONE
+#define BLKSIZE statbuf.f_bsize
+#define DO_FSYNC
+#define DO_GCTIME
+#define NEED_AND
+#define NEED_ETIME
+#define NEED_LOC
+#define NEED_PUTENV
+#endif
+#ifdef ALPHA_VMS
+typedef int sstat_t;
+#ifndef __SSIZE_T
+typedef int ssize_t;
+#endif
+#define NONBSD
+#define NAMES_DONE
+#define NEED_LOC
+#define BLKSIZE 8192
+#define DO_FSYNC
+#define DO_GCTIME
+#define NEED_AND
+#define NEED_ETIME
+#define mdpgsz_ MDPGSZ
+#define chainc_ CHAINC
+#define getcwd_ GETCWD
+#define hostnm_ HOSTNM
+#define canhnm_ CANHNM
+#define gignore_ GIGNORE
+#define gtrap_ GTRAP
+#define chkname_ CHKNAME
+#define intname_ INTNAME
+#define rwfname_ RWFNAME
+#define d2ename_ D2ENAME
+#define scrname_ SCRNAME
+#define inpname_ INPNAME
+#define outname_ OUTNAME
+#define nexname_ NEXNAME
+#define lnknmc_ LNKNMC
+#define savunx_  SAVUNX
+#define maxmem_ MAXMEM
+#define iop_ IOP
+#define iop1_ IOP1
+#define kjob_ KJOB
+#define io_ IO
+#define substn_ SUBSTN
+#define ifalph_ IFALPH
+#define intchr_ INTCHR
+#define appfp_ APPFP
+#define appfpd_ APPFPD
+#define fixstdin_ FIXSTDIN
+#define getexen_ GETEXEN
+#define gauexec_ GAUEXEC
+#define gcfout_ GCFOUT
+#define gsetcm_ GSETCM
+#define gsetjmp_ GSETJMP
+#define header_ HEADER
+#define openwa_ OPENWA
+#define waitwa_ WAITWA
+#define closwa_ CLOSWA
+#define asynwa_ ASYNWA
+#define ntrsiz_ NTRSIZ
+#define ntrbks_ NTRBKS
+#define ntrtru_ NTRTRU
+#define ntrex1_ NTREX1
+#define readwa_ READWA
+#define writwa_ WRITWA
+#define getscm_ GETSCM
+#define guname_ GUNAME
+#define envfil_ ENVFIL
+#define gsetmp_ GSETMP
+#define getprio_ GETPRIO
+#define setprio_ SETPRIO
+#define gauabt_ GAUABT
+#define gaufls_ GAUFLS
+#define gferr_ GFERR
+#define machin_ MACHIN
+#define ntrper_ NTRPER
+#define fixenv_ FIXENV
+#define lnk1e_ LNK1E
+#define mdsleep_ MDSLEEP
+#define galloc_ GALLOC
+#define galoc1_ GALOC1
+#define gfree_ GFREE
+#define gfree1_ GFREE1
+#define gsyst_ GSYST
+#define erfcx_ ERFCX
+#define ggeten_ GGETEN
+#define etime_ ETIME
+#define getpid_ GETPID
+#define stat_ STAT
+#define unlink_ UNLINK
+#define rintchr_ RINTCHR
+#define getran_ GETRAN
+#define getrans_ GETRANS
+#define time_ TIME
+#define fdate_ FDATE
+#define hostnm_ HOSTNM
+#define canhnm_ CANHNM
+#endif
+#ifdef gp7kf
+#define NEED_ETIME
+#endif
+#ifdef sun_solaris2
+#define NEED_ETIME
+#endif
+#ifndef NAMES_DONE
+#ifdef USE_STATFS
+#define BLKSIZE statbuf.f_bsize
+#else
+#define BLKSIZE statbuf.st_blksize
+#endif
+#endif
+#ifdef _HITACHI_
+#ifndef _HI_UX_
+typedef int ssize_t;
+#endif
+extern int hf_fend();
+#define NAMES_DONE
+#define BLKSIZE statbuf.st_blksize
+#define mdpgsz_ MDPGSZ
+#define chainc_ CHAINC
+#define chkname_ CHKNAME
+#define intname_ INTNAME
+#define rwfname_ RWFNAME
+#define d2ename_ D2ENAME
+#define scrname_ SCRNAME
+#define inpname_ INPNAME
+#define lnknmc_ LNKNMC
+#define gsr48_ GSR48
+#define outname_ OUTNAME
+#define nexname_ NEXNAME
+#define io_ IO
+#define drand48_ DRAND48
+#define srand48_ SRAND48
+#define hostnm_ HOSTNM
+#define canhnm_ CANHNM
+#define gignore_ GIGNORE
+#define gtrap_ GTRAP
+#define getcwd_ GETCWD
+#define chkname_ CHKNAME
+#define intname_ INTNAME
+#define rwfname_ RWFNAME
+#define d2ename_ D2ENAME
+#define scrname_ SCRNAME
+#define inpname_ INPNAME
+#define lnknmc_ LNKNMC
+#define savunx_  SAVUNX
+#define gauspace_ GAUSPACE
+#define maxmem_ MAXMEM
+#define iop_ IOP
+#define iop1_ IOP1
+#define kjob_ KJOB
+#define munit_ MUNIT
+#define substn_ SUBSTN
+#define ifalph_ IFALPH
+#define intchr_ INTCHR
+#define appfp_ APPFP
+#define appfpd_ APPFPD
+#define fixinout_ FIXINOUT
+#define fixstdin_ FIXSTDIN
+#define getexen_ GETEXEN
+#define gauexec_ GAUEXEC
+#define header_ HEADER
+#define openwa_ OPENWA
+#define waitwa_ WAITWA
+#define closwa_ CLOSWA
+#define asynwa_ ASYNWA
+#define ntrsiz_ NTRSIZ
+#define ntrbks_ NTRBKS
+#define ntrtru_ NTRTRU
+#define ntrex1_ NTREX1
+#define readwa_ READWA
+#define writwa_ WRITWA
+#define getscm_ GETSCM
+#define guname_ GUNAME
+#define envfil_ ENVFIL
+#define gsetmp_ GSETMP
+#define gsetjmp_ GSETJMP
+#define getprio_ GETPRIO
+#define setprio_ SETPRIO
+#define gauabt_ GAUABT
+#define gaufls_ GAUFLS
+#define gferr_ GFERR
+#define machin_ MACHIN
+#define ntrper_ NTRPER
+#define fixenv_ FIXENV
+#define lnk1e_ LNK1E
+#define mdsleep_ MDSLEEP
+#define galloc_ GALLOC
+#define galoc1_ GALOC1
+#define gfree_ GFREE
+#define gfree1_ GFREE1
+#define gsyst_ GSYST
+#define erfcx_ ERFCX
+#define NEED_AND
+#define rshift_ RSHIFT
+#define lshift_ LSHIFT
+#define getcwd_ GETCWD
+#define flush_ FLUSH
+#define exit_ EXIT
+#define wait_ WAIT
+#define fork_ FORK
+#define abort_ ABORTF
+#define getpid_ GETPID
+#define stat_ STAT
+#define unlink_ UNLINK
+#define etime_ ETIME
+#define fdate_ FDATE
+#define or_ OR
+#define xor_ XOR
+#define and_ AND
+#define loc_ LOC     
+#define time_ TIME
+#define drand_ DRAND
+#define ggeten_ GGETEN
+#endif
+
+#ifndef MAX_IO
+#define MAX_IO -1
+#endif
+
+static char dirchr[] = "/";
+static char pathchr[] = ":";
+
+#ifdef NO_ENVIR
+static char **environ = (char **) NULL;
+#else
+extern char **environ;
+#endif
+static char **myenvir = (char **) NULL;
+static int numenv = 0;
+static char *exetrn = (char *) NULL;
+static char *lexetrn = (char *) NULL;
+
+static size_t lextbuf = 0;
+static char *extbuf = (char *) NULL;
+
+#ifdef P64
+typedef long offset_type;
+#else
+typedef f77_int offset_type;
+#endif
+
+/* Maintain the current names of the various files. */
+
+EXTERN char chkname_[1024];
+EXTERN char intname_[1024];
+EXTERN char rwfname_[1024];
+EXTERN char d2ename_[1024];
+EXTERN char scrname_[1024];
+EXTERN char inpname_[1024];
+EXTERN char outname_[1024];
+EXTERN char nexname_[1024];
+EXTERN char lnknmc_[1024];
+#define LENSTR2 2
+EXTERN struct {                 /* Save flags */
+  f77_int chk;
+  f77_int intg;
+  f77_int rwf;
+  f77_int d2e;
+  f77_int scr;
+  f77_int inp;
+  f77_int out;
+  f77_int nex; } savunx_;
+static char *Z1[] = {"0", "1", "2"};
+
+EXTERN f77_int maxmem_[2];      /* And its length */
+EXTERN f77_int iop_[DEFMAXIOP];	/* For GetSCM print flag */
+EXTERN f77_int iop1_;           /* And of IOp(1) and ILSW flag. */
+EXTERN f77_int io_[3];          /* Common /IO/ */
+
+EXTERN struct {f77_int killnk,kilcnt,refcnt,kill,numprc,infork,numlpr,linmem;
+               f77_wp jobtim; } kjob_;
+
+/* End of program data.  Everything above this will be used
+   in writes to do file extends. */
+EXTERN char end[];
+
+#define MAXDIR (80*sizeof(f77_int))
+
+EXTERN struct {
+  f77_int nsubst;
+  f77_int padsub;
+  f77_int linkn[DEFMAXSUB];
+  f77_int lendir[DEFMAXSUB];
+  char linkd[DEFMAXSUB][MAXDIR]; } substn_;
+
+#ifndef ASYNCH_START
+#define ASYNCH_START 0
+#endif
+#ifdef ASYNCH_IO
+typedef struct aiocb gauaio;
+#define NUM_AIOB 1
+#define MAX_FD 1000
+static struct {
+  gauaio aiov[NUM_AIOB];
+  int busy, fd_open, do_asyn;
+  size_t iolen;
+  } aiob[MAX_FD];
+struct aiocb *aiocbp[MAX_FD][1];
+#endif
+
+static char PLACEENV[] = "GAUSS_DPLACE";
+static char EXEENV[] = "GAUSS_EXEDIR";
+static char LEXEENV[] = "GAUSS_LEXEDIR";
+static char ExecFileName[] = "GXX-Exec.Dat";
+
+#ifndef IFALPH_DONE
+f77_int ifalph_ (fchr) f77_int *fchr; {
+  char *chr;
+  chr = (char *) fchr;
+  return (isalpha(*chr)!=0);}
+#endif
+
+f77_int intchr_(fchr,base) f77_int *fchr, *base; {
+    int t,val;
+    char *chr;
+    chr = (char *) fchr;
+    t = *chr;
+    val = -1;
+    if (t <= 'z' && t >= 'a') val = t - 'a' + 10;
+    if (t <= 'Z' && t >= 'A') val = t - 'A' + 10;
+    if (t <= '9' && t >= '0') val = t - '0';
+    return (val == -1 || val >= *base ? -1 : val);
+}
+
+void appfp_(x, n, fbb, nbb) f77_wp *x; f77_int *n, *nbb, *fbb; {
+  char tmp[128], *bb, *strncpy();
+  size_t strlen();
+  bb = (char *) fbb;
+  sprintf (tmp, "%.*f", (int) *n, *x);
+  bb += *nbb;
+  strncpy (bb, tmp, strlen (tmp));
+  *nbb += strlen(tmp);
+}
+void appfpd_(x, n, fbb, nbb) f77_wp *x; f77_int *n, *nbb, *fbb; {
+  char tmp[128], fmt[128], *bb, *strncpy();
+  size_t strlen();
+  bb = (char *) fbb;
+  sprintf (fmt,"%%1.%de", (int) *n);
+  sprintf (tmp, fmt, *x);
+  bb += *nbb;
+  strncpy (bb, tmp, strlen (tmp));
+  *nbb += strlen(tmp);
+}
+
+void fixinout_ (newin, newout) f77_char_ptr newin, newout; {
+    freopen (CH_F2C(newin), "r", stdin);
+    freopen (CH_F2C(newout), "w", stdout);
+    }
+
+#ifdef IBM_RS6K
+void fixalt_ (newin) f77_char  *newin; {
+    freopen (CH_F2C(newin), "r", stdin);
+    }
+#endif
+
+void fixstdin_ () {
+/*  setbuf (stdin, (char *) 0);
+    fcntl (fileno(stdin), F_SETFD, 0); */
+#ifdef gp7kf
+   setvbuf(stdin, NULL, _IONBF, 0);
+#endif
+#ifdef sgi
+   setvbuf(stdin, NULL, _IONBF, 0);
+#endif
+#ifdef sun_solaris2
+   setvbuf(stdin, NULL, _IONBF, 0);
+#endif
+#ifndef NONBSD
+    setlinebuf (stdout);
+#endif
+#ifdef SVR4
+#define SV_SETV
+#endif
+#ifdef __hppa
+#define SV_SETV
+#endif
+#ifdef SV_SETV
+    setvbuf (stdout, (char *) NULL, _IOLBF, BUFSIZ);
+#endif
+}
+
+/* This routine searches a PATH for an executable file, and returns
+   the resulting full path name. */
+int findexe (name, path, fullname) char *name, *path, *fullname; {
+#ifdef ALPHA_VMS
+    strcpy (fullname, path);
+    strcat (fullname, name);
+    return ( isexe(fullname) ? 1 : 0);
+#else
+    char *pend, *tpath, *tt;
+#ifndef __hppa
+    char *index();
+#endif
+    int isexe();
+    size_t strlen();
+    char *strncpy(), *strcat();
+    offset_type l;
+    tpath = path==(char *) NULL ? "" : path;
+    pend = tpath + strlen(tpath);
+ 				/* If no path, try name. */
+                                /* Currently disabled */
+    if (pend == tpath) {
+        return (0);
+    }
+    while (tpath != pend) {	/* Try each path entry. */
+ 				/* Set tt to the next colon, or to the end of
+				   the string. */
+        tt = index (tpath, pathchr[0]);
+	if (tt == (char *) NULL) tt = tpath + strlen (tpath);
+				/* Copy the path element into fullname. */
+	l = tt - tpath;
+	strncpy (fullname, tpath, l);
+	fullname[l]=0;
+	if (l > 0 && *(fullname + l - 1) != dirchr[0]) strcat (fullname, dirchr);
+				/* Append the file name. */
+	strcat (fullname, name);
+	if (isexe (fullname)) return (1);
+	tpath = tt;
+	if (*tpath == pathchr[0]) tpath++;
+    }
+    return (0);
+#endif
+}
+
+int isexe (name) char *name; { 	/* Whether "name" is executable. */
+#ifdef DUMMY_ISEXE
+    return (1);
+#else
+    void gprint(), gauabt_();
+    struct stat buf;
+    uid_t uid;
+    uid = geteuid ();		/* Get process uid. */
+				/* Get info about file. */
+    if (stat (name, &buf) != 0) return (0);
+    /* changing the following statement is a violation of the Gaussian license! */
+    /* keep people from making files world readable */
+    if (buf.st_mode & S_IRWXO) {
+      fprintf(stderr,"Problem with file %s omode %d compare %d.\n",name,buf.st_mode,S_IRWXO);
+      gprint (" Files in the Gaussian directory are world accessible.");
+      gprint (" This must be fixed.");
+      gauabt_ (&f77i_0);
+      return (0);
+    }
+    if (uid == buf.st_uid) {	/* I own the file. */
+    	if (buf.st_mode & S_IXUSR) return (1);
+	return (0);
+    }
+    if (buf.st_mode & S_IXGRP) return (1);
+    return (0);
+#endif
+}
+
+#ifdef FCHR_STRUCT
+void getexen_ (num, ffullname, dirname)
+#else
+void getexen_ (num, ffullname, dirname, len1, len2)
+  f77_char_len len1, len2;
+#endif
+  f77_int *num; f77_char_ptr ffullname, dirname; {
+    int i, t, lpath, lpathl, get_envint();
+    void gprint(), gperror(), gprterr();
+    size_t strlen();
+    char fname[20], *path, *getenv(), *fpt, *fullname,  prtbuf[MAXPATHLEN*4], *pathl, *pathu, *strncpy(), *strcpy();
+    malloc_type *gau_malloc();
+    fullname = CH_F2C(ffullname);
+    path = CH_F2C(dirname);
+    sprintf (fname,"l%d.exe", (int) *num);
+    for (i=0 ; i < substn_.nsubst ; i++)
+      if (*num == substn_.linkn[i]) {
+        if ( (iop1_ & 8192) != 0) {
+          sprintf(prtbuf, "Taking exe name from subst %d, link %d, len %d, dir %s.\n",
+            i,(int) substn_.linkn[i], (int) substn_.lendir[i],
+            substn_.linkd[i]);
+          gprint (prtbuf);
+          }
+        strncpy (fullname, substn_.linkd[i], (size_t) substn_.lendir[i]);
+        fpt = fullname + substn_.lendir[i] - 1;
+#ifndef ALPHA_VMS
+        if(*fpt != dirchr[0]) *++fpt = dirchr[0];
+#endif
+        fpt++;
+        strcpy ( fpt, fname);
+        if (!isexe(fullname)) {
+          sprintf (prtbuf, "No executable for file %s.\n",fullname);
+          gperror (prtbuf);  }
+        return; }
+#ifdef COPY_LNAME
+    t = CH_F2L(ffullname, len1);
+    strncpy (fullname, fname, t);
+#else
+    if(path == (char *) NULL) path = exetrn;
+    if(path == (char *) NULL) path = getenv (EXEENV);
+    if(get_envint(LCPUSTR) > 1) {
+      pathl = lexetrn;
+      if(pathl == (char *) NULL) pathl = getenv (LEXEENV); }
+    else {
+      pathl = (char *) NULL;}
+    if(pathl == (char *) NULL) {
+      pathu = path;}
+    else {
+      lpath = strlen(path);
+      lpathl = strlen(pathl);
+      pathu = (char *) gau_malloc(lpath+lpathl+2);
+      strncpy(pathu,pathl,lpathl);
+      pathu[lpathl] = pathchr[0];
+      strncpy(pathu+lpathl+1,path,lpath);
+      pathu[lpath+lpathl+1] = (char) 0;
+      }
+    t = findexe (fname, pathu, fullname);
+    if (t == 0) {
+      sprintf (prtbuf, "No executable for file %s.\n",fname);
+      gprterr (prtbuf);
+      sprintf (prtbuf, "Search path GAUSS_EXEDIR is \"%s\"\n", pathu);
+      gperror (prtbuf); }
+    else if ( (iop1_ & 8192) != 0)
+      {
+      sprintf(prtbuf, "Taking exe name from GAUSS_EXEDIR -- %s.\n",fullname);
+      gprint(prtbuf); }
+#endif
+   }
+
+#ifdef GAUSS_LINDA
+void lhalt();
+#ifndef NO_EXEC
+#define NO_EXEC
+#endif
+#endif
+
+void gauexec_(num) f77_int *num;{
+  int istat, errno1, clindal(), strcmp();
+  void gprint(), dmpenv_(), gperror(), exit();
+  char fullname[MAXPATHLEN], cmem[20], prtbuf[MAXPATHLEN*10], *qarg(), *qcmd(), *dpenv, *getenv();
+  void chainc_(), gfree_();
+#ifdef NO_EXEC
+  char *efname, *unqarg();
+  FILE *execfile;
+#endif
+#ifdef ALPHA_VMS
+  struct dsc$descriptor_s vms_desc;
+  char cmdlineargs[1020];
+  char *nextexe, *cmdst;
+#endif
+#ifdef FCHR_STRUCT
+    f77_char dummy, fcnull;
+#endif
+#ifdef USE_LL
+    sprintf (cmem,"%lld",(long long) maxmem_[1]);
+#else
+    sprintf (cmem,"%ld",(long) maxmem_[1]);
+#endif
+#ifdef FCHR_STRUCT
+#ifdef ALPHA_VMS
+#define GAUEXEC_FCSTR_DONE
+    dummy.dsc$a_pointer = fullname;
+    dummy.dsc$w_length  = MAXPATHLEN;
+    fcnull.dsc$a_pointer = (char *) NULL;
+    fcnull.dsc$w_length = 0;
+    getexen_(num,&dummy,&fcnull);
+#endif
+#ifndef GAUEXEC_FCSTR_DONE
+    dummy.ptr = fullname;
+    dummy.len = MAXPATHLEN;
+    fcnull.ptr = (char *) NULL;
+    fcnull.len = 0;
+    getexen_(num,&dummy,&fcnull);
+#endif
+#else
+    getexen_(num,fullname,(f77_char_ptr) NULL, (f77_char_len) MAXPATHLEN, (f77_char_len) 0);
+#endif
+    if ( (iop1_ & 8192) != 0) {
+      sprintf (prtbuf, "executing %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n",
+        fullname, cmem,  chkname_, Z1[savunx_.chk], intname_,
+        Z1[savunx_.intg], rwfname_, Z1[savunx_.rwf], d2ename_,
+        Z1[savunx_.d2e], scrname_, Z1[savunx_.scr], inpname_,
+        Z1[savunx_.inp], outname_, Z1[savunx_.out], nexname_, Z1[savunx_.nex]);
+      gprint (prtbuf);
+      dmpenv_ ();
+      }
+    fflush (stdout);
+#if (defined IBM_RS6K) && (defined IBM_AIX )
+    if ( (iop1_ & 2048) != 0) monitor((caddr_t) 0);
+#endif
+#ifdef __hppa
+   if (iop1_ & 2048) monitor(0,0,0,0,0);
+#endif
+#ifdef sgi
+#ifdef DO_MONITOR
+   if (iop1_ & 2048) moncontrol (_NEW_PROF_PHASE);
+#endif
+#endif
+#ifdef GAUSS_THPAR
+#ifdef sgi
+    mp_destroy_();
+#endif
+#endif
+#ifndef NO_ENVIR
+    if (myenvir == (char **) NULL) myenvir = environ;
+#endif
+#ifdef NO_EXEC
+    if (clindal()) {efname = unqarg(nexname_);}
+    else {efname = ExecFileName;}
+    if ((execfile = fopen (efname,"w")) == (FILE *) NULL)
+      gperror ("open of exec.fil failed.");
+    if(fprintf(execfile,"     %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n",
+      fullname, cmem,  qarg(chkname_), Z1[savunx_.chk], qarg(intname_),
+      Z1[savunx_.intg], qarg(rwfname_), Z1[savunx_.rwf], qarg(d2ename_),
+      Z1[savunx_.d2e], qarg(scrname_), Z1[savunx_.scr], qarg(inpname_),
+      Z1[savunx_.inp], qarg(outname_), Z1[savunx_.out], qarg(nexname_), Z1[savunx_.nex]) < 0) {
+      gperror ("write to exec file failed");
+      }
+    if(fclose(execfile) != 0) gperror ("fclose of exec file failed.");
+    chainc_ (&io_[0],&io_[1]);
+    gfree_ ();
+#ifdef SIG_RET
+longjmp (gau_jmp_buf, SIG_RET_OK);
+#endif
+#ifdef GAUSS_LINDA
+/* fprintf (stderr,"exit before lhalt\n"); */
+    exit (0);
+    lhalt (0);
+#else
+    exit (0);
+#endif
+#else
+#ifdef ALPHA_OSF1
+    fcntl(3,F_SETFD,FD_CLOEXEC);
+#endif
+#ifdef _IA64_
+/*    int ixx, ixxs;
+    for (ixx = 0; ixx < 128 ; ixx++) {
+      ixxs = fcntl(ixx, F_GETFD);
+      if (ixxs == -1) {
+        printf("fd %d is not open.\n",ixx);}
+      else {
+        printf("fd %d has cloexec %d.\n",ixx,ixxs);
+      }
+    } */
+    fcntl(3,F_SETFD,FD_CLOEXEC);
+    fcntl(4,F_SETFD,FD_CLOEXEC);
+    fcntl(5,F_SETFD,FD_CLOEXEC);
+    fcntl(6,F_SETFD,FD_CLOEXEC);
+    fcntl(7,F_SETFD,FD_CLOEXEC);
+    fcntl(8,F_SETFD,FD_CLOEXEC);
+    fcntl(9,F_SETFD,FD_CLOEXEC);
+    fcntl(10,F_SETFD,FD_CLOEXEC);
+    fcntl(11,F_SETFD,FD_CLOEXEC);
+    fcntl(12,F_SETFD,FD_CLOEXEC);
+    fcntl(13,F_SETFD,FD_CLOEXEC);
+    fcntl(17,F_SETFD,FD_CLOEXEC);
+    fcntl(46,F_SETFD,FD_CLOEXEC);
+    fcntl(47,F_SETFD,FD_CLOEXEC);
+    fcntl(48,F_SETFD,FD_CLOEXEC);
+    fcntl(49,F_SETFD,FD_CLOEXEC);
+#endif
+#ifdef sun_solaris2
+    fcntl(3,F_SETFD,FD_CLOEXEC);
+    fcntl(4,F_SETFD,FD_CLOEXEC);
+    fcntl(5,F_SETFD,FD_CLOEXEC);
+    fcntl(6,F_SETFD,FD_CLOEXEC);
+#endif
+#ifdef _I386_
+#ifdef __APPLE__
+    fcntl(0,F_SETFD,FD_CLOEXEC);
+    fcntl(2,F_SETFD,FD_CLOEXEC); 
+    fcntl(3,F_SETFD,FD_CLOEXEC);
+    fcntl(4,F_SETFD,FD_CLOEXEC);
+    fcntl(9,F_SETFD,FD_CLOEXEC);
+#endif
+#endif
+#ifdef __MAC__
+    fcntl(4,F_SETFD,FD_CLOEXEC);
+    fcntl(10,F_SETFD,FD_CLOEXEC);
+#endif
+    chainc_ (io_,(io_+1));
+    gfree_ ();
+#ifdef _OPENMP_
+#ifdef _I386_
+#ifdef __APPLE__
+    istat = pgi_mp_reset();
+#endif
+#endif
+#endif
+#ifdef ALPHA_VMS
+    sprintf (cmdlineargs, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+      cmem,  chkname_, Z1[savunx_.chk], intname_,
+      Z1[savunx_.intg], rwfname_, Z1[savunx_.rwf], d2ename_,
+      Z1[savunx_.d2e], scrname_, Z1[savunx_.scr], inpname_,
+      Z1[savunx_.inp], outname_, Z1[savunx_.out], nexname_, Z1[savunx_.nex]);
+    cmdst = ((cmdlineargs[0] == 255) ? (cmdlineargs + 1) : cmdlineargs);
+    vms_desc.dsc$a_pointer  = cmdst;
+    vms_desc.dsc$b_class    = DSC$K_CLASS_S;
+    vms_desc.dsc$b_dtype    = DSC$K_DTYPE_T;
+    vms_desc.dsc$w_length   = strlen(cmdst);
+    gsetcm_ (&vms_desc);
+    vms_desc.dsc$w_length = strlen(fullname);
+    vms_desc.dsc$a_pointer = fullname;
+    istat = LIB$RUN_PROGRAM(&vms_desc);
+#else
+#ifdef __hppa_11
+/* execle fails with multithreaded executables.  This sets the number of threads down to 1 just before 
+   the execle. */
+   istat = 1; cps_set_threads( &istat );
+#endif
+    dpenv = getenv (PLACEENV);
+    if (dpenv != (char *) NULL) {
+      if (strcmp (dpenv,"1") == 0) {
+	if((iop1_ & 8192) != 0) {fprintf(stderr,"using dplace with -x2\n");}
+	istat = execle ("/usr/bin/dplace","/usr/bin/dplace","-x2",fullname,cmem,chkname_,
+          Z1[savunx_.chk],intname_,Z1[savunx_.intg],rwfname_,Z1[savunx_.rwf],d2ename_,
+          Z1[savunx_.d2e],scrname_,Z1[savunx_.scr],inpname_,Z1[savunx_.inp],
+          outname_,Z1[savunx_.out],nexname_,Z1[savunx_.nex],(char *) 0,myenvir);
+      }
+      else {
+	if((iop1_ & 8192) != 0) {fprintf(stderr,"using dplace with -x2 %s\n",dpenv);}
+        istat = execle ("/usr/bin/dplace","/usr/bin/dplace","-x2",dpenv,fullname,cmem,
+          chkname_,Z1[savunx_.chk],intname_,Z1[savunx_.intg],rwfname_,Z1[savunx_.rwf],
+          d2ename_,Z1[savunx_.d2e],scrname_,Z1[savunx_.scr],inpname_,Z1[savunx_.inp],
+          outname_,Z1[savunx_.out],nexname_,Z1[savunx_.nex],(char *) 0,myenvir); }
+      }
+    else {
+#ifdef _HITACHI_
+#define EXEC_DONE
+      istat = execle (fullname, fullname, SYSOPT, cmem, chkname_, Z1[savunx_.chk],
+#endif
+#ifndef EXEC_DONE
+      istat = execle (fullname, fullname, cmem, chkname_, Z1[savunx_.chk],
+#endif
+        intname_, Z1[savunx_.intg], rwfname_, Z1[savunx_.rwf], d2ename_,
+        Z1[savunx_.d2e], scrname_, Z1[savunx_.scr], inpname_, Z1[savunx_.inp],
+        outname_, Z1[savunx_.out], nexname_, Z1[savunx_.nex], (char *) 0, myenvir);}
+    errno1 = errno;
+    printf ("Returned from execl, istat=%d, errno=%d!\n",istat, errno1);
+    errno = errno1;
+    gperror("Returned from execl!\n");
+#endif
+#endif
+}
+
+#ifdef NEED_LOC
+void *loc_(void *varnm)
+{
+   return(varnm);
+}
+#endif
+
+void header_(fbuf) f77_char_ptr fbuf; {
+    char *tmp,  *ctime(), *buf;
+    time_t time(), t;
+
+    buf = CH_F2C(fbuf);
+    t = time ( (time_t *) NULL);
+    tmp = ctime (&t);
+ 				/* Re-format the date. */
+ 				/* DD-MMM-YY is the new format. */
+    				/* Copy the DD part. */
+    buf[0] = tmp[8];
+    buf[1] = tmp[9];
+    buf[2] = '-';
+    				/* The MMM part. */
+    buf[3] = tmp[4];
+    buf[4] = tmp[5];
+    buf[5] = tmp[6];
+    buf[6] = '-';
+ 				/* the YY part */
+    buf[7] = tmp[20];
+    buf[8] = tmp[21];
+    buf[9] = tmp[22];
+    buf[10] = tmp[23];
+    buf[11] = ' ';
+}
+
+f77_int mdpgsz_ (f77_int *dummy) {
+  f77_int fpagesz, tmaxmem;
+  fpagesz = (f77_int) (getpagesize()/8);
+  if (*dummy == (f77_int) 0) {
+    tmaxmem = maxmem_[0];
+    if ( (iop_[1] != 0) && (tmaxmem > iop_[1])) tmaxmem = iop_[1];
+    tmaxmem = tmaxmem / 1024;
+    if (fpagesz > tmaxmem) fpagesz = MINPGSZ;
+  }
+  return (fpagesz);
+}
+
+#ifdef FCHR_STRUCT
+f77_int openwa_ (ffname, itype)
+#else
+f77_int openwa_ (ffname, itype, flen) f77_char_len flen;
+#endif
+f77_char_ptr ffname; f77_int *itype; {
+/*
+  Open a unit for random-access i/o.  IType is:
+  1 -- new file, for writing, exclusive lock.
+  2 -- old file, for writing, exclusive lock.
+  3 -- unused (for compatibility with ntropn).
+  4 -- readonly, no lock.
+ -5 -- readonly, exclusive lock.
+*/
+  int fd, stat, openflag, openro;
+  char *fname, tmp[256];
+  void gperror(), gprterr(), gauabt_();
+#ifdef CONVEX_MACHINE
+  int  curflags;
+#endif
+  fname = CH_F2C(ffname);
+  openflag = O_RDWR;
+  openro = O_RDONLY;
+  if ((*itype == 1) || (*itype == -1)) {
+    fd = open (fname, openflag | O_CREAT | O_TRUNC, 0666);
+    if (fd < 0) {
+      sprintf (tmp, "fname=%s fd = %d\n", fname, fd);
+      gprterr (tmp);
+      gperror("open-new-file"); }
+    stat = flock (fd,  LOCK_EX | LOCK_NB);
+    if (stat < 0) {
+      sprintf (tmp, "fname=%s\n", fname);
+      gprterr (tmp);
+      gperror("lock-new-file"); }
+    }
+  else if ((*itype == 2) || (*itype == -2)) {
+    fd = open (fname, openflag, 0666);
+    if (fd < 0) return ((f77_int) -1);
+    stat = flock (fd,  LOCK_EX | LOCK_NB);
+    if (stat < 0) return ((f77_int) -1);}
+  else if ((*itype == 4) || (*itype == -4)) {
+    fd = open (fname, openro, 0666);
+    if (fd < 0) return ((f77_int) -1);}
+  else if (*itype == 5) {
+    fd = open (fname, openro, 0666);
+    if (fd < 0) return ((f77_int) -1);
+    stat = flock (fd,  LOCK_SH | LOCK_NB);
+    if (stat < 0) return ((f77_int) -1);}
+  else if (*itype == -5) {
+    fd = open (fname, openro, 0666);
+    if (fd < 0) return ((f77_int) -1);
+    stat = flock (fd,  LOCK_EX | LOCK_NB);
+    if (stat < 0) return ((f77_int) -1);}
+  else
+    gauabt_ (&f77i_0);
+#ifdef CONVEX_MACHINE
+   curflags = fcntl(fd,F_GETFL, NULL );
+   stat = fcntl(fd,F_SETFL, O_LARGEFILE | curflags );
+#endif
+#ifdef ALPHA_OSF1
+   stat = fcntl(fd,F_SETFD,(int) 1);
+   if (stat == -1) gprterr("SET_FD failed");
+#endif
+#ifdef ASYNCH_IO
+  if ((fd < 0) || (fd >= MAX_FD)) gauabt_ (&f77i_0);
+  if (aiob[fd].fd_open) gauabt_ (&f77i_0);
+  aiob[fd].fd_open = 1;
+  aiob[fd].busy = 0;
+  aiob[fd].do_asyn = ASYNCH_START;
+#endif
+  return ((f77_int) fd); }
+
+void waitwa_ (fd) f77_int *fd;
+{
+#ifdef ASYNCH_IO
+  int ifd;
+  struct timespec *timeout[1];
+  size_t istat;
+  ifd = (int) *fd;
+  if ((ifd >= MAX_FD) || (! aiob[ifd].fd_open)) gauabt_ (&f77i_0);
+  if (aiob[ifd].busy) {
+  aiocbp[ifd][0] = &aiob[ifd].aiov[0];
+  timeout[0] = (struct timespec *) NULL;
+/*  if (aio_suspend (aiocbp[ifd], 1, timeout) == -1) */
+  if (aio_suspend (aiocbp[ifd], 1, (struct timespec **) NULL) == -1)
+    gperror ("error from aio_suspend.");
+  if ( (istat = aio_return (&aiob[ifd].aiov[0])) != aiob[ifd].iolen) {
+    fprintf (stdout , "Erroneous io request in waitwa, %ld instead of %ld\n",
+      (long) istat, (long) aiob[ifd].iolen);
+    fprintf (stderr , "Erroneous io request in waitwa, %ld instead of %ld\n",
+      (long) istat, (long) aiob[ifd].iolen);
+     gperror ("I/O error in WaitWA");
+    }
+  aiob[ifd].busy = 0;
+  }
+#endif
+}
+
+void closwa_ (fd) f77_int *fd; {
+  int ifd;
+  void gperror();
+  ifd = (int) *fd;
+#ifdef ASYNCH_IO
+  if ((ifd >= MAX_FD) || (! aiob[ifd].fd_open)) gauabt_ (&f77i_0);
+  waitwa_ (fd);
+  aiob[ifd].fd_open = 0;
+#endif
+  if (flock (ifd, LOCK_UN) < 0) gperror ("unlock failed.");
+  close (ifd);}
+
+/* Turn on asynch i/o if asyn is 1, off if asyn is 0 */
+/* But if file is on NFS, force synchronous. */
+void asynwa_ (fd, asyn) f77_int *fd, *asyn; {
+#ifdef ASYNCH_IO
+  struct stat statbuf;
+  int ifd;
+  ifd = (int) *fd;
+  if ((ifd >= MAX_FD) || (! aiob[ifd].fd_open)) gauabt_ (&f77i_0);
+  if (*asyn) {
+    if (fstat (ifd, &statbuf) != 0) gperror("asynwa");
+    aiob[ifd].do_asyn = 1;
+    }
+  else
+    aiob[ifd].do_asyn = 0;
+#endif
+  }
+
+f77_int ntrsiz_ (fd) f77_int *fd; {
+  void gperror();
+  g_stat statbuf;
+  f77_int wordsize;
+#ifdef i386
+#ifndef _SUN_
+#define NTRSIZ_STATDONE
+  statbuf.st_size = lseek((int) *fd, (off_t) 0, SEEK_END);
+#endif
+#endif
+#ifndef NTRSIZ_STATDONE
+  if (G_FSTAT ( (int) *fd, &statbuf) != 0) gperror("ntrsiz");
+#endif
+  wordsize = (f77_int) (statbuf.st_size / sizeof(f77_wp));
+  return (wordsize);
+  }
+
+int g_fstatfs (int fd, g_fstatfsbuf *statbuf) {
+#ifdef USE_STATFS
+#ifdef IBM_RS6K
+#define NO_LEN_STATFS
+#endif
+#ifdef ALPHA_LINUX
+#define NO_LEN_STATFS
+#endif
+#ifdef i386
+#ifndef _SUN_
+#define NO_LEN_STATFS
+#endif
+#endif
+#ifdef NO_LEN_STATFS
+  return(fstatfs(fd, statbuf));
+#else
+  int lenfs, fstype;
+  fstype = 0;
+  lenfs = sizeof(struct statfs);
+  return(fstatfs(fd, statbuf, lenfs, fstype));
+#endif
+#else
+  return(G_FSTAT(fd, statbuf));
+#endif
+}
+
+f77_int ntrbks_ (fd) f77_int *fd; {
+  f77_int blksize;
+  g_fstatfsbuf statbuf;
+  void gperror();
+  if (g_fstatfs((int) *fd, &statbuf) != 0) {
+    gperror("ntrbks");
+    }
+  blksize = BLKSIZE / sizeof(f77_wp);
+  return (blksize);
+  }
+
+void ntrtru_ (fd, newlen) f77_int *fd, *newlen; {
+#ifndef ALPHA_OSF1
+#ifndef ALPHA_VMS
+  g_off_t size;
+  void gperror();
+  size = ((g_off_t) *newlen) * ((g_off_t) sizeof(f77_wp));
+  if (ftruncate ((int) *fd, size) != 0) gperror("NtrTru");
+#endif
+#endif
+  }
+
+size_t g_read (int fd, char *bufadr, size_t llen) {
+  size_t len,left;
+  ssize_t istat, read();
+  void gperror();
+  for (left = llen ; left > 0 ; ) {
+    if (MAX_IO > 0) {len = (left < (size_t) MAX_IO) ? left : (size_t) MAX_IO;}
+    else {len = left;}
+    if ((istat = read (fd, bufadr, len)) < 0) {
+#ifdef USE_LL
+      fprintf (stdout,"Erroneous read. Read %lld instead of %lld.\n",
+#else
+      fprintf (stdout,"Erroneous read. Read %ld instead of %ld.\n",
+#endif
+        istat, len);
+      fprintf (stdout,"fd = %d\n", fd);
+#ifdef USE_LL
+      fprintf (stderr,"Erroneous read. Read %lld instead of %lld.\n",
+#else
+      fprintf (stderr,"Erroneous read. Read %ld instead of %ld.\n",
+#endif
+        istat, len);
+      fprintf (stderr,"fd = %d\n", fd);
+      gperror ("g_read");
+      }
+    left -= istat;
+    bufadr += istat;
+    }
+  return (llen);
+  }
+
+size_t g_write (int fd, char *bufadr, size_t llen) {
+  size_t len,left;
+  ssize_t istat, write();
+  int errno1;
+  void gperror();
+  for (left = llen ; left > 0 ; ) {
+    if (MAX_IO > 0) {len = (left < (size_t) MAX_IO) ? left : (size_t) MAX_IO;}
+    else {len = left;}
+    if ((istat = write (fd, bufadr, len)) < 0) {
+      errno1 = errno;
+      fprintf (stdout,"Erroneous write. Write %ld instead of %ld.\n",
+        istat, len);
+      fprintf (stdout,"fd = %d\n", fd);
+#ifdef USE_LL
+      fprintf (stdout,"orig len = %lld left = %ld\n",llen,left);
+#else
+      fprintf (stdout,"orig len = %ld left = %ld\n",llen,left);
+#endif
+      fprintf (stderr,"Erroneous write. Write %ld instead of %ld.\n",
+        istat, len);
+      fprintf (stderr,"fd = %d\n", fd);
+#ifdef USE_LL
+      fprintf (stderr,"orig len = %lld left = %ld\n",llen,left);
+#else
+      fprintf (stderr,"orig len = %ld left = %ld\n",llen,left);
+#endif
+      gperror ("g_write");
+      }
+    left -= istat;
+    bufadr += len;
+    }
+  return (llen);
+  }
+
+void ntrex1_ (fd, len) f77_int *fd, *len; {
+  g_off_t lenext, G_LSEEK();
+  void gperror();
+  int ifd;
+  g_fstatfsbuf statbuf;
+  void free(), csetnan();
+  malloc_type *malloc();
+  size_t istat, lenwrt;
+#ifdef EXT_LSEEK
+  g_off_t statseek;
+  ifd = (int) *fd;
+  if (g_fstatfs (ifd, &statbuf) != 0) {
+    gperror("ntrex1");
+    }
+  if ((lextbuf < BLKSIZE) && (lextbuf > 0)) {
+    free (extbuf);
+    lextbuf = 0;
+    }
+  if (lextbuf == 0) {
+    lextbuf = BLKSIZE;
+    extbuf = (char *) malloc( (malloc_t) lextbuf);
+    }
+  if (extbuf == (char *) NULL) gperror("buffer allocation failed in ntrex1.");
+  lenext = roundup((((g_off_t) *len) * ((g_off_t) sizeof(f77_wp))), ((g_off_t) BLKSIZE));
+  lenwrt = BLKSIZE;
+  lenext = (lenext > lenwrt) ? (lenext - lenwrt) : 0;
+  statseek = G_LSEEK (ifd, lenext, SEEK_END);
+  if (statseek < lenext) {
+    fprintf (stdout, "extended by %ld %ld\n",lenext,statseek);
+    fprintf (stdout, "File extend in NtrEx1 failed.\nYou are probably out of disk space.\n");
+    gperror ("File extend in NtrEx1 failed; probably out of disk space.");
+    }
+  if( (istat = g_write ( ifd, extbuf, lenwrt)) != lenwrt) {
+    fprintf (stdout , "Erroneous write during file extend. write %ld instead of %ld\nProbably out of disk space.\n",
+            (long) istat, (long) BLKSIZE);
+    fprintf (stderr , "Erroneous write during file extend. write %ld instead of %ld\nProbably out of disk space.\n",
+            (long) istat, (long) BLKSIZE);
+    gperror ("Write error in NtrEx1");
+    }
+#else
+#ifdef NO_SBRK
+  size_t lextb1;
+#else
+  int left, lenbuf;
+#ifndef i386
+#ifndef _IA64_
+  char *sbrk();
+#endif
+#endif
+  lenbuf = (char *) sbrk(0) - end;
+#endif
+  ifd = (int) *fd;
+  if (g_fstatfs (ifd, &statbuf) != 0) {
+    gperror("ntrex1");
+    }
+  lenext = roundup((((g_off_t) *len) * ((g_off_t) sizeof(f77_wp))), ((g_off_t) BLKSIZE));
+#ifdef NO_SBRK
+  if ((lextbuf < BLKSIZE) && (lextbuf > 0)) {
+    free (extbuf);
+    lextbuf = 0;
+    }
+  if (lextbuf == 0) {
+    lextbuf = roundup(MINEXT,BLKSIZE);
+    lextb1 = MINEXBLK*BLKSIZE;
+    if (lextbuf > lextb1) lextbuf = lextb1;
+    extbuf = (char *) malloc( (malloc_t) lextbuf);
+    csetnan ((size_t) (lextbuf/sizeof(int)), (int *) extbuf);
+    }
+  if (extbuf == (char *) NULL) gperror("buffer allocation failed in ntrex1.");
+  lenwrt = lextbuf;
+#else
+  if (lenbuf < (MINEXT * BLKSIZE)) {
+    sbrk (MINEXT * BLKSIZE);
+    lenbuf = (char *) sbrk(0) - end;
+    }
+  assert ((lenbuf >= (MINEXT * BLKSIZE)));
+  if ( (lenbuf % BLKSIZE) != 0)
+    lenbuf = roundup(lenbuf - BLKSIZE, BLKSIZE);
+  for (left = lenext ; left > 0 ; left -= lenwrt) {
+    lenwrt = (left > lenbuf) ? lenbuf : left;
+#endif
+#ifdef ASYNCH_EXT
+    if ((ifd >= MAX_FD) || (! aiob[ifd].fd_open)) gauabt_ (&f77i_0);
+    if (aiob[ifd].do_asyn) {
+      if (aiob[ifd].busy) waitwa_ (fd);
+      if ( (aiob[ifd].aiov[0].aiov_done == 0) ||
+           (aiob[ifd].aiov[1].aiov_done == 0))
+           gauabt_ (&f77i_0);
+      aiob[ifd].aiov[0].aiov_done = 0;
+      aiob[ifd].aiov[0].aiov_resid = 0;
+      aiob[ifd].aiov[0].aiov_errno = 0;
+      aiob[ifd].aiov[0].aiov_req = AIO_SEEK;
+      aiob[ifd].aiov[0].aiov_offset = (off_t) 0;
+      aiob[ifd].aiov[0].aiov_whence = L_XTND;
+      aiob[ifd].aiov[0].aiov_flags = 0;
+      aiob[ifd].aiov[0].aiov_id = (struct aiovec *) 0;
+      aiob[ifd].aiov[1].aiov_done = 0;
+      aiob[ifd].aiov[1].aiov_resid = 0;
+      aiob[ifd].aiov[1].aiov_errno = 0;
+      aiob[ifd].aiov[1].aiov_req = AIO_WRITE;
+      aiob[ifd].aiov[1].aiov_base = end;
+      aiob[ifd].aiov[1].aiov_len = lenwrt;
+      aiob[ifd].aiov[1].aiov_flags = AIOVF_WAIT | AIOVF_SYNC;
+      aiob[ifd].aiov[1].aiov_id = (struct aiovec *) 0;
+      if (aio ( ifd, aiob[ifd].aiov, 2) != 0) gperror("aio-extend");
+      if (aiob[ifd].aiov[0].aiov_done == 0)
+        gperror ("0 not done in ntrex1.");
+      if (aiob[ifd].aiov[0].aiov_errno != 0) {
+        errno = aiob[ifd].aiov[0].aiov_errno;
+        gperror ("error-0 in ntrex1.");
+        }
+      if (aiob[ifd].aiov[0].aiov_resid != 0) {
+        errno = aiob[ifd].aiov[1].aiov_errno;
+        gperror ("resid-0 in ntrex1.");
+        }
+      if (aiob[ifd].aiov[1].aiov_done == 0)
+        gperror ("1 not done in ntrex1.");
+      if (aiob[ifd].aiov[1].aiov_errno != 0) {
+        errno = aiob[ifd].aiov[1].aiov_errno;
+        gperror ("error-1 in ntrex1.");
+        }
+      if (aiob[ifd].aiov[1].aiov_resid != 0) {
+        errno = aiob[ifd].aiov[1].aiov_errno;
+        gperror ("resid-1 in ntrex1.");
+        }
+      }
+    else {
+#endif
+#ifdef USE_SYSV
+#define EXT_EXT
+#endif
+#ifdef EXT_EXT
+      if (G_LSEEK (ifd, lenext, L_XTND) == (g_off_t) -1) {
+#else
+      if (G_LSEEK (ifd, (g_off_t) 0, L_XTND) == (g_off_t) -1) {
+#endif
+        fprintf (stdout, "File extend in NtrEx1 failed.\nYou are probably out of disk space.\n");
+        gperror ("File extend in NtrEx1 failed; probably out of disk space.");
+        }
+#ifdef NO_SBRK
+      if( (istat = g_write ( ifd, extbuf, lenwrt)) != lenwrt) {
+#else
+      if( (istat = g_write ( ifd, end, lenwrt)) != lenwrt) {
+#endif
+        fprintf (stdout , "Erroneous write during file extend. write %ld instead of %ld\nProbably out of disk space.\n",
+                (long) istat, (long) BLKSIZE);
+        fprintf (stderr , "Erroneous write during file extend. write %ld instead of %ld\nProbably out of disk space.\n",
+                (long) istat, (long) BLKSIZE);
+        gperror ("Write error in NtrEx1");
+        }
+#ifdef DO_FSYNC
+      if (fsync (ifd) != 0) gperror ("fsync failed in NtrEx1.");
+#endif
+#ifdef ASYNCH_EXT
+      } /* end of if on whether we're allowed to use asynch-io */
+#endif
+#ifndef NO_SBRK
+    }  /* end loop over writing blocks */
+#endif
+#endif /* EXT_LSEEK */
+  }
+
+void readwa_ (fd, da, nw, membuf)
+f77_int *fd;			/* File descriptor */
+f77_int *da;			/* Disk address (in words) */
+f77_int *nw;			/* Number of words to transfer. */
+f77_int *membuf;                /* destination in memory. */
+{
+    int ifd;
+    ssize_t istat;
+    size_t len;
+    g_off_t G_LSEEK(), adr, lstat;
+    char *bufadr;
+    void gperror();
+
+  adr = (g_off_t) ((g_off_t) *da * sizeof(f77_wp));
+  len = ((size_t) *nw) * ((size_t) sizeof(f77_wp));
+  bufadr = (char *) membuf;
+  ifd = (int) *fd;
+
+#ifdef ASYNCH_IO
+  if ((ifd >= MAX_FD) || (! aiob[ifd].fd_open)) gauabt_ (&f77i_0);
+  if (aiob[ifd].do_asyn) {
+    if (aiob[ifd].busy) waitwa_ (fd);
+    aiob[ifd].aiov[0].aio_fildes = ifd;
+    aiob[ifd].aiov[0].aio_offset = adr;
+    aiob[ifd].aiov[0].aio_buf = bufadr;
+    aiob[ifd].aiov[0].aio_nbytes = len;
+    aiob[ifd].iolen = len;
+    if (aio_read(aiob[ifd].aiov) != 0) {
+      fprintf (stdout,"aio-read\n");
+      gperror("aio-read");
+      }
+    aiob[ifd].busy = 1;
+  }
+  else {
+#endif
+    if ((lstat = G_LSEEK (ifd, adr, L_SET)) != adr) {
+#ifdef USE_LL
+      fprintf (stdout, "Seek failed. value is %lld instead of %lld.\n",
+        lstat, adr);
+      fprintf (stderr, "Seek failed. value is %lld instead of %lld.\n",
+        lstat, adr);
+#else
+      fprintf (stdout, "Seek failed. value is %d instead of %ld.\n",
+        lstat, (long) adr);
+      fprintf (stderr, "Seek failed. value is %d instead of %ld.\n",
+        lstat, (long) adr);
+#endif
+      gperror ("readwa-lseekm");
+      }
+    if ( len != (istat = g_read (ifd, bufadr, len))) {
+      fprintf (stdout,"Erroneous read. Read %ld instead of %ld.\n",
+        (long) istat, (long) len);
+      fprintf (stdout,"fd = %d\n", ifd);
+      fprintf (stderr,"Erroneous read. Read %ld instead of %ld.\n",
+        (long) istat, (long) len);
+      fprintf (stderr,"fd = %d\n", ifd);
+      gperror ("readwa-readm"); }
+#ifdef ASYNCH_IO
+  }
+#endif
+}
+
+void writwa_ (fd, da, nw, membuf)
+f77_int *fd;			/* File descriptor */
+f77_int *da;			/* Disk address (in words) */
+f77_int *nw;			/* Number of words to transfer. */
+f77_int *membuf;                /* destination in memory. */
+{
+    int ifd;
+    ssize_t istat;
+    size_t len;
+    g_off_t G_LSEEK(), adr, lstat;
+    char *bufadr;
+    malloc_type *malloc();
+    void gperror();
+
+  adr = (g_off_t) ((g_off_t) *da * sizeof(f77_wp));
+  len = ((size_t) *nw) * ((size_t) sizeof(f77_wp));
+  bufadr = (char *) membuf;
+  ifd = (int) *fd;
+
+#ifdef ASYNCH_IO
+  if ((ifd >= MAX_FD) || (! aiob[ifd].fd_open)) gauabt_ (&f77i_0);
+  if (aiob[ifd].do_asyn) {
+    if (aiob[ifd].busy) waitwa_ (fd);
+    aiob[ifd].aiov[0].aio_fildes = ifd;
+    aiob[ifd].aiov[0].aio_offset = adr;
+    aiob[ifd].aiov[0].aio_buf = bufadr;
+    aiob[ifd].aiov[0].aio_nbytes = len;
+    aiob[ifd].iolen = len;
+    if (aio_write(aiob[ifd].aiov) != 0) {
+      fprintf (stdout,"aio-write\n");
+      gperror("aio-write");
+      }
+    aiob[ifd].busy = 1;
+  }
+  else {
+#endif
+  if ((lstat = G_LSEEK ( ifd, adr, L_SET)) != adr) {
+#ifdef USE_LL
+    fprintf (stdout, "Seek failed. value is %lld instead of %lld.\n",
+      lstat, adr);
+    fprintf (stderr, "Seek failed. value is %lld instead of %lld.\n",
+      lstat, adr);
+#else
+    fprintf (stdout, "Seek failed. value is %ld instead of %ld.\n",
+      (long) lstat, (long) adr);
+    fprintf (stderr, "Seek failed. value is %ld instead of %ld.\n",
+      (long) lstat, (long) adr);
+#endif
+    gperror ("writwa");
+    }
+  if ( len != (istat = g_write ( ifd, bufadr, len))) {
+    fprintf (stdout,"Erroneous write. write %ld instead of %ld.\n",
+      (long) istat, (long) len);
+    fprintf (stdout,"fd = %d\n", ifd);
+    fprintf (stderr,"Erroneous write. write %ld instead of %ld.\n",
+      (long) istat, (long) len);
+    fprintf (stderr,"fd = %d\n", ifd);
+    gperror ("writwa"); }
+#ifdef ASYNCH_IO
+  }
+#endif
+}
+
+/* Memory management for Gaussian.  Uses stack-like discipline. */
+
+#ifdef FCHR_STRUCT
+void getscm_ (need, core, ngot, fname, ifail)
+#else
+void getscm_ (need, core, ngot, fname, ifail, flen)
+f77_char_len flen;
+#endif
+f77_int *need;			/* Number of words required. */
+f77_wp *core;			/* Address at which mem is required. */
+f77_int *ngot;			/* Amt actually available. */
+f77_char_ptr fname;	        /* Caller, for diagnostics. */
+f77_int *ifail;			/* 0 -> gauabt_ if request not met. */
+ 				/* Treat allocation failures as need = -1 */
+{
+#define MAXSNAME 32
+  char tbuf[MAXSNAME], *name, prtbuf[256], *strncpy();
+  f77_int tmaxmem, avail;
+  int i, len;
+  void gprint(), lnk1e_(), exit(), gperror();
+
+  name = CH_F2C(fname);
+  len = CH_F2L(fname, flen);
+  if (len >= MAXSNAME) len = MAXSNAME - 1;
+  tmaxmem = maxmem_[0];
+  strncpy (tbuf, name, len);
+  for (i = len ; i < MAXSNAME ; i++) tbuf[i] = '\0';
+  if ( (iop_[1] != 0) && (tmaxmem > iop_[1])) tmaxmem = iop_[1];
+  if ( (iop1_ & 512) != 0) {
+    sprintf (prtbuf," GetSCM:  Allocation for %s:  ",tbuf);
+    gprint (prtbuf);
+    sprintf (prtbuf,
+#ifdef USE_LL
+    "Core=%lld Need=%lld GauSpace=%lld MaxMem=%lld.",
+#else
+    "Core=%d Need=%ld GauSpace=%d MaxMem=%ld.",
+#endif
+      core,*need,gauspace,tmaxmem);
+    gprint (prtbuf);
+    }
+  if (*need >= -1) {
+    if ((core < gauspace) || (core > (gauspace + tmaxmem))) {
+      sprintf (prtbuf," GetSCM:  Allocation for %s:  ",tbuf);
+      gprint (prtbuf);
+      sprintf (prtbuf,
+#ifdef USE_LL
+        "Bogus memory allocation request, Core=%lld, GauSpace=%lld,MaxMem=%lld.",
+#else
+        "Bogus memory allocation request, Core=%d, GauSpace=%d, MaxMem=%ld.",
+#endif
+        core, gauspace, tmaxmem);
+      gprint (prtbuf);
+      lnk1e_ (&f77i_0);
+     }
+    avail = tmaxmem - (core - gauspace);
+    }
+  if (*need < -3) {
+    sprintf (prtbuf," GetSCM:  Allocation for %s:  ",tbuf);
+    gprint (prtbuf);
+    gperror("Bogus Need argument to GetSCM."); }
+  else if (*need == -3)
+    *ngot = (kjob_.linmem > 0) ? kjob_.linmem : tmaxmem;
+  else if (*need == -2)
+    *ngot = tmaxmem;
+  else if (*need == -1)
+    *ngot = avail;
+  else if (*need > avail) {
+    if (*ifail == 0) {
+      sprintf (prtbuf, "GetSCM:  Allocation for %s failed:",tbuf);
+      gprint (prtbuf);
+      sprintf (prtbuf,
+#ifdef USE_LL
+        "Core=%lld Need=%lld GauSpace=%lld MaxMem=%lld Avail=%lld.",
+#else
+        "Core=%d Need=%ld GauSpace=%d MaxMem=%ld Avail=%ld.",
+#endif
+        core,*need,gauspace,tmaxmem,avail);
+      gprint (prtbuf);
+      lnk1e_ (&f77i_0);
+      exit (1);
+      }
+    else {
+      *ngot = avail;
+      return;
+      }
+    }
+  else
+    *ngot = *need;
+  }
+
+f77_int guname_ (n, fb, maxfb) f77_int *n, *fb, *maxfb; {
+#ifdef DUMMY_GUNAME
+    *n = ((*maxfb < 6) ? *maxfb : (f77_int) 6);
+    strncpy ((char *) fb, "PCUSER", (size_t) *n);
+#else
+#ifdef ALPHA_VMS
+    typedef struct { short buflen, itmcode; void *buffer; void *retlen;} ITMLST;
+    char username[16];
+    int status, i;
+    $DESCRIPTOR(user_desc, username);
+    ITMLST item_list[2] = {
+      {12, JPI$_USERNAME, username, &user_desc.dsc$w_length},
+      {0,     0,            0,           0} };
+
+    status = SYS$GETJPIW(0,0,0,item_list,0,0,0);
+    username[12] = ' ';
+    if (status != SS$_NORMAL) strcpy(username,"UNKNOWN");
+
+    for (i=0; username[i] != ' ' ; i++);
+    username[i] = '\0';
+    strcpy ((char *) fb, username);
+    *n = (size_t) strlen ((char *) fb);
+#else
+    char *t, *b, *strncpy();
+    size_t strlen();
+    char *getlogin ();
+    struct passwd *tpwd;
+#ifndef sgi
+#ifndef i386
+    struct passwd *getpwuid();
+#endif
+    uid_t getuid();
+#endif
+    b = (char *) fb;
+    t = getlogin ();
+    if (t == (char *) NULL) {
+        tpwd = getpwuid (getuid ());
+	if (tpwd == (struct passwd *) NULL) {
+	  t = "UNKNOWN";
+	}
+	else {
+	  t = tpwd -> pw_name;
+	}
+    }
+    strncpy (b, t, (size_t) *maxfb);
+    b[*maxfb-1] = '\0';
+    *n = (f77_int) strlen (b);
+#endif
+#endif
+    return(0);
+}
+
+#ifdef FCHR_STRUCT
+f77_int envfil_ (fenv, ffile, type, ffull)
+#else
+f77_int envfil_ (fenv, ffile, type, ffull, lenenv, lenfile, lenfull)
+  f77_char_len lenenv, lenfile, lenfull;
+#endif
+  f77_char_ptr fenv, ffile, ffull;
+  f77_int *type;
+
+/* Return the full name of a file, using an environment variable to
+   specify the directory:
+
+   fenv  = FORTRAN character variable containing the environment variable.
+   ffile = FORTRAN character variable containing the file name.
+   type  = 0 -- for first valid combination (i.e., for file creation)
+           1 -- first existing file
+           2 -- first executable file
+   ffull = FORTRAN character variable which receives the full file name.
+
+   For transportability, all character variables should be aligned on
+   word boundaries (i.e., no substrings).  ffull should be cleared before
+   entry.  The final three arguments are generated by the fortran compiler
+   and should not be specified by the caller.
+
+   This routine returns:
+   1 = Success.
+   0 = Type is 1 or 2 and no file was found.
+  -1 = The given environment variable does not translate to a valid directory
+       or sequence of directories. */
+
+  {
+    char *env, *file, *full, *getenv(), name[MAXPATHLEN], *namep, *strncat();
+#ifdef ALPHA_VMS
+  char *log_name;
+  stat_t buf;
+  env = CH_F2C(fenv);
+  file = CH_F2C(ffile);
+  full = CH_F2C(ffull);
+
+  if (env != (char *) NULL)  {
+     namep = name;
+     while (*env && (*env != pathchr[0]) && (*env != ' '))
+       *namep++ = *env++;
+     *namep++ = '\0';
+    log_name = getenv(&name);
+       if ( log_name == (char *) NULL) {
+       strcat(name,":");
+       strcat(name,file); }
+       else {
+       strcpy(name,log_name);
+       strcat(name,file); }
+   }
+  else
+      strcpy(name,file);
+  if ((*type == 0) ||
+       ((stat(name,&buf)==0)&&((*type==1)||(buf.st_mode & S_IEXEC)))) {
+     *full = '\0';
+     strcat (full, name);
+     return (1);
+   }
+   else
+     return (-1);
+#else
+  struct stat buf;
+  char *strncat(), *strcat();
+  int gotdir;
+  env = CH_F2C(fenv);
+  file = CH_F2C(ffile);
+  full = CH_F2C(ffull);
+  if (env != (char *) NULL) env = getenv (env);
+  gotdir = FALSE;
+  while ((env != (char *) NULL) && *env) {
+    namep = name;
+    while (*env && (*env != pathchr[0]) && (*env != ' '))
+      *namep++ = *env++;
+    *namep++ = '\0';
+    if ((*env == pathchr[0]) && (*env != ' ')) env++;
+    if (stat(name,&buf)==0) {
+      if (buf.st_mode & S_IFDIR) {
+        gotdir = TRUE;
+        strncat (name, dirchr, 1);
+        strcat (name, file);
+        if ((*type == 0) ||
+            ((stat(name,&buf)==0)&&((*type==1)||(buf.st_mode & S_IEXEC)))) {
+          *full = '\0';
+          strcat (full, name);
+          return (1);
+          }
+        }
+      }
+    }
+  if ( (*type==0) || !gotdir)
+    return (-1);
+  else
+    return (0);
+#endif
+  }
+
+#ifdef NEED_GSR48
+f77_wp drand48_ () {double drand48(); return ((f77_wp) drand48());}
+void gsr48_ (f77_int *seed) {void srand48();  srand48 (*seed);}
+#endif
+
+#ifdef DUMMYMISC
+#define DUMMY_FLOCK
+#endif
+/*#ifdef DUMMY_FLOCK */
+int flock (fd, lock) int fd, lock;
+{
+return (0);
+}
+/* #endif */
+
+void getprio_ (prio) f77_int *prio; {
+#ifdef DUMMYMISC
+    *prio = 0;
+#else
+    *prio = getpriority (PRIO_PROCESS, 0);
+#endif
+    return;
+    }
+
+void setprio_ (prio) f77_int *prio; {
+#ifndef DUMMYMISC
+    setpriority (PRIO_PROCESS, 0, *prio);
+#endif
+    return;
+    }
+
+void gauabt_ (iopt) f77_int *iopt; {
+  void chainc_(), gfree_(), abort();
+  fflush (stdout);
+#if (defined IBM_RS6K) && (defined IBM_AIX )
+  if ( (iop1_ & 2048) != 0) monitor((caddr_t) 0);
+#endif
+  chainc_ (io_,(io_+1));
+  gfree_ ();
+#ifdef SIG_RET
+longjmp (gau_jmp_buf, SIG_RET_FAIL);
+#endif
+#ifdef _HITACHI_
+  hf_fend();
+#endif
+#ifdef GAUSS_LINDA
+  lhalt(0);
+#endif
+  kill (getpid(), SIGSEGV);
+  abort ();
+  return;
+  }
+
+f77_int gsetjmp_ (dummy) f77_int *dummy; {
+#ifdef SIG_RET
+  return(setjmp(gau_jmp_buf));
+#else
+  return(0);
+#endif
+}
+
+#ifdef FCHR_STRUCT
+void fixenv_ (fname, fvalue)
+#else
+void fixenv_ (fname, fvalue, flenname, flenvalue) f77_char_len flenname, flenvalue;
+#endif
+f77_char_ptr fname, fvalue; {
+  char *name, *value;
+  int lname, lvalue;
+  void fixenv1();
+#ifdef ALPHA_VMS
+  fflush(stdout);
+#endif
+  name = CH_F2C(fname);
+  lname = CH_F2L(fname,flenname);
+  value = CH_F2C(fvalue);
+  lvalue = CH_F2L(fvalue,flenvalue);
+  fixenv1 (name, lname, value, lvalue);
+  return;  
+  }
+
+void fixenv1 (name, lname, value, lvalue) char *name, *value; int lname, lvalue; {
+  malloc_type *gau_malloc();
+  int locname, locenv();
+  malloc_t lget;
+  void cpyenv(), incenv(), free();
+  char *strncat(), *strncpy(), *strcat();
+  int strncmp();
+  size_t strlen();
+#ifdef ALPHA_VMS
+  fflush(stdout);
+#endif
+  int putenv();
+  if (myenvir == (char **) NULL) cpyenv();
+  locname = locenv(numenv,myenvir,name,lname);
+  if (locname == numenv)
+    incenv();
+  else
+    free(myenvir[locname]);
+  lget = lname + lvalue + 2;
+  myenvir[locname] = (char *) gau_malloc(lget);
+  myenvir[locname][0] = (char) 0;
+  strncpy(myenvir[locname],name,lname);
+  myenvir[locname][lname]= (char) 0;
+  strcat(myenvir[locname],"=");
+  strncat(myenvir[locname],value,lvalue);
+  if (strncmp(EXEENV,name,strlen(EXEENV))==0) {
+    exetrn = (char *) gau_malloc(lvalue+1);
+    strncpy(exetrn,value,lvalue);
+    exetrn[lvalue] = (char) 0;
+    }
+  else if (strncmp(LEXEENV,name,strlen(LEXEENV))==0) {
+    exetrn = (char *) gau_malloc(lvalue+1);
+    strncpy(lexetrn,value,lvalue);
+    lexetrn[lvalue] = (char) 0;
+    }
+  putenv(myenvir[locname]);
+  return;
+}
+
+void cpyenv () {
+  malloc_type *gau_malloc();
+  int i;
+  size_t strlen();
+  char *strcpy();
+  char **p;
+  numenv = 0;
+#ifndef NO_ENVIR
+  for (p = environ; *p ; p++) numenv++;
+#endif
+  myenvir = (char **) gau_malloc ((malloc_t) ((numenv+1) * sizeof(char *)));
+  for (i = 0; (i < numenv); i++) {
+    myenvir[i] = (char *) gau_malloc((malloc_t) (strlen(environ[i]) + 1));
+    strcpy(myenvir[i],environ[i]);
+    }
+  myenvir[numenv] = (char *) NULL;
+  return;
+  }
+
+void incenv () {
+  malloc_type *realloc();
+  size_t newlen;
+  newlen = (numenv+2) * sizeof(char *);
+  myenvir = (char **) realloc((malloc_type *) myenvir, newlen);
+  if (myenvir == (char **) NULL) {
+    printf("Realloc failed in incenv.\n");
+    fprintf(stderr,"Realloc failed in incenv.\n");
+    gauabt_ (&f77i_0);
+    }
+  numenv++;
+  myenvir[numenv-1] = (char *) NULL;
+  myenvir[numenv] = (char *) NULL;
+  return;
+  }
+
+int locenv(n,env,name,lname) int n, lname; char **env, *name; {
+  int i, j, strncmp();
+  char *cur;
+  for (i = 0 ; (i < n) ; i++) {
+    cur = env[i];
+    for (j = 0 ; (cur[j] && (cur[j] != '=')); j++);
+    if ((lname == j) && !strncmp(name,cur,(size_t) lname)) return(i);
+    }
+  return (n);
+  }
+
+malloc_type *gau_malloc(size) malloc_t size; {
+  malloc_type *malloc();
+  malloc_type *p;
+  p = malloc(size);
+  if (p == (malloc_type *) NULL) {
+    printf("Malloc failed.\n");
+    fprintf(stderr,"Malloc failed.\n");
+    gauabt_ (&f77i_0);
+    }
+  return (p);
+  }
+
+void dmpenv_ () {int i; char buf[1024]; void gprint(); void *memset();
+  memset(buf, 0, sizeof(buf));
+  sprintf(buf, "numenv is %d\n",numenv); gprint(buf);
+  for (i = 0 ; (i <numenv) ; i++) {
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, "myenvir[%d] is %s",i,myenvir[i]); gprint(buf);} return;}
+
+/*   return the hardware and software environment.
+     the possible values are:
+
+     iproc =  1 vax            ios = 1 vms
+                                     2 bsd-unix
+              2 cray-1S/XMP    ios = 1 cos
+                                     2 ctss
+                                     3 CXOS (UNICOS)
+              3 ibm            ios = 1 mvs
+                                     2 vm/cms
+                                     3 os/vs1
+                                     4 u michigan
+                                     5 rs6000 AIX
+                                     6 rs6000 Linux
+                                     7 rs6000 OSX
+              4 cdc            ios = 1 nos/be
+                                     2 nos
+                                     3 scope
+              5 harris         ios = 1 vulcan
+              6 prime
+              7 sel
+              8 interdata
+              9 univac
+             10 FPS
+             12 SCS            ios = 1 cos
+                                     2 ctss
+                                     3 unix
+             13 sun            ios = 1 bsd unix
+                               ios = 2 SVR4 unix
+             14 multiflow-7    ios = 1 bsd unix
+             15 multiflow-14   ios = 1 bsd unix
+             16 multiflow-28   ios = 1 bsd unix
+             17 convex c-1/xp  ios = 1 bsd unix
+             18 alliant        ios = 1 bsd unix
+             19 Cray-2         ios = 1 UNICOS
+             20 Celerity       ios = 1 bsd unix
+             21 Ardent         ios = 1 bsd unix
+             22 Stellar        ios = 1 bsd unix
+             23 Cydrome        ios = 1 system V unix
+             24 MacIntosh      ios = 1 Mac OS X
+             25 NEC            ios = 1 SXOS
+                               ios = 2 SUPER-UX
+                               ios = 3 RISC EWS
+             26 SGI            ios = 1 IRIX
+             27 Fujitsu        ios = 1 UXP/M
+                               ios = 2 MSP
+             28 Intel x86      ios = 1 Linux
+                               ios = 3 Windows
+                               ios = 4 Windows/NT
+                               ios = 5 FreeBSD
+                               ios = 6 Mac OSX
+             29 DEC Mips       ios = 1 Ultrix
+                               ios = 2 OSF/1
+             30 HP PA-RISC     ios = 1 HP-UX
+                               ios = 2 OSF/1
+             31 KSR1           ios = 1 OSF/1
+             32 DEC Alpha      ios = 1 OSF/1
+                               ios = 2 Open VMS
+                               ios = 3 Linux
+                               ios = 4 Windows NT
+             33 HITACHI        ios = 1 HI-UX (workstation)
+                               ios = 2 HI-OSF/1 (supercomputer)
+             34 Cray T3E       ios = 1 Unicos/MK
+	     35 Hal            ios = 1 Solaris
+             36 IA64           ios = 1 Linux
+                               ios = 2 HP-UX
+             37 AMD64          ios = 1 Linux
+                               ios = 2 Solaris
+                               ios = 6 Mac OSX
+             38 Cray X1        ios = 1 Unix
+             39 Generic        ios = 1 Generic
+             40 EM64T          ios = 1 Linux
+                               ios = 2 Solaris
+                               ios = 6 Mac OSX
+  */
+
+void machin_ (iproc, ios) f77_int *iproc, *ios; {
+  *iproc = 0;
+  *ios = 1;
+#ifdef vax
+  *iproc = 1;
+#endif
+#ifdef IBM_RS6K
+  *iproc = 3;
+#ifdef IBM_AIX
+  *ios = 5;
+#endif
+#ifdef IBM_LINUX
+  *ios = 6;
+#endif
+#ifdef IBM_OSX
+  *ios = 7;
+#endif
+#endif
+#ifdef sun
+    *iproc = 13;
+#ifdef sun_solaris2
+    *ios = 2;
+#endif
+#ifdef gp7kf
+    *ios = 2;
+#endif
+#endif
+#ifdef _trace_
+    if (fsysv_clusters == 1)
+      *iproc = 14;
+    else if (fsysv_clusters == 2)
+      *iproc = 15;
+    else
+      *iproc = 16;
+#endif
+#ifdef __convex__
+  *iproc = 17;
+#endif
+#ifdef alliant
+  *iproc = 18;
+  *ios = 1;
+#endif
+#ifdef ardent
+    *iproc = 21;
+#endif
+#ifdef stellar
+  *iproc = 22;
+  *ios = 1;
+#endif
+#ifdef __MAC__
+  *iproc = 24;
+  *ios = 1;
+#endif
+#ifdef sgi
+  *iproc = 26;
+  *ios = 1;
+#endif
+#ifdef i386
+  *iproc = 28;
+#ifdef __APPLE__
+  *ios = 6;
+#else
+  *ios = 1;
+#endif
+#endif
+#ifdef ultrix
+#ifdef mips
+    *iproc = 29;
+    *ios = 1;
+#endif
+#endif
+#ifdef __hppa
+#ifdef __ia64
+  *iproc = 36;
+  *ios = 2;
+#else
+  *iproc = 30;
+  *ios = 1;
+#endif
+#endif
+#ifdef ALPHA_OSF1
+  *iproc = 32;
+  *ios = 1;
+#endif
+#ifdef ALPHA_VMS
+  *iproc = 32;
+  *ios = 2;
+#endif
+#ifdef ALPHA_LINUX
+  *iproc = 32;
+  *ios = 3;
+#endif
+#ifdef _HITACHI_
+  *iproc = 33;
+#ifdef _HI_OSF_
+  *ios = 2;
+#else
+  *ios = 1;
+#endif
+#endif
+#ifdef _IA64_
+  *iproc = 36;
+  *ios = 1;
+#endif
+#ifdef AMD_LIN
+#ifdef _EM64T_
+  *iproc = 40;
+#else
+  *iproc = 37;
+#endif
+#ifdef __APPLE__
+  *ios = 6;
+#else
+  *ios = 1;
+#endif
+#endif
+#ifdef amd_solaris2
+  *iproc = 37;
+  *ios = 2;
+#endif
+#ifdef intel_solaris2
+  *iproc = 40;
+  *ios = 2;
+#endif
+  return;
+  }
+
+#ifdef NEED_AND
+f77_int and_ (i,j) f77_int *i, *j; { return (*i & *j); }
+
+f77_int or_ (i,j) f77_int *i, *j; {return (*i | *j); }
+
+f77_int rshift_ (i,j) f77_int *i, *j; {return (*i >> *j); }
+
+f77_int lshift_ (i,j) f77_int *i, *j; {return (*i << *j); }
+
+f77_int xor_ (i,j) f77_int *i, *j; {return (*i ^ *j); }
+#endif
+
+#ifdef NEED_ISHFT
+f77_int ishft_ (i,j) f77_int *i, *j; {
+  if ( *j > 0 ) return ((f77_int) (*i << *j));
+  if ( *j < 0 ) return ((f77_int) (*i >> *j));
+  return ((f77_int) *i); }
+#endif
+
+#ifdef NEED_UNLINK
+#ifdef FCHR_STRUCT
+f77_int unlink_ (fpath)
+#else
+f77_int unlink_ (fpath, lpath)
+  f77_char_len lpath;
+#endif
+  f77_char_ptr fpath;  {
+    malloc_t lget, lvar; 
+    f77_int istat;
+    char *var, *new, *strncpy();
+    void free();
+    var  = CH_F2C(fpath); 
+    lvar = (malloc_t) CH_F2L(fpath,lpath); 
+    lget = lvar + 1; 
+    new = (char *) gau_malloc(lget); 
+    new[0] = (char) 0; 
+    strncpy(new,var,lvar); 
+    new[lvar] = (char) 0; 
+    istat = (f77_int) unlink(new);
+    free(new);
+    return(istat);
+  }
+#endif
+
+#ifdef NEED_INDEX
+char *index(s, c) char *s, c; {
+  char *strchr();
+  return (strchr(s, c));
+  }
+#endif
+ 
+#ifdef NEED_EXIT
+void exit_ (f77_int *stat) {void exit(); exit((int) *stat);}
+#endif
+
+#ifdef NEED_GETPID
+f77_int getpid_() {
+  return getpid();
+}
+#endif
+
+#ifdef FCHR_STRUCT
+void ggeten_ (fenv, ftrn)
+#else
+void ggeten_ (fenv, ftrn, lenv, ltrn)
+  f77_char_len lenv, ltrn;
+#endif
+  f77_char_ptr fenv, ftrn;  {
+  char *getenv(), *tran, *strncpy();
+  tran = getenv(CH_F2C(fenv));
+  if (tran != (char *) NULL)
+    strncpy (CH_F2C(ftrn), tran, CH_F2L(ftrn,ltrn));
+  return;
+  }
+
+#ifdef NEED_ETIME
+float etime_ (tarray) float *tarray; {
+#ifdef ALPHA_VMS
+#define ETIME_DONE
+  struct tbuffer tbuf;
+  (void) times(&tbuf);
+  tarray[0] = (float) (((f77_wp) tbuf.proc_user_time) / ((f77_wp) CLK_TCK));
+  tarray[1] = (float) (((f77_wp) tbuf.proc_system_time) / ((f77_wp) CLK_TCK));
+#endif
+#if (defined IBM_RS6K) && (defined IBM_LINUX )
+#define ETIME_DONE
+  clock_t times(), wall;
+  struct tms tbuf;
+  wall = times(&tbuf);
+  long CLK_TCK;
+  CLK_TCK = sysconf(_SC_CLK_TCK);
+  tarray[0] = (float) (((f77_wp) tbuf.tms_utime) / ((f77_wp) CLK_TCK));
+  tarray[1] = (float) (((f77_wp) tbuf.tms_stime) / ((f77_wp) CLK_TCK));
+#endif
+#ifndef ETIME_DONE
+  clock_t times(), wall;
+  struct tms tbuf;
+  wall = times(&tbuf);
+  tarray[0] = (float) (((f77_wp) tbuf.tms_utime) / ((f77_wp) CLK_TCK));
+  tarray[1] = (float) (((f77_wp) tbuf.tms_stime) / ((f77_wp) CLK_TCK));
+#endif
+  return(tarray[0]+tarray[1]);
+  }
+#endif
+
+#ifdef NEED_FDATE
+void fdate_( f_date ) f77_char_ptr f_date;
+{ time_t timer;
+  char *date, *fdate;
+  fdate = CH_F2C(f_date);
+  timer = time((time_t *)NULL);
+  date = ctime(&timer);
+  strncpy(fdate,date,24);
+  }  
+#endif
+
+#ifdef NEED_TIME
+f77_int time_ () {time_t time(); return((f77_int) time ( (unsigned long *) NULL)) ;  }
+#endif
+
+#ifdef _IA64_
+ f77_int fork_() {pid_t fork(); return(fork()); }
+ f77_int wait_(ist) f77_int *ist; {pid_t wait(); return(wait((int) *ist)); }
+int stat_(path, len) char *path; int len; {struct stat buff;
+  char *ppath; ppath = path; return stat(ppath,&buff); }
+void flush_() { fflush(stdout); }
+#endif
+
+#ifdef _SUN_
+f77_int fork1_() { return(fork1()); }
+#endif
+
+#ifdef __MAC__
+f77_int stat_ (char *path, struct stat* theStats, int plen) {
+  return (stat(path,theStats));}
+f77_int ierrno_() {return errno;}
+f77_wp srand_ (f77_int *seed) { srand((unsigned int) *seed); }
+f77_wp rand_ () {
+  f77_wp rran;
+  rran = ((f77_wp) rand()) / ((f77_wp) RAND_MAX);
+  return (rran);}
+#endif
+     
+#ifdef _HITACHI_
+f77_wp drand48_() { double drand48();  return ( (f77_wp) drand48() ); }
+void gsr48_ (seed) f77_int *seed; { srand48 (*seed); }
+void srand48_(seed) f77_int *seed; {  srand48( (long) *seed) ; }
+void flush_() { fflush(stdout); }
+void exit_() {  hf_fend(); exit(0); }
+f77_int wait_() { return(0); }
+f77_int fork_() { return(0); }
+void abort_() { abort(); }
+f77_int stat_(path) char *path; {struct stat buff; return stat(path,&buff);}
+f77_int loc_(r) f77_wp *r; {return (f77_int) r; }
+
+float etime_ (tarray) float *tarray; {
+  clock_t times(),wall;
+  struct tms tbuf;
+  wall=times(&tbuf);
+  tarray[0]=(float)tbuf.tms_utime/CLK_TCK;
+  tarray[1]=(float)tbuf.tms_stime/CLK_TCK;
+  return( tarray[0] + tarray[1] );
+  }
+#endif
+
+void gtrap_(type) f77_int *type; {
+/*  Routine to trap signals and perform the appropriate behavior */
+    extern void get_errno(), set_kill();
+    int sigctl(),ret_sig;
+#ifdef SIGQUIT
+    signal(SIGQUIT,set_kill);
+#endif
+    if (*type == 0) {
+#ifdef SCTL_IGN
+    ret_sig = sigctl(SCTL_IGN,SIGHUP,0);
+    if ( ret_sig != SCTL_IGN ) {sigctl(SCTL_REG,SIGHUP,get_errno);}
+#endif
+#ifdef SIGINT
+    signal(SIGINT,get_errno);
+#endif
+#ifdef SIGABRT
+    signal(SIGABRT,get_errno);
+#endif
+#ifdef SIGERR
+    signal(SIGERR,get_errno);
+#endif
+#ifdef SIGFPE
+    signal(SIGFPE,get_errno);
+#endif
+#ifdef SIGPRE
+    signal(SIGPRE,get_errno);
+#endif
+#ifdef SIGORE
+    signal(SIGORE,get_errno);
+#endif
+#ifdef SIGSYS
+    signal(SIGSYS,get_errno);
+#endif
+#ifdef SIGTERM
+    signal(SIGTERM,get_errno);
+#endif
+#ifdef SIGUME
+    signal(SIGUME,get_errno);
+#endif
+#ifdef SIGDLK
+    signal(SIGDLK,get_errno);
+#endif
+#ifdef SIGCPULIM
+    signal(SIGCPULIM,get_errno);
+#endif
+    }
+    }
+
+void get_errno(sig)
+    int sig;
+{
+  void lnk1e_(), exit();
+    signal(sig,SIG_IGN);
+#ifdef SIGCPULIM
+    if (sig == SIGCPULIM ) {
+       savunx_.chk=1;
+       printf(" CPU time exhausted. Checkpoint file being saved.");
+       }
+#endif
+    fflush(stdout);
+    fprintf(stderr,"Received signal:%d\n",sig);
+    lnk1e_(&f77i_0);
+    exit(1);        
+}
+
+void set_kill(sig) int sig; {
+    signal(sig,SIG_IGN);
+    fprintf(stdout,"Received signal:  %d setting quit flag\n",sig);
+    fflush(stdout);
+    fprintf(stderr,"Received signal:  %d setting quit flag\n",sig);
+    fflush(stderr);
+    kjob_.kill = -1;
+}
+
+void gignore_( isig ) int *isig; {
+/*  Routine to let a selected signal use default behaviour */
+    signal(*isig,SIG_DFL);
+}
+
+#ifdef FCHR_STRUCT
+f77_int gsyst_ (ichain, cmd)
+#else
+f77_int gsyst_ (ichain, cmd, len) f77_char_len len;
+#endif
+f77_int *ichain;
+f77_char_ptr cmd; {
+  char *ccmd;
+  int system();
+#ifdef __hppa 
+/* apparently the libc system() on HP is brain-dead and
+   the fortran version hacks around the problem. */
+  system_ (cmd, len); 
+#else 
+  malloc_t lget, lvar; 
+  char *var, *new, *strncpy();
+  void free();
+  var  = CH_F2C(cmd); 
+  lvar = (malloc_t) CH_F2L(cmd,len); 
+  lget = lvar + 1; 
+  new = (char *) gau_malloc(lget); 
+  new[0] = (char) 0; 
+  strncpy(new,var,lvar); 
+  new[lvar] = (char) 0; 
+  system(new);
+  free(new);
+#endif 
+return ((f77_int) 0);
+}
+
+#ifdef USE_SYSV
+#ifndef sgi
+#define DO_GETCWD
+#endif
+#endif
+#ifdef __hppa
+#define DO_GETCWD
+#endif
+#ifdef i386
+#ifndef _SUN_
+// #define HOSTNM_DONE
+#endif
+#endif
+#ifdef _IA64_
+#define DO_GETCWD
+#endif
+
+#ifdef DO_GETCWD
+#ifdef FCHR_STRUCT
+void getcwd_(fchr)
+#else
+void getcwd_(fchr,flen) f77_char_len flen;
+#endif
+f77_char_ptr fchr; {
+    char *chr, *ret;
+    void gperror();
+#ifndef ALPHA_VMS
+    char *getcwd();
+#endif
+    int len, i;
+    size_t strlen();
+    chr = CH_F2C(fchr);
+    len = CH_F2L(fchr, flen);
+    ret = (char *) getcwd(chr,len);
+    if(ret == (char *) NULL) gperror("getcwd failed.");
+#ifndef ALPHA_VMS
+    for (i = strlen(ret); i < len; i++) chr[i] = '\0';
+#endif
+  }
+#ifdef SVR4
+#define HOSTNM_DONE
+f77_int hostnm_ (name, maxnam) char *name; int maxnam; {
+  void gperror();
+  if(sysinfo(SI_HOSTNAME, name, maxnam) == -1) gperror("hostnm");
+  return(0);
+  }
+#endif
+#ifdef UNK_HOST
+#define HOSTNM_DONE
+f77_int hostnm_ (fstr) f77_char_ptr fstr; {
+  char *str;
+  str = CH_F2C(fstr);
+  strcpy (str,"UNK");
+  return(0);
+  }
+#endif
+#ifndef HOSTNM_DONE
+#ifdef FCHR_STRUCT
+f77_int hostnm_ (fname) 
+#else
+f77_int hostnm_ (fname, maxnam) f77_char_len maxnam;
+#endif
+f77_char_ptr fname; {
+  char *name;
+  int len;
+  void gperror();
+  name = CH_F2C(fname);
+  len = CH_F2L(fname,maxnam);
+  if(gethostname(name, len) != 0) gperror("hostnm");
+  return(0);
+  }
+#endif
+#endif
+
+#ifdef DO_GCTIME
+#ifdef FCHR_STRUCT
+gctime_ (fstr)
+#else
+gctime_ (fstr, lstr) f77_char_len lstr;
+#endif
+  f77_char_ptr fstr; {
+    time_t time(), t;
+    char *ctime();
+     t = time ( (time_t *) NULL);
+     strcpy(CH_F2C(fstr),ctime(&t));
+     return (0);
+   }
+#endif
+
+#ifdef ALPHA_VMS
+void FLUSH() { fflush(stdout); }
+f77_int LOC (varnm) int varnm; { return(varnm); }
+f77_int stat_(path) f77_char_ptr path;
+{
+  stat_t buff;
+  char *ppath;
+  ppath = CH_F2C(path);
+  return stat(ppath,&buff);
+}
+
+void abort_() { abort(); }
+
+f77_int unlink_ (fchr) f77_char_ptr fchr;  {
+     char *fname;
+     fname = CH_F2C(fchr);
+     delete(fname);
+   }
+
+#define RAND_MAX 2147483647
+
+f77_wp getrans_(void) {
+  unsigned int seed;
+  f77_int itime;
+  f77_int randnum;
+  f77_wp  number;
+  itime = time(0);
+  seed = (unsigned int) itime;
+  (void) srand(seed);
+  randnum = rand();
+  number = ((f77_wp)randnum / (f77_wp)RAND_MAX);
+  return (number);
+}
+
+f77_wp getran_(void) {
+  f77_int randnum;
+  f77_wp  number;
+  randnum = rand();
+  number = ((f77_wp)randnum / (f77_wp)RAND_MAX);
+  return (number);
+}
+#endif
+
+#ifdef __hppa
+void flush_() { fflush(stdout); }
+#ifndef GAUSS_THPAR
+f77_int wait_() { return(0); }
+f77_int fork_() { return(0); }
+#endif
+void gauabt__() { gauabt_ (&f77i_0); }
+f77_int stat_(path) char *path; {struct stat buff; return stat(path,&buff);}
+#endif
+
+#ifdef SVR4
+int loc_(varnm) int varnm; { return(varnm); }
+ 
+f77_int stat_(path) char *path;
+{
+  struct stat buff;
+  return stat(path,&buff);
+}
+ 
+#ifndef sun_solaris2
+#ifndef gp7kf
+void flush_() { fflush(stdout); }
+f77_wp drand48_()
+{
+  double drand48();
+  return ( (f77_wp) drand48() );
+}
+void srand48_(seed) f77_int *seed; { srand48( (long) *seed) ; }
+#endif
+#endif
+ 
+f77_int proc_type_(buffer,length) char *buffer; int *length;
+{
+  return sysinfo(SI_MACHINE,buffer,*length);
+}
+#endif
+
+void gaufls_ () {fflush((FILE *) NULL);}
+
+void galloc_ (nwords, wordsize, iclear, refarray, offset)
+  f77_int *nwords, *wordsize, *iclear;
+  offset_type *offset;
+  f77_wp *refarray;
+  {
+  f77_wp *gmalloc();
+  malloc_t nbytes;
+  offset_type n;
+  void gperror();
+#ifdef DO_SHM
+  int shmflags = 0;
+  void *brkadr, *sbrk();
+  key_t shmkey;
+#ifndef IBM_RS6K
+#ifndef sgi
+#ifndef __hppa
+#ifndef ALPHA_OSF1
+#ifndef _SUN_
+#ifndef _IA64_
+  char *shmat();
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+  if (*wordsize !=8) gauabt_ (&f77i_0);
+  nbytes = ((malloc_t) (*nwords + 2)) * ((malloc_t) *wordsize);
+#ifdef sgi
+#define SHMKEY_DONE
+  srand((int) getpid());
+  shmkey = (key_t) rand();
+#endif
+#ifndef SHMKEY_DONE
+  shmkey = (key_t) IPC_PRIVATE;
+#endif
+#ifndef SHMFLAG_DONE
+  shmflags = IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR;
+#endif
+  brkadr = (void *) NULL;
+  if(get_envint(CPUSTR) > 1) {
+    if ((shmident = get_envint(MEMENV)) < 0) {
+      shmident = shmget (shmkey, nbytes, shmflags);
+      if (shmident == -1) gperror("shmget failed.");
+      put_envint(MEMENV,shmident);
+      gauspace = (f77_wp *) shmat (shmident, brkadr, 0);
+      if(gauspace == (f77_wp *) -1) gperror("shmat failed."); }
+    else {
+      gauspace = (f77_wp *) shmat (shmident, brkadr, 0);
+      if(gauspace == (f77_wp *) -1) {
+        shmident = shmget (shmkey, nbytes, shmflags);
+        if (shmident == -1) gperror("shmget failed.");
+        put_envint(MEMENV,shmident);
+        gauspace = (f77_wp *) shmat (shmident, brkadr, 0);
+        if(gauspace == (f77_wp *) -1) gperror("shmat failed.");
+        }}}
+  else {
+    gauspace = (f77_wp *) gmalloc (nbytes);
+    if(gauspace == (f77_wp *) NULL) gperror("malloc failed."); }
+  shmaddr = (char *) gauspace;
+#else
+  if (*wordsize != sizeof(f77_wp) ) gauabt_ (&f77i_0);
+  nbytes = (malloc_t) ((*nwords + 2) * (malloc_t) (*wordsize));
+  gauspace = (f77_wp *) gmalloc (nbytes);
+  if (gauspace == (f77_wp *) NULL) {
+    gperror("galloc:  could not allocate memory.");
+    }
+#endif
+#ifdef i386
+  n = ((char *) gauspace - (char *) refarray) % sizeof(f77_wp);
+#else
+  n = ((char *) gauspace - (char *) NULL) % sizeof(f77_wp);
+#endif
+  if (n != 0) gauspace = (f77_wp *) (((char *) gauspace) + sizeof(f77_wp) - n);
+  *offset = (offset_type) (gauspace - refarray);
+  }
+
+void galoc1_ (nwords, refarray, offset)
+  f77_int *nwords; f77_wp *refarray;
+  offset_type *offset;
+  {
+  f77_wp *gmalloc(), *ptr;
+  void gperror();
+  malloc_t nbytes;
+  offset_type n;
+  nbytes = (malloc_t) ((*nwords + 2) * sizeof(f77_wp));
+  ptr = (f77_wp *) gmalloc (nbytes);
+  if(ptr == (f77_wp *) NULL) gperror("malloc failed.");
+#ifdef i386
+  n = ((char *) ptr - (char *) refarray) % sizeof(f77_wp);
+#else
+  n = ((char *) ptr - (char *) NULL) % sizeof(f77_wp);
+#endif
+  if (n != 0) ptr = (f77_wp *) (((char *) ptr) + sizeof(f77_wp) - n);
+  *offset = (offset_type) (ptr - refarray + 1);
+  }
+
+void gfree_ () {
+  void free(), put_envint();
+if (shmident != -1) {
+#ifdef DO_SHM
+  if (shmdt (shmaddr) != 0) perror("shmdt failed.");
+  shmctl (shmident, IPC_RMID, (struct shmid_ds *) NULL);
+  shmident = -1;
+  put_envint(MEMENV,shmident);
+#endif
+  }
+else if (gauspace != (f77_wp *) NULL) {
+  free((char *) gauspace);
+  gauspace = (f77_wp *) NULL;
+  }
+  return;
+}
+
+void gfree1_ (xPtr) f77_wp *xPtr; {
+  void free();
+  free((char *) xPtr);
+  return;
+}
+
+f77_wp *gmalloc (nbytes) malloc_t nbytes; {
+  f77_wp *adr;
+  malloc_type *malloc();
+  adr = (f77_wp *) malloc(nbytes);
+  return (adr);
+}
+
+int get_envint (name) char *name; {
+  char *tran, *getenv();
+  int ncpu;
+  tran = getenv(name);
+  if (tran == (char *) NULL)
+    return(-1);
+  else if(sscanf(tran,"%u",&ncpu))
+    return(ncpu);
+  else
+    return(-2);
+}
+
+void put_envint (name, num) char *name; int num; {
+  char value[100];
+  size_t strlen();
+  sprintf(value,"%d",num);
+  fixenv1 (name, (int) strlen(name), value, (int) strlen(value));
+  return;}
+
+void gprterr (str) char *str; {
+  void gprint();
+  gprint (str);
+#ifndef ALPHA_VMS
+  fprintf(stderr,"%s\n",str);
+#endif
+  return;
+  }
+
+void gperror (str) char *str; {
+  void gprint(), gauabt_();
+  gprint (str);
+  perror (str);
+  gauabt_ (&f77i_0);
+  return;
+  }
+
+void gferr_ () {
+#ifndef ALPHA_VMS
+  perror (" error message from perror:");
+#endif
+  return;
+  }
+
+void gprint (str) char *str; {
+#ifdef ALPHA_VMS
+#define GPRINT_DONE
+  f77_char fstr;
+  fstr.dsc$a_pointer = str;
+  fstr.dsc$w_length = strlen(str);
+  gcfout_ (&fstr);
+#endif
+#ifndef GPRINT_DONE
+  fprintf(stdout,"%s\n",str);
+#endif
+  return;
+  }
+
+/* Exec from the dummy link used to start Linda-fied links */
+void lexec (char *efname, int dbg) {
+#ifdef NO_LEXEC
+  fprintf(stderr,"lexec entered.");
+  gauabt_ (&f77i_0);
+#else
+  int istat, errno1;
+  char fullname[1024], cmem[20], prtbuf[MAXPATHLEN*4];
+  void rdexecfile();
+  rdexecfile (efname,fullname,cmem,chkname_,&savunx_.chk,intname_,&savunx_.intg,
+	      rwfname_,&savunx_.rwf,d2ename_,&savunx_.d2e,scrname_,&savunx_.scr,
+	      inpname_,&savunx_.inp,outname_,&savunx_.out,nexname_,&savunx_.nex);
+  if (dbg) {
+    sprintf (prtbuf, "lexec executing %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n",
+	     fullname, cmem,  chkname_, Z1[savunx_.chk], intname_,
+	     Z1[savunx_.intg], rwfname_, Z1[savunx_.rwf], d2ename_,
+	     Z1[savunx_.d2e], scrname_, Z1[savunx_.scr], inpname_,
+	     Z1[savunx_.inp], outname_, Z1[savunx_.out], nexname_, Z1[savunx_.nex]);
+    gprint (prtbuf);
+    dmpenv_ ();
+  }
+  istat = execl(fullname,fullname,cmem,chkname_,Z1[savunx_.chk],intname_,
+		Z1[savunx_.intg],rwfname_,Z1[savunx_.rwf],d2ename_,Z1[savunx_.d2e],
+		scrname_,Z1[savunx_.scr],inpname_,Z1[savunx_.inp],outname_,
+		Z1[savunx_.out],nexname_,Z1[savunx_.nex],(char *) 0);
+  errno1 = errno;
+  printf ("Returned from execl,istat=%d,errno=%d!\n",istat,errno1);    
+  errno = errno1;
+  printf("Returned from execl!\n");
+#endif
+}
+
+#ifdef __uxppx__
+system(command)
+      const char *command;
+{
+      switch(vfork()) {
+      case -1:                        /* error */
+              perror("Could not create process!\n");
+              abort();
+      case 0:                         /* child */
+              execl("/sbin/sh", "sh", "-c", command, (char *)NULL);
+              _exit(0);
+      }
+      wait(NULL);
+      return(NULL);
+}
+#endif
+
+#ifdef sgi
+#include <stdio.h>
+#include <invent.h>
+static unsigned int sidcache_mem_size = 0;
+int gcachsz_() {
+  inventory_t *pt;
+  setinvent();
+  if(sidcache_mem_size == 0) {
+    while(pt=getinvent ()) {
+      if(pt->inv_class == INV_MEMORY)
+        if(pt->inv_type == INV_SIDCACHE) sidcache_mem_size = (pt->inv_state);
+       }
+    setinvent(); }
+  return(sidcache_mem_size);}
+#endif
+
+#ifdef __HPPA_PARALLEL
+#ifdef GAUSS_THPAR
+static int segment_length=-1;
+static char *cvx_mem_addr;
+#include <sys/mman.h>
+
+int cvx_shmget(junk1,isize,junk2)
+     key_t junk1;
+     size_t isize, junk2;
+{
+  DPRINT1((stderr,"**shmget** seglen = %d\n",isize));
+  segment_length = isize;
+  return 0;
+}
+
+char *cvx_shmat(ishmid,junk1,junk2)
+        int            ishmid,junk1,junk2;
+{
+        char *shmrtn;
+#ifndef __hppa_11
+        caddr_t mmap();
+#endif
+        caddr_t address;
+        unsigned n, pagesz;                     /* page size */
+        int ifd, istat, len, membuf[1];
+
+        DPRINT1((stderr,"**shmat** seglen = %d\n",segment_length));
+
+        if( segment_length < 1) return( char *) -1;
+
+        pagesz = sysconf(_SC_PAGE_SIZE);
+        n = (int)sbrk(0);
+        n = n - (n & pagesz) + pagesz*40000 ;
+
+        cvx_mem_addr = (char *) mmap((caddr_t)0, segment_length,
+                PROT_READ | PROT_WRITE,  MAP_ANONYMOUS | MAP_SHARED,
+                (int)-1, (off_t)0);
+
+        DPRINT1((stderr,"**shmat** mmap %u  with size %ld and seglen = %d\n",
+                 cvx_mem_addr,sizeof(cvx_mem_addr),segment_length));
+        shmrtn = cvx_mem_addr;
+        DPRINT1((stderr,"**shmat** returning %ld\n",shmrtn));
+        return shmrtn;
+}
+
+int cvx_shmdt (shmaddr)
+        caddr_t shmaddr;
+{
+return 0;
+}
+int cvx_shmctl(ishmid, ignore, shmid_ds)
+     int ishmid;
+     int ignore;
+     char *shmid_ds;
+{
+        int shmrtn;
+        caddr_t address;
+
+        DPRINT1((stderr,"**shmctl** %d Entering shmctl\n",getpid()));
+        address = cvx_mem_addr;
+        shmrtn = munmap( address, segment_length );
+        if( shmrtn == -1 )
+        {
+                printf("shmctl(%i)\n", ishmid);
+                printf("--- return value %i\n", shmrtn);
+                printf("errno is %d\n", errno);
+                perror("Can't munmap");
+                exit(2);
+        }
+
+        DPRINT1((stderr,"**shmctl** %d Leaving shmctl\n",getpid()));
+        return shmrtn;
+}
+#endif
+#endif
+
+/* Quote a command-line argument before writing it to a file for NO_EXEC */
+static char gau_qchar = '\"';
+static char gau_qchar1 = '\\';
+
+char *qqarg(instr,qchar) char *instr, qchar; {
+  malloc_type *malloc();
+  size_t strlen();
+  char *ostr, *pi, *po, c;
+  ostr = (char *) malloc(2*strlen(instr)+3);
+  pi = instr;
+  po = ostr;
+  *po++ = qchar;
+  while (c = *pi++) {
+    if (c == qchar) *po++ = c;
+    *po++ = c;
+    }
+  *po++ = qchar;
+  *po++ = 0;
+  return(ostr);
+}
+
+char *qarg(instr) char *instr; {
+  char *qqarg(), *ostr;
+  ostr = qqarg(instr, gau_qchar);
+  return(ostr);
+}
+
+char *unqarg(char *instr) {
+  malloc_type *malloc();
+  size_t strlen();
+  char *ostr, *pi, *po, c;
+  ostr = (char *) malloc(strlen(instr)+1);
+  pi = instr;
+  po = ostr;
+  while (c = *pi++) {
+    if ((c == gau_qchar1) && *pi) {*po++ = *pi++;}
+    else if (c == gau_qchar) {
+      if (*pi == gau_qchar) {*po++ = gau_qchar; c = *pi++;}
+    }
+    else {
+      *po++ = c;}
+  }
+  *po++ = (char) 0;
+  return (ostr);
+}
+
+char *qcmd(instr) char *instr; {
+#ifdef DO_CMDQUOTE
+  char *qarg();
+  return(qarg(instr));
+#else
+  return(instr);
+#endif
+}
+
+extern double erfc ();
+f77_wp erfcx_ (x) f77_wp *x; {return((f77_wp) erfc((double) *x));}
+
+extern double erf ();
+f77_wp erfx_ (x) f77_wp *x; {return((f77_wp) erf((double) *x));}
+
+#ifdef ALPHA_LINUX
+f77_int stat_(path) char *path; {struct stat buff; return stat(path,&buff);}
+#endif
+
+#ifdef NEED_PUTENV
+f77_int putenv_ (fstr, flen) f77_char_ptr fstr; f77_char_len flen; { 
+  char *var, *new; 
+  int putenv();
+  char *strncpy();
+  malloc_t lvar;
+  var  = CH_F2C(fstr); 
+  lvar = (malloc_t) CH_F2L(fstr,flen); 
+  new = (char *) gau_malloc(lvar+1); 
+  new[0] = (char) 0; 
+  strncpy(new,var,lvar); 
+  new[lvar] = (char) 0; 
+  return(putenv(new));
+} 
+#endif
+
+void setcore_ (int *limit) {
+#ifdef SETCORE_OK
+  int stat;
+  struct rlimit rlp;
+  rlp.rlim_cur = (*limit == 0) ? 0 : RLIM_INFINITY;
+  rlp.rlim_max = RLIM_INFINITY;
+  stat = setrlimit(RLIMIT_CORE,&rlp);
+  printf("secore:  limit was %d %ld stat was %d\n",*limit,rlp.rlim_cur,stat);
+#else
+  return;
+#endif
+}
+
+#ifdef i386
+#ifndef _SUN_
+f77_wp dclock_ () {return(0.0);}
+#endif
+#endif
+
+void gintoff_ (f77_int *mask) {
+  int stat;
+  sigset_t newmask;
+  if (sizeof(f77_int) > sizeof(sigset_t))
+    gprint("f77_int not big enough in gintoff.");
+  stat = sigprocmask(SIG_SETMASK, (sigset_t *) NULL, (sigset_t *) mask);
+  if (stat != 0) gperror("retrieve signal mask failed.");
+  stat = sigfillset(&newmask);
+  if (stat != 0) gperror("fill new signal mask failed.");
+  stat = sigprocmask(SIG_SETMASK, &newmask, 0);
+  if (stat != 0) gperror("set new signal mask in gintoff failed.");
+}
+
+void ginton_ (f77_int *mask) {
+  int stat;
+  stat = sigprocmask(SIG_SETMASK, (sigset_t *) mask, 0);
+  if (stat != 0) gperror("set new signal mask in ginton failed.");
+}
+
+void mdsleep_ (f77_int *fint) {
+  unsigned int uint, uint1;
+  uint1 = (unsigned int) *fint + 1;
+  while (uint1 > 0) {uint = uint1; uint1 = sleep (uint);}
+}
+
+int clindal () {
+  int llnm;
+  size_t strlen();
+  llnm = strlen(lnknmc_);
+  return(lnknmc_[llnm-1] == 'l');
+}
+
+#ifdef FCHR_STRUCT
+void canhnm_ (hnamei, hnameo)
+#else
+void canhnm_ (hnamei, hnameo, maxhni, maxhno) f77_char_len maxhni, maxhno;
+#endif
+f77_char_ptr hnamei, hnameo; {
+  struct hostent *gethostbyname(), *hent;
+  int leni, leno, lencpy, lenhn;
+  char *hni, *hno, *hcpy, *hnic, *strncpy();
+  size_t strlen();
+  hni = CH_F2C(hnamei);
+  leni = CH_F2L(hnamei,maxhni);
+  hnic = (char *) gau_malloc((malloc_t) (leni+1));
+  strncpy(hnic,hni,leni);
+  hnic[leni] = 0;
+  hno = CH_F2C(hnameo);
+  leno = CH_F2L(hnameo,maxhno);
+  hent = gethostbyname(hnic);
+  if (hent == (struct hostent *) NULL) {
+    hcpy = hnic;
+    lencpy = (leni > leno) ? leno : leni;}
+  else {
+    hcpy = hent->h_name;
+    lenhn = strlen(hcpy);
+    lencpy = (lenhn > leno) ? leno : lenhn;}
+  strncpy(hno,hcpy,lencpy);
+  while (lencpy < leno) {hno[(lencpy++)] = ' ';}
+}
+
+/* Read and parse the line in an exec file */
+#define MAXARG 100
+#define MAXEXECLINE 10240
+#ifdef USE_LL
+static char gau_rdexecfmt[] = "%lld";
+#else
+static char gau_rdexecfmt[] = "%ld";
+#endif
+void rdexecfile (execname, linkname, cmem, chkf, savchk, intf, savint, rwff, savrwf, d2ef, savd2e, 
+		scrf, savscr, inpf, savinp, outf, savout, nexf, savnex) 
+     char *execname, *linkname, *cmem, *chkf, *intf, *rwff, *d2ef, *scrf, *inpf, *outf, *nexf;
+     int *savchk, *savint, *savrwf, *savd2e, *savscr, *savinp, *savout, *savnex; {
+       void gperror(), exit();
+       char *unqarg(), line[MAXEXECLINE], *arglist[MAXARG], *strcpy();
+       FILE *execfile;
+       int narg, retval, cinicmp(), i;
+       if((execfile = fopen(unqarg(execname),"r")) == (FILE *) NULL) {
+	 printf("failed to open execfile\n");
+	 fprintf(stderr,"failed to open execfile\n");
+#ifdef GAUSS_LINDA
+	 lhalt(0);
+#endif
+	 exit(0);
+	 gperror ("failed to open execfile");
+       }
+       else {
+	 retval = (int) fread (&line, (size_t) sizeof(char), (size_t) MAXEXECLINE, execfile);
+	 if (retval) {
+	   line[retval] = (char) 0;
+	   narg = cinicmp (line, (int) MAXARG, arglist);
+	   if (narg < 18) gperror("narg wrong in rdexecfile");
+	   strcpy (linkname, arglist[0]);
+	   strcpy (cmem, arglist[1]);
+	   strcpy (chkf, arglist[2]);
+	   sscanf (arglist[3],gau_rdexecfmt,savchk);
+	   strcpy (intf, arglist[4]);
+	   sscanf (arglist[5],gau_rdexecfmt,savint);
+	   strcpy (rwff, arglist[6]);
+	   sscanf (arglist[7],gau_rdexecfmt,savrwf);
+	   strcpy (d2ef, arglist[8]);
+	   sscanf (arglist[9],gau_rdexecfmt,savd2e);
+	   strcpy (scrf, arglist[10]);
+	   sscanf (arglist[11],gau_rdexecfmt,savscr);
+	   strcpy (inpf, arglist[12]);
+	   sscanf (arglist[13],gau_rdexecfmt,savinp);
+	   strcpy (outf, arglist[14]);
+	   sscanf (arglist[15],gau_rdexecfmt,savout);
+	   strcpy (nexf, arglist[16]);
+	   sscanf (arglist[17],gau_rdexecfmt,savnex);
+	 }
+	 else gperror("failed to read exec line");
+	 if(fclose (execfile) != 0) {
+	   printf ("fclose of file %s failed.\n",unqarg(execname)); }
+	 if(unlink (unqarg(execname)) != 0) {
+	   printf ("unlinkof file %s failed.\n",unqarg(execname)); }
+       }
+     }
+
+/* Parse a line into arguments delimited by spaces but honoring quotation. */
+int cinicmp (char *line, int maxarg, char **sarg) {
+  malloc_type *malloc();
+  int iarg, inquot, inarg;
+  char *ip = line, *op, c, co;
+  size_t strlen();
+  inquot = 0;
+  inarg = 0;
+  iarg = 0;
+  op = (char *) NULL;
+  while ((c = *ip++) && (c != '\n')) {
+    co = 0;
+    if (c == gau_qchar) {
+      if (*ip == gau_qchar) {co = *ip++;}
+      else {inquot = !inquot;}}
+    else if (inquot) {co = c;}
+    else if (c == gau_qchar1 && *ip) {co = *ip++;}
+    else if (c == ' ') {if (inarg) {inarg = 0;}}
+    else co = c;
+    if (co) {
+      if (! inarg) {
+	inarg = 1;
+	if (op) *op = 0;
+	if (iarg > maxarg) gperror ("Too many arguments in cinicmp.");
+	op = sarg[iarg++] = (char *) malloc(strlen(ip)+2);
+      }
+      *op++ = co;}
+  }
+  if (inarg) *op++ = (char) 0;
+  sarg[iarg] = (char *) NULL;
+  return (iarg);
+}
+
+void csetnan (size_t len, int *buf) {
+  size_t i;
+  for (i=0; i<len; i++) buf[i] = 0xfffa5a5a;
+}

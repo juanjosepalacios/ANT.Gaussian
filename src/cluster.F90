@@ -26,7 +26,7 @@
 !  input file .com                                        !
 !**********************************************************
   USE preproc !, ONLY: MaxAtm, MaxSh
-  USE parameters, ONLY: NEmbed,NAtomEl
+  USE parameters, ONLY: NEmbed,NAtomEl,ElType
   IMPLICIT NONE
   SAVE
   PRIVATE
@@ -182,7 +182,7 @@ CONTAINS
   !*                                                 *
   !***************************************************
   SUBROUTINE AnalyseCluster
-    use parameters, only: ANT1DInp, smalld, small, PlBethe1, PlBethe2, NoCloseHex, ElType
+    use parameters, only: ANT1DInp, smalld, small, ElType, PlBethe1, PlBethe2, NoCloseHex, ElType
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms, &
        GetShellT, GetShellC
@@ -326,32 +326,33 @@ CONTAINS
        end if
     end do
 
-    !if(ANT1DInp)then
-    !   open( ifu_ant, file=trim(ant1dname)//'.ant', status='unknown' )
-    !   write( ifu_ant, '(A)'),    "&Parameters"
-    !   write( ifu_ant, '(A,A)'),  "Lead1File = ", 'bl1.'//trim(ant1dname)//'.dat'
-    !   write( ifu_ant, '(A,A)'),  "Lead2File = ", 'bl2.'//trim(ant1dname)//'.dat'
-    !   write( ifu_ant, '(A,A)'),  "Lead1XYZ = ", 'bl1.'//trim(ant1dname)//'.xyz'      
-    !   write( ifu_ant, '(A,A)'),  "Lead2XYZ = ", 'bl2.'//trim(ant1dname)//'.xyz'      
-    !   write( ifu_ant, '(A,A)'),  "DevFile = ", 'dev.'//trim(ant1dname)//'.dat'
-    !   write( ifu_ant, '(A,A)'),  "DevXYZ = ", 'dev.'//trim(ant1dname)//'.xyz'      
-    !   write( ifu_ant, '(A)'), "Bethe = .true."       
-    !   write( ifu_ant, '(A,I2)'), "NAtomData = ",NAtomData      
-    !   write( ifu_ant, '(A)'),    "/"      
-    !   do iatom=1,GetNAtoms()
-    !      do jatom=1,iatom-1
-    !         if( AN(iatom) == AN(jatom) ) exit
-    !      end do
-    !      if( jatom == iatom )then
-    !         write(ifu_ant, '(A)'), "&AtomData"
-    !         write(ifu_ant, '(A,I3)'), "AN = ", AN(iatom)
-    !         write(ifu_ant, '(A,100(A2))' ), "AtShells =", (ShAtm(i,iatom),i=1,NSh(iatom))
-    !         write(ifu_ant, '(A)'), "/"
-    !      end if
-    !   end do
-    !   close( ifu_ant )
-    !end if
 
+    if(ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
+       open( ifu_ant, file=trim(ant1dname)//'.ant', status='unknown' )
+       write( ifu_ant, '(A)'),    "&Parameters"
+       write( ifu_ant, '(A,A)'),  "Lead1File = ", 'bl1.'//trim(ant1dname)//'.dat'
+       write( ifu_ant, '(A,A)'),  "Lead2File = ", 'bl2.'//trim(ant1dname)//'.dat'
+       write( ifu_ant, '(A,A)'),  "Lead1XYZ = ", 'bl1.'//trim(ant1dname)//'.xyz'      
+       write( ifu_ant, '(A,A)'),  "Lead2XYZ = ", 'bl2.'//trim(ant1dname)//'.xyz'      
+       write( ifu_ant, '(A,A)'),  "DevFile = ", 'dev.'//trim(ant1dname)//'.dat'
+       write( ifu_ant, '(A,A)'),  "DevXYZ = ", 'dev.'//trim(ant1dname)//'.xyz'      
+       write( ifu_ant, '(A)'), "Bethe = .true."       
+       write( ifu_ant, '(A,I2)'), "NAtomData = ",NAtomData      
+       write( ifu_ant, '(A)'),    "/"      
+       do iatom=1,GetNAtoms()
+          do jatom=1,iatom-1
+             if( AN(iatom) == AN(jatom) ) exit
+          end do
+          if( jatom == iatom )then
+             write(ifu_ant, '(A)'), "&AtomData"
+             write(ifu_ant, '(A,I3)'), "AN = ", AN(iatom)
+             write(ifu_ant, '(A,100(A2))' ), "AtShells =", (ShAtm(i,iatom),i=1,NSh(iatom))
+             write(ifu_ant, '(A)'), "/"
+          end if
+       end do
+       close( ifu_ant )
+    end if
+    
     WRITE(IFU_LOG,*) '----------------------------------------------------------'
     WRITE(IFU_LOG,*) 'Analyzing cluster for the connection of the  Bethe Lattice'
     WRITE(IFU_LOG,*) '----------------------------------------------------------'
@@ -620,7 +621,7 @@ CONTAINS
                & + bb(2)*bb(2) &
                & + bb(3)*bb(3) )
 
-          IF (ABS(bbnorm).LT.smallp) then
+          IF (ABS(bbnorm).LT.smallp .and. ElType(2) /= "1DLEAD") then
               write(ifu_log,*)'Last 3 atoms in line in electrode 2 !!!!'
               dos =dos +1
               goto 14
@@ -936,8 +937,8 @@ CONTAINS
      end if
    end if
  end if
-     
-    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /=4 .and. NEmbed(1) /=1 ) then
+       
+    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /=4 .and. NEmbed(1) /=1  .and. nneig1 /=2 .and. ElType(1) /= "1DLEAD") then
        write(ifu_log,*)'Problem finding lattice directions in electrode 1 !!!!!'
        stop
     else
@@ -1075,8 +1076,8 @@ CONTAINS
      end if
    end if
  end if
-
-    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4 .and. NEmbed(2) /=1 ) then
+   
+    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4 .and. NEmbed(2) /=1  .and. nneig2 /=2 .and. ElType(2) /= "1DLEAD") then
        write(ifu_log,*)'Problem finding lattice directions in electrode 2 !!!!!'
        stop
     else
@@ -1289,34 +1290,34 @@ CONTAINS
        end do
     !CLOSE(ifu_xyz)
 
-    !if( ANT1DInp )then
-    !   OPEN(unit=ifu_ant,file='dev.'//trim(ant1dname)//'.xyz',status='unknown')
-    !   write(ifu_ant,*), GetNAtoms()
-    !   write(ifu_ant,*)
-    !   DO i=1,GetNAtoms()
-    !      WRITE(ifu_ant,'(I3,3(F11.6))') AN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-    !   END DO
-    !   close(ifu_ant)
-    !   OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
-    !   write(ifu_ant,*), nblatoms1
-    !   write(ifu_ant,*)
-    !   do ibl=1,nblatoms1
-    !      WRITE(ifu_ant,' (I3,3(F11.6))') AN(1), xbl1(ibl), ybl1(ibl), zbl1(ibl)
-    !   end do
-    !   close(ifu_ant)
-    !   OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
-    !   write(ifu_ant,*), nblatoms2
-    !   write(ifu_ant,*)
-    !   do ibl=1,nblatoms2
-    !      WRITE(ifu_ant,' (I3,3(F11.6))') AN(GetNAtoms()), xbl2(ibl), ybl2(ibl), zbl2(ibl)
-    !   end do
-    !   close(ifu_ant)
-    !end if
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
+       OPEN(unit=ifu_ant,file='dev.'//trim(ant1dname)//'.xyz',status='unknown')
+       write(ifu_ant,*), GetNAtoms()
+       write(ifu_ant,*)
+       DO i=1,GetNAtoms()
+          WRITE(ifu_ant,'(I3,3(F11.6))') AN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+       END DO
+       close(ifu_ant)
+       OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
+       write(ifu_ant,*), nblatoms1
+       write(ifu_ant,*)
+       do ibl=1,nblatoms1
+          WRITE(ifu_ant,' (I3,3(F11.6))') AN(1), xbl1(ibl), ybl1(ibl), zbl1(ibl)
+       end do
+       close(ifu_ant)
+       OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
+       write(ifu_ant,*), nblatoms2
+       write(ifu_ant,*)
+       do ibl=1,nblatoms2
+          WRITE(ifu_ant,' (I3,3(F11.6))') AN(GetNAtoms()), xbl2(ibl), ybl2(ibl), zbl2(ibl)
+       end do
+       close(ifu_ant)
+    end if
 
   END SUBROUTINE AnalyseCluster
 
   SUBROUTINE AnalyseClusterElectrodeOne
-    use parameters, only: ANT1DInp, smalld, small, PlBethe1, PlBethe2, NoCloseHex
+    use parameters, only: ANT1DInp, smalld, small, ElType, PlBethe1, PlBethe2, NoCloseHex
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
     use ANTCommon
@@ -1716,7 +1717,7 @@ CONTAINS
        nneig1 = 6
     end if
        
-    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /= 4) then
+    if (nneig1 /= 12 .and. nneig1 /=8 .and. nneig1 /=6 .and. nneig1 /= 4 .and. nneig1 /= 2 .and. ElType(1) /= "1DLEAD") then
        write(ifu_log,'(A6,i10,A20)')'Found ',nneig1, 'lattice directions'
        write(ifu_log,*)'Problem finding lattice directions in electrode 1 !!!!!'
        stop
@@ -1803,27 +1804,27 @@ CONTAINS
        WRITE(ifu_xyz,'(A2,3(F11.6))') IEl(GetAN(i)), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
     END DO
     
-    !if( ANT1DInp )then
-    !   OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
-    !   write(ifu_ant,*), GetNAtoms()
-    !   write(ifu_ant,*)
-    !   DO i=1,GetNAtoms()
-    !      WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-    !   END DO
-    !   close(ifu_ant)
-    !   OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
-    !   write(ifu_ant,*), nblatoms1
-    !   write(ifu_ant,*)
-    !   do ibl=1,nblatoms1
-    !      WRITE(ifu_ant,' (I2,3(F11.6))') ANLead1, xbl1(ibl), ybl1(ibl), zbl1(ibl)
-    !   end do
-    !   close(ifu_ant)
-    !end if
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
+       OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
+       write(ifu_ant,*), GetNAtoms()
+       write(ifu_ant,*)
+       DO i=1,GetNAtoms()
+          WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+       END DO
+       close(ifu_ant)
+       OPEN(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.xyz',status='unknown')
+       write(ifu_ant,*), nblatoms1
+       write(ifu_ant,*)
+       do ibl=1,nblatoms1
+          WRITE(ifu_ant,' (I2,3(F11.6))') ANLead1, xbl1(ibl), ybl1(ibl), zbl1(ibl)
+       end do
+       close(ifu_ant)
+    end if
 
   END SUBROUTINE AnalyseClusterElectrodeOne
 
   SUBROUTINE AnalyseClusterElectrodeTwo
-    use parameters, only: ANT1DInp, small, smalld, PlBethe1, PlBethe2, NoCloseHex
+    use parameters, only: ANT1DInp, small, smalld, ElType, PlBethe1, PlBethe2, NoCloseHex
     USE preproc, ONLY: MaxAtm
     USE g09Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
     use ANTCommon
@@ -2042,7 +2043,7 @@ CONTAINS
                & + bb(2)*bb(2) &
                & + bb(3)*bb(3) )
 
-          IF (ABS(bbnorm).LT.smallp) then
+          IF (ABS(bbnorm).LT.smallp .and. ElType(1) /= "1DLEAD") then
               write(ifu_log,*)'Last 3 atoms in line in electrode 2 !!!!'
               dos =dos +1
               goto 13
@@ -2292,7 +2293,7 @@ CONTAINS
     end if
   end if
 
-    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4) then
+    if (nneig2 /= 12 .and. nneig2 /=8 .and. nneig2 /=6 .and. nneig2 /=4 .and. nneig2 /=2 .and. ElType(2) /= "1DLEAD") then
        write(ifu_log,'(A6,i10,A20)')'Found ',nneig2, 'lattice directions'
        write(ifu_log,*)'Problem finding lattice directions in electrode 2 !!!!!'
        stop
@@ -2386,22 +2387,22 @@ CONTAINS
        end do
     !CLOSE(ifu_xyz)
 
-    !if( ANT1DInp )then
-    !   OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
-    !   write(ifu_ant,*), GetNAtoms()
-    !   write(ifu_ant,*)
-    !   DO i=1,GetNAtoms()
-    !      WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
-    !   END DO
-    !   close(ifu_ant)
-    !   OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
-    !   write(ifu_ant,*), nblatoms2
-    !   write(ifu_ant,*)
-    !   do ibl=1,nblatoms2
-    !      WRITE(ifu_ant,' (I2,3(F11.6))') ANLead2, xbl2(ibl), ybl2(ibl), zbl2(ibl)
-    !   end do
-    !   close(ifu_ant)
-    !end if
+    if( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD")then
+       OPEN(unit=ifu_ant,file=trim(ant1dname)//'.xyz',status='unknown')
+       write(ifu_ant,*), GetNAtoms()
+       write(ifu_ant,*)
+       DO i=1,GetNAtoms()
+          WRITE(ifu_ant,'(I2,3(F11.6))') GetAN(i), au2ang*GetAtmCo(1,i), au2ang*GetAtmCo(2,i), au2ang*GetAtmCo(3,i)
+       END DO
+       close(ifu_ant)
+       OPEN(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.xyz',status='unknown')       
+       write(ifu_ant,*), nblatoms2
+       write(ifu_ant,*)
+       do ibl=1,nblatoms2
+          WRITE(ifu_ant,' (I2,3(F11.6))') ANLead2, xbl2(ibl), ybl2(ibl), zbl2(ibl)
+       end do
+       close(ifu_ant)
+    end if
 
   END SUBROUTINE AnalyseClusterElectrodeTwo
 

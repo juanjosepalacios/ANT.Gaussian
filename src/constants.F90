@@ -21,6 +21,10 @@
 !*********************************************************!
 
   IMPLICIT NONE
+  
+  ! Precision of numerical types
+  integer, parameter :: single = 4
+  integer, parameter :: double = 8  
 
   ! Mathematical constants
   REAL*8, PARAMETER :: d_pi   = 3.14159265358979323846d0
@@ -39,6 +43,18 @@
   REAL*8, PARAMETER :: eleccharge = 1.6d-19
 !  REAL*8, PARAMETER :: hbar = 1.05457d-34 ! J*s
   REAL*8, PARAMETER :: hbar = 6.582d-16 ! eV*S ! WITH THIS VALUE THE GibbsY OPERATOR RESULTS HERMITIAN.  
+  
+  character(LEN=4), dimension(2), parameter :: SpinStr = (/"UP","DOWN"/)
+
+  ! Array limits
+  integer, parameter :: MaxAODOS    = 1000
+  integer, parameter :: MaxCorrBl   = 100
+  integer, parameter :: MaxDAtoms   = 1000
+  integer, parameter :: MaxPCAtoms  = 100
+  integer, parameter :: MaxLAO      = 1500
+  integer, parameter :: MaxAtomData = 100
+  integer, parameter :: MaxAOAtom   = 100
+  integer, parameter :: MaxShAtom   = 20  
 
   ! Computational constants
   

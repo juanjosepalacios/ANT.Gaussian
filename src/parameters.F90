@@ -70,7 +70,101 @@
 
   ! Imaginary part
   REAL*8 :: eta = 1.0d-10         
-  CHARACTER(len=10), PARAMETER :: eta_keyw = "ETA"       
+  CHARACTER(len=10), PARAMETER :: eta_keyw = "ETA"
+  
+  ! ******************************
+  ! 1D Lead calculation parameters
+  ! ******************************  
+  
+  !
+  ! Broadening for printing out 1D DOS and transmission on real axis
+  !
+  REAL*8 :: Gamma = 1.0d-2  
+  
+  ! -Infty = Lower integration limit for charge integration 
+  REAL*8 :: Infty = 100.0
+  CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"    
+  
+  !
+  ! Convergence criterion for iterative solution of Dyson equation for self-energy
+  !
+  REAL*8 :: L1DConv = 1.0d-8
+  INTEGER :: L1DMaxCyc = 10000
+  !
+  ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation
+  !
+  REAL*8 :: L1DAlpha = 0.5d0  
+  
+  ! 
+  INTEGER :: NAtomData = 0           
+  
+  ! Input files for device and leads/absorbing boundary conditions
+  CHARACTER(len=100) :: DevFile='device.dev'
+  CHARACTER(len=100) :: Lead1File='lead1.elc'
+  CHARACTER(len=100) :: Lead2File='lead2.elc'  
+  CHARACTER(len=100), PARAMETER :: DevFile_keyw = "DEVFILE"
+  CHARACTER(len=100), PARAMETER :: Lead1File_keyw = "LEAD1FILE"
+  CHARACTER(len=100), PARAMETER :: Lead2File_keyw = "LEAD2FILE" 
+  
+  ! Geometry input files for device and leads
+  CHARACTER(len=100) :: DevXYZ='device.xyz'
+  CHARACTER(len=100) :: Lead1XYZ='lead1.xyz'
+  CHARACTER(len=100) :: Lead2XYZ='lead2.xyz'  
+  CHARACTER(len=100), PARAMETER :: DevXYZ_keyw = "DEVXYZ"
+  CHARACTER(len=100), PARAMETER :: Lead1XYZ_keyw = "LEAD1XYZ"
+  CHARACTER(len=100), PARAMETER :: Lead2XYZ_keyw = "LEAD2XYZ"   
+  !
+  ! Switch on Bethe lattice electrodes
+  ! 
+  LOGICAL :: Bethe= .false.
+
+  !sf absorbing boundary conditions parameters
+  !sf parameter to switch on absorbing boundary conditions
+  LOGICAL :: abc= .false.
+  
+  !
+  ! whether to find Fermi level in leads and/or device
+  ! 0:  do not find Fermi level (default)
+  ! 1:  Bisec method
+  ! 2:  Muller method
+  ! 3:  Secant method
+  !
+  INTEGER :: FindEFL = 0
+  CHARACTER(len=10), PARAMETER ::  FindEFL_keyw = "FINDEFL"  
+
+  !
+  ! Number of primitive unit cells in the 1D electrodes
+  !   
+  INTEGER :: NPC = 1
+  CHARACTER(len=10), PARAMETER ::  NPC_keyw = "NPC"       
+  
+  !
+  ! Whether to print hamiltonian and overlap information
+  ! 0: do not print
+  ! 1: print real part only
+  ! 2: print as complex matrix
+  !
+  INTEGER :: PrintHS = 0
+  CHARACTER(len=10), PARAMETER ::  PrintHS_keyw = "PRINTHS"      
+  
+  !
+  ! Whether to shrink the central device region
+  ! or to extend by one unit cell of each lead
+  !
+  LOGICAL :: ShrDev = .false.
+  LOGICAL :: ExtDev = .false.    
+  
+  !
+  ! Whether the basis set is already orthogonal
+  ! Then device and lead overlap matrices are 
+  ! not read from file and set to identity
+  !
+  logical :: OrthogonalBS = .false. 
+  
+  !
+  ! Number of points in energy window on regular mesh
+  ! 
+  integer :: NPoints = 1000     
 
   ! Bethe lattice glue parameter
   REAL*8 :: Glue = 1.0     
@@ -111,7 +205,7 @@
   CHARACTER(len=10), PARAMETER :: NFix_keyw = "NFIX"
   
   ! Keyword to determine the type of overlap in the Bethe lattice basis set
-  REAL*8 :: Overlap = 0.0d0           
+  REAL*8 :: Overlap = -1.0d0           
   CHARACTER(len=10), PARAMETER :: Overlap_keyw = "OVERLAP"
 
   ! Number of atoms to be connected to Bethe lattice
@@ -339,7 +433,7 @@
   CHARACTER(len=10), PARAMETER :: LDOS_Beg_keyw = "LDOS_BEG" 
   INTEGER :: LDOS_End = 0      
   CHARACTER(len=10), PARAMETER :: LDOS_End_keyw = "LDOS_END" 
-
+  
   ! Use hermitian expression for transmission matrix.
   LOGICAL :: HTransm = .FALSE. 
   CHARACTER(len=10), PARAMETER :: HTransm_keyw = "HTRANSM"
@@ -422,7 +516,8 @@ CONTAINS
          & THETA_keyw   ,&
          & PHI_keyw   ,&
          & EW1_keyw       ,&
-         & EW2_keyw   )
+         & EW2_keyw       ,&
+         & Infty_keyw   )
        !
        ! 1. looking for real variables
        !
@@ -483,11 +578,14 @@ CONTAINS
           EW1 = rval
        CASE ( EW2_keyw ) 
           EW2 = rval
+       CASE ( INFTY_keyw ) 
+          Infty = rval          
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, SPIN_Beg_keyw, SPIN_End_keyw )
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, SPIN_Beg_keyw, SPIN_End_keyw, FindEFL_keyw , NPC_keyw, PrintHS_keyw )
+
        !
        ! 2. looking for integer variables
        !
@@ -527,7 +625,7 @@ CONTAINS
        CASE( NAtomEl_keyw(1) )
           NAtomEl(1) = ival
        CASE( NAtomEl_keyw(2) )
-          NAtomEl(2) = ival
+          NAtomEl(2) = ival      
        CASE( NPulay_keyw )
           NPulay = ival
        CASE( Max_keyw )
@@ -535,11 +633,17 @@ CONTAINS
        !CASE( SOCFAC_keyw )
        !   socfac = ival     
        CASE( PrtHatom_keyw )
-          PrtHatom = ival     
+          PrtHatom = ival 
+       CASE( FindEFL_keyw )
+          FindEFL = ival
+       CASE( NPC_keyw )
+          NPC = ival   
+       CASE( PrintHS_keyw )
+          PrintHS = ival                                     
 
        END SELECT
        
-    CASE ( ElType_keyw(1), ElType_keyw(2), BLPar_keyw(1), BLPar_keyw(2) )
+    CASE ( DevFile_keyw, Lead1File_keyw, Lead2File_keyw, DevXYZ_keyw, Lead1XYZ_keyw, Lead2XYZ_keyw, ElType_keyw(1), ElType_keyw(2), BLPar_keyw(1), BLPar_keyw(2) )
        !
        ! 3. looking for string variables
        !
@@ -550,6 +654,18 @@ CONTAINS
        call upcase(keyword)
 
        SELECT CASE ( keyword )
+       CASE( DevFile_keyw ) 
+          DevFile = strval
+       CASE( Lead1File_keyw )
+          Lead1File = strval
+       CASE( Lead2File_keyw )
+          Lead2File = strval
+       CASE( DevXYZ_keyw ) 
+          DevXYZ = strval
+       CASE( Lead1XYZ_keyw )
+          Lead1XYZ = strval
+       CASE( Lead2XYZ_keyw )
+          Lead2XYZ = strval     
        CASE( ElType_keyw(1) ) 
           ElType(1) = strval
        CASE( ElType_keyw(2) )
@@ -603,7 +719,7 @@ CONTAINS
     CASE ( FullAcc_keyw )
        FullAcc = .TRUE.
     CASE ( ANT1DInp_keyw )
-       ANT1DInp = .TRUE.
+       ANT1DInp = .TRUE.      
     CASE ( DFTU_keyw )
        DFTU = .true.
     CASE ( HybFunc_keyw )
@@ -877,6 +993,19 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
+    WRITE(unit=logfile,fmt=*) "******************"
+    WRITE(unit=logfile,fmt=*) "1D lead parameters"
+    WRITE(unit=logfile,fmt=*) "******************"    
+    WRITE(unit=logfile,fmt=*) DevFile_keyw, " = ", DevFile
+    WRITE(unit=logfile,fmt=*) Lead1File_keyw, " = ", Lead1File
+    WRITE(unit=logfile,fmt=*) Lead2File_keyw, " = ", Lead2File
+    WRITE(unit=logfile,fmt=*) DevXYZ_keyw, " = ", DevXYZ
+    WRITE(unit=logfile,fmt=*) Lead1XYZ_keyw, " = ", Lead1XYZ
+    WRITE(unit=logfile,fmt=*) Lead2XYZ_keyw, " = ", Lead2XYZ
+    WRITE(unit=logfile,fmt=*) FindEFL_keyw, " = ", FindEFL
+    WRITE(unit=logfile,fmt=*) NPC_keyw, " = ", NPC
+    WRITE(unit=logfile,fmt=*) PrintHS_keyw, " = ", PrintHS
+    WRITE(unit=logfile,fmt=*) Infty_keyw, " = ", Infty    
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
     WRITE(unit=logfile,fmt=*) "************************"
@@ -984,7 +1113,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) RedTransmE_keyw, " = ",RedTransmE
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels
     WRITE(unit=logfile,fmt=*) LeadDOS_keyw, " = ", LeadDOS
-    WRITE(unit=logfile,fmt=*) ANT1DInp_keyw, " = ", ANT1DInp
+    WRITE(unit=logfile,fmt=*) ANT1DInp_keyw, " = ", ANT1DInp 
     WRITE(unit=logfile,fmt=*) PrtHatom_keyw, " = ", PrtHatom
 
     IF (NAtomEl(1)/=0 .and. (NAtomEl(2)==0.and.ElType(2)/='GHOST')) THEN
