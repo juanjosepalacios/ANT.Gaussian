@@ -6606,7 +6606,7 @@ end subroutine CompLocalMu
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-          call gplus(z,green,GammaR,GammaL)
+          call gplus0(z,green)!,GammaR,GammaL)
           !call glesser(z,green) ! As seen in Stefanucci.
           ! Mulliken DOS 
           SG = matmul( SD, green )
@@ -8992,7 +8992,7 @@ end function FullEnergy
           HW(ispin,k,l) = 16*HW(ispin,k,l)/(3*(n+1))
        enddo
     enddo
-    write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of loops=',(((n-1)/2)+1)/2
+    write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of ',(((n-1)/2)+1)/2,' points'
 
     !call mkl_set_dynamic(.true.)
     return
@@ -9058,9 +9058,9 @@ end function FullEnergy
     do i = 1,NAOrbs
        do j =1,NAOrbs
           PDGIBBS(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
-          HW(ispin,i,j)=DREAL(E0)*PD(ispin,i,j)
+          HW(ispin,i,j)=DREAL(E0)*PDGIBBS(ispin,i,j)
           !HW(ispin,i,j)=DREAL(-shift)*PD(ispin,i,j)
-          CH = CH + PD(ispin,i,j)*SD(j,i)
+          CH = CH + PDGIBBS(ispin,i,j)*SD(j,i)
        enddo
     enddo
 
@@ -9144,7 +9144,7 @@ end function FullEnergy
           HW(ispin,k,l) = 16*HW(ispin,k,l)/(3*(n+1))
        enddo
     enddo
-    write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of loops=',(((n-1)/2)+1)/2
+    write(ifu_log,'(A47,I4)')' Integration of P/HW has needed a max no. of ',(((n-1)/2)+1)/2,' points'
 
     !call mkl_set_dynamic(.true.)
     return
