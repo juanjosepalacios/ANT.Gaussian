@@ -226,10 +226,15 @@
   ! *****************
   ! Correlated Blocks
   ! *****************
+  
   CHARACTER(LEN=10), PARAMETER :: CorrBl_keyw = "CORRBLOCKS"
   INTEGER :: NCorrBl = 0
   INTEGER, dimension(MaxAtm) :: CorrBeg=0, CorrEnd=0
   REAL*8, dimension(MaxAtm) :: UCoul=0, JHund=0
+
+ ! Molecular Hybridization
+  INTEGER :: NCorrBlM = 0
+  INTEGER, dimension(MaxAtm) :: CorrBegM=0, CorrEndM=0
 
   ! Whether to perform DFT+U calculation
   LOGICAL :: DFTU = .false.; CHARACTER(len=10), PARAMETER :: DFTU_keyw = "DFT+U"
