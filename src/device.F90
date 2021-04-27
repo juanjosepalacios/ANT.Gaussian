@@ -723,11 +723,13 @@
   !* Solve transport problem *
   !***************************
   subroutine Transport(F,ADDP) 
-    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, ROT, PrtHatom
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, MolGap
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
     use orthogonalization
+    use molmod, only: Mol_Sub
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms
 #endif
@@ -793,7 +795,9 @@
        print *
 
        !IF( ANT1DInp ) call WriteANT1DInput
-
+       
+       if (MOLGAP) call Mol_Sub(HD,SD,PD,shift)
+       
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then
