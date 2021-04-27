@@ -2796,7 +2796,7 @@
       open(333,file='tempDOS',status='unknown')
 
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
