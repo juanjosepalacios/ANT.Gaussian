@@ -246,6 +246,14 @@
   ! Whether to diagonalize the correlated blocks
   LOGICAL :: DiagCorrBl = .FALSE. ; CHARACTER(len=10), PARAMETER :: DiagCorrBl_keyw = "DIAGCORRBL"
 
+  ! Molecular Gap
+  LOGICAL :: MolGap = .FALSE. ; CHARACTER(len=6), PARAMETER :: MolGap_keyw = "MOLGAP"
+  LOGICAL :: ForIntCh = .FALSE. ; CHARACTER(len=8), PARAMETER :: ForIntCh_keyw = "FORINTCH"
+  REAL*8:: EA = 0.00d0
+  CHARACTER(len=10), PARAMETER :: EA_keyw = "EA"
+  REAL*8:: IP =  0.00d0
+  CHARACTER(len=10), PARAMETER :: IP_keyw = "IP"
+  
   ! *************************
   ! Spin transport parameters
   ! *************************
