@@ -796,7 +796,7 @@
 
        !IF( ANT1DInp ) call WriteANT1DInput
        
-       if (MOLGAP) call Mol_Sub(HD,SD,PD,shift)
+       if (MolGap) call Mol_Sub(HD,SD,PD,shift)
        
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )

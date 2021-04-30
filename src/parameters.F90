@@ -232,9 +232,13 @@
   INTEGER, dimension(MaxAtm) :: CorrBeg=0, CorrEnd=0
   REAL*8, dimension(MaxAtm) :: UCoul=0, JHund=0
 
- ! Molecular Hybridization
-  INTEGER :: NCorrBlM = 0
+ ! Molecular Gap opening
+  INTEGER :: NCorrBlM = 0 ; CHARACTER(LEN=9), PARAMETER :: CorrBlM_keyw = "MOLBLOCKS"
   INTEGER, dimension(MaxAtm) :: CorrBegM=0, CorrEndM=0
+  LOGICAL :: MolGap = .FALSE. ; CHARACTER(len=6), PARAMETER :: MolGap_keyw = "MOLGAP"
+  LOGICAL :: ForIntCh = .FALSE. ; CHARACTER(len=8), PARAMETER :: ForIntCh_keyw = "FORINTCH"
+  REAL*8:: G_e = 0.00d0 ; CHARACTER(len=2), PARAMETER :: EA_keyw = "EA"
+  REAL*8:: G_h =  0.00d0 ; CHARACTER(len=2), PARAMETER :: IP_keyw = "IP"
 
   ! Whether to perform DFT+U calculation
   LOGICAL :: DFTU = .false.; CHARACTER(len=10), PARAMETER :: DFTU_keyw = "DFT+U"
@@ -251,13 +255,6 @@
   ! Whether to diagonalize the correlated blocks
   LOGICAL :: DiagCorrBl = .FALSE. ; CHARACTER(len=10), PARAMETER :: DiagCorrBl_keyw = "DIAGCORRBL"
 
-  ! Molecular Gap
-  LOGICAL :: MolGap = .FALSE. ; CHARACTER(len=6), PARAMETER :: MolGap_keyw = "MOLGAP"
-  LOGICAL :: ForIntCh = .FALSE. ; CHARACTER(len=8), PARAMETER :: ForIntCh_keyw = "FORINTCH"
-  REAL*8:: EA = 0.00d0
-  CHARACTER(len=10), PARAMETER :: EA_keyw = "EA"
-  REAL*8:: IP =  0.00d0
-  CHARACTER(len=10), PARAMETER :: IP_keyw = "IP"
   
   ! *************************
   ! Spin transport parameters
@@ -465,6 +462,8 @@ CONTAINS
          & PHI_keyw   ,&
          & EW1_keyw       ,&
          & EW2_keyw       ,&
+         & EA_keyw       ,&
+         & IP_keyw       ,&
          & Infty_keyw   )
        !
        ! 1. looking for real variables
@@ -528,6 +527,10 @@ CONTAINS
           EW2 = rval
        CASE ( INFTY_keyw ) 
           Infty = rval          
+       CASE ( EA_keyw ) 
+          G_e = rval          
+       CASE ( IP_keyw ) 
+          G_h = rval          
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
@@ -659,6 +662,8 @@ CONTAINS
        FMixing = .true.
     CASE ( DMImag_keyw )
        DMImag = .true.
+    CASE ( MolGap_keyw )
+       MolGap = .true.
        !
        ! 5. Integer arrays
        !
@@ -719,6 +724,22 @@ CONTAINS
              RETURN
           END IF
        END DO
+
+    CASE ( CorrBlM_keyw )
+       READ (unit=inpfile,fmt=*,iostat=ios), NCorrBlM
+       print *, "Correlated Molecular Blocks = ", NCorrBlM
+       IF( ios /= 0 ) RETURN 
+       DO i=1,NCorrBlM
+          READ (unit=inpfile,fmt=*,iostat=ios), CorrBegM(i), CorrEndM(i)
+          print *, CorrBegM(i), CorrEndM(i)
+          IF( ios /= 0 ) RETURN 
+          IF( CorrBegM(i) < 1 .OR. CorrEndM(i) < 1 )THEN
+             WRITE( unit=logfile, fmt=* ) "ERROR - Negative number for begin or end of molecular block"
+             ios = 1
+             RETURN
+          END IF
+       END DO
+
 
     CASE ( PFix_keyw )
        PFix = .TRUE.
@@ -984,6 +1005,13 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) HybFunc_keyw, " = ", HybFunc
     WRITE(unit=logfile,fmt=*) DFTU_keyw, " = ", DFTU
     WRITE(unit=logfile,fmt=*) DiagCorrBl_keyw, " = ", DiagCorrBl
+    WRITE(unit=logfile,fmt=*) CorrBlM_keyw, " = ", NCorrBlM
+    DO i=1,NCorrBlM
+       WRITE(unit=logfile,fmt='(A,I2,A,I4,A,I4,A,F5.3,A,F5.3)'), " MolBl. #", i, ":  ", CorrBegM(i), " - ", CorrEndM(i)
+    END DO
+    WRITE(unit=logfile,fmt=*) Molgap_keyw, " = ", MolGap
+    WRITE(unit=logfile,fmt=*) EA_keyw, " = ", G_e
+    WRITE(unit=logfile,fmt=*) IP_keyw, " = ", G_h
     WRITE(unit=logfile,fmt=*) "*****************"
     WRITE(unit=logfile,fmt=*) "Output parameters"
     WRITE(unit=logfile,fmt=*) "*****************"

@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.3.4  *********************!
+!*********************  ANT.G-2.6.0  *********************!
 !*********************************************************!
 !                                                         !
 !   Copyright (c) by                                      !
@@ -32,7 +32,7 @@ contains
 subroutine Mol_Sub(HD,SD,PD,shift)
 
 use parameters, only: EW1, EW2
-use parameters, only: NCorrBlM, CorrBegM, CorrEndM,IP,EA,ForIntCh
+use parameters, only: NCorrBlM, CorrBegM, CorrEndM,G_e,G_h,ForIntCh
 use numeric, only: RMatPow,RSDiag
 use constants
 use Cluster, only : hiaorbno, loaorbno
@@ -48,12 +48,12 @@ integer :: NHyb,info,n,i,j,ispin,CBeg,CEnd,l,k,NSpin
 real*8, allocatable :: HD_M(:,:),eigenval(:),XD_M(:,:),SPN_M(:,:),e_PD(:,:)
 real*8, allocatable :: XD_MU(:,:),eu_PD(:,:),HD_Mu(:,:),SPP_M(:,:),ICh(:,:)
 real*8, dimension(size(HD,2),size(HD,3)) :: HD_A
-real*8 :: G_h,G_e,E_H,E_L,E_Lu,E_Hu
+real*8 :: E_H,E_L,E_Lu,E_Hu
 real*8 :: suma
 
 NSpin = size(HD,1)
 
-if (IP == EA) print*, "War: IP = EA", IP,EA
+!if (IP == EA) print*, "War: IP = EA", IP,EA
 
 do l = 1,NCorrBlM !Molecular Correlated Blocks
   CBeg = loaorbno(CorrBegM(l))
@@ -65,10 +65,10 @@ print *, "--- Molecular Gap Correction    ---"
 print *, "----------------------------------------------"
 print *
 
-nhyb = (CEnd-CBeg) + 1
+NHyb = (CEnd-CBeg) + 1
 
 print *, " Correlated Sub-Shell dimension = ", nhyb,"Beg_basis function = ",CBeg &
-& ,"End_basis function = ", CEnd
+,"End_basis function = ", CEnd
 print *, "----------------------------------------------"
 
 allocate(HD_M(NHyb,NHyb),SPP_M(NHyb,NHyb),ICh(Nspin,NHyb))
@@ -84,7 +84,7 @@ do ispin=1,NSpin !spin loop
 
 print*, "Spin =", ispin
 
-!  HD_A = HD(ispin,:,:)
+  HD_A = HD(ispin,:,:)
 
   e_PD = matmul(PD(ispin,CBeg:CEnd,CBeg:CEnd),SD(CBeg:CEnd,CBeg:CEnd)) !Charge Matrix
 
@@ -189,12 +189,15 @@ print*, "Spin =", ispin
   
   If (ispin == 2 .or. NSpin == 1) then !Evaluation IF
 
-    G_h = E_H - IP
-    G_e = EA - E_L
+   !G_h = E_H - IP
+   !G_e = EA - E_L
 
+   !G_h =abs(IP) 
+   !G_e =abs(EA) 
     print *, "-------------Energy Parameters -------------------------------------------------------"
-    write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L, "IP = ", IP, "EA = ", EA
-    write(6,'(A20,F20.10,A20,F20.10,A20,F20.10)') "G_h = ", G_h, "G_e = ", G_e, "Gap =", G_h+G_e 
+   !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L, "IP = ", IP, "EA = ", EA
+    write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L
+    write(6,'(A20,F20.10,A20,F20.10,A20,F20.10)') "G_h = ", G_h, "G_e = ", G_e, "New Gap =", G_h+G_e + E_L-E_H
     write(6,'(A20,F20.10)') "Chemical Potential = ", -shift
     print *, "--------------------------------------------------------------------------------------"
 
