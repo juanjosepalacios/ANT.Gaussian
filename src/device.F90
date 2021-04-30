@@ -724,7 +724,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, MolGap
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -796,7 +796,7 @@
 
        !IF( ANT1DInp ) call WriteANT1DInput
        
-       if (MolGap) call Mol_Sub(HD,SD,PD,shift)
+       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
        
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )

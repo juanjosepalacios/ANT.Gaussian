@@ -235,10 +235,7 @@
  ! Molecular Gap opening
   INTEGER :: NCorrBlM = 0 ; CHARACTER(LEN=9), PARAMETER :: CorrBlM_keyw = "MOLBLOCKS"
   INTEGER, dimension(MaxAtm) :: CorrBegM=0, CorrEndM=0
-  LOGICAL :: MolGap = .FALSE. ; CHARACTER(len=6), PARAMETER :: MolGap_keyw = "MOLGAP"
-  LOGICAL :: ForIntCh = .FALSE. ; CHARACTER(len=8), PARAMETER :: ForIntCh_keyw = "FORINTCH"
-  REAL*8:: G_e = 0.00d0 ; CHARACTER(len=2), PARAMETER :: EA_keyw = "EA"
-  REAL*8:: G_h =  0.00d0 ; CHARACTER(len=2), PARAMETER :: IP_keyw = "IP"
+  REAL*8:: UPlus =  0.00d0 ; CHARACTER(len=5), PARAMETER :: Uplus_keyw = "UPLUS"
 
   ! Whether to perform DFT+U calculation
   LOGICAL :: DFTU = .false.; CHARACTER(len=10), PARAMETER :: DFTU_keyw = "DFT+U"
@@ -453,7 +450,6 @@ CONTAINS
          & EStep_keyw     ,&
          & DOSEnergy_keyw     ,&
          & Overlap_keyw   ,&
-!         & SOC_keyw   ,&
          & SOCFAC_keyw  ,&  
          & SOC_CFF_P_keyw   ,&
          & SOC_CFF_D_keyw   ,&
@@ -462,8 +458,7 @@ CONTAINS
          & PHI_keyw   ,&
          & EW1_keyw       ,&
          & EW2_keyw       ,&
-         & EA_keyw       ,&
-         & IP_keyw       ,&
+         & UPlus_keyw       ,&
          & Infty_keyw   )
        !
        ! 1. looking for real variables
@@ -527,10 +522,8 @@ CONTAINS
           EW2 = rval
        CASE ( INFTY_keyw ) 
           Infty = rval          
-       CASE ( EA_keyw ) 
-          G_e = rval          
-       CASE ( IP_keyw ) 
-          G_h = rval          
+       CASE ( UPlus_keyw ) 
+          Uplus = rval          
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
@@ -662,8 +655,6 @@ CONTAINS
        FMixing = .true.
     CASE ( DMImag_keyw )
        DMImag = .true.
-    CASE ( MolGap_keyw )
-       MolGap = .true.
        !
        ! 5. Integer arrays
        !
@@ -1009,9 +1000,7 @@ CONTAINS
     DO i=1,NCorrBlM
        WRITE(unit=logfile,fmt='(A,I2,A,I4,A,I4,A,F5.3,A,F5.3)'), " MolBl. #", i, ":  ", CorrBegM(i), " - ", CorrEndM(i)
     END DO
-    WRITE(unit=logfile,fmt=*) Molgap_keyw, " = ", MolGap
-    WRITE(unit=logfile,fmt=*) EA_keyw, " = ", G_e
-    WRITE(unit=logfile,fmt=*) IP_keyw, " = ", G_h
+    WRITE(unit=logfile,fmt=*) UPlus_keyw, " = ", UPlus
     WRITE(unit=logfile,fmt=*) "*****************"
     WRITE(unit=logfile,fmt=*) "Output parameters"
     WRITE(unit=logfile,fmt=*) "*****************"

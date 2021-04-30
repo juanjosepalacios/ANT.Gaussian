@@ -32,7 +32,7 @@ contains
 subroutine Mol_Sub(HD,SD,PD,shift)
 
 use parameters, only: EW1, EW2
-use parameters, only: NCorrBlM, CorrBegM, CorrEndM,G_e,G_h,ForIntCh
+use parameters, only: NCorrBlM, CorrBegM, CorrEndM,Uplus
 use numeric, only: RMatPow,RSDiag
 use constants
 use Cluster, only : hiaorbno, loaorbno
@@ -194,29 +194,37 @@ print*, "Spin =", ispin
 
    !G_h =abs(IP) 
    !G_e =abs(EA) 
-    print *, "-------------Energy Parameters -------------------------------------------------------"
+   !print *, "-------------Energy Parameters -------------------------------------------------------"
    !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L, "IP = ", IP, "EA = ", EA
-    write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L
-    write(6,'(A20,F20.10,A20,F20.10,A20,F20.10)') "G_h = ", G_h, "G_e = ", G_e, "New Gap =", G_h+G_e + E_L-E_H
-    write(6,'(A20,F20.10)') "Chemical Potential = ", -shift
-    print *, "--------------------------------------------------------------------------------------"
+   !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L
+   !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10)') "G_h = ", G_h, "G_e = ", G_e, "New Gap =", G_h+G_e + E_L-E_H
+   !write(6,'(A20,F20.10)') "Chemical Potential = ", -shift
+   !print *, "--------------------------------------------------------------------------------------"
 
     do k = 1,Nspin
 
       HD_A(cBeg:CEnd,cBeg:CEnd)=d_zero
-      if (ForIntCh) then
-        do i=1,nhyb
-          if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - G_h*ICh(k,i) + G_e*(d_one-ICh(k,i))
-          if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - G_h*ICh(k,i) + G_e*(d_one-ICh(k,i))
-        end do
-      else
+     !if (ForIntCh) then
+     !  do i=1,nhyb
+     !    if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - G_h*ICh(k,i) + G_e*(d_one-ICh(k,i))
+     !    if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - G_h*ICh(k,i) + G_e*(d_one-ICh(k,i))
+     !  end do
+     !else
+     !  do i=1,nhyb
+!    !    print*, "HD B = ", i,HD_M(i,j)+shift
+     !    if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - G_h*eu_PD(i,i) + G_e*(d_one-eu_PD(i,i))
+     !    if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - G_h*e_PD(i,i) + G_e*(d_one-e_PD(i,i))
+!    !    print*, "HD A = ", i,HD_A(i+CBeg-1,j+CBeg-1)+shift
+     !  end do 
+     !end if
+
+     ! Charging energy correction
         do i=1,nhyb
 !         print*, "HD B = ", i,HD_M(i,j)+shift
-          if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - G_h*eu_PD(i,i) + G_e*(d_one-eu_PD(i,i))
-          if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - G_h*e_PD(i,i) + G_e*(d_one-e_PD(i,i))
+          if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - Uplus*(eu_PD(i,i)- 0.5) 
+          if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - Uplus*(e_PD(i,i) - 0.5)
 !         print*, "HD A = ", i,HD_A(i+CBeg-1,j+CBeg-1)+shift
         end do 
-      end if
 
       if (k == 1) then
         HD_Mu = matmul(XD_Mu,matmul(HD_A(cBeg:CEnd,cBeg:CEnd),transpose(XD_Mu)))
