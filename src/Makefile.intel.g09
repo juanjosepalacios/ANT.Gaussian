@@ -33,7 +33,7 @@ INTELLIBS= -Wl,--start-group ${MKLPATH}/libmkl_intel_ilp64.a ${MKLPATH}/libmkl_c
 include make.in
 
 # use these sources: 
-SRCS= system.c preproc.F constants.f90 messages.f90 util.f90 parameters.f90 antcommon.f90 g09Common.f90 numeric.f90 filemaster.f90 atomdata.f90 geom.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 SpinRotate.f90 MolMod.f90 device.f90 ANT.f90
+SRCS= preproc.F constants.f90 messages.f90 util.f90 parameters.f90 antcommon.f90 g09Common.f90 numeric.f90 filemaster.f90 atomdata.f90 geom.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 SpinRotate.f90 MolMod.f90 device.f90 ANT.f90
 
 #SRCS= preproc.F util.f90 parameters.f90 antcommon.f90 g09Common.f90 constants.f90 lapack_blas.f numeric.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 device.f90 ANT.f90
 
