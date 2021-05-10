@@ -313,7 +313,7 @@
   
   ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
   INTEGER :: NSocFacAtom = 0
-  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 1.0d0
+  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFacAtom_keyw = "SOCFACATOM"   
 
   ! Atom SOC definition
@@ -975,7 +975,7 @@ CONTAINS
     END DO
     WRITE(unit=logfile,fmt=*) SOCFacAtom_keyw, " = ", NSOCFacAtom
     DO i=1,MaxAtm
-       IF( SOCFacAtom(i) > 1.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
+       IF( SOCFacAtom(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
     END DO        
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
