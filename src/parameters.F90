@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.6.0  **********************
+!*********************  ANT.G-2.6.1  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -295,9 +295,17 @@
   ! REAL*8 :: soc = 0.0d0           
   ! CHARACTER(len=10), PARAMETER :: SOC_keyw = "SOC"
   
-  ! Global SOC multiplicative factor due to lack of nodal structure in basis set
-  REAL*8 :: socfac = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: SOCFAC_keyw = "SOCFAC"  
+  ! Global SOC multiplicative factor for P shells due to lack of nodal structure in basis set
+  REAL*8 :: socfac_p = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SOCFAC_P_keyw = "SOCFAC_P"  
+  
+  ! Global SOC multiplicative factor for D shells due to lack of nodal structure in basis set
+  REAL*8 :: socfac_d = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SOCFAC_D_keyw = "SOCFAC_D" 
+  
+  ! Global SOC multiplicative factor for F shells due to lack of nodal structure in basis set
+  REAL*8 :: socfac_f = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SOCFAC_F_keyw = "SOCFAC_F"     
 
   ! Global SOC_COEFF_P
   REAL*8 :: soc_cff_p = 0.0d0                           
@@ -313,7 +321,7 @@
   
   ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
   INTEGER :: NSocFacAtom = 0
-  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 0.0d0
+  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtomP = 0.0d0, SOCFacAtomD = 0.0d0, SOCFacAtomF = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFacAtom_keyw = "SOCFACATOM"   
 
   ! Atom SOC definition
@@ -450,7 +458,9 @@ CONTAINS
          & EStep_keyw     ,&
          & DOSEnergy_keyw     ,&
          & Overlap_keyw   ,&
-         & SOCFAC_keyw  ,&  
+         & SOCFAC_P_keyw  ,&  
+         & SOCFAC_D_keyw  ,&  
+         & SOCFAC_F_keyw  ,&  
          & SOC_CFF_P_keyw   ,&
          & SOC_CFF_D_keyw   ,&
          & SOC_CFF_F_keyw   ,&         
@@ -504,8 +514,12 @@ CONTAINS
           EStep = rval
        CASE ( Overlap_keyw ) 
           Overlap = rval
-       CASE( SOCFAC_keyw )
-          socfac = rval               
+       CASE( SOCFAC_P_keyw )
+          socfac_p = rval    
+       CASE( SOCFAC_D_keyw )
+          socfac_d = rval    
+       CASE( SOCFAC_F_keyw )
+          socfac_f = rval                                   
        CASE ( SOC_CFF_P_keyw ) 
           soc_cff_p = rval
        CASE ( SOC_CFF_D_keyw ) 
@@ -759,9 +773,9 @@ CONTAINS
       READ (unit=inpfile,fmt=*,iostat=ios), NSOCFacAtom
       IF( ios /= 0 ) RETURN 
       DO i=1,NSOCFacAtom
-         READ (unit=inpfile,fmt=*,iostat=ios), index, rval
+         READ (unit=inpfile,fmt=*,iostat=ios), index, rval, rvall, rvalll
          IF( ios /= 0 ) RETURN 
-         IF( rval < 0.0d0)THEN
+         IF( rval < 0.0d0 .OR. rvall < 0.0d0 .OR. rvalll < 0.0d0)THEN
             WRITE( unit=logfile, fmt=* ) "ERROR - Negative value not allowed in SOCFACATOM Field"
             ios = 1
             RETURN
@@ -772,7 +786,9 @@ CONTAINS
             ios = 1
             RETURN
          END IF
-         SOCFacAtom( index ) = rval
+         SOCFacAtomP( index ) = rval
+         SOCFacAtomD( index ) = rvall
+         SOCFacAtomF( index ) = rvalll
       END DO       
                          
     CASE ( SPINROTATOM_keyw )
@@ -895,7 +911,9 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
     WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
-    WRITE(unit=logfile,fmt=*) SOCFAC_keyw, " = ", socfac    
+    WRITE(unit=logfile,fmt=*) SOCFAC_P_keyw, " = ", socfac_p 
+    WRITE(unit=logfile,fmt=*) SOCFAC_D_keyw, " = ", socfac_d 
+    WRITE(unit=logfile,fmt=*) SOCFAC_F_keyw, " = ", socfac_f    
     WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
     WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
     WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
@@ -975,7 +993,7 @@ CONTAINS
     END DO
     WRITE(unit=logfile,fmt=*) SOCFacAtom_keyw, " = ", NSOCFacAtom
     DO i=1,MaxAtm
-       IF( SOCFacAtom(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
+       IF( SOCFacAtomP(i) > 0.0d0 .OR. SOCFacAtomD(i) > 0.0d0 .OR. SOCFacAtomF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCFacAtomP(i), SOCFacAtomD(i), SOCFacAtomF(i)
     END DO        
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
