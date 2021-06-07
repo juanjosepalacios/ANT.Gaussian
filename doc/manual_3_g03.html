@@ -404,7 +404,7 @@ true, the transmission and DOS are computed adding the spin-orbit coupling to
 the converged solution in the absence of spin-orbit coupling.
 As expected, in magnetic systems the spatial orientation determines the result.
 To be used in conjunction with global or per-atom SOC options. 
-See keywords <em>SOC_CFF_*</em>, <em>SOCEDIT</em>, <em>SOCFAC</em> and
+See keywords <em>SOC_CFF_*</em>, <em>SOCEDIT</em>, <em>SOCFAC_*</em> and
 <em>SOCFACATOM</em>.
 <br>
     </div>
@@ -463,10 +463,10 @@ user-specified atom SOC parameters (Default parameter values: 0.0 eV each). <br>
 Default: .false. (off) <br>
   </li>
 <br> 
-  <li><em>SOCFAC</em> (real)<br>
-    <div style="text-align: justify;"> Global atomic SOC multiplicative factor.
-When different from zero, the radial SOC matrix elements of all atoms are multiplied by
-this parameter. Useful for single-element systems in which the empirical values of the SOC parameter
+  <li><em>SOCFAC_P</em> (real)<br>
+    <div style="text-align: justify;"> Global atomic SOC multiplicative factor for P (L=1) shells.
+When different from zero, the radial SOC matrix elements of all atoms with P shells in their basis sets 
+are multiplied by this parameter. Useful for single-element systems in which the empirical values of the SOC parameter
 are not available and valence shell basis sets lack adequate nodal structure in their radial parts.
 Reliable values can be obtained by fitting to high quality band structures of the desired elements and
 atomic geometries. For further details, please see S. Pakdel, M. Pourfath, and  J. J. Palacios, <span
@@ -474,24 +474,41 @@ atomic geometries. For further details, please see S. Pakdel, M. Pourfath, and  
  style="font-weight: bold;">9</span>, 1015–1023 (2018).
 <br>
     </div>
-Default: <em>SOCFAC</em> = 0.0<br>
+Default: <em>SOCFAC_P</em> = 0.0<br>
   </li>
   <br>  
+  <li><em>SOCFAC_D</em> (real)<br>
+    <div style="text-align: justify;"> Global atomic SOC multiplicative factor for D (L=2) shells.
+When different from zero, the radial SOC matrix elements of all atoms with D shells in their basis sets 
+are multiplied by this parameter. See keyword <em>SOCFAC_P</em> for more details.<br>
+    </div>
+Default: <em>SOCFAC_D</em> = 0.0<br>
+  </li>
+  <br>  
+  <li><em>SOCFAC_F</em> (real)<br>
+    <div style="text-align: justify;"> Global atomic SOC multiplicative factor for F (L=3) shells..
+When different from zero, the radial SOC matrix elements of all atoms with F shells in their basis sets 
+are multiplied by this parameter. See keyword <em>SOCFAC_P</em> for more details.<br>
+    </div>
+Default: <em>SOCFAC_F</em> = 0.0<br>
+  </li>
+  <br>      
   <li><em>SOCFACATOM</em> (logical) <br>
-    <div style="text-align: justify;"> Per-atom atomic SOC multiplicative factor.
-When different from zero, the radial SOC matrix elements of listed atoms are multiplied by
-this parameter. See keyword <em>SOCFAC</em> for further details.
+    <div style="text-align: justify;"> Per-atom, per angular momentum shell (L= 1, 2, or 3) 
+atomic SOC multiplicative factors. When different from zero, the radial SOC matrix elements of listed atoms
+are multiplied by these parameters. See keywords <em>SOCFAC_*</em> for further details.
     <br>
     </div>
 Syntax: <br>
     <em>SOCFACATOM</em><br>
 #natoms<br>
-#atom1, #atomsocfac1 <br>
-#atom2, #atomsocfac2 <br> 
+#atom1, #atomsocfac_p1, #atomsocfac_d1, #atomsocfac_f1 <br>
+#atom2, #atomsocfac_p2, #atomsocfac_d2, #atomsocfac_f2 <br> 
  ...<br>
     <div style="text-align: justify;"> where #natoms is the number of
-atoms where the SOC factor is altered. The list below #natoms gives
-the atom numbers and the atom SOC factors (Default parameter value: 0.0). <br></div>
+atoms where the P, D and F shell SOCFAC values are altered.
+The list below #natoms gives the atom numbers and a set of three
+user-specified atom SOCFAC values (Default parameter values: 0.0 eV each). <br></div>
 Default: .false. (off) <br>
   </li>  
 <br>
