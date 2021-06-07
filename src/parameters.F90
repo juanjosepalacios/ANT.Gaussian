@@ -910,16 +910,6 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
-    WRITE(unit=logfile,fmt=*) SOCFAC_P_keyw, " = ", socfac_p 
-    WRITE(unit=logfile,fmt=*) SOCFAC_D_keyw, " = ", socfac_d 
-    WRITE(unit=logfile,fmt=*) SOCFAC_F_keyw, " = ", socfac_f    
-    WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
-    WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
-    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
-    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"   
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
@@ -991,18 +981,28 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SpinEdit(i) .NE. 1 ) WRITE(unit=logfile,fmt=*) i, SpinEdit(i)
     END DO
+    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
+    WRITE(unit=logfile,fmt=*) SOCFAC_P_keyw, " = ", socfac_p 
+    WRITE(unit=logfile,fmt=*) SOCFAC_D_keyw, " = ", socfac_d 
+    WRITE(unit=logfile,fmt=*) SOCFAC_F_keyw, " = ", socfac_f    
+    WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
+    WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
+    WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"          
     WRITE(unit=logfile,fmt=*) SOCFacAtom_keyw, " = ", NSOCFacAtom
     DO i=1,MaxAtm
        IF( SOCFacAtomP(i) > 0.0d0 .OR. SOCFacAtomD(i) > 0.0d0 .OR. SOCFacAtomF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCFacAtomP(i), SOCFacAtomD(i), SOCFacAtomF(i)
-    END DO        
-    WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
-    DO i=1,MaxAtm
-       IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
-    END DO                                                                  
+    END DO
     WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
     DO i=1,MaxAtm
        IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
-    END DO            
+    END DO          
+    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
+    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
+    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                 
+    WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
+    DO i=1,MaxAtm
+       IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
+    END DO                                                                        
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"
     WRITE(unit=logfile,fmt=*) "***********************"
