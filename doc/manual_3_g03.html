@@ -466,11 +466,14 @@ Default: .false. (off) <br>
   <li><em>SOCFAC_P</em> (real)<br>
     <div style="text-align: justify;"> Global atomic SOC multiplicative factor for P (L=1) shells.
 When different from zero, the radial SOC matrix elements of all atoms with P shells in their basis sets 
-are multiplied by this parameter. Useful for single-element systems in which the empirical values of the SOC parameter
+are multiplied by this parameter. Useful for single-element systems where empirical SOC parameters
 are not available and valence shell basis sets lack adequate nodal structure in their radial parts.
-Reliable values can be obtained by fitting to high quality band structures of the desired elements and
-atomic geometries. For further details, please see S. Pakdel, M. Pourfath, and  J. J. Palacios, <span
- style="font-style: italic;">Beilstein J. Nanotechnol.</span> <span
+However, the most reliable values can be obtained by fitting to high quality band structures of
+the desired elements and atomic geometries. For valence basis sets, this factor can be several
+orders of magnitude larger than 1.0. All-electron basis sets, on the other hand, should require 
+a value of exactly 1.0 if they are of high enough quality. For further details, please see S. Pakdel, 
+M. Pourfath, and  J. J. Palacios,
+<span style="font-style: italic;">Beilstein J. Nanotechnol.</span> <span
  style="font-weight: bold;">9</span>, 1015–1023 (2018).
 <br>
     </div>
@@ -492,23 +495,35 @@ are multiplied by this parameter. See keyword <em>SOCFAC_P</em> for more details
     </div>
 Default: <em>SOCFAC_F</em> = 0.0<br>
   </li>
-  <br>      
+  <br> 
+  <li><em>RCUT</em> (real)<br>
+    <div style="text-align: justify;"> Global cutoff (in bohr) of the modified Yukawa
+    screening potential used near the nucleus in the intra-atomic SOC implementation.
+    A reasonable value for this parameter is around one atomic radius. <br>
+    </div>
+Default: <em>RCUT</em> = 0.0 bohr<br>
+  </li>
+  <br>        
   <li><em>SOCFACATOM</em> (logical) <br>
-    <div style="text-align: justify;"> Per-atom, per angular momentum shell (L= 1, 2, or 3) 
-atomic SOC multiplicative factors. When different from zero, the radial SOC matrix elements of listed atoms
-are multiplied by these parameters. See keywords <em>SOCFAC_*</em> for further details.
+    <div style="text-align: justify;"> Per-atom, per angular momentum shell (L= 1, 2, or 3), 
+atomic SOC multiplicative factors and per-atom cutoff of the modified Yukawa nuclear screening potential. 
+When different from zero, the radial SOC matrix elements of listed atoms
+are multiplied by the <em>SOCFAC_*</em> parameters. See keywords <em>SOCFAC_*</em> and <em>RCUT</em> 
+for further details.
     <br>
     </div>
 Syntax: <br>
     <em>SOCFACATOM</em><br>
 #natoms<br>
-#atom1, #atomsocfac_p1, #atomsocfac_d1, #atomsocfac_f1 <br>
-#atom2, #atomsocfac_p2, #atomsocfac_d2, #atomsocfac_f2 <br> 
+#atom1, #atomsocfac_p1, #atomsocfac_d1, #atomsocfac_f1, #atomrcut1 <br>
+#atom2, #atomsocfac_p2, #atomsocfac_d2, #atomsocfac_f2, #atomrcut2 <br> 
  ...<br>
     <div style="text-align: justify;"> where #natoms is the number of
 atoms where the P, D and F shell SOCFAC values are altered.
 The list below #natoms gives the atom numbers and a set of three
-user-specified atom SOCFAC values (Default parameter values: 0.0 eV each). <br></div>
+user-specified atom SOCFAC values (Default parameter values: 0.0 eV each)
+and the per-atom cutoff of the modified Yukawa nuclear screening potential
+(Default parameter value: 0 bohr).<br></div>
 Default: .false. (off) <br>
   </li>  
 <br>
