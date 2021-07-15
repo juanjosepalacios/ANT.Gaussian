@@ -1068,12 +1068,12 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess, FixSOCFermi
     !use ieee_arithmetic
     implicit none
 
     logical,intent(out) :: ADDP
-    integer :: i,j, k,cond
+    integer :: i,j, k,cond, Max_SOC
     real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
     
     logical :: root_fail
@@ -1083,45 +1083,78 @@
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
     root_fail = .true.
-    E0=shift-Z 
-    E1=shift
-    E2=shift+Z  
-    if (root_fail) then
-        print*,'SECANT method'
-        call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-        if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-           print *, 'Warning: SECANT method failed to find root. Using MULLER.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
-        end if
-    end if      
-    if (root_fail) then
-        print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
+    if (FixSOCFermi) then
+       E0=shift
+       E1=shift
+       E2=shift
+       if (root_fail) then
+           print*,'SECANT method'
+           call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,0,E3,DE,Cond,K)
+           if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+              print *, 'Warning: SECANT method failed to find root. Using MULLER.'
+              root_fail = .true.
+           else
+              shift = E3
+              root_fail = .false.
+           end if
+       end if             
+       !if (root_fail) then
+       !   print*,'MULLER method'
+       !   call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,0,E3,DE,K,Cond)
+       !   if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+       !      print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+       !      root_fail = .true.
+       !   else
+       !      shift = E3
+       !      root_fail = .false.
+       !   end if
+       !end if                
+    else
+       E0=shift-Z 
+       E1=shift
+       E2=shift+Z  
+       if (root_fail) then
+           print*,'SECANT method'
+           call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+           if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+              print *, 'Warning: SECANT method failed to find root. Using MULLER.'
+              root_fail = .true.
+           else
+              shift = E3
+              root_fail = .false.
+           end if
+       end if      
+       if (root_fail) then
+           print*,'MULLER method'
+           call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+           if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+              print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+              root_fail = .true.
+           else
+              shift = E3
+              root_fail = .false.
+          end if
+       end if  
+       if (root_fail) then
+          print *, 'BISEC method'
+          shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
+          DE=Delta
+          if(k.lt.5*Max) root_fail = .false.
+          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
        end if
-    end if  
-    if (root_fail) then
-       print *, 'BISEC method'
-       shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
-       DE=Delta
-       if(k.lt.5*Max) root_fail = .false.
-       if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
-    end if
-
+    end if    
+	   
     write(ifu_log,*)'-----------------------------------------------'
     write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy= ',-shift,'  +/-',dabs(DE)
     write(ifu_log,*)
     write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', Q_SOC
     write(ifu_log,*)'-----------------------------------------------'
-    ADDP = .not. root_fail
+    
+    if (FixSOCFermi) then
+      ADDP = root_fail
+    else  
+      ADDP = .not. root_fail
+    end if  
 
     return
   end subroutine CompDensMat_SOC
