@@ -1073,7 +1073,7 @@
     implicit none
 
     logical,intent(out) :: ADDP
-    integer :: i,j, k,cond, Max_SOC
+    integer :: i,j, k,cond
     real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
     
     logical :: root_fail
