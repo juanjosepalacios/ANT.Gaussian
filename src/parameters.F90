@@ -352,7 +352,11 @@
   ! Atom spin orientation manipulation of initial guess
   INTEGER :: NSpinRotAtom = 0
   REAL*8, DIMENSION( MaxAtm) :: SpinRotAtomTheta = 0.0d0, SpinRotAtomPhi = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"       
+  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"  
+  
+  ! Fix SOC Fermi level
+  LOGICAL :: FixSOCFermi = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: FixSOCFermi_keyw = "FIXSOCFERMI"         
   
 
   ! *********************
@@ -668,6 +672,8 @@ CONTAINS
        DiagCorrBl = .true.
     CASE ( SOC_keyw )
        soc = .true.   
+    CASE ( FixSOCFermi_keyw )
+       FixSOCFermi = .true.         
     CASE ( ROT_keyw )
        rot = .true.               
     CASE ( SpinDel_keyw )
@@ -1011,7 +1017,8 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
-    END DO                                                                        
+    END DO                                        
+    WRITE(unit=logfile,fmt=*) FixSOCFermi_keyw, " = ", FixSOCFermi                                    
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"
     WRITE(unit=logfile,fmt=*) "***********************"
