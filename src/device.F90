@@ -254,7 +254,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp, NEmbed
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, biasvoltage, ANT1DInp, NEmbed
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -335,7 +335,7 @@
       stop
     END IF
 
-    if (SOC) then
+    if (SOC .or. ROT) then
        call spin_orbit                 
        if (NSpin == 2) then
           do i=1,NAOrbs
@@ -674,7 +674,7 @@
           end do
        end do
 
-       HD = HDMod
+       HD = dcmplx(HDMod,AIMAG(HD))
 
     end if
 
@@ -724,7 +724,7 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
+          call Init1DLead ( LeadNo,NSpin,DREAL(HD),SD,NAOrbs)
           EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
           EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
        case( "GHOST" )
@@ -823,7 +823,11 @@
 
        !IF( ANT1DInp ) call WriteANT1DInput
        
-       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
+       if (UPlus > 0.0) then
+          HDMod = REAL(HD) 
+          call Mol_Sub(HDMod,SD,PD,shift)
+          HD = dcmplx(HDMod,AIMAG(HD))
+       end if   
        
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
@@ -2944,6 +2948,7 @@
          deallocate(DSG)
          !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
          deallocate(H_SOC)
+         deallocate(H_SOC_ONLY)
       else 
          deallocate(GammaL)
          deallocate(GammaR)
@@ -3005,12 +3010,12 @@
     if (SOC .or. ROT) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -4736,7 +4741,7 @@
 #endif    
       
     complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
-    integer :: i,j,totdim,nshell,Atom
+    integer :: i,j,totdim,nshell,Atom,iAtom,jAtom
     real*8 :: uno
  
  Atom = PrtHatom   
@@ -4755,8 +4760,8 @@
    if (NSpin == 2) then
       do i=1,NAOrbs
       do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
+         H_SOC(i,j)=HD(1,i,j)
+         H_SOC(i+NAOrbs,j+NAOrbs)=HD(2,i,j)
          S_SOC(i,j)=SD(i,j)              
          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
       end do
@@ -4764,8 +4769,8 @@
    else 
       do i=1,NAOrbs
       do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i,j)=HD(1,i,j)
+         H_SOC(i+NAOrbs,j+NAOrbs)=HD(1,i,j)
          S_SOC(i,j)=SD(i,j)              
          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
       end do
@@ -4779,8 +4784,8 @@
  
  nshell = GetNShell()
  
- If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
+ If (ROT) CALL CompHROT(DREAL(HD),hamilrot,SD,overlaprot,NAOrbs,nshell)
+ If (SOC) CALL CompHSO(hamil_SO,DREAL(HD),NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
@@ -4894,6 +4899,7 @@
  if (SOC) then
    do i=1, totdim*2
       do j=1, totdim*2
+         H_SOC_ONLY(i,j)=hamil_SO(i,j) 
          H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
       end do
    end do
