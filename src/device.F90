@@ -1086,29 +1086,18 @@
     if (FixSOCFermi) then
        E0=shift
        E1=shift
-       E2=shift
+       E2=shift           
        if (root_fail) then
-           print*,'SECANT method'
-           call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,0,E3,DE,Cond,K)
-           if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-              print *, 'Warning: SECANT method failed to find root. Using MULLER.'
-              root_fail = .true.
-           else
-              shift = E3
-              root_fail = .false.
-           end if
-       end if             
-       !if (root_fail) then
-       !   print*,'MULLER method'
-       !   call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,0,E3,DE,K,Cond)
-       !   if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-       !      print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-       !      root_fail = .true.
-       !   else
-       !      shift = E3
-       !      root_fail = .false.
-       !   end if
-       !end if                
+          print*,'MULLER method'
+          call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,0,E3,DE,K,Cond)
+          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+             print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+             root_fail = .true.
+          else
+             !shift = E3
+             root_fail = .false.
+          end if
+       end if                
     else
        E0=shift-Z 
        E1=shift
