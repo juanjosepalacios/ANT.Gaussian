@@ -69,10 +69,10 @@
   complex*16, dimension(:,:),allocatable :: SPH
   
   ! *** Hamiltonian and density matrix of device
-  real*8, dimension(:,:,:),allocatable :: HD
+  complex*16, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC,PD_SOC_R,PD_SOC_A
+  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC, PD_SOC_R, PD_SOC_A
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
 
   ! *** Orthognalization matrix for device ***
@@ -252,9 +252,9 @@
   !* Initialize device for transport calculation *
   !***********************************************
   subroutine InitDevice( NBasis, UHF, S )
-    use constants, only: d_zero
+    use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp, NEmbed
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, biasvoltage, ANT1DInp, NEmbed
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -272,7 +272,7 @@
     logical, intent(in) :: UHF
     real*8, dimension(NBasis,NBasis),intent(in) :: S
 
-    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2
+    integer :: AllocErr, ios, iatom, NEmbed1, NEmbed2, i, j
 
     real*8, dimension(NBasis,NBasis) :: RSPH 
 
@@ -293,7 +293,7 @@
        stop
     end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), H_SOC_ONLY(DNAOrbs,DNAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
        print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
        stop
@@ -334,8 +334,29 @@
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
-    
+
+    if (SOC .or. ROT) then
+       call spin_orbit                 
+       if (NSpin == 2) then
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=H_SOC(i,j)
+             HD(2,i,j)=H_SOC(i+NAOrbs,j+NAOrbs)
+             SD(i,j)=S_SOC(i,j)                
+          end do
+          end do
+       else 
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=H_SOC(i,j)
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
+       end if       
+    end if       
+
     IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
+
 
     EMin = 0.0d0
     EMax = 0.0d0
@@ -653,7 +674,7 @@
           end do
        end do
 
-       HD = HDMod
+       HD = dcmplx(HDMod,AIMAG(HD))
 
     end if
 
@@ -703,7 +724,7 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
+          call Init1DLead ( LeadNo,NSpin,DREAL(HD),SD,NAOrbs)
           EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
           EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
        case( "GHOST" )
@@ -740,6 +761,7 @@
 
     logical,intent(out) :: ADDP
     real*8, dimension(NSpin,NAOrbs,NAOrbs),intent(in) :: F
+    real*8, dimension(NSpin,NAOrbs,NAOrbs) :: HDMod
 
     real*8, dimension(NAOrbs) :: evals
     real*8, dimension(:,:),allocatable :: SPM
@@ -755,6 +777,7 @@
             call InitElectrodes
             call SwitchOn1DElectrodes
     end if 
+    
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
@@ -775,7 +798,11 @@
        call CheckEnergyBounds
     end if
 
-    if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
+    if( DFTU ) then 
+       HDMod = REAL(HD)
+       call Add_DFT_plus_U_Pot( PD, HDMod )
+       HD = dcmplx(HDMod,AIMAG(HD))
+    end if   
 
     if(.not.DMImag) call CompDensMat(ADDP)
     if(DMImag) call CompDensMat2(ADDP)
@@ -796,7 +823,11 @@
 
        !IF( ANT1DInp ) call WriteANT1DInput
        
-       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
+       if (UPlus > 0.0) then
+          HDMod = REAL(HD) 
+          call Mol_Sub(HDMod,SD,PD,shift)
+          HD = dcmplx(HDMod,AIMAG(HD))
+       end if   
        
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
@@ -816,7 +847,12 @@
           end do
           HDOrtho = .true.
        end if
-       if( DiagCorrbl ) call DiagCorrBlocks( HD, SD )
+       if( DiagCorrbl ) then
+         HDMod=REAL(HD)       
+         call DiagCorrBlocks( HDMod, SD )
+         HD = dcmplx(HDMod,AIMAG(HD))
+       endif  
+         
        call Hamiltonian
        IF ( HybFunc ) call CompHybFunc
        IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOS_Beg <= LDOS_End) CALL LDOS
@@ -2490,7 +2526,51 @@
        rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
        rho_ba_I(i,j)=rho_ba_I(i,j)+IMAG(rho(i+NAOrbs,j))
     end do
-    end do             
+    end do                 
+   
+    if (PrtHatom > 1) then
+       do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then    
+                 PRINT *, "Real part of PD_SOC matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 
+                 PRINT *, "Imaginary part of PD_SOC matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(PrtHatom),NAOrbs+HiAOrbNo(PrtHatom) ) 
+                 end do
+             end if   
+          end do
+       end do      
+    end if     
 
     write(ifu_log,*)'----------------------'
     write(ifu_log,*)'Charges in electrode 1'
@@ -2682,12 +2762,12 @@
     if (SOC .or. ROT) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2695,6 +2775,14 @@
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
        call spin_orbit
+      
+       ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+          H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+       end do
+       end do       
        
     else
 
@@ -2868,6 +2956,7 @@
          deallocate(DSG)
          !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
          deallocate(H_SOC)
+         deallocate(H_SOC_ONLY)
       else 
          deallocate(GammaL)
          deallocate(GammaR)
@@ -2929,12 +3018,12 @@
     if (SOC .or. ROT) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2958,6 +3047,14 @@
 
        call spin_orbit
        
+       ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+          H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+       end do
+       end do
+          
     else
 
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -3406,14 +3503,19 @@
     
     ! Device Green's function
     complex*16, dimension(NAorbs,NAOrbs) :: GD
+    
+    real*8, dimension(Nspin,NAorbs,NAOrbs) :: HDMod
 
     complex*16, dimension(:,:,:,:,:), allocatable :: delta
 
     print *, "-----------------------------------------"
     print *, "--- Computing Hybridization functions ---"
     print *, "-----------------------------------------"
-
-    call SetHamOvl( HD, SD )
+    
+    HDMod=REAL(HD)
+    call SetHamOvl( HDMod, SD )
+    HD = dcmplx(HDMod,AIMAG(HD))
+    
     !
     ! Read mesh file mesh.dat
     ! 
@@ -4641,14 +4743,14 @@
     use parameters, only: PrtHatom, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
-    use g03Common, only: GetNShell
+    use g03Common, only: GetNShell, GetNAtoms
 #endif
 #ifdef G09ROOT
-    use g09Common, only: GetNShell
+    use g09Common, only: GetNShell, GetNAtoms
 #endif    
       
     complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
-    integer :: i,j,totdim,nshell,Atom
+    integer :: i,j,totdim,nshell,Atom,iAtom,jAtom
     real*8 :: uno
  
  Atom = PrtHatom   
@@ -4667,8 +4769,8 @@
    if (NSpin == 2) then
       do i=1,NAOrbs
       do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
+         H_SOC(i,j)=HD(1,i,j)
+         H_SOC(i+NAOrbs,j+NAOrbs)=HD(2,i,j)
          S_SOC(i,j)=SD(i,j)              
          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
       end do
@@ -4676,8 +4778,8 @@
    else 
       do i=1,NAOrbs
       do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i,j)=HD(1,i,j)
+         H_SOC(i+NAOrbs,j+NAOrbs)=HD(1,i,j)
          S_SOC(i,j)=SD(i,j)              
          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
       end do
@@ -4691,8 +4793,8 @@
  
  nshell = GetNShell()
  
- If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
+ If (ROT) CALL CompHROT(DREAL(HD),hamilrot,SD,overlaprot,NAOrbs,nshell)
+ If (SOC) CALL CompHSO(hamil_SO,DREAL(HD),NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
@@ -4731,6 +4833,50 @@
 !end do                                                                                             
 !
 
+    if (PrtHatom > 1) then
+       do iAtom=1,GetNAtoms()
+          do jAtom=1,GetNAtoms()
+             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then
+                 PRINT *, "Real part of hamil_so matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( REAL(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 
+                 PRINT *, "Imaginary part of hamil_so matrix for atom ", PrtHatom
+                 PRINT *, "Up-Up" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Up-Down" 
+                 do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do  
+                 PRINT *, "Down-Up"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) ) 
+                 end do                                   
+                 PRINT *, "Down-Down"
+                 do i=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom)                                                     
+                     PRINT '(1000(F11.5))',  ( AIMAG(hamil_so( i, j )), j=totdim+LoAOrbNo(PrtHatom),totdim+HiAOrbNo(PrtHatom) ) 
+                 end do
+              end if   
+          end do
+       end do
+    end if       
+
 !PRINT *, "Imaginary part of Hamil_SO matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
 !do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
@@ -4762,6 +4908,7 @@
  if (SOC) then
    do i=1, totdim*2
       do j=1, totdim*2
+         H_SOC_ONLY(i,j)=hamil_SO(i,j) 
          H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
       end do
    end do
