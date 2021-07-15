@@ -1,0 +1,855 @@
+#
+# Makefile for Gaussian 09.
+#
+#     Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2012,
+#                Gaussian, Inc.  All Rights Reserved.
+#
+#     This is part of the Gaussian(R) 09 program.  It is based on
+#     the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+#     the Gaussian(R) 98 system (copyright 1998 Gaussian, Inc.),
+#     the Gaussian(R) 94 system (copyright 1995 Gaussian, Inc.),
+#     the Gaussian 92(TM) system (copyright 1992 Gaussian, Inc.),
+#     the Gaussian 90(TM) system (copyright 1990 Gaussian, Inc.),
+#     the Gaussian 88(TM) system (copyright 1988 Gaussian, Inc.),
+#     the Gaussian 86(TM) system (copyright 1986 Carnegie Mellon
+#     University), and the Gaussian 82(TM) system (copyright 1983
+#     Carnegie Mellon University). Gaussian is a federally registered
+#     trademark of Gaussian, Inc.
+#
+#     This software contains proprietary and confidential information,
+#     including trade secrets, belonging to Gaussian, Inc.
+#
+#     This software is provided under written license and may be
+#     used, copied, transmitted, or stored only in accord with that
+#     written license.
+#
+#     The following legend is applicable only to US Government contracts
+#     under DFARS:
+#
+#                        RESTRICTED RIGHTS LEGEND
+#
+#     Use, duplication or disclosure by the US Government is subject to
+#     restrictions as set forth in subparagraph (c)(1)(ii) of the Rights
+#     in Technical Data and Computer Software clause at DFARS
+#     252.227-7013.
+#
+#     Gaussian, Inc., 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+#
+#     The following legend is applicable only to US Government contracts
+#     under FAR:
+#
+#                        RESTRICTED RIGHTS LEGEND
+#
+#     Use, reproduction and disclosure by the US Government is subject
+#     to restrictions as set forth in subparagraph (c) of the Commercial
+#     Computer Software - Restricted Rights clause at FAR 52.227-19.
+#
+#     Gaussian, Inc., 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+#
+# Where to find this file when making executables:
+#
+BSDDIR = bsd
+MAKELOC = -f $(BSDDIR)/g09.make
+BSDDIR1 = ../bsd
+MAKELOC1 = -f $(BSDDIR1)/g09.make
+UTILDIR = ..
+HLIBDIR = $(g09root)/hermes/lib
+HSRC = $(g09root)/hermes/gxinterface
+HINC = $(g09root)/hermes/include
+HLIBS = $(HLIBDIR)/libdbapi.a $(HLIBDIR)/libsupp.a $(HLIBDIR)/libisam.a \
+        $(HLIBDIR)/libcbt.a $(HLIBDIR)/libutils.a $(HLIBDIR)/libgxchm.a
+HFLAGS = $(CFLAGS) -I$(HINC) -D_POSIX_SOURCE
+#
+# The utility library:
+#
+#BLAS = blas-opt.a blas-f2c.a
+#BLASL = -Wl,blas-opt.a -Wl,blas-f2c.a
+#
+MKLPATH=/software/intel/parallel_studio_xe_2016/compilers_and_libraries_2016.1.150/linux/mkl
+BLASL = -Wl,$(BSDDIR)/libf77blass-ia32.a -Wl,$(BSDDIR)/libatlass-ia32.a
+BLAS1 = $(BSDDIR)/libf77blass-ia32.a
+BLAS2 = $(BSDDIR)/libatlas-ia32.a
+#BLAS = ${MKLPATH}/libmkl_intel_ilp64.a ${MKLPATH}/libmkl_intel_thread.a ${MKLPATH}/libmkl_core.a
+#BLAS = $(BLAS1) $(BLAS2)
+BLAS = ${MKLPATH}/lib/intel64/libmkl_blas95_ilp64.a ${MKLPATH}/lib/intel64/libmkl_intel_ilp64.a ${MKLPATH}/lib/intel64/libmkl_intel_thread.a ${MKLPATH}/lib/intel64/libmkl_core.a
+GAULIBA = util.a
+GAULIBU = util.so
+GAULIB = $(GAULIBU) $(BLAS)
+LINDALIBS = $(GAULIB) $(BLAS)
+#
+# Directory pointers only used for linking the profiling version:
+#
+GSDIR = .
+GDIR = ../g09
+#
+# Standard dimensioning definitions.
+PCMDIM = -DDEFMXTS=2500 -DDEFMXBOND=12 -DDEFMXSPH=250 -DDEFMXINV=2500  -DDEFMXSLPAR=300 -DDEFMXSATYP=4
+#CSIZE = 524288
+#CSIZEW = 64
+INCDIR = -I${MKLROOT}/include -I${MKLROOT}/include/intel64/ilp64
+INCDIRG = -I$(g09root)/g09
+PARMETH = -D_OPENMP_ -D_OPENMP_MM_
+FPARFLAG = -qopenmp
+PARFLAG = -DGAUSS_PAR -DGAUSS_THPAR $(PARMETH)
+BLASFLAG = -DCA1_DGEMM -DCA2_DGEMM -DCAB_DGEMM -DLV_DSP -DMKL_DIRECT_CALL
+DEBUGP = -DCHECK_ARG_OVERLAP
+I8CPP1 = -DI64
+I8CPP2 = -DP64
+I8CPP3 = -DPACK64
+I8CPP4 = -DUSE_I2
+I8CPP = $(I8CPP1) $(I8CPP2) $(I8CPP3) $(I8CPP4)
+GAUDIM = 2500
+GAUDIMA = $(GAUDIM)00
+GAUDIMR = $(GAUDIM)0
+GAUDIMS = $(GAUDIM)
+CTDEBUG = -DDEFICTDBG=0
+PROCTYPE =
+NISEC = -DDEFISEC=16
+NJSEC = -DDEFJSEC=128
+NKSEC = -DDEFKSEC=128
+X86TYPE =
+DIMENSX = $(INCDIR) $(INCDIRG) -DDEFMAXRES=$(GAUDIMR) -DDEFMAXSEC=$(GAUDIMS) $(I8CPP) $(PARFLAG) $(DEBUGP) -DDEFMAXSHL=$(GAUDIMA) -DDEFMAXATM=$(GAUDIMA) $(PROCTYPE) -DNO_SBRK $(X86TYPE) \
+  -DDEFMAXNZ=$(GAUDIMA) -DDEFNVDIM=257 -DR4ETIME \
+  -DDEFARCREC=1024 -DMERGE_LOOPS -D_I386_ -DLITTLE_END -DUSING_F2C -DSTUPID_ATLAS \
+  -DDEFMAXXCVAR=40 -DDEFMAXIOP=200 -DDEFMAXCOORDINFO=32 -DDEFMAXSUB=80 -DDEFMAXCHR=1024 -DDEFMOMEGA=5 -DDEFNOMEGA=6 -DDEFMAXXCNAME=25 -DDEFLMAX=13 -DDEFMINB1P=100000000 -DDEFXGN3MIN=1 $(NISEC) $(NJSEC) $(NKSEC) -DDEFN3MIN=10 -DDEFNBOMAXBAS=10000 -DDEFMAXHEV=2000 -DDEFCACHE=128 \
+  -DDEFMAXLECP=10 -DDEFMAXFUNIT=5 -DDEFMAXFFILE=10000 -DDEFMAXFPS=1300 -DDEFMAXINFO=200 \
+  -DDEFMAXOP=384 -DDEFMAXTIT=100 -DDEFMAXRTE=4000 -DDEFMAXREDTYPE=3 -DDEFMAXREDINDEX=4 -DDEFMAXOV=500 -DDEFMXDNXC=8 -DDEFMXTYXC=10 $(CTDEBUG) -D_ALIGN_CORE_ \
+  $(BLASFLAG) -DO_BKSPEF -DSETCDMP_OK $(PCMDIM) -DGCONJG=DCONJG -DGCMPLX=DCmplx -DGREAL=DREAL -DGIMAG=DIMAG -DEXT_LSEEK -DAPPEND_ACC
+#
+# These commands are converted to "on machine command" for remote-
+# control compilation.
+#
+RUNF2C = f2c -kr -T. -R -Nx400 -Nn1604 -NL800
+RUNCC = icc -qopenmp -axCORE-AVX2 -shared-intel -static-libgcc
+RUNAR  = ar
+RUNRAN = gau-ranlib
+RUNCPP = gau-cpp
+RUNFSP = gau-fsplit
+RUNMAKE = make
+#TIME = -Mreentrant -Mrecursive -Mnosave -Minfo -Mneginfo -time
+#VECTOR4 = ,prefetch,sse -fastsse -Mscalarsse
+#VECTOR = -Mvect=assoc,recog,cachesize:$(CSIZE)$(VECTOR4)
+#MACHTY = p7-32
+#MACH = -tp $(MACHTY) $(TIME)
+#OPTOI = -m32 -march=i486 -malign-double
+OPTFLAGO = -O3 -unroll
+# Flags for portland compiler.
+#
+I8FLAG = -i8
+R8FLAG = -r8
+MMODEL = -mcmodel=medium
+#PGISTATIC = -Bstatic_pgi
+#RUNF77 = pgf77 $(PGISTATIC) $(I8FLAG) $(R8FLAG) $(MMODEL) $(DEBUGF) $(SPECFLAG)
+RUNF77 = ifort $(I8FLAG) $(R8FLAG) $(MMODEL) -auto -axCORE-AVX2 -shared-intel -static-libgcc -no-prec-div -fpp -ftz -pad  -mkl
+F2CLIB =
+SYSLIBS = -lpthread -lm -lc
+NUMALIB = 
+LIBS = $(NUMALIB) $(SYSLIBS)
+UNROLL  = -unroll
+TWOH =
+PC64 = -pc64
+DIMENS = $(DIMENSX) $(TWOH)
+FNOOPT = $(FPARFLAG) $(PROFFLAG) -O0 $(MACH) -g
+FNOOPT64 = $(FNOOPT) $(PC64)
+FOPT1 = $(FPARFLAG) $(PROFFLAG) -O1 $(MACH)
+FOPT2 = $(FPARFLAG) $(PROFFLAG) -O2 $(MACH)
+FOPT2UN = $(FOPT2) $(UNROLL)
+FOPT2VC = $(FOPT2) $(VECTOR)
+OPTFLAG = -O2 $(UNROLL) $(VECTOR)
+LINK1 =
+LINK2 =
+EXTCFLAGS =
+FFLAGS = $(FPARFLAG) $(PROFFLAG) $(MACH) $(OPTFLAG) $(LINK1) $(LINK2)
+CFLAGS = $(DIMENS) $(OPTFLAGO) $(PROFFLAG) $(EXTCFLAGS)
+LFLAGS = $(FFLAGS)
+EXTOBJ1 =
+EXTOBJ2 =
+EXTOBJ = $(EXTOBJ1) $(EXTOBJ2)
+TESTRTO =
+#
+# Default suffixes:
+#
+.SUFFIXES:
+.SUFFIXES: .f .exel .exe .a .o .lo .fl .c .F .prj
+
+#
+# Rules for Fortran and C compilation, possible including "on machine"
+#
+#.F.o:
+%.o : %.F
+	$(RUNCPP) $(DIMENS) $*.F $*.f
+	$(RUNF77) $(FFLAGS) -c $*.f
+	rm -f $*.f $*.c
+
+#.F.f:
+%.f : %.F
+	$(RUNCPP) $(DIMENS) $*.F $*.f
+
+#.F.c:
+#%.c : %.F
+#	$(RUNCPP) $(DIMENS) $*.F $*.f
+#	$(RUNF2C) $*.f
+#	rm -f $*.f
+
+#.c.o:
+%.o : %.c
+	$(RUNCC) $(CFLAGS) -c $*.c
+
+#
+# Utility routines under development:
+EXTRAS = 
+
+#
+# Default is to make the whole thing:
+#
+all:    util.a exe
+
+#
+# Here is the list of executables:
+#
+GAUEXE = gau-machine gau-fsplit gau-cpp 
+exe:	$(GAUEXE) $(GAULIBA) $(GAULIB) exe1 exe3 exe5 exe7 exe9 exe10 exe11 utils
+
+exe1:         g09      l1.exe    l101.exe    l102.exe    l103.exe \
+	 l105.exe    l106.exe    l107.exe    l108.exe    l109.exe \
+	 l110.exe    l111.exe    l112.exe    l113.exe    l114.exe    l115.exe \
+	 l116.exe    l117.exe    l118.exe    l120.exe    l121.exe \
+	 l122.exe    l123.exe    l124.exe    l202.exe
+
+exe3:    l301.exe    l302.exe    l303.exe    l308.exe    l310.exe \
+	 l311.exe    l314.exe    l316.exe    l318.exe    l319.exe
+
+exe5:    l401.exe    l402.exe    l405.exe    l502.exe    l503.exe \
+	 l506.exe    l508.exe    l510.exe    l601.exe    l602.exe \
+	 l604.exe    l607.exe    l608.exe    l609.exe    l610.exe
+
+exe7:    l701.exe    l702.exe    l703.exe    l716.exe    l801.exe \
+	 l802.exe    l804.exe    l811.exe
+
+exe9:    l901.exe    l902.exe    l903.exe    l904.exe    l905.exe \
+	 l906.exe    l908.exe    l913.exe    l914.exe    l915.exe \
+	 l916.exe    l918.exe    l923.exe   l9999.exe
+
+exe10:  l1002.exe   l1003.exe   l1014.exe
+
+exe11:  l1101.exe   l1102.exe   l1110.exe   l1111.exe   l1112.exe
+
+UTILLIST = gauopt gauoptl ghelp newzmat testrt cubegen cubman c8609 ham506 \
+	rwfdump gautraj chkchk copychk freqchk freqmem formchk demofc unfchk mm
+
+utils:  $(UTILLIST)
+
+#
+# Which links use direct code: 
+#
+DIREXES = l117.exe l302.exe l303.exe l308.exe l319.exe \
+	  l401.exe l502.exe l506.exe l508.exe l510.exe l601.exe l602.exe \
+	  l608.exe l701.exe l703.exe l716.exe l804.exe l811.exe l906.exe \
+	  l908.exe l913.exe l914.exe l916.exe l1002.exe l1003.exe l1014.exe l1101.exe l1102.exe \
+          l1110.exe l1111.exe l1112.exe
+
+deldirexe:
+	rm -f $(DIREXES) *.exel
+
+direxe: $(DIREXES)
+
+#
+# How to delete the executables:
+#
+delexe:
+	rm -fr *.exe *.exel $(UTILLIST) gau-cpp gau-fsplit gau-machine g09 linda-dummy linda-exe fhello
+
+clean: delexe
+	rm -f *.a *.so *.lo *.o *.flag bsd/g09.make
+
+#
+# How to make the library:
+#
+util.a:
+	$(BSDDIR)/bldg09 nolink
+
+#
+# The generic command line for making a link from its library:
+#
+#.F.exe: 
+%.exe : %.F
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.*
+
+#
+#
+# The generic command for making a link library from source:
+#
+#.F.a:
+%.a : %.F
+	rm -f -r temp-$*
+	mkdir temp-$*
+	(cd temp-$* ; $(RUNFSP) ../$*.F ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-l]*.F ; \
+	  ($(RUNAR) rlv ../$*.a [a-l]*.o; exit 0); \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [m-z]*.F ; \
+	  ($(RUNAR) rlv ../$*.a [m-z]*.o; exit 0))
+	rm -f -r temp-$*
+	$(RUNRAN) $*.a
+
+#
+# How to make a .prj file from source.
+#
+.F.prj:
+	$(RUNCPP) $(DIMENS) $*.F $*.f
+	forchek $(FCHEKFLAGS) $*.f
+	rm -f $*.f
+
+#
+# l1 library has two source files:
+#
+l1.a: l1.F bsd/mdl1.F ertgen.inc
+	rm -f -r temp-l1
+	mkdir temp-l1
+	(cd temp-l1 ; $(RUNFSP) ../l1.F ; $(RUNFSP) ../bsd/mdl1.F ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB *.F ; \
+	  $(RUNAR) rlv ../l1.a *.o)
+	rm -f -r temp-l1
+	$(RUNRAN) l1.a
+
+lapack.a: lapack.F
+	rm -f -r temp-lapack
+	mkdir temp-lapack
+	(cd temp-lapack ; $(RUNFSP) ../lapack.F  ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-c]*.F ; \
+	  $(RUNAR) rlv lapack.a [a-c]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB d[a-k]*.F ; \
+	  $(RUNAR) rlv lapack.a d[a-k]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB dl*.F ; \
+	  $(RUNAR) rlv lapack.a dl*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB d[m-r]*.F ; \
+	  $(RUNAR) rlv lapack.a d[m-r]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB d[s-z]*.F ; \
+	  $(RUNAR) rlv lapack.a d[s-z]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [e-y]*.F ; \
+	  $(RUNAR) rlv lapack.a [e-y]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB z[a-k]*.F ; \
+	  $(RUNAR) rlv lapack.a z[a-k]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB zl*.F ; \
+	  $(RUNAR) rlv lapack.a zl*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB z[m-r]*.F ; \
+	  $(RUNAR) rlv lapack.a z[m-r]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB z[s-z]*.F ; \
+	  $(RUNAR) rlv lapack.a z[s-z]*.o ; \
+	  mv lapack.a ..)
+	rm -f -r temp-lapack
+	$(RUNRAN) lapack.a
+
+#
+# Exceptional link commands:
+#
+
+g09: $(GAULIB) $(EXTRAS)
+	$(RUNFSP) -e ml0 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) $(EXTRAS) ml0.o
+	$(RUNF77) $(FFLAGS) -g -o g09 ml0.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f ml0.*
+
+l302.exe: l302.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.* bdam1.*
+
+l303.exe: l303.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.* bdam1.*
+
+l314.exe: l314.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.*
+
+l401.exe: l401.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.* bdam1.*
+
+l402.exe: l402.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdam1.*
+
+l502.exe: l502.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdam1.*
+
+l609.exe: $(EXTRAS) l609.a  
+	- $(RUNAR) dv l609.a bd0609.o
+	$(RUNRAN) l609.a
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bd0609 $(GDIR)/l609.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bd0609.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bd0609.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bd0609.*
+
+l701.exe: l701.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.* bdam1.*
+
+l703.exe: l703.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.* bdam1.*
+
+l705.exe: $(EXTRAS) l306.a l705.a
+	$(RUNFSP) -e ml705 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ml705.o
+	$(RUNF77) $(FFLAGS) -o l705.exe ml705.o $(EXTOBJ) l705.a l306.a $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f ml705.*
+
+l709.exe: $(EXTRAS) l309.a l709.a
+	$(RUNFSP) -e ml709 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ml709.o
+	$(RUNF77) $(FFLAGS) -o l709.exe ml709.o $(EXTOBJ) l709.a l309.a $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f ml709.*
+
+l914.exe: l914.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdam1 $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdam1.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdam1.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdam1.*
+
+l1101.exe: l1101.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.*
+
+l1110.exe: l1110.a $(EXTRAS)
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	$(RUNFSP) -e bdrys $(GDIR)/utilam.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.o bdrys.o
+	$(RUNF77) $(FFLAGS) -o $*.exe m$*.o $(EXTOBJ) $*.a bdrys.o $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f m$*.* bdrys.*
+
+#on4mp2.o:
+#	$(RUNCPP) $(DIMENS) -D_PBCMP2_ $*.F $*.f
+#	$(RUNF77) $(FFLAGS) -c $*.f
+#	rm -f $*.f $*.c
+
+pbcmp2.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FNOOPT) -Msave -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+l906.exe: $(EXTRAS) l906.a
+	$(RUNFSP) -e ml906 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ml906.o
+	$(RUNF77) $(FFLAGS) -o l906.exe ml906.o $(EXTOBJ) l906.a $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f ml906.*
+
+l1003.exe: $(EXTRAS) l510.a l1003.a
+	$(RUNFSP) -e ml1003 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ml1003.o
+	$(RUNF77) $(FFLAGS) -o l1003.exe ml1003.o $(EXTOBJ) l1003.a l510.a $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f ml1003.*
+
+l1111.exe: $(EXTRAS) l923.a l1111.a
+	$(RUNFSP) -e ml1111 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ml1111.o
+	$(RUNF77) $(FFLAGS) -o l1111.exe ml1111.o $(EXTOBJ) l1111.a l923.a $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f ml1111.*
+
+l9999.exe: $(EXTRAS) l9999.a dummy.o dummy-narch.o
+	$(RUNFSP) -e ml9999 $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ml9999.o
+	$(RUNF77) $(FFLAGS) -o l9999.exe ml9999.o $(EXTOBJ) $(EXTRAS) l9999.a \
+	   dummy.o dummy-narch.o $(GAULIB) $(LIBS)
+	rm -f ml9999.*
+
+c8609: $(EXTRAS) c8609.o
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) c8609.o
+	$(RUNF77) $(FFLAGS) -o c8609 c8609.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+chkchk: $(EXTRAS) chkchk.o
+	$(RUNF77) $(FFLAGS) -o chkchk chkchk.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+gautraj: $(EXTRAS) gautraj.o
+	$(RUNF77) $(FFLAGS) -o gautraj gautraj.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+copychk: $(EXTRAS) copychk.o
+	$(RUNF77) $(FFLAGS) -o copychk copychk.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+cktoig: $(EXTRAS) cktoig.o
+	$(RUNF77) $(FFLAGS) -o cktoig cktoig.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+cubman: cubman.o
+	$(RUNF77) $(FFLAGS) -o cubman cubman.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+cubegen: cubegen.o
+	$(RUNF77) $(FFLAGS) -o cubegen cubegen.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+freqchk: freqchk.o l716.a newzmat.a
+	$(RUNF77) $(FFLAGS) -o freqchk freqchk.o l716.a newzmat.a $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+freqmem: freqmem.o
+	$(RUNF77) $(FFLAGS) -o freqmem freqmem.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+formchk: formchk.o
+	$(RUNF77) $(FFLAGS) -o formchk formchk.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+demofc: demofc.o
+	$(RUNF77) $(FFLAGS) -o demofc demofc.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+gauopt: $(EXTRAS) gauopt.o
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) gauopt.o
+	$(RUNF77) $(FFLAGS) -o gauopt gauopt.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+gauoptl: $(EXTRAS) gauoptl.o
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) gauoptl.o
+	$(RUNF77) $(FFLAGS) -o gauoptl gauoptl.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+ghelp: $(EXTRAS) ghelp.o
+	$(RUNFSP) -e mghelp $(BSDDIR)/main.F
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) ghelp.o mghelp.o
+	$(RUNF77) $(FFLAGS) -o ghelp mghelp.o ghelp.o l9999.a $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+	rm -f mghelp.*
+
+ham506: ham506.o
+	$(RUNF77) $(FFLAGS) -o ham506 ham506.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+newzmat: $(EXTRAS) newzmat.a newzmat-bsd.o l101.a l716.a
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) newzmat.a newzmat-bsd.o
+	$(RUNF77) $(FFLAGS) -o newzmat newzmat-bsd.o newzmat.a $(EXTOBJ) \
+	    l101.a l401.a l716.a $(EXTRAS) $(GAULIB) $(LIBS)
+
+pluck: pluck.o
+	$(RUNF77) $(FFLAGS) -o pluck pluck.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+unfchk: unfchk.o
+	$(RUNF77) $(FFLAGS) -o unfchk unfchk.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+mm: mm.o l101.a
+	$(RUNF77) $(FFLAGS) -o mm mm.o $(EXTOBJ) $(EXTRAS) l101.a $(GAULIB) $(LIBS)
+
+rwfdump: rwfdump.o
+	$(RUNF77) $(FFLAGS) -o rwfdump rwfdump.o $(EXTOBJ) $(EXTRAS) $(GAULIB) $(LIBS)
+
+testrt: $(EXTRAS) testrt.o l1.a $(TESTRTO)
+	$(RUNMAKE) $(MAKELOC) JUNK='JUNK' $(EXTRAS) testrt.o $(TESTRTO)
+	$(RUNF77) $(FFLAGS) -o testrt testrt.o $(TESTRTO) $(EXTOBJ) l1.a l9999.a $(EXTRAS) $(GAULIB) $(LIBS)
+
+gau-cpp: $(BSDDIR)/cpp.c $(BSDDIR)/cpp.h
+	$(RUNCC) -o gau-cpp -DHOST=SYS_UNIX -Dstrchr=index -Dstrrchr=rindex \
+	  $(BSDDIR)/cpp.c
+
+gau-fsplit: $(BSDDIR)/fsplit.c
+	$(RUNCC) $(CFLAGS) -o gau-fsplit $(BSDDIR)/fsplit.c
+
+gau-machine: $(BSDDIR)/machine.c
+	$(RUNCC) -o gau-machine $(BSDDIR)/machine.c
+
+#
+# Special commands for certain libraries:
+#
+dummy-links.a:
+	rm -f -r temp-dummy-links
+	mkdir temp-dummy-links
+	(cd temp-dummy-links ; $(RUNFSP) ../dummy-links.F ; \
+	  $(RUNFSP) -e ishdup -e sinfo ../l311.F ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB *.F ; \
+	  rm ishdup.o sinfo.o ; \
+	  $(RUNAR) rlv dummy-links.a *.o ; mv dummy-links.a ..)
+	rm -f -r temp-dummy-links
+	$(RUNRAN) dummy-links.a
+
+l301.a:
+	rm -f -r temp-l301
+	mkdir temp-l301
+	(cd temp-l301 ; $(RUNFSP) ../l301.F  ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-l]*.F ; \
+	  $(RUNAR) rlv l301.a [a-l]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [m-o]*.F ; \
+	  $(RUNAR) rlv l301.a [m-o]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [p-z]*.F ; \
+	  $(RUNAR) rlv l301.a [p-z]*.o ; \
+	  mv l301.a ..)
+	rm -f -r temp-l301
+	$(RUNRAN) l301.a
+
+l510.a:
+	rm -f -r temp-l510
+	mkdir temp-l510
+	(cd temp-l510 ; $(RUNFSP) ../l510.F  ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-f]*.F ; \
+	  $(RUNAR) rlv l510.a [a-f]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB g[a-g]*.F ; \
+	  $(RUNAR) rlv l510.a g[a-g]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB g[h-z]*.F ; \
+	  $(RUNAR) rlv l510.a g[h-z]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [h-m]*.F ; \
+	  $(RUNAR) rlv l510.a [h-m]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [n-r]*.F ; \
+	  $(RUNAR) rlv l510.a [n-r]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [s-t]*.F ; \
+	  $(RUNAR) rlv l510.a [s-t]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB u[a-p]*.F ; \
+	  $(RUNAR) rlv l510.a u[a-p]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB u[q-z]*.F ; \
+	  $(RUNAR) rlv l510.a u[q-z]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [v-z]*.F ; \
+	  $(RUNAR) rlv l510.a [v-z]*.o ; \
+	  mv l510.a ..)
+	rm -f -r temp-l510
+	$(RUNRAN) l510.a
+
+l607.a:
+	rm -f -r temp-l607
+	mkdir temp-l607
+	(cd temp-l607 ; $(RUNFSP) ../l607.F  ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-e]*.F ; \
+	  $(RUNAR) rlv l607.a [a-e]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [f-k]*.F ; \
+	  $(RUNAR) rlv l607.a [f-k]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [l-z]*.F ; \
+	  $(RUNAR) rlv l607.a [l-z]*.o ; \
+	  mv l607.a ..)
+	rm -f -r temp-l607
+	$(RUNRAN) l607.a
+
+l923.a:
+	rm -f -r temp-l923
+	mkdir temp-l923
+	(cd temp-l923 ; $(RUNFSP) ../l923.F  ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-c]*.F ; \
+	  $(RUNAR) rlv l923.a [a-c]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [d-f]*.F ; \
+	  $(RUNAR) rlv l923.a [d-f]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [g-h]*.F ; \
+	  $(RUNAR) rlv l923.a [g-h]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB i[0-9]*.F ; \
+	  $(RUNAR) rlv l923.a i[0-9]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB i[a-n]*.F ; \
+	  $(RUNAR) rlv l923.a i[a-n]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB i[o-z]*.F ; \
+	  $(RUNAR) rlv l923.a i[o-z]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [j-l]*.F ; \
+	  $(RUNAR) rlv l923.a [j-l]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [m-o]*.F ; \
+	  $(RUNAR) rlv l923.a [m-o]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [p-r]*.F ; \
+	  $(RUNAR) rlv l923.a [p-r]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB s[0-9]*.F ; \
+	  $(RUNAR) rlv l923.a s[0-9]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB s[a-e]*.F ; \
+	  $(RUNAR) rlv l923.a s[a-e]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB s[f-z]*.F ; \
+	  $(RUNAR) rlv l923.a s[f-z]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB t*.F ; \
+	  $(RUNAR) rlv l923.a t*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [u-z]*.F ; \
+	  $(RUNAR) rlv l923.a [u-z]*.o ; \
+	  mv l923.a ..)
+	rm -f -r temp-l923
+	$(RUNRAN) l923.a
+
+l1111.a:
+	rm -f -r temp-l1111
+	mkdir temp-l1111
+	(cd temp-l1111 ; $(RUNFSP) ../l1111.F  ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [a-f]*.F ; \
+	  $(RUNAR) rlv l1111.a [a-f]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [g-k]*.F ; \
+	  $(RUNAR) rlv l1111.a [g-k]*.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB [l-z]*.F ; \
+	  $(RUNAR) rlv l1111.a [l-z]*.o ; \
+	  mv l1111.a ..)
+	rm -f -r temp-l1111
+	$(RUNRAN) l1111.a
+
+newzmat.a: newzmat.F $(BSDDIR)/cmpdst.c
+	rm -f -r temp-newzmat
+	mkdir temp-newzmat
+	(cd temp-newzmat ; $(RUNFSP) ../newzmat.F ; \
+	  make $(MAKELOC1) JUNK='JUNK' cmpdst.o ; \
+	  $(BSDDIR1)/updatelink1 $(BSDDIR1)/g09.make JUNK='JUNK' DO-LIB *.F ; \
+	  $(RUNAR) rlv ../newzmat.a *.o)
+	rm -f -r temp-newzmat
+	$(RUNRAN) newzmat.a
+
+# newzmat:
+
+cmpdst.o: $(BSDDIR1)/cmpdst.c
+	$(RUNCC) $(CFLAGS) -c $(BSDDIR1)/cmpdst.c
+
+newzmat-bsd.o: $(BSDDIR)/newzmat-bsd.F
+	$(RUNCPP) $(DIMENS) $(BSDDIR)/newzmat-bsd.F newzmat-bsd.f
+	$(RUNF77) $(FFLAGS) -c newzmat-bsd.f
+	rm -f newzmat-bsd.f newzmat-bsd.c
+
+# testrt:
+
+testrt.o: $(BSDDIR)/testrt.F ertgen.inc
+	$(RUNCPP) $(DIMENS) $(BSDDIR)/testrt.F testrt.f
+	$(RUNF77) $(FFLAGS) -c testrt.f
+	rm -f testrt.f testrt.c
+
+#
+# Exceptional compilation commands for utility and md routines.:
+#
+
+mdutil.o:
+	$(RUNCC) $(CFLAGS) -c $(BSDDIR)/mdutil.c
+
+fillel.o: fillel.F
+	cp fillel.F fillel.f
+	$(RUNF77) $(FFLAGS) -c fillel.f
+	rm -f fillel.f fillel.c
+
+UTILS = cphfutil.F osutil.F putil.F utilam.F utilnz.F $(BSDDIR)/mdutil.F
+
+util.prj: $(UTILS)
+	cat $(UTILS) >util.F
+	$(RUNCPP) $(DIMENS) util.F util.f
+	forchek $(FCHEKFLAGS) util.f
+	rm -f util.f util.F
+
+aim.o golden.o svd.o svd1.o svdnao.o svdsol.o symaim.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FNOOPT64) -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+aintgs.o anlyze.o bdam1.o bintgs.o captlz.o cids5.o dencor.o dlamc3.o dmat2.o dntaim.o epseta.o eroute.o eulmat.o \
+  fact.o fchkpn.o formz.o gcona.o glamch.o glpint.o gparse.o intaim.o lmoanl.o mactoz.o mmtors.o prppta.o prtloc.o proorb.o putcpu.o rxirc.o \
+  rot2i3.o rot3i3.o rota11.o rotder.o rote11.o rotf1.o rotff.o rotff1.o secmom.o ss.o setar2.o strhpp.o strhpr.o strhpt.o strpp1.o strpp2.o strpp3.o strpr1.o strpr2.o strpr3.o \
+  strpt1.o strpt2.o strpt3.o tabexp.o trspn2.o tvtoax.o ztoc.o dsacmain.o zvecit.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FNOOPT) -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+as4.o btosb.o cnvln1.o cortbl.o degchk.o dgecp1.o ellaim.o erfcin.o fnabsy.o gdcsab.o \
+gdctab.o gdmsab.o gdrsab.o gfcsab.o gfctab.o ghfrsab.o gmcsab.o gmctab.o icosa.o \
+lbend.o locmo.o makras.o maktrn.o mxdnl1.o prismc.o purdfw.o putblv.o putchr.o putcst.o qcscal.o \
+scat20.o sprod.o symscl.o upcsab.o upctab.o upsab.o valtbl.o zdogrd.o ztab.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FOPT1) -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+cntr07.o cnvg.o dcodrv.o dhc.o dsadsb.o dwful1.o fixraf.o fixreg.o formw2.o gobl21.o gtprm1.o iarsum.o loadgo.o \
+matmp1.o matmp2.o matmp3.o matmpb.o matmpy.o mndomo.o moldat.o mweigh.o \
+pulay.o qcde.o radqad.o recur1.o recur2.o recurf.o regrf0.o scftrz.o smlujn.o zulgen.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FOPT2) -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+calc0m.o calc0g.o pckden.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FOPT2UN) -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+omltlv.o:
+	$(RUNCPP) $(DIMENS) $(@:o=F) $(@:o=f)
+	$(RUNF77) $(FOPT2VC) -c $*.f
+	rm -f $(@:o=f) $(@:o=c)
+
+util.so: $(GAULIBA) $(BLAS) $(LAPACK)
+	- $(RUNAR) dv util.a bdrys.o bdam1.o
+	$(RUNF77) $(LFLAGS) -shared -o util.so \
+	 -Wl,--whole-archive -Wl,util.a $(PGISO1) -Wl,--no-whole-archive $(BLASL) $(PGISO2) $(SYSLIBS)
+
+#
+# Here are rules specific to the Gaussian/Linda parallel version:
+#
+RUNFLC = flc -Nn1604
+EXELS = l302.exel l401.exel l502.exel l506.exel l508.exel l510.exel l602.exel l701.exel l703.exel l906.exel \
+        l913.exel l914.exel l1002.exel l1014.exel l1101.exel l1110.exel l1112.exel fhello
+LOBJMD = chain.lo drum.lo
+LOBJOS = prlin3.lo
+LOBJAM = bdrys.lo bdam1.lo cktspc.lo evlind.lo glin2d.lo glinco.lo glinfl.lo \
+  glini1.lo  glinst.lo linint.lo
+LOBJNZ = 
+OBJLS = $(LOBJMD) $(LOBJOS) $(LOBJAM) $(LOBJNZ) mdutil-linda.o
+LFILES= $(EXELS) linda-dummy linda-exe
+LCOMPARGS = $(FFLAGS)
+LLINKARGS = $(FFLAGS) $(LIBS)
+
+.F.lo:
+	$(RUNCPP) $(DIMENS) -DGAUSS_LINDA $*.F $*.fl
+	$(RUNFLC) -linda compile_args '$(LCOMPARGS)' -c $*.fl
+	rm -f $*.fl
+
+.F.fl:
+	$(RUNCPP) $(DIMENS) -DGAUSS_LINDA $*.F $*.fl
+
+linda: $(LFILES)
+
+linda-dummy: linda-dummy.o
+	$(RUNF77) -Mnomain $(LFLAGS) $(PARSWITCH) -o linda-dummy linda-dummy.o \
+	  $(EXTOBJ) $(EXTRAS) $(GAULIB) 
+
+linda-dummy.o: $(BSDDIR)/linda-dummy.c
+	$(RUNCC) $(CFLAGS) -c $(BSDDIR)/linda-dummy.c
+
+linda-exe:
+	rm -fr linda-exe
+	mkdir linda-exe
+	(cd linda-exe ; $(BSDDIR1)/linda-ln .. linda-dummy $(EXELS))
+
+.F.exel:
+	$(RUNFSP) -e m$* $(BSDDIR)/main.F
+	make $(MAKELOC) JUNK='JUNK' $(EXTRAS) $*.a m$*.lo $(OBJLS)
+	$(RUNFLC) -linda link_args '$(LLINKARGS) $(PARSWITCH) $(ESSLLIB)' \
+	  -o $*.exel m$*.lo $(OBJLS) $(EXTOBJ) $*.a $(EXTRAS) $(LINDALIBS) \
+	  $(EXTRALIB) $(LIBS)
+	rm -f m$*.*
+
+fhello: fhello.lo
+	$(RUNFLC) -linda link_args '$(LLINKARGS) $(PARSWITCH) $(ESSLLIB)' \
+	  -o fhello fhello.lo $(LINDALIBS) $(EXTRALIB) $(LIBS)
+
+$(LOBJAM): utilam.F
+	$(RUNFSP) -e $(@:.lo=) utilam.F
+	$(RUNCPP) $(DIMENS) -DGAUSS_LINDA $(@:.lo=.F) $(@:.lo=.fl) 
+	$(RUNFLC) -linda compile_args '$(LCOMPARGS)' -c $(@:.lo=.fl) 
+	rm -f $(@:.lo=.F) $(@:.lo=.fl)
+
+$(LOBJMD): bsd/mdutil.F
+	$(RUNFSP) -e $(@:.lo=) bsd/mdutil.F
+	$(RUNCPP) $(DIMENS) -DGAUSS_LINDA $(@:.lo=.F) $(@:.lo=.fl) 
+	$(RUNFLC) -linda compile_args '$(LCOMPARGS)' -c $(@:.lo=.fl) 
+	rm -f $(@:.lo=.F) $(@:.lo=.fl)
+
+$(LOBJOS): osutil.F
+	$(RUNFSP) -e $(@:.lo=) osutil.F
+	$(RUNCPP) $(DIMENS) -DGAUSS_LINDA $(@:.lo=.F) $(@:.lo=.fl) 
+	$(RUNFLC) -linda compile_args '$(LCOMPARGS)' -c $(@:.lo=.fl) 
+	rm -f $(@:.lo=.F) $(@:.lo=.fl)
+
+mdutil-linda.o: bsd/mdutil.c
+	ln -s bsd/mdutil.c $(@:.o=.c)
+	$(RUNCC) $(CFLAGS) -DGAUSS_LINDA -c mdutil-linda.c
+	rm -f $(@:.o=.c)
+
+# Rule for making generic utilities:
+GENERIC = x
+GENERICOBJ = $(GENERIC).o
+$(GENERIC): $(GENERICOBJ)
+	$(RUNF77) $(FFLAGS) -o $(GENERIC) $(GENERICOBJ) $(EXTOBJ) $(EXTRAS) $(GAULIB) $(ESSLLIB) $(LIBS)

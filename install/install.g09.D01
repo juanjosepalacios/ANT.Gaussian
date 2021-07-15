@@ -520,11 +520,13 @@ cat<<EOF  > caldsu.F
 `tail -$[$nend-$ncut-1] caldsu.F`
 EOF
 
-############################################
-#                                          #
-#  Compile modified caldsu.F               #
-#                                          #
-############################################
+#################################################################################
+#                                                                               #
+#  Compile modified caldsu.F                                                    #
+#  This compilation sometimes has a stupid error with the flag 'mc=medium'.     #
+#  Just compile it as it is done in the make.log and copy the .obj file to /bin #
+#                                                                               #
+#################################################################################
 echo
 echo ' --> Compiling modified caldsu.F ...'
 echo

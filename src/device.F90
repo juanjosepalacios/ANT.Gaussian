@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.5.2  *********************!
+!*********************  ANT.G-2.6.0  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -41,9 +41,9 @@
 
   private
 
-  public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevDensMat, SetDevDensMat
+  public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevOverlapMat, DevDensMat, SetDevDensMat
   public :: LeadsOn, SwitchOnLeads, SecantOn, SwitchOnSecant, SwitchOffSecant
-  public :: EvaluationOn, SwitchOnEvaluation
+  public :: EvaluationOn, SwitchOnEvaluation, SwitchOn1DElectrodes, SwitchOff1DElectrodes
   public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock
   public :: InitDevice, ReadDensMat, ReadFockMat, CleanUpDevice, InitElectrodes, Transport
 
@@ -88,7 +88,7 @@
   integer  :: ispin
   
   ! *** Lowest and highest eigen value of Fock matrix ***
-  real*8 :: LEV,HEV
+  !real*8 :: LEV,HEV
  
   ! *** lower and upper band edge of electrode ***
   real*8 :: EMinEc, EMaxEc
@@ -106,6 +106,7 @@
   logical :: UDTrans     = .false.
   logical :: ChargeCntr  = .false.
   logical :: SpinLock    = .true.
+  logical :: Electrodes = .false.  
 
   ! Whether device Hamiltonain has been orthogonalized
   logical :: HDOrtho = .false.
@@ -127,7 +128,7 @@
     implicit none
     DevNAOrbs=NAOrbs
   end function DevNAOrbs
-
+  
   ! *** Number of non-degenerate spin bands ***
   integer function DevNSpin() 
     implicit none
@@ -140,12 +141,19 @@
     DevShift=-shift
   end function DevShift
 
-  ! *** Get matrix Element of Density matrix ***
+  ! *** Get matrix Element of Hamiltonian matrix ***
   real*8 function DevFockMat( is, i, j )
     implicit none
     integer, intent(in) :: is, i, j
     DevFockMat = HD(is, i, j)
   end function DevFockMat
+  
+  ! *** Get matrix Element of Hamiltonian matrix ***
+  real*8 function DevOverlapMat( i, j )
+    implicit none
+    integer, intent(in) :: i, j
+    DevOverlapMat = SD( i, j)
+  end function DevOverlapMat 
 
   ! *** Get matrix Element of Density matrix ***
   real*8 function DevDensMat( is, i, j )
@@ -227,6 +235,18 @@
     SpinLock = .true.
   end subroutine SwitchOnSpinLock
   
+  ! ***
+  subroutine SwitchOn1DElectrodes()
+    implicit none
+    Electrodes = .true.
+  end subroutine SwitchOn1DElectrodes 
+  
+  ! ***
+  subroutine SwitchOff1DElectrodes()
+    implicit none
+    Electrodes = .false.
+  end subroutine SwitchOff1DElectrodes   
+  
 
   !***********************************************
   !* Initialize device for transport calculation *
@@ -234,7 +254,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage  
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp, NEmbed
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -297,19 +317,24 @@
     shiftup = shift
     shiftdown = shift
 
-    IF( ElType(1) == "BETHE" .and. ElType(2) == "BETHE" ) THEN 
+    IF (ElType(1) == "BETHE" .and. ElType(2) == "BETHE") THEN 
       call AnalyseCluster
-    ELSE IF  (ElType(1) == "BETHE" .and. ElType(2) == "GHOST" ) THEN
+      call InitElectrodes
+    ELSE IF (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD") THEN 
+      call AnalyseCluster
+    ELSE IF (ElType(1) == "BETHE" .and. ElType(2) == "GHOST" ) THEN
       call AnalyseClusterElectrodeOne
-    ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "BETHE" ) THEN
-      call AnalyseClusterElectrodeTwo
-    ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST" ) THEN
+      call InitElectrodes
+    ELSE IF (ElType(1) == "GHOST" .and. ElType(2) == "BETHE") THEN
+      call AnalyseClusterElectrodeTwo  
+      call InitElectrodes
+    ELSE IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST") THEN
       continue                           
     ELSE 
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
-    
+
     if (SOC) then
        call spin_orbit                 
        if (NSpin == 2) then
@@ -330,60 +355,53 @@
        end if       
     end if       
 
-    call InitElectrodes
+    IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
+
 
     EMin = 0.0d0
     EMax = 0.0d0
 
-    LEV = 0.0d0
-    HEV = 0.0d0
+    !LEV = 0.0d0
+    !HEV = 0.0d0
 
-    ! Compute number of electrons 
-    ! in central device region
-    
+    ! Compute number of electrons in central (reduced) device region
 
-    IF (Overlap < 0.01) THEN
-       NEmbed1=0
-       NEmbed2=0
-    ELSE
+    NEmbed1=0
+    NEmbed2=0
+    IF (Overlap >= 0.0 .and. (ElType(1) == "BETHE" .and. Eltype(2) == "BETHE")) THEN
        NEmbed1=NEmbedBL(1)
        NEmbed2=NEmbedBL(2)
+    ELSE IF  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) THEN 
+       NEmbed1=NEmbed(1)
+       NEmbed2=NEmbed(2)
     END IF
 
-   
     print *, "---------------------------------------------------"
     print *, " Details on device and contacting atoms -----------"
     print *, "---------------------------------------------------"
 
-    print *, "NEmbed(1) =", NEmbedBL(1)
-    print *, "NEmbed(2) =", NEmbedBL(2)
+    print *, "NEmbed(1) =", NEmbed1
+    print *, "NEmbed(2) =", NEmbed2
 
     NCDEl = 0
     do iatom=NEmbed1+1,GetNAtoms()-NEmbed2
       NCDEl = NCDEl + GetAtmChg(iatom)
     end do
+    print *, "Number of electrons in neutral reduced device (NCDEl) = ", NCDEl
     
-    print *, "Number of electrons in neutral reduced device"
-    print *, "NCDEl = ", NCDEl
-    
-    print *, "First and last orbital in reduced device"
-    IF (Overlap < 0.01) THEN
-       NCDAO1 = 1
-    ELSE
-       NCDAO1 = 0
-    END IF
+    NCDAO1 = 1
     do iatom=1,NEmbed1
        NCDAO1 = NCDAO1 + NAOAtom(iatom) 
     end do
-
-    print *, "NCDAO1 = ", NCDAO1
 
     NCDAO2 = NCDAO1-1
     do iatom = NEmbed1+1,GetNAtoms()-NEmbed2
        NCDAO2 = NCDAO2 + NAOAtom(iatom) 
     end do
 
-    IF  (ElType(1) == "GHOST" .and. ElType(2) == "GHOST" ) NCDAO2 = NAOrbs
+
+    print *, "First and last orbital in reduced device"
+    print *, "NCDAO1 = ", NCDAO1
     print *, "NCDAO2 = ", NCDAO2
     print *, "---------------------------------------------------"
 
@@ -668,6 +686,7 @@
   !**************************
   subroutine CleanUpDevice
     use BetheLattice, only: CleanUpBL, LeadBL
+    use OneDLead, only: CleanUp1DLead
     use parameters, only: ElType
     integer :: AllocErr, LeadNo
 
@@ -680,6 +699,8 @@
        select case( ElType(LeadNo) )
        case( "BETHE" )
           call CleanUpBL( LeadBL(LeadNo) ) 
+       case( "1DLEAD" )
+          call CleanUp1DLead(LeadNo)
        end select
     end do
   end subroutine CleanUpDevice
@@ -690,7 +711,7 @@
   !*************************
   subroutine InitElectrodes
     use BetheLattice, only: InitBetheLattice, LeadBL, BL_EMin, BL_EMax
-    use OneDLead, only: Init1DLead, Lead1d, L1D_EMin, L1D_EMax
+    use OneDLead, only: Init1DLead, Lead1D, L1D_EMin, L1D_EMax
     use parameters, only: ElType
     implicit none 
     integer :: LeadNo
@@ -703,9 +724,9 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead( Lead1d(LeadNo), LeadNo )
-          EMin(LeadNo) = L1D_EMin( Lead1d(LeadNo) )
-          EMax(LeadNo) = L1D_EMax( Lead1d(LeadNo) )
+          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
+          EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
+          EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
        case( "GHOST" )
           EMin(LeadNo) = -100.0                       
           EMax(LeadNo) =  100.0                       
@@ -718,17 +739,18 @@
     EMinEc = min( Emin(1),EMin(2) )
     EMaxEc = max( EMax(1),EMax(2) )
   end subroutine InitElectrodes
-
   
   !***************************
   !* Solve transport problem *
   !***************************
   subroutine Transport(F,ADDP) 
-    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, NSpinEdit, SpinEdit, SOC, PrtHatom
+    use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
     use orthogonalization
+    use molmod, only: Mol_Sub
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms
 #endif
@@ -747,23 +769,33 @@
     real*8 :: diff !!,TrP,QD
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
-    HD = F       
+    HD = F
+    
+    !Initializing 1D electrodes everytime we pass a SCF cycle 
+   !IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr) call InitElectrodes
+    IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. Electrodes == .false. ) THEN 
+            call InitElectrodes
+            call SwitchOn1DElectrodes
+    end if 
     
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
-    if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1))
+    if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
     if( NSpin == 2 ) EMax = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1)))
     EMin = -EMax
+       print *, "-----------------------"
+       print *, "Estimated Energy Bounds"
+       print *, "-----------------------"
     print *, "EMin=", EMin
     print *, "EMax=", EMax
 
     if( .not. DMImag .and. ChargeCntr )then
-       print *, "--------------"
-       print *, "Charge Control"
-       print *, "--------------"
+       print *, "-----------------------"
+       print *, " Total DOS Point Check "
+       print *, "-----------------------"
        ! Find upper and lower energy bound 
-       call FindEnergyBounds
+       call CheckEnergyBounds
     end if
 
     if( DFTU ) then 
@@ -789,8 +821,10 @@
        print *, "****************************************** "
        print *
 
-       IF( ANT1DInp ) call WriteANT1DInput
-
+       !IF( ANT1DInp ) call WriteANT1DInput
+       
+       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
+       
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then
@@ -849,7 +883,7 @@
           end do
        end if   
         
-       if (SOC) then 
+       if (SOC .or. ROT) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -861,6 +895,12 @@
   subroutine WriteANT1DInput
     use parameters, only: eta
     use AntCommon
+#ifdef G03ROOT
+    use g03Common, only: GetNAtoms, GetAtmChg
+#endif
+#ifdef G09ROOT
+    use g09Common, only: GetNAtoms, GetAtmChg
+#endif    
     implicit none
 
     real*8 :: dsmall
@@ -886,7 +926,7 @@
        if( NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)'),       "! Spin-up"
        if( NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)'),       "! Spin-down"
        do i=1,NAOrbs
-          do j=1,NAOrbs
+          do j=1,NAOrbs        
              if(abs(HD(ispin,i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, HD(ispin,i,j)
           enddo
        enddo
@@ -896,13 +936,13 @@
     write(ifu_ant,'(A)'),       "! Overlap"
     do i=1,NAOrbs
        do j=1,NAOrbs
-          if(abs(SD(i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, SD(i,j)
+           if(abs(SD(i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, SD(i,j)      
        enddo
     enddo
     write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
     write(ifu_ant,*)
     close(ifu_ant)
-  end subroutine WriteANT1DInput
+  end subroutine WriteANT1DInput  
   
   !**************************************************************
   !* Subroutine for determining Fermi energy and density matrix *
@@ -1000,22 +1040,22 @@
        E1=shift
        E2=shift+Z
        if (root_fail) then
-          print*,'MULLER method'
-          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
-       end if
-       if (root_fail) then
-          print*,'SECANT method'
-          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-             root_fail = .true.
+          print*,'SECANT method'                                      
+            call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)    
+            if(k .eq. Max .or. E3<EMin .or. E3>EMax) then             
+               print *, 'Warning: SECANT method failed to find root. Using MULLER.'
+               root_fail = .true.                                     
+            else                                                      
+               shift = E3                                             
+               root_fail = .false.                                    
+            end if                                                    
+         end if                                                       
+         if (root_fail) then                                          
+            print*,'MULLER method'                                    
+            call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond) 
+            if(k .eq. Max .or. E2<EMin .or. E2>EMax) then             
+            print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+            root_fail = .true.
           else
              shift = E3
              root_fail = .false.
@@ -1148,7 +1188,7 @@
     
     logical :: root_fail
     
-    Z=0.1d0           
+    Z=1.0d0           
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
@@ -2687,7 +2727,8 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
+    use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
     use omp_lib
@@ -2702,19 +2743,51 @@
     real*8, dimension(10001) :: xxx
     real*8, dimension(MaxAtm) :: AtomDOS
     complex*16 :: cenergy,ctrans
-    integer :: n, nsteps, i, imin, imax, info ,j
+    integer :: n, nsteps, i, imin, imax, info ,j, AllocErr
+    logical :: ADDP    
     
-    complex*16, dimension(NAOrbs,NAOrbs) :: GammaL, GammaR, Green, T, temp, SG
+    complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, SG
+    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DSG
 
     print *
     print *, "-------------------------"
     print *, "--- Calculating  LDOS ---"
     print *, "-------------------------"
     print *
+    
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
+
+       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
+       allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+
+       call spin_orbit
+       
+    else
+
+       allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(GammaR(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(Green(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(SG(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+
+    end if    
 
     allocate ( AtomDOSEF(2,MaxAtm) )
+    if( AllocErr /= 0 ) stop    
 
     nsteps = (EW2-EW1)/EStep + 1
+    
+    if ((.not. SOC) .and. (.not. ROT)) then
+    
     do ispin=1,NSpin
 
        open(333,file='tempDOS',status='unknown')
@@ -2786,6 +2859,97 @@
 
         write(ifu_dos,*) '    '                    
       end do ! End of spin loop
+      
+    else !SOC case
+    
+       if (DMIMAG) then
+          call RMatPow( S_SOC, -1.0d0, InvS_SOC )
+          call CompDensMat2_SOC(ADDP)
+       else   
+          call CompDensMat_SOC(ADDP)
+       end if     
+      
+      open(333,file='tempDOS',status='unknown')
+
+#ifdef PGI
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal) 
+!$OMP DO SCHEDULE(STATIC,10)
+#endif
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          cenergy=dcmplx(energy)
+
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+
+#ifdef PGI
+!$OMP CRITICAL
+#endif
+
+   ! Mulliken DOS 
+          DSG = matmul( S_SOC, DGreen )
+          ! computing total DOS
+          DOS=d_zero
+          AtomDOS=d_zero
+          do j=1,GetNAtoms()
+          do i=LoAOrbNo(j),HiAOrbNo(j)
+             AtomDOS(j)=AtomDOS(j)-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs))/(2*d_pi)
+             DOS=DOS-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs))/(2*d_pi)
+          end do
+          end do
+
+          if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
+
+  ! print out DOS and atomic orbital resolved DOS ***
+          imin = LoAOrbNo(LDOS_Beg)
+          if( imin < 1 ) imin = 1
+          imax = HiAOrbNo(LDOS_End)
+          if( imax > NAOrbs ) imax = NAOrbs
+          call flush(333)
+          write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
+
+#ifdef PGI
+!$OMP END CRITICAL
+#endif
+       end do ! End of energy loop
+#ifdef PGI
+!$OMP END DO
+!$OMP END PARALLEL
+#endif
+
+  ! Reordering in energy for nice DOS output
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          rewind(333)
+          do i=1,10000000000
+          read(333,*)energ
+          if (dabs(energy-energ) < 0.000001) then
+             backspace(333)
+             read(333,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+             write(ifu_dos,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+             exit
+          end if
+          end do
+       end do
+      close(333,status='delete')
+
+  end if !End of SOC if
+  
+      if (SOC .or. ROT) then
+         deallocate(DGammaL)
+         deallocate(DGammaR)
+         deallocate(DGreen)
+         deallocate(DSG)
+         !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
+         deallocate(H_SOC)
+      else 
+         deallocate(GammaL)
+         deallocate(GammaR)
+         deallocate(Green)
+         deallocate(SG)
+      end if  
 
 
 3333 format(f10.5,10000E14.5)
@@ -2798,7 +2962,7 @@
   subroutine transmission
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, FermiAcc, QExcess, ChargeAcc, DMIMAG
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, ChargeAcc, DMIMAG
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
 #ifdef PGI
@@ -2819,7 +2983,7 @@
     real*8, dimension(MaxAtm) :: AtomDOS
     real*8, dimension(10001) :: xxx
     complex*16 :: cenergy,ctrans
-    integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k
+    integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k, wcount
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
     complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD
@@ -2838,8 +3002,8 @@
     print *, "--------------------------------"
     print *
 
-    if (SOC) then
-       write(ifu_log,*)' Adding spin-orbit coupling ... and finding new Fermi level'
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2899,7 +3063,7 @@
     allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr)
     if( AllocErr /= 0 ) stop
 
-    if (SOC) then
+    if (SOC .or. ROT) then
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
           call CompDensMat2_SOC(ADDP)
@@ -2916,7 +3080,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if (.not. SOC) then
+    if ((.not. SOC) .and. (.not. ROT)) then
 
     do ispin=1,NSpin
 
@@ -3073,6 +3237,8 @@
       
       open(334,file='tempT',status='unknown')
       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+      
+      wcount = 0  ! Issue warning of failure in transmission just once
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
@@ -3212,9 +3378,11 @@
           trans2 = T_uu + T_du + T_dd + T_ud
 
           
-          if (dabs(trans2-trans) >= 1.0d-5) then
-               print*,'Warning in the transmission with SOC'
-               stop
+          if (dabs(trans2-trans) >= 1.0d-5 .and. wcount < 1) then
+               if (SOC) print*,'Warning in the transmission with SOC'
+               if (ROT) print*,'Warning in the transmission with spin rotations'
+               wcount = wcount + 1
+               !stop
            end if
 
           call flush(334)
@@ -3265,7 +3433,7 @@
 
   end if !End of SOC if
 
-      if (SOC) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -3659,7 +3827,7 @@
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma1, NAOrbs)
        endif
     case( "1DLEAD" )
-       call CompSelfEnergy1D( Lead1D(1), is, cenergy, Sigma1 )
+       call CompSelfEnergy1D( Lead1D(1), is, cenergy, Sigma1, NAOrbs, 1 )
     case( "GHOST" )
         continue
     end select
@@ -3682,7 +3850,7 @@
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma2, NAOrbs)
        endif
     case( "1DLEAD" )
-       call CompSelfEnergy1D( Lead1D(2), is, cenergy, Sigma2 )
+       call CompSelfEnergy1D( Lead1D(2), is, cenergy, Sigma2, NAOrbs, 2 )
     case( "GHOST" )
         continue
     end select
@@ -3697,14 +3865,14 @@
 
     real*8, intent(in) :: phi, E0, R
     integer :: i, j !!, ispin 
-    complex*16,dimension(NAOrbs,NAOrbs) :: green,gammar,gammal
+    complex*16,dimension(NAOrbs,NAOrbs) :: green
     complex*16 :: TrGS, z
 
     z = E0 - R*(cos(phi) - ui*sin(phi)) 
 
     TrGS=c_zero
     do ispin=1,NSpin
-       call gplus(z,green,gammar,gammal)
+       call gplus0(z,green)
        !do i=1,NAOrbs
        do i=NCDAO1,NCDAO2
           do j=1,NAOrbs
@@ -3751,16 +3919,40 @@
        if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*NCDEl ) ) exit  
        n=2*n+1
        if( n > nmax )then
-          print *, "TotCharge/gaussian quadrature has not converged after", nmax, " steps."
-          TotCharge = 2.0d0*(NCDAO2-NCDAO1+1) - 10.0d0*ChargeAcc*NCDEl
+          print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
           return
        end if
        qq = q
     end do
-    !print *, "gaussian quadrature converged after", n, " steps. Error:", abs(q-qq)
+    print '(A,I4,A,F10.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
 
     TotCharge = q
   end function TotCharge
+  
+  ! *************************************                             
+  !  Estimates upper/lower energy                                   
+  !  boundary EMin/EMax,                                            
+  !  above/below which DOS is gauranteed                            
+  !  to be zero                                                     
+  ! *************************************                           
+  subroutine CheckEnergyBounds                                      
+    use parameters, only: ChargeAcc                                 
+                                                                    
+    real*8 :: Q                                                     
+                                                                    
+    print *, "Checking energy bounds [EMin, EMax] such that ..."    
+    print '(A,I4)', " ...Total Integrated Spectral Weight (TISW)=",2*(NCDAO2-NCDAO1+1) 
+                                                                    
+    Q = TotCharge( EMax )                                           
+    if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) then                   
+        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' OK' 
+    else                                                            
+        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' not OK, please check' 
+    end if                                                          
+                                                                    
+    print *, "--------------------------------------------------"   
+                                                                    
+  end subroutine CheckEnergyBounds               
 
   ! *************************************
   !  Estimates upper/lower energy 
@@ -3769,25 +3961,24 @@
   !  to be zero
   ! *************************************
   subroutine FindEnergyBounds
-    use parameters, only: ChargeAcc,eta
+    use parameters, only: ChargeAcc,eta,ElType
 
     integer :: i, cond,k 
     real*8 :: EStep, Q
     
-    print *, "Searching energy boundaries [EMin, EMax] such that"
-    print '(A,I4)', " Total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
+    print *, "Searching energy boundaries [EMin, EMax] such that ..."
+    print '(A,I4)', " ...total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
 
-    EStep = 10.0d0 +10000.0 *eta
+    EStep = 1.0 
 
-    do
+    do i = 1,100
        Q = TotCharge( EMax )
        print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-       if( abs(Q - 2.0d0*(NCDAO2-NCDAO1+1)) < ChargeAcc*NCDEl*10.0 ) then
-          exit
-       end if
+       if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
        EMin = EMin - EStep
        EMax = EMax + EStep
-    end do
+       EStep = Estep*2.0
+    end do    
     print *, "--------------------------------------------------"
 
   end subroutine FindEnergyBounds
@@ -4533,8 +4724,9 @@
  subroutine spin_orbit
 
     use SpinOrbit, only: CompHSO
+    use SpinRotate, only: CompHROT
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, NSpinRot
+    use parameters, only: PrtHatom, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell, GetNAtoms
@@ -4543,15 +4735,15 @@
     use g09Common, only: GetNShell, GetNAtoms
 #endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: hamil_SO, overlap_SO, hamilrot
-    integer :: i,j,totdim,nshell,Atom,iAtom,jAtom
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
+    integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
  Atom = PrtHatom   
  totdim=NAOrbs   
  hamilrot = c_zero
- hamil_SO = c_zero
- overlap_SO = c_zero
+ overlaprot = c_zero
+ hamil_SO = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4559,34 +4751,36 @@
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (NSpin == 2) then
-    do i=1,NAOrbs
-    do j=1,NAOrbs
-       hamilrot(i,j)=HD(1,i,j)
-       hamilrot(i+NAOrbs,j+NAOrbs)=HD(2,i,j)
-       S_SOC(i,j)=SD(i,j)              
-       S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)
-    end do
-    end do
- else 
-    do i=1,NAOrbs
-    do j=1,NAOrbs
-       hamilrot(i,j)=HD(1,i,j)
-       hamilrot(i+NAOrbs,j+NAOrbs)=HD(1,i,j)
-       S_SOC(i,j)=SD(i,j)              
-       S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)
-    end do
-    end do
+ if (SOC) then 
+   if (NSpin == 2) then
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
+         S_SOC(i,j)=SD(i,j)              
+         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+      end do
+      end do
+   else 
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+         S_SOC(i,j)=SD(i,j)              
+         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+      end do
+      end do
+   end if
  end if
-
+ 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Return the input matrix with double size plus the soc interaction
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
  nshell = GetNShell()
  
- CALL CompHSO(hamil_SO,REAL(HD),hamilrot,SD,overlap_SO,NAOrbs,nshell)
-!CALL CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOrbs,nshell)
+ If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
+ If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
@@ -4687,20 +4881,23 @@
 !    PRINT '(1000(F11.5))',  ( IMAG(hamil_SO( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
 !end do                                                                                             
 
- if (NSPINROT > 0) then
+ if (ROT) then
     S_SOC=d_zero
     do i=1, totdim*2
        do j=1, totdim*2
-          S_SOC(i,j)=REAL(overlap_SO(i,j))         
+          S_SOC(i,j)=REAL(overlaprot(i,j))         
+          H_SOC(i,j)=hamilrot(i,j)
        end do
     end do 
  end if    
 
- do i=1, totdim*2
-    do j=1, totdim*2
-       H_SOC(i,j)=hamilrot(i,j)+hamil_SO(i,j)
-    end do
- end do
+ if (SOC) then
+   do i=1, totdim*2
+      do j=1, totdim*2
+         H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
+      end do
+   end do
+ end if
 
  return
  end subroutine spin_orbit

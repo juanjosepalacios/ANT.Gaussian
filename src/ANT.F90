@@ -35,12 +35,13 @@
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
   USE constants, ONLY: Hart
   USE preproc
+  USE OneDLead, only: CleanUp1DLead 
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
-       SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, &
-       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
+       SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, SwitchOn1DElectrodes, &
+       SwitchOff1DElectrodes, SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
 #ifdef G03ROOT
   USE g03Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
 #endif
@@ -116,7 +117,7 @@
 #endif
      PRINT *, " ***                                                            *** "
      PRINT *, " ****************************************************************** "
-     PRINT *, " ***                     Version: 2.5.0                         *** "
+     PRINT *, " ***                     Version: 2.5.2                         *** "
      PRINT *, " ****************************************************************** "
      PRINT *, " *  Copyright (c) by                                              * "
      PRINT *, " *                                                                * "
@@ -185,9 +186,9 @@
 
      !Opening writting files
      OPEN(ifu_xyz,file=trim(jobname)//'.xyz',status='unknown')
-     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. SOC) OPEN(ifu_tra,file='T.'//trim(jobname)//'.SOC.dat',status='unknown')
-     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. .not. SOC) OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
-     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
+     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. (SOC .or. ROT)) OPEN(ifu_tra,file='T.'//trim(jobname)//'.SOC.dat',status='unknown')
+     IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST' .and. (.not. SOC) .and. (.not. ROT)) OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
+     !IF (ElType(1) /= 'GHOST' .and. ElType(2) /= 'GHOST') OPEN(ifu_tra,file='T.'//trim(jobname)//'.dat',status='unknown')
      IF (RedTransmB < RedTransmE) OPEN(ifu_red,file='t.'//trim(jobname)//'.dat',status='unknown')
      IF (Hamilton) OPEN(ifu_ham,file='V.'//trim(jobname)//'.dat',status='unknown')
      IF (Mulliken) OPEN(ifu_mul,file='Q.'//trim(jobname)//'.dat',status='unknown')
@@ -238,12 +239,12 @@
            S(j,i) = TS(acount)
            acount = acount+1
         END DO
-     END DO
+     END DO  
 
      ! 
      ! Initialize module device 
      !
-     CALL InitDevice( NBasis, UHF, S )
+     CALL InitDevice( NBasis, UHF, S )           
 
      CLOSE(ifu_xyz)
 
@@ -461,9 +462,18 @@
   ! Turn on charge control every 5 steps in the first cycles
   IF(MOD(NCycLeadsOn-1,10) == 0 .and. NCycLeadsOn <= 21) CALL SwitchOnChargeCntr
   IF(MOD(NCycLeadsOn-1,20) == 0 .and. NCycLeadsOn > 21) CALL SwitchOnChargeCntr
-  
+    
   ! Call subroutine that solves transport problem
   CALL Transport(F,ADDP)
+  
+   if (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD") THEN
+       IF(MOD(NCycLeadsOn-1,10) == 0 .and. NCycLeadsOn >= 6) THEN
+          CALL CleanUp1DLead(1)
+          CALL CleanUp1DLead(2)
+          CALL SwitchOff1DElectrodes
+       END IF 
+   end if   
+
   CALL SwitchOffChargeCntr
   
   IF( SL <= 0.0d0 ) alpha = 1.0d0

@@ -1,6 +1,6 @@
 !***************************************
 !*                                     *
-!*  ANT.G-2.5.2  - SpinOrbit.f90       *
+!*  ANT.G-2.6.2  - SpinOrbit.f90       *
 !*                                     *
 !*  Calculation of Spin-orbit coupling *
 !*                                     *
@@ -60,56 +60,32 @@ CONTAINS
   !*** quantization axis z of |alpha>, |beta> parallel to     ***
   !*** global z axis                                          ***
   !**************************************************************
-  SUBROUTINE PAULI_MATRICES(theta,phi,sigma_z,sigma_p,sigma_m,u,v,ustar,vstar)
-    USE constants, ONLY : d_pi, ui
+  SUBROUTINE PAULI_MATRICES(sigma_z,sigma_p,sigma_m)
     IMPLICIT NONE
-
-    !Input: direction of magnetization
-    REAL*8, INTENT(in) :: theta, phi
 
     !Output: Pauli matrices 
     COMPLEX*16, DIMENSION(2,2), INTENT(out) :: sigma_z, sigma_p, sigma_m
     
-    !Half of the magnetization direction angles
-    REAL*8 :: halfphi, halftheta
-
-    !Complex phases defining transformation matrix
-    COMPLEX*16, INTENT(out) :: u, v, ustar,vstar
-
     INTEGER :: i,j
     
     sigma_z = 0.0d0
     sigma_p = 0.0d0
-    sigma_m = 0.0d0
-
-    u = dcmplx(0.0d0,0.0d0)
-    v = dcmplx(0.0d0,0.0d0)
-    ustar = dcmplx(0.0d0,0.0d0)
-    vstar = dcmplx(0.0d0,0.0d0)
+    sigma_m = 0.0d0		
     
-    halfphi=0.5d0*phi*d_pi/180.0d0
-    halftheta=0.5d0*theta*d_pi/180.0d0
-    
-    u=dcos(halftheta)*dcmplx(dcos(halfphi),-dsin(halfphi))
-    v=dsin(halftheta)*dcmplx(dcos(halfphi),dsin(halfphi))
-    
-    ustar=dconjg(u)                                                  
-    vstar=dconjg(v)						
-    
-    sigma_z(1,1)=1.d0      !  u*ustar-v*vstar         
-    sigma_z(1,2)=0.d0      !  -2.d0*u*v               
-    sigma_z(2,1)=0.d0      !  -2.d0*ustar*vstar       
-    sigma_z(2,2)=-1.d0     !  v*vstar-u*ustar         
-                                                  
-    sigma_p(1,1)=0.d0      !  2.d0*u*vstar        
-    sigma_p(1,2)=2.d0      !  2.d0*u*u            
-    sigma_p(2,1)=0.d0      !  -2.d0*vstar*vstar   
-    sigma_p(2,2)=0.d0      !  -2.d0*vstar*u       
-                                                  
-    sigma_m(1,1)=0.d0      !  2.d0*v*ustar                        
-    sigma_m(1,2)=0.d0      !  -2.d0*v*v                           
-    sigma_m(2,1)=2.d0      !  2.d0*ustar*ustar                    
-    sigma_m(2,2)=0.d0      !  -2.d0*ustar*v                       
+    sigma_z(1,1)=1.d0        
+    sigma_z(1,2)=0.d0        
+    sigma_z(2,1)=0.d0        
+    sigma_z(2,2)=-1.d0       
+                           
+    sigma_p(1,1)=0.d0      
+    sigma_p(1,2)=2.d0      
+    sigma_p(2,1)=0.d0      
+    sigma_p(2,2)=0.d0      
+                           
+    sigma_m(1,1)=0.d0                    
+    sigma_m(1,2)=0.d0                    
+    sigma_m(2,1)=2.d0                    
+    sigma_m(2,2)=0.d0                    
     
     !PRINT *, " sigma_z = "
     !DO i=1,2
@@ -413,12 +389,12 @@ CONTAINS
 !    and integrals by Alan Jeffrey            
 ! --------------------------------------------------------
   
-  SUBROUTINE INTEGRATE1(ii,jj,A,B,result,idx11,idx12,idx21,idx22) ! Performs the integration in Eq. (5) of  Beilstein J. Nanotechnol. 2018, 9, 1015-1023
+  SUBROUTINE INTEGRATE1(ii,jj,A,B,result,idx11,idx12,idx21,idx22,rcut,Z) ! Performs the integration in Eq. (5) of  Beilstein J. Nanotechnol. 2018, 9, 1015-1023
       IMPLICIT REAL*8 (A-H,O-Y)
       IMPLICIT INTEGER (I,N)
       DIMENSION XP(9999), WP(9999)
-      INTEGER :: ii,jj,idx11,idx12,idx21,idx22
-      REAL*8 :: result, SUM1, NormOrb1, NormOrb2
+      INTEGER :: ii,jj,idx11,idx12,idx21,idx22,Z
+      REAL*8 :: result, SUM1, NormOrb1, NormOrb2, rcut, Yuk
      
       INTERFACE AFunc
        FUNCTION func (y,ll,i1,i2)
@@ -451,7 +427,12 @@ CONTAINS
 
       result = 0.0d0
       DO 12 N = 1,NQ
-         result = result + WP(N)*(1.0/XP(N))*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) ! Eq. (5) Beilstein J. Nanotechnol. 2018, 9, 1015-1023
+         IF (XP(N) < rcut) THEN 
+           Yuk = ((Z-1)*DEXP(-XP(N)*DLOG(DFLOAT(Z))/rcut)+1.0d0)/XP(N) ! Modified Yukawa potential below atomic radius approximately  
+           result = result + WP(N)*Yuk*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) 
+         ELSE
+           result = result + WP(N)*(1.0/XP(N))*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) ! Eq. (5) Beilstein J. Nanotechnol. 2018, 9, 1015-1023
+         END IF  
  12   CONTINUE
          
       RETURN
@@ -548,8 +529,8 @@ CONTAINS
   !**************************************************************
   !*** Compute matrix of SO Hamiltonian for a given basis set ***
   !**************************************************************
-  SUBROUTINE CompHSO(hamil_SO,HD,hamil,SD,overlap_SO,NAOs,Nshell)
-    USE parameters, ONLY: theta, phi, soc_cff_p, soc_cff_d, soc_cff_f, NSpinRot, SpinRotTheta, SpinRotPhi, socfac, NSOCFacAtom, SOCFacAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
+  SUBROUTINE CompHSO(hamil_SO,HD,NAOs,Nshell)
+    USE parameters, ONLY: soc_cff_p, soc_cff_d, soc_cff_f, socfac_p, socfac_d, socfac_f, rcut, NSOCFacAtom, SOCFacAtomP, SOCFacAtomD, SOCFacAtomF, RCutAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh, GetShellN, GetShellA, GetShlADF, GetEXX, GetC1, GetC2, GetC3, GetC4, GetAN, GetAtmCo
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -563,18 +544,14 @@ CONTAINS
     !*********************************
     !Output: Atomic LS coupling matrix 
     !*********************************
-    COMPLEX*16, DIMENSION(2,NAOs,2,NAOs) :: SROT, HROT, HSO  ! Need to reshape HSO to H_SOC(i,j) where i = 1, 2*Norb, j = 1, 2*Norb
+    COMPLEX*16, DIMENSION(2,NAOs,2,NAOs) :: HSO  ! Need to reshape HSO to H_SOC(i,j) where i = 1, 2*Norb, j = 1, 2*Norb
     COMPLEX*16, DIMENSION(2*NAOs,2*NAOs), INTENT(OUT) :: hamil_SO
-    COMPLEX*16, DIMENSION(2*NAOs,2*NAOs), INTENT(INOUT) :: hamil, overlap_SO
     
     REAL*8, DIMENSION(2,NAOs,NAOs), INTENT(IN) :: HD
-    REAL*8, DIMENSION(NAOs,NAOs), INTENT(IN) :: SD
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin, Z, acount
-    REAL*8 :: theta_atom, phi_atom, result, A, B, x, zz, socfac_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
+    REAL*8 :: result, A, B, x, zz, socfac_atom_p, socfac_atom_d, socfac_atom_f, rcut_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
 
-    COMPLEX*16 :: u, v, ustar, vstar, HROT1temp11, HROT1temp12, HROT1temp21, HROT1temp22, SROT1temp11, SROT1temp12, SROT1temp21, SROT1temp22
-    COMPLEX*16 :: HROT2temp11, HROT2temp12, HROT2temp21, HROT2temp22, SROT2temp11, SROT2temp12, SROT2temp21, SROT2temp22
     COMPLEX*16, DIMENSION(2,2) :: sigma_z, sigma_p, sigma_m
     COMPLEX*16, DIMENSION(3,3) :: L_z1, L_p1, L_m1
     COMPLEX*16, DIMENSION(5,5) :: L_z2, L_p2, L_m2
@@ -683,9 +660,15 @@ CONTAINS
            IF (AtomID1 == AtomID2) THEN
               Z = GetAN(AtomID2)  ! Atomic number of atom AtomID2
               IF( NSOCFacAtom > 0) THEN  ! User-defined multiplicative SOC factor of atom AtomID2
-                socfac_atom = SOCFacAtom(AtomID2)
+                socfac_atom_p = SOCFacAtomP(AtomID2)
+                socfac_atom_d = SOCFacAtomD(AtomID2)
+                socfac_atom_f = SOCFacAtomF(AtomID2)
+                rcut_atom = RCutAtom(AtomID2)
               ELSE
-                socfac_atom = socfac
+                socfac_atom_p = socfac_p
+                socfac_atom_d = socfac_d
+                socfac_atom_f = socfac_f
+                rcut_atom = rcut
               END IF              
               IF( NSOCEdit > 0) THEN  ! User-defined SOC coefficients of atom AtomID2
                 soc_cff_p_atom = SOCEditP(AtomID2)
@@ -696,9 +679,11 @@ CONTAINS
                 soc_cff_d_atom = soc_cff_d
                 soc_cff_f_atom = soc_cff_f
               END IF	               
-              IF (socfac_atom > 0.0d0 .or. (soc_cff_p_atom == 0.0d0 .and. soc_cff_d_atom == 0.0d0 .and. soc_cff_f_atom==0.0d0)) THEN      
-                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1)                
-                  Xi(i,k) = socfac_atom*zz*Z*result       
+              IF ((socfac_atom_p > 0.0d0 .or. socfac_atom_d > 0.0d0 .or. socfac_atom_f > 0.0d0) .or. (soc_cff_p_atom == 0.0d0 .and. soc_cff_d_atom == 0.0d0 .and. soc_cff_f_atom==0.0d0)) THEN                    
+                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1,rcut_atom,Z)                
+                  IF (ShellT1 == 1 .and. ShellT2 == 1) Xi(i,k) = socfac_atom_p*zz*result       
+                  IF (ShellT1 == 2 .and. ShellT2 == 2) Xi(i,k) = socfac_atom_d*zz*result       
+                  IF (ShellT1 == 3 .and. ShellT2 == 3) Xi(i,k) = socfac_atom_f*zz*result       
               ELSE IF (ShellT1 == 1 .and. ShellT2 == 1) THEN
                   Xi(i,k) = soc_cff_p_atom
               ELSE IF (ShellT1 == 2 .and. ShellT2 == 2) THEN                
@@ -726,30 +711,7 @@ CONTAINS
 !    END DO
     
     CALL FLUSH(6)
-    
-    !*********************************************************************************************************************
-    !Populate dummy matrix for rotation from local to global spin basis with elements from SELF-CONISTENT COLLINEAR matrix  
-    !*********************************************************************************************************************  
-    
-    IF (NSpinRot > 0) then                                                                
-    HROT=c_zero    
-    SROT=c_zero                                                 
-    
-    do AtomID1=1,GetNAtoms()
-       do AtomID2=1,GetNAtoms()     
-           do i=LoAOrbNo(AtomID1),HiAOrbNo(AtomID1)
-              do j=LoAOrbNo(AtomID2),HiAOrbNo(AtomID2)
-                 HROT (1, i, 1, j) = dcmplx(HD(1,i,j),0.0d0)
-                 HROT (2, i, 2, j) = dcmplx(HD(2,i,j),0.0d0)
-                 SROT (1, i, 1, j) = dcmplx(SD(i,j),0.0d0)
-                 SROT (2, i, 2, j) = dcmplx(SD(i,j),0.0d0)
-              end do
-           end do         
-       end do
-    end do
-    
-    end if
-    
+       
 
     !**************************************
     !Construct LS matrix for complete basis
@@ -772,93 +734,33 @@ CONTAINS
                 ShellC2 = GetShellC(k)
                 AtomID2 = GetAtm4Sh(k)   
           	DO q=1,2*ShellT2+1
-          	  IF (AtomID2 == AtomID1) THEN 
-                    IF( NSpinRot > 0) THEN
-                      theta_atom = SpinRotTheta(AtomID2)
-                      phi_atom = SpinRotPhi(AtomID2)
-                    ELSE
-                      theta_atom = theta
-                      phi_atom = phi	
-                    END IF                   	    
-                    CALL Pauli_Matrices( theta_atom, phi_atom, sigma_z, sigma_p, sigma_m, u, v, ustar, vstar )                     	        
+          	  IF (AtomID2 == AtomID1) THEN                 	    
+                    CALL Pauli_Matrices( sigma_z, sigma_p, sigma_m )                     	        
           	        DO s1 = 1,2        
-          	            DO s2 = 1,2
-                               IF( ShellT1 == 0 .and. ShellT2 == 0)THEN 
-                                     HSO( s1, ish1, s2, ish2 ) = c_zero 
-                               ELSE IF( ShellT1 == 1 .and. ShellT2 == 1 .and. (ShellC1 == 0 .or. ShellC1 == 1) .and. (ShellC2 == 0 .or. ShellC2 == 1)) THEN
-                                     LS1( s1, j, s2, q ) &                       
-                                          = 0.50d0 * L_z1(j,q) * sigma_z(s1,s2) &
-                                          + 0.25d0 * L_p1(j,q) * sigma_m(s1,s2) &
-                                          + 0.25d0 * L_m1(j,q) * sigma_p(s1,s2)  
-                                     HSO( s1, ish1, s2, ish2) = Xi(i,k)*LS1(s1,j,s2,q)                              !lambda(ish1) * LS1(s1,j,s2,q)                                     
-                               ELSE IF( ShellT1 == 2 .and. ShellT2 == 2 .and. ShellC1 == 2 .and. ShellC2 == 2) THEN
-                                     LS2( s1, j, s2, q ) &                       
-                                          = 0.50d0 * L_z2(j,q) * sigma_z(s1,s2) &
-                                          + 0.25d0 * L_p2(j,q) * sigma_m(s1,s2) &
-                                          + 0.25d0 * L_m2(j,q) * sigma_p(s1,s2)  
-                                     HSO( s1, ish1, s2, ish2) = Xi(i,k)*LS2(s1,j,s2,q)                              !lambda(ish1) * LS2(s1,j,s2,q)
-                               ELSE IF( ShellT1 == 3 .and. ShellT2 == 3 .and. ShellC1 == 2 .and. ShellC2 == 2) THEN
-                                     LS3( s1, j, s2, q ) &                       
-                                          = 0.50d0 * L_z3(j,q) * sigma_z(s1,s2) &
-                                          + 0.25d0 * L_p3(j,q) * sigma_m(s1,s2) &
-                                          + 0.25d0 * L_m3(j,q) * sigma_p(s1,s2)  
-                                     HSO( s1, ish1, s2, ish2) = Xi(i,k)*LS3(s1,j,s2,q)                              !lambda(ish1) * LS3(s1,j,s2,q)                                
-                               END IF                              
-                        END DO
-                    END DO
-                    ! Rotate INTRA-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space
-                    IF (NSpinRot > 0) THEN 
-                       !Hamiltonian                                                                
-                       HROT (1, ish1, 1, ish2) =  u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                       HROT (1, ish1, 2, ish2) =  v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                       HROT (2, ish1, 1, ish2) =  u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                       HROT (2, ish1, 2, ish2) =  v*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)+u*ustar*dcmplx(HD(2,ish1,ish2),0.0d0)     
-                       
-                       !Overlap matrix
-                       SROT (1, ish1, 1, ish2) =  u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                       SROT (1, ish1, 2, ish2) =  v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                       SROT (2, ish1, 1, ish2) =  u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                       SROT (2, ish1, 2, ish2) =  v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                       
-                    END IF 
-                  ! Rotate INTER-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space    
-                  ELSE IF (NSpinRot > 0) THEN !.and. distance > 0.0d0) THEN 
-                      
-                      CALL Pauli_Matrices( SpinRotTheta(AtomID1), SpinRotPhi(AtomID1), sigma_z, sigma_p, sigma_m, u, v, ustar, vstar )
-                      ! Hamiltonian
-                      HROT1temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT1temp12 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT1temp21 = u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT1temp22 = v*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)+u*ustar*dcmplx(HD(2,ish1,ish2),0.0d0)     
-                      ! Overlap matrix
-                      SROT1temp11 = u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT1temp12 = v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT1temp21 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT1temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                                                                                                                                      
-                      CALL Pauli_Matrices( SpinRotTheta(AtomID2), SpinRotPhi(AtomID2), sigma_z, sigma_p, sigma_m, u, v, ustar, vstar )
-                      ! Hamiltonian
-                      HROT2temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT2temp12 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT2temp21 = u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT2temp22 = v*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)+u*ustar*dcmplx(HD(2,ish1,ish2),0.0d0)     
-                      ! Overlap matrix
-                      SROT2temp11 = u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT2temp12 = v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT2temp21 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT2temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-				  
-                      ! Average Hamiltonian elements  
-                      HROT (1, ish1, 1, ish2) = (HROT1temp11 + HROT2temp11)/2.0d0
-                      HROT (1, ish1, 2, ish2) = (HROT1temp12 + HROT2temp12)/2.0d0
-                      HROT (2, ish1, 1, ish2) = (HROT1temp21 + HROT2temp21)/2.0d0
-                      HROT (2, ish1, 2, ish2) = (HROT1temp22 + HROT2temp22)/2.0d0 
-                      ! Average Overlap matrix elemnets
-                      SROT (1, ish1, 1, ish2) = (SROT1temp11 + SROT2temp11)/2.0d0
-                      SROT (1, ish1, 2, ish2) = (SROT1temp12 + SROT2temp12)/2.0d0
-                      SROT (2, ish1, 1, ish2) = (SROT1temp21 + SROT2temp21)/2.0d0
-                      SROT (2, ish1, 2, ish2) = (SROT1temp22 + SROT2temp22)/2.0d0 
-                                          
+          	          DO s2 = 1,2
+                         IF( ShellT1 == 0 .and. ShellT2 == 0)THEN 
+                               HSO( s1, ish1, s2, ish2 ) = c_zero 
+                         ELSE IF( ShellT1 == 1 .and. ShellT2 == 1 .and. (ShellC1 == 0 .or. ShellC1 == 1) .and. (ShellC2 == 0 .or. ShellC2 == 1)) THEN
+                               LS1( s1, j, s2, q ) &                       
+                                    = 0.50d0 * L_z1(j,q) * sigma_z(s1,s2) &
+                                    + 0.25d0 * L_p1(j,q) * sigma_m(s1,s2) &
+                                    + 0.25d0 * L_m1(j,q) * sigma_p(s1,s2)  
+                               HSO( s1, ish1, s2, ish2) = Xi(i,k)*LS1(s1,j,s2,q)                              !lambda(ish1) * LS1(s1,j,s2,q)                                     
+                         ELSE IF( ShellT1 == 2 .and. ShellT2 == 2 .and. ShellC1 == 2 .and. ShellC2 == 2) THEN
+                               LS2( s1, j, s2, q ) &                       
+                                    = 0.50d0 * L_z2(j,q) * sigma_z(s1,s2) &
+                                    + 0.25d0 * L_p2(j,q) * sigma_m(s1,s2) &
+                                    + 0.25d0 * L_m2(j,q) * sigma_p(s1,s2)  
+                               HSO( s1, ish1, s2, ish2) = Xi(i,k)*LS2(s1,j,s2,q)                              !lambda(ish1) * LS2(s1,j,s2,q)
+                         ELSE IF( ShellT1 == 3 .and. ShellT2 == 3 .and. ShellC1 == 2 .and. ShellC2 == 2) THEN
+                               LS3( s1, j, s2, q ) &                       
+                                    = 0.50d0 * L_z3(j,q) * sigma_z(s1,s2) &
+                                    + 0.25d0 * L_p3(j,q) * sigma_m(s1,s2) &
+                                    + 0.25d0 * L_m3(j,q) * sigma_p(s1,s2)  
+                               HSO( s1, ish1, s2, ish2) = Xi(i,k)*LS3(s1,j,s2,q)                              !lambda(ish1) * LS3(s1,j,s2,q)                                
+                         END IF                              
+                      END DO
+                    END DO                
                   END IF  
                 ish2 = ish2 + 1
                 END DO    
@@ -911,28 +813,10 @@ CONTAINS
     !END DO       
                                                                                                                                                   
     
-    !*****************************************************
-    !Construct hamil and hamil_SO matrices to return to ANT
-    !*****************************************************
-    
-    IF (NSPinROT > 0) THEN   
-       DO i = 1,NAOs
-          DO j = 1,NAOs    
-             !Up-Up
-   	   	     hamil(i,j) = HROT(1,i,1,j)
-   	   	     overlap_SO(i,j) = SROT(1,i,1,j)
-       	     !Up-Down
-   	   	     hamil(i,j+NAOs) = HROT(1,i,2,j)
-   	   	     overlap_SO(i,j+NAOs) = SROT(1,i,2,j)
-             !Down-Up
-   	   	     hamil(i+NAOs,j) = HROT(2,i,1,j)
-   	   	     overlap_SO(i+NAOs,j) = SROT(2,i,1,j)
-             !Down-Down
-   	    	 hamil(i+NAOs,j+NAOs) = HROT(2,i,2,j) 
-   	    	 overlap_SO(i+NAOs,j+NAOs) = SROT(2,i,2,j)  
-          END DO        
-       END DO      
-    END IF            
+    !******************************************
+    !Construct hamil_SO matrix to return to ANT
+    !******************************************
+             
     
     DO i = 1,NAOs
        DO j = 1,NAOs

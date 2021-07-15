@@ -18,6 +18,101 @@
   implicit none
 contains
   !
+  ! Read a complex matrix A from a file connected to iunit
+  !
+  ! with sparse matrix format: i j Aij
+  ! End of matrix marker: 0 0 0
+  !
+  subroutine ReadSparseMatrix( iunit, A )
+    use constants
+    use messages
+    implicit none
+
+    integer, intent(in) :: iunit
+    complex(double),dimension(:,:),intent(out) :: A
+
+    integer :: i,j, ios, dim1, dim2
+    complex(double) :: Aij
+    character :: ch
+    integer :: lnum
+
+    dim1 = size(A,1) 
+    dim2 = size(A,2) 
+
+    lnum = 0
+    do
+       lnum=lnum+1
+       ! Skip comment lines
+       read (unit=iunit,fmt=*,iostat=ios), ch
+       if( ch == '!' ) cycle
+       backspace iunit
+       read (unit=iunit,fmt=*,iostat=ios), i, j, Aij
+       if( ios /= 0 )then
+          print *, "matrix line number = ", lnum
+          call ReadErr( "ReadSparseMatrix", "i, j, Aij" )
+       end if
+       if( i == 0 .and. j == 0 ) exit
+       if( i > dim1 .or. i < 1 .or. j > dim2 .or. j < 1)&
+            call ErrMessage( "Util/ReadSparseMatrix", "Matrix index out of range.", .true. )
+       A(i,j) = Aij
+    end do
+    
+  end subroutine ReadSparseMatrix
+
+  !*******************************
+  ! Print Matrix in Sparse format
+  !*******************************
+  subroutine PrintSparseMatrix( A )
+    use constants
+    implicit none
+    real(double),dimension(:,:),intent(in) :: A
+    integer :: i,j,dim1,dim2
+    dim1 = size(A,1) 
+    dim2 = size(A,2) 
+    do i=1,dim1
+       do j=1,dim2
+          if(abs(A(i,j))>1.0d-6) print *, i, j, A(i,j)
+       end do
+    end do
+    print *, 0, 0, 0.0d0
+  end subroutine PrintSparseMatrix
+
+  !******************************
+  ! Read a complex matrix A from 
+  ! a file connected to iunit
+  ! with normal matrix format: 
+  !
+  !  A11 A12 ... A1N
+  !  A21 A22 ... A2N
+  !   :   :       :
+  !  AM1 AM2 ... AMN
+  !*****************************
+  subroutine ReadMatrix( iunit, A )
+    use constants
+    use messages
+    implicit none
+
+    integer, intent(in) :: iunit
+    complex(double),dimension(:,:),intent(out) :: A
+
+    integer :: i,j, ios, dim1, dim2
+    character :: ch
+
+    dim1 = size(A,1) 
+    dim2 = size(A,2) 
+    ! Skip comment lines
+    do 
+       read (unit=iunit,fmt=*,iostat=ios), ch
+       if( ch /= "!" )exit
+    end do
+    backspace iunit
+    do i=1,dim1
+       read(unit=iunit,fmt=*,iostat=ios), (A(i,j),j=1,dim2)
+       if( ios /= 0 ) call ReadErr("Util/ReadMatrix", "A(i,j)")
+    end do
+  end subroutine ReadMatrix
+  
+  !
   ! Pretty print a real Matrix on standard output
   !
   subroutine PrintRMatrix( A )
