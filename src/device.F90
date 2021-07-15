@@ -1082,11 +1082,25 @@
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
-    root_fail = .true.
-    E0=shift-Z 
-    E1=shift
-    E2=shift+Z  
+     root_fail = .true.
+    !E0=shift-Z 
+     E0=shift
+     E1=shift
+    !E2=shift+Z
+     E2=shift
     if (root_fail) then
+        print*,'MULLER method'
+        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,0,E3,DE,K,Cond)
+        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+           root_fail = .true.
+        else
+           shift = E3
+           root_fail = .false.
+       end if
+    end if  
+    !if (root_fail) then
+     if (.not.root_fail) then
         print*,'SECANT method'
         call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
         if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
@@ -1097,18 +1111,8 @@
            root_fail = .false.
         end if
     end if      
-    if (root_fail) then
-        print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
-       end if
-    end if  
-    if (root_fail) then
+    !if (root_fail) then
+     if (.not.root_fail) then
        print *, 'BISEC method'
        shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
        DE=Delta
@@ -1121,7 +1125,8 @@
     write(ifu_log,*)
     write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', Q_SOC
     write(ifu_log,*)'-----------------------------------------------'
-    ADDP = .not. root_fail
+   !ADDP = .not. root_fail
+    ADDP = root_fail
 
     return
   end subroutine CompDensMat_SOC
