@@ -1,0 +1,15 @@
+ALPHA = 0.015  
+NPULAY = 4  
+SL = 1.0d-2  
+SELFACC = 1.0d-5  
+PACC = 1.0d-7  
+FERMIACC = 1.0d-5  
+CHARGEACC = 1.0d-5  
+EW1 = -5
+EW2 = 5
+MOLGAP
+MOLBLOCKS
+1
+11,22
+IP = 0.1  
+EA = 0.7    

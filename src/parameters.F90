@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.5.2  **********************
+!*********************  ANT.G-2.6.2  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -226,10 +226,16 @@
   ! *****************
   ! Correlated Blocks
   ! *****************
+  
   CHARACTER(LEN=10), PARAMETER :: CorrBl_keyw = "CORRBLOCKS"
   INTEGER :: NCorrBl = 0
   INTEGER, dimension(MaxAtm) :: CorrBeg=0, CorrEnd=0
   REAL*8, dimension(MaxAtm) :: UCoul=0, JHund=0
+
+ ! Molecular Gap opening
+  INTEGER :: NCorrBlM = 0 ; CHARACTER(LEN=9), PARAMETER :: CorrBlM_keyw = "MOLBLOCKS"
+  INTEGER, dimension(MaxAtm) :: CorrBegM=0, CorrEndM=0
+  REAL*8:: UPlus =  0.00d0 ; CHARACTER(len=5), PARAMETER :: Uplus_keyw = "UPLUS"
 
   ! Whether to perform DFT+U calculation
   LOGICAL :: DFTU = .false.; CHARACTER(len=10), PARAMETER :: DFTU_keyw = "DFT+U"
@@ -246,6 +252,7 @@
   ! Whether to diagonalize the correlated blocks
   LOGICAL :: DiagCorrBl = .FALSE. ; CHARACTER(len=10), PARAMETER :: DiagCorrBl_keyw = "DIAGCORRBL"
 
+  
   ! *************************
   ! Spin transport parameters
   ! *************************
@@ -306,9 +313,21 @@
   ! REAL*8 :: soc = 0.0d0           
   ! CHARACTER(len=10), PARAMETER :: SOC_keyw = "SOC"
   
-  ! Global SOC multiplicative factor due to lack of nodal structure in basis set
-  REAL*8 :: socfac = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: SOCFAC_keyw = "SOCFAC"  
+  ! Global SOC multiplicative factor for P shells due to lack of nodal structure in basis set
+  REAL*8 :: socfac_p = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SOCFAC_P_keyw = "SOCFAC_P"  
+  
+  ! Global SOC multiplicative factor for D shells due to lack of nodal structure in basis set
+  REAL*8 :: socfac_d = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SOCFAC_D_keyw = "SOCFAC_D" 
+  
+  ! Global SOC multiplicative factor for F shells due to lack of nodal structure in basis set
+  REAL*8 :: socfac_f = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: SOCFAC_F_keyw = "SOCFAC_F"  
+  
+  ! Global cutoff for Yukawa nuclear screening potential in the intra-atomic SOC implementation
+  REAL*8 :: rcut = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: RCUT_keyw = "RCUT"       
 
   ! Global SOC_COEFF_P
   REAL*8 :: soc_cff_p = 0.0d0                           
@@ -322,9 +341,9 @@
   REAL*8 :: soc_cff_f = 0.0d0                             
   CHARACTER(len=10), PARAMETER :: SOC_CFF_F_keyw = "SOC_CFF_F"   
   
-  ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
+  ! Atom SOC multiplicative factors due to lack of nodal structure in basis set
   INTEGER :: NSocFacAtom = 0
-  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtom = 1.0d0
+  REAL*8, DIMENSION( MaxAtm) :: SOCFacAtomP = 0.0d0, SOCFacAtomD = 0.0d0, SOCFacAtomF = 0.0d0, RCutAtom = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFacAtom_keyw = "SOCFACATOM"   
 
   ! Atom SOC definition
@@ -476,7 +495,7 @@ CONTAINS
     CHARACTER          :: eqsign, comment
     CHARACTER(len=10)  :: keyword
     CHARACTER(LEN=100) :: strval
-    REAL*8             :: rval,rvall,rvalll
+    REAL*8             :: rval,rvall,rvalll, rvallll
     INTEGER            :: ival, index, i, imax
     
     ! Jump comment lines
@@ -508,8 +527,10 @@ CONTAINS
          & EStep_keyw     ,&
          & DOSEnergy_keyw     ,&
          & Overlap_keyw   ,&
-!         & SOC_keyw   ,&
-         & SOCFAC_keyw  ,&  
+         & SOCFAC_P_keyw  ,&  
+         & SOCFAC_D_keyw  ,&  
+         & SOCFAC_F_keyw  ,&
+         & RCUT_keyw  ,&  
          & SOC_CFF_P_keyw   ,&
          & SOC_CFF_D_keyw   ,&
          & SOC_CFF_F_keyw   ,&         
@@ -517,6 +538,7 @@ CONTAINS
          & PHI_keyw   ,&
          & EW1_keyw       ,&
          & EW2_keyw       ,&
+         & UPlus_keyw       ,&
          & Infty_keyw   )
        !
        ! 1. looking for real variables
@@ -562,8 +584,14 @@ CONTAINS
           EStep = rval
        CASE ( Overlap_keyw ) 
           Overlap = rval
-       CASE( SOCFAC_keyw )
-          socfac = rval               
+       CASE( SOCFAC_P_keyw )
+          socfac_p = rval    
+       CASE( SOCFAC_D_keyw )
+          socfac_d = rval    
+       CASE( SOCFAC_F_keyw )
+          socfac_f = rval
+       CASE( RCUT_keyw )
+          rcut = rval                                               
        CASE ( SOC_CFF_P_keyw ) 
           soc_cff_p = rval
        CASE ( SOC_CFF_D_keyw ) 
@@ -580,6 +608,8 @@ CONTAINS
           EW2 = rval
        CASE ( INFTY_keyw ) 
           Infty = rval          
+       CASE ( UPlus_keyw ) 
+          Uplus = rval          
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
@@ -820,6 +850,22 @@ CONTAINS
           END IF
        END DO       
 
+    CASE ( CorrBlM_keyw )
+       READ (unit=inpfile,fmt=*,iostat=ios), NCorrBlM
+       print *, "Correlated Molecular Blocks = ", NCorrBlM
+       IF( ios /= 0 ) RETURN 
+       DO i=1,NCorrBlM
+          READ (unit=inpfile,fmt=*,iostat=ios), CorrBegM(i), CorrEndM(i)
+          print *, CorrBegM(i), CorrEndM(i)
+          IF( ios /= 0 ) RETURN 
+          IF( CorrBegM(i) < 1 .OR. CorrEndM(i) < 1 )THEN
+             WRITE( unit=logfile, fmt=* ) "ERROR - Negative number for begin or end of molecular block"
+             ios = 1
+             RETURN
+          END IF
+       END DO
+
+
     CASE ( PFix_keyw )
        PFix = .TRUE.
        READ (unit=inpfile,fmt=*,iostat=ios), densitymatrixx
@@ -847,9 +893,9 @@ CONTAINS
       READ (unit=inpfile,fmt=*,iostat=ios), NSOCFacAtom
       IF( ios /= 0 ) RETURN 
       DO i=1,NSOCFacAtom
-         READ (unit=inpfile,fmt=*,iostat=ios), index, rval
+         READ (unit=inpfile,fmt=*,iostat=ios), index, rval, rvall, rvalll, rvallll
          IF( ios /= 0 ) RETURN 
-         IF( rval < 0.0d0)THEN
+         IF( rval < 0.0d0 .OR. rvall < 0.0d0 .OR. rvalll < 0.0d0 .OR. rvallll < 0.0d0)THEN
             WRITE( unit=logfile, fmt=* ) "ERROR - Negative value not allowed in SOCFACATOM Field"
             ios = 1
             RETURN
@@ -860,7 +906,10 @@ CONTAINS
             ios = 1
             RETURN
          END IF
-         SOCFacAtom( index ) = rval
+         SOCFacAtomP( index ) = rval
+         SOCFacAtomD( index ) = rvall
+         SOCFacAtomF( index ) = rvalll
+         RCutAtom( index ) = rvallll
       END DO       
                          
     CASE ( SPINROTATOM_keyw )
@@ -982,14 +1031,6 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
-    WRITE(unit=logfile,fmt=*) SOCFAC_keyw, " = ", socfac    
-    WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
-    WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
-    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
-    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"   
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
@@ -1061,18 +1102,29 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SpinEdit(i) .NE. 1 ) WRITE(unit=logfile,fmt=*) i, SpinEdit(i)
     END DO
+    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
+    WRITE(unit=logfile,fmt=*) SOCFAC_P_keyw, " = ", socfac_p 
+    WRITE(unit=logfile,fmt=*) SOCFAC_D_keyw, " = ", socfac_d 
+    WRITE(unit=logfile,fmt=*) SOCFAC_F_keyw, " = ", socfac_f 
+    WRITE(unit=logfile,fmt=*) RCUT_keyw, " = ", rcut, " bohr"    
+    WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
+    WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
+    WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"          
     WRITE(unit=logfile,fmt=*) SOCFacAtom_keyw, " = ", NSOCFacAtom
     DO i=1,MaxAtm
-       IF( SOCFacAtom(i) > 1.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4)') i, SOCFacAtom(i)
-    END DO        
-    WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
-    DO i=1,MaxAtm
-       IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
-    END DO                                                                  
+       IF( SOCFacAtomP(i) > 0.0d0 .OR. SOCFacAtomD(i) > 0.0d0 .OR. SOCFacAtomF(i) > 0.0d0 .AND. RCutAtom(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4,F11.4)') i, SOCFacAtomP(i), SOCFacAtomD(i), SOCFacAtomF(i), RCutAtom(i)
+    END DO
     WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
     DO i=1,MaxAtm
        IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
-    END DO            
+    END DO          
+    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
+    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
+    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                 
+    WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
+    DO i=1,MaxAtm
+       IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
+    END DO                                                                        
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"
     WRITE(unit=logfile,fmt=*) "***********************"
@@ -1084,6 +1136,11 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) HybFunc_keyw, " = ", HybFunc
     WRITE(unit=logfile,fmt=*) DFTU_keyw, " = ", DFTU
     WRITE(unit=logfile,fmt=*) DiagCorrBl_keyw, " = ", DiagCorrBl
+    WRITE(unit=logfile,fmt=*) CorrBlM_keyw, " = ", NCorrBlM
+    DO i=1,NCorrBlM
+       WRITE(unit=logfile,fmt='(A,I2,A,I4,A,I4,A,F5.3,A,F5.3)'), " MolBl. #", i, ":  ", CorrBegM(i), " - ", CorrEndM(i)
+    END DO
+    WRITE(unit=logfile,fmt=*) UPlus_keyw, " = ", UPlus
     WRITE(unit=logfile,fmt=*) "*****************"
     WRITE(unit=logfile,fmt=*) "Output parameters"
     WRITE(unit=logfile,fmt=*) "*****************"

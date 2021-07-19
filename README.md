@@ -17,3 +17,7 @@ export OMP_STACKSIZE=2G **
 ANT.G-2.5.1 is intended to contain the latest changes of Wynand and Palacios already in 2.5.0, now including the evaluation of the polarization. 
 
 I think the issue of the integration of the advanced density matrix is solved. Some care needed when evaluating the Dyson equation
+
+********************************************************************************
+Just added test version for the manual opening of the gap of molecules
+********************************************************************************

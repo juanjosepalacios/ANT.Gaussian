@@ -1,6 +1,6 @@
 !***************************************
 !*                                     *
-!*  ANT.G-2.5.2  - SpinOrbit.f90       *
+!*  ANT.G-2.6.2  - SpinOrbit.f90       *
 !*                                     *
 !*  Calculation of Spin-orbit coupling *
 !*                                     *
@@ -389,12 +389,12 @@ CONTAINS
 !    and integrals by Alan Jeffrey            
 ! --------------------------------------------------------
   
-  SUBROUTINE INTEGRATE1(ii,jj,A,B,result,idx11,idx12,idx21,idx22) ! Performs the integration in Eq. (5) of  Beilstein J. Nanotechnol. 2018, 9, 1015-1023
+  SUBROUTINE INTEGRATE1(ii,jj,A,B,result,idx11,idx12,idx21,idx22,rcut,Z) ! Performs the integration in Eq. (5) of  Beilstein J. Nanotechnol. 2018, 9, 1015-1023
       IMPLICIT REAL*8 (A-H,O-Y)
       IMPLICIT INTEGER (I,N)
       DIMENSION XP(9999), WP(9999)
-      INTEGER :: ii,jj,idx11,idx12,idx21,idx22
-      REAL*8 :: result, SUM1, NormOrb1, NormOrb2
+      INTEGER :: ii,jj,idx11,idx12,idx21,idx22,Z
+      REAL*8 :: result, SUM1, NormOrb1, NormOrb2, rcut, Yuk
      
       INTERFACE AFunc
        FUNCTION func (y,ll,i1,i2)
@@ -427,7 +427,12 @@ CONTAINS
 
       result = 0.0d0
       DO 12 N = 1,NQ
-         result = result + WP(N)*(1.0/XP(N))*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) ! Eq. (5) Beilstein J. Nanotechnol. 2018, 9, 1015-1023
+         IF (XP(N) < rcut) THEN 
+           Yuk = ((Z-1)*DEXP(-XP(N)*DLOG(DFLOAT(Z))/rcut)+1.0d0)/XP(N) ! Modified Yukawa potential below atomic radius approximately  
+           result = result + WP(N)*Yuk*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) 
+         ELSE
+           result = result + WP(N)*(1.0/XP(N))*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) ! Eq. (5) Beilstein J. Nanotechnol. 2018, 9, 1015-1023
+         END IF  
  12   CONTINUE
          
       RETURN
@@ -525,7 +530,7 @@ CONTAINS
   !*** Compute matrix of SO Hamiltonian for a given basis set ***
   !**************************************************************
   SUBROUTINE CompHSO(hamil_SO,HD,NAOs,Nshell)
-    USE parameters, ONLY: soc_cff_p, soc_cff_d, soc_cff_f, socfac, NSOCFacAtom, SOCFacAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
+    USE parameters, ONLY: soc_cff_p, soc_cff_d, soc_cff_f, socfac_p, socfac_d, socfac_f, rcut, NSOCFacAtom, SOCFacAtomP, SOCFacAtomD, SOCFacAtomF, RCutAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh, GetShellN, GetShellA, GetShlADF, GetEXX, GetC1, GetC2, GetC3, GetC4, GetAN, GetAtmCo
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -545,7 +550,7 @@ CONTAINS
     REAL*8, DIMENSION(2,NAOs,NAOs), INTENT(IN) :: HD
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin, Z, acount
-    REAL*8 :: result, A, B, x, zz, socfac_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
+    REAL*8 :: result, A, B, x, zz, socfac_atom_p, socfac_atom_d, socfac_atom_f, rcut_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
 
     COMPLEX*16, DIMENSION(2,2) :: sigma_z, sigma_p, sigma_m
     COMPLEX*16, DIMENSION(3,3) :: L_z1, L_p1, L_m1
@@ -655,9 +660,15 @@ CONTAINS
            IF (AtomID1 == AtomID2) THEN
               Z = GetAN(AtomID2)  ! Atomic number of atom AtomID2
               IF( NSOCFacAtom > 0) THEN  ! User-defined multiplicative SOC factor of atom AtomID2
-                socfac_atom = SOCFacAtom(AtomID2)
+                socfac_atom_p = SOCFacAtomP(AtomID2)
+                socfac_atom_d = SOCFacAtomD(AtomID2)
+                socfac_atom_f = SOCFacAtomF(AtomID2)
+                rcut_atom = RCutAtom(AtomID2)
               ELSE
-                socfac_atom = socfac
+                socfac_atom_p = socfac_p
+                socfac_atom_d = socfac_d
+                socfac_atom_f = socfac_f
+                rcut_atom = rcut
               END IF              
               IF( NSOCEdit > 0) THEN  ! User-defined SOC coefficients of atom AtomID2
                 soc_cff_p_atom = SOCEditP(AtomID2)
@@ -668,9 +679,11 @@ CONTAINS
                 soc_cff_d_atom = soc_cff_d
                 soc_cff_f_atom = soc_cff_f
               END IF	               
-              IF (socfac_atom > 0.0d0 .or. (soc_cff_p_atom == 0.0d0 .and. soc_cff_d_atom == 0.0d0 .and. soc_cff_f_atom==0.0d0)) THEN      
-                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1)                
-                  Xi(i,k) = socfac_atom*zz*Z*result       
+              IF ((socfac_atom_p > 0.0d0 .or. socfac_atom_d > 0.0d0 .or. socfac_atom_f > 0.0d0) .or. (soc_cff_p_atom == 0.0d0 .and. soc_cff_d_atom == 0.0d0 .and. soc_cff_f_atom==0.0d0)) THEN                    
+                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1,rcut_atom,Z)                
+                  IF (ShellT1 == 1 .and. ShellT2 == 1) Xi(i,k) = socfac_atom_p*zz*result       
+                  IF (ShellT1 == 2 .and. ShellT2 == 2) Xi(i,k) = socfac_atom_d*zz*result       
+                  IF (ShellT1 == 3 .and. ShellT2 == 3) Xi(i,k) = socfac_atom_f*zz*result       
               ELSE IF (ShellT1 == 1 .and. ShellT2 == 1) THEN
                   Xi(i,k) = soc_cff_p_atom
               ELSE IF (ShellT1 == 2 .and. ShellT2 == 2) THEN                

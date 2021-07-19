@@ -854,12 +854,13 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, IntEnergy, BiasEnergy, DiagFock, SPINMU, BiasVoltage, CompFock, CompGibbsY
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, IntEnergy, BiasEnergy, DiagFock, SPINMU, BiasVoltage, CompFock, CompGibbsY, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
     use orthogonalization
     use constants, only: Hart    
+    use molmod, only: Mol_Sub
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms
 #endif
@@ -952,7 +953,9 @@
       end if       
 
        !IF( ANT1DInp ) call WriteANT1DInput
-
+       
+       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
+       
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then
@@ -4248,7 +4251,6 @@ end subroutine CompLocalMu
   end subroutine glesser_SOC
 
 
-
   ! *************
   ! Step function
   ! *************
@@ -5466,14 +5468,15 @@ end subroutine CompLocalMu
        end if     
       
       open(333,file='tempDOS',status='unknown')
-
+      
+     
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
-          cenergy=dcmplx(energy)
+          cenergy=dcmplx(energy)   
 
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
@@ -5827,7 +5830,7 @@ end subroutine CompLocalMu
       open(334,file='tempT',status='unknown')
       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
       
-      wcount = 0  ! Issue warning of failure in transmission just once
+      wcount = 0  ! Issue warning of failure in transmission just once    
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
