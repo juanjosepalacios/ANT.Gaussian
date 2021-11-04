@@ -1416,7 +1416,7 @@
            ! Looks like this is the correct way.
            !OHD(ispin,:,:) = matmul( SNH, matmul( HD(ispin,:,:), SPH ) )
            ! Orthogonalization by SNH*HD*SNH
-           OHD(ispin,:,:) = matmul( SNH, matmul( HD(ispin,:,:), SNH ) ) ! This seems to be the correct expression.
+           OHD(ispin,:,:) = matmul( SPH, matmul( HD(ispin,:,:), SPH ) ) ! This seems to be the correct expression.
            !OHD(ispin,:,:) = HD(ispin,:,:)
            !OHD(ispin,:,:) = matmul( SNH, matmul( F(ispin,:,:), SPH ) )
 
