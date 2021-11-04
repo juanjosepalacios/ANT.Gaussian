@@ -254,7 +254,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, biasvoltage, ANT1DInp, NEmbed
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, biasvoltage, ANT1DInp, NEmbed, SCFSOC
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -295,7 +295,7 @@
     ! Dynamic arrays 
     allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), H_SOC_ONLY(DNAOrbs,DNAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
-       print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
+       print *, "DEVICE/Allocation error for SD, InvSD, HD, S_SOC, H_SOC, H_SOC_ONLY, PD"
        stop
     end if
 
@@ -335,7 +335,7 @@
       stop
     END IF
 
-    if (SOC .or. ROT) then
+    if ((SOC .or. ROT) .and. SCFSOC) then
        call spin_orbit                 
        if (NSpin == 2) then
           do i=1,NAOrbs
@@ -4912,7 +4912,7 @@
  if (SOC) then
    do i=1, totdim*2
       do j=1, totdim*2
-         H_SOC_ONLY(i,j)=hamil_SO(i,j) 
+         !H_SOC_ONLY(i,j)=hamil_SO(i,j) 
          H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
       end do
    end do
