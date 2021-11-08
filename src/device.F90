@@ -340,18 +340,18 @@
        if (NSpin == 2) then
           do i=1,NAOrbs
           do j=1,NAOrbs
-             HD(1,i,j)=H_SOC(i,j)
-             HD(2,i,j)=H_SOC(i+NAOrbs,j+NAOrbs)
+             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+             HD(2,i,j)=HD(2,i,j)+H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
              SD(i,j)=S_SOC(i,j)                
           end do
           end do
-       !else 
-       !   do i=1,NAOrbs
-       !   do j=1,NAOrbs
-       !      HD(1,i,j)=H_SOC(i,j)
-       !      SD(i,j)=S_SOC(i,j)                             
-       !   end do
-       !   end do
+       else 
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
        end if       
     end if       
 
@@ -745,7 +745,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ANT1DInp, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus, SCFSOC
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -770,6 +770,26 @@
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F
+    
+    if ((SOC .or. ROT) .and. SCFSOC) then
+       !call spin_orbit                 
+       if (NSpin == 2) then
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+             HD(2,i,j)=HD(2,i,j)+H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+             SD(i,j)=S_SOC(i,j)                
+          end do
+          end do
+       else 
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
+       end if       
+    end if        
     
     !Initializing 1D electrodes everytime we pass a SCF cycle 
    !IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr) call InitElectrodes
@@ -2774,7 +2794,7 @@
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-       call spin_orbit
+       !call spin_orbit
       
        ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice???
        !if (NSpin == 2) then
@@ -3047,7 +3067,7 @@
        allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-       call spin_orbit
+       !call spin_orbit
        
        ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice???
        !if (NSpin == 2) then
@@ -4912,7 +4932,7 @@
  if (SOC) then
    do i=1, totdim*2
       do j=1, totdim*2
-         !H_SOC_ONLY(i,j)=hamil_SO(i,j) 
+         H_SOC_ONLY(i,j)=hamil_SO(i,j) 
          H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
       end do
    end do
