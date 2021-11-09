@@ -2794,17 +2794,23 @@
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-       !call spin_orbit
+       call spin_orbit
       
        ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice???
-       !if (NSpin == 2) then
-       !  do i=1,NAOrbs
-       !  do j=1,NAOrbs
-       !     H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
-       !     H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
-       !  end do
-       !  end do       
-       !end if
+       if (NSpin == 2) then
+         do i=1,NAOrbs
+         do j=1,NAOrbs
+            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+            H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+         end do
+         end do
+       else         
+         do i=1,NAOrbs
+         do j=1,NAOrbs
+            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+         end do
+         end do         
+       end if
        
     else
 
@@ -3067,17 +3073,23 @@
        allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-       !call spin_orbit
+       call spin_orbit
        
        ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice???
-       !if (NSpin == 2) then
-       !  do i=1,NAOrbs
-       !  do j=1,NAOrbs
-       !     H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
-       !     H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
-       !  end do
-       !  end do
-       !end if
+       if (NSpin == 2) then
+         do i=1,NAOrbs
+         do j=1,NAOrbs
+            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+            H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+         end do
+         end do
+       else         
+         do i=1,NAOrbs
+         do j=1,NAOrbs
+            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
+         end do
+         end do         
+       end if
           
     else
 
