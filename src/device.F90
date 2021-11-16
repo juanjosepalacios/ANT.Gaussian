@@ -335,24 +335,25 @@
       stop
     END IF
 
+    ! Calculate SOC-only hamiltonian just once initially
     if ((SOC .or. ROT) .and. SCFSOC) then
        call spin_orbit                 
-       if (NSpin == 2) then
-          do i=1,NAOrbs
-          do j=1,NAOrbs
-             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
-             HD(2,i,j)=HD(2,i,j)+H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
-             SD(i,j)=S_SOC(i,j)                
-          end do
-          end do
-       else 
-          do i=1,NAOrbs
-          do j=1,NAOrbs
-             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
-             SD(i,j)=S_SOC(i,j)                             
-          end do
-          end do
-       end if       
+       !if (NSpin == 2) then
+       !   do i=1,NAOrbs
+       !   do j=1,NAOrbs
+       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+       !      HD(2,i,j)=HD(2,i,j)+H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+       !      SD(i,j)=S_SOC(i,j)                
+       !   end do
+       !   end do
+       !else                 
+       !   do i=1,NAOrbs
+       !   do j=1,NAOrbs
+       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+       !      SD(i,j)=S_SOC(i,j)                             
+       !   end do
+       !   end do
+       !end if       
     end if       
 
     IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
@@ -781,13 +782,13 @@
              SD(i,j)=S_SOC(i,j)                
           end do
           end do
-       else 
-          do i=1,NAOrbs
-          do j=1,NAOrbs
-             HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
-             SD(i,j)=S_SOC(i,j)                             
-          end do
-          end do
+       !else                      ! No need to add SOC in non-magnetic cases, at least provisionally
+       !   do i=1,NAOrbs
+       !   do j=1,NAOrbs
+       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+       !      SD(i,j)=S_SOC(i,j)                             
+       !   end do
+       !   end do
        end if       
     end if        
     
@@ -2795,23 +2796,7 @@
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
        call spin_orbit
-      
-       ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice???
-       if (NSpin == 2) then
-         do i=1,NAOrbs
-         do j=1,NAOrbs
-            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
-            H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
-         end do
-         end do
-       else         
-         do i=1,NAOrbs
-         do j=1,NAOrbs
-            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
-         end do
-         end do         
-       end if
-       
+             
     else
 
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -3074,22 +3059,6 @@
        allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
        call spin_orbit
-       
-       ! Need to subtract out H_SOC_ONLY to avoid using the contribution on the spin diagonal blocks twice???
-       if (NSpin == 2) then
-         do i=1,NAOrbs
-         do j=1,NAOrbs
-            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
-            H_SOC(i+NAOrbs,j+NAOrbs)=H_SOC(i+NAOrbs,j+NAOrbs)-H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
-         end do
-         end do
-       else         
-         do i=1,NAOrbs
-         do j=1,NAOrbs
-            H_SOC(i,j)=H_SOC(i,j)-H_SOC_ONLY(i,j)
-         end do
-         end do         
-       end if
           
     else
 
