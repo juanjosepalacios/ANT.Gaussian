@@ -185,6 +185,10 @@
   ! Starting value for Fermi level search (eV)
   REAL*8 :: FermiStart = -5.00d0   
   CHARACTER(len=10), PARAMETER :: FermiStart_keyw = "FERMISTART"
+  
+  ! Fix Fermi level
+  LOGICAL :: FixFermi = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: FixFermi_keyw = "FIXFERMI"     
 
   ! Type of left and right electrode: "BETHE" or "1DLEAD"
   CHARACTER(LEN=10), DIMENSION(2) :: ElType = (/"BETHE","BETHE"/)
@@ -670,6 +674,8 @@ CONTAINS
        Portho = .true.
     CASE ( DiagCorrBl_keyw )
        DiagCorrBl = .true.
+    CASE ( FixFermi_keyw )
+       FixFermi = .true.           
     CASE ( SOC_keyw )
        soc = .true.   
     CASE ( FixSOCFermi_keyw )
@@ -924,6 +930,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
+    WRITE(unit=logfile,fmt=*) FixFermi_keyw, " = ", FixFermi        
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
