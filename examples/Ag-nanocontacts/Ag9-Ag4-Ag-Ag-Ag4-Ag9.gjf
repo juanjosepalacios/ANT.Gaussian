@@ -1,8 +1,8 @@
 %mem=1000MB
-%NProcShared=4
+%NProcShared=1
 %Subst L101 ../../bin
 %Subst L502 ../../bin
-#p lsda/gen pseudo=read Scf=(conver=5,dsymm)
+#p lsda/gen pseudo=read Scf=(conver=5,nodamp,dsymm) 
 
 Ag9-Ag4-Ag-Ag-Ag4-Ag9
 
@@ -36,7 +36,7 @@ Ag   0.000000    0.000000    5.000000
 Ag   0.000000   -4.000000    5.000000  
 Ag   4.000000    0.000000    5.000000  
 
-1-9 20-28
+1-28
 S   3   1.00
       0.4981000             -0.3233220        
       0.1586000              0.4256450        
@@ -51,11 +51,8 @@ D   4   1.00
       0.4093000              0.3383100        
       0.1503000              0.1294400        
 ****
-10-19
-lanl2dz
-****
 
-1-9 20-28
+1-28
 AG-ECP     3     36
 F POTENTIAL
   4
@@ -87,6 +84,4 @@ D-F POTENTIAL
 2      2.52940011            34.73471451       
 1      1.06369996             9.89155388       
 0     10.93939972             7.72656393       
-10-19
-lanl2dz
 

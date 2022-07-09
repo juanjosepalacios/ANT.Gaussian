@@ -2,8 +2,8 @@
  Input=Au9-Au4-Au-Au4-Au9.gjf
  Output=Au9-Au4-Au-Au4-Au9.log
  Initial command:
- /home/palacios/gaussian/g09/l1.exe "/home/palacios/scratch/Gau-26788.inp" -scrdir="/home/palacios/scratch/"
- Entering Link 1 = /home/palacios/gaussian/g09/l1.exe PID=     26790.
+ /home/palacios/gaussian/g09/l1.exe "/home/palacios/scratch/Gau-11565.inp" -scrdir="/home/palacios/scratch/"
+ Entering Link 1 = /home/palacios/gaussian/g09/l1.exe PID=     11567.
   
  Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
             Gaussian, Inc.  All Rights Reserved.
@@ -76,13 +76,13 @@
  
  ******************************************
  Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
-                27-Mar-2019 
+                 7-Jul-2022 
  ******************************************
  %mem=1gb
  %NProcShared=4
  Will use up to    4 processors via shared memory.
- %Subst L101 ../bin
- %Subst L502 ../bin
+ %Subst L101 ../../bin
+ %Subst L502 ../../bin
  ----------------------------------------------------------------------
  #p lsda/gen pseudo=read pop=reg Scf=(conver=5,maxcycle=100,dsymm) nosy
  mm
@@ -94,8 +94,8 @@
  5/5=2,6=5,7=100,17=200,38=5/2;
  6/28=1/1;
  99/5=1,9=1/99;
- Leave Link    1 at Wed Mar 27 15:56:30 2019, MaxMem=   134217728 cpu:         0.2
- (Enter ../bin/l101.exe)
+ Leave Link    1 at Thu Jul  7 18:27:43 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter ../../bin/l101.exe)
  ------------------
  Au9-Au4-Au-Au4-Au9
  ------------------
@@ -161,7 +161,7 @@
  NQMom=   54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000
  NMagM=    0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590
  AtZNuc=  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000
- Leave Link  101 at Wed Mar 27 15:56:30 2019, MaxMem=   134217728 cpu:         0.7
+ Leave Link  101 at Thu Jul  7 18:27:43 2022, MaxMem=   134217728 cpu:         0.1
  (Enter /home/palacios/gaussian/g09/l202.exe)
                           Input orientation:                          
  ---------------------------------------------------------------------
@@ -296,7 +296,7 @@
  Deg. of freedom     7
  Full point group                 D4H     NOp  16
  Rotational constants (GHZ):      0.0114545      0.0048733      0.0048733
- Leave Link  202 at Wed Mar 27 15:56:30 2019, MaxMem=   134217728 cpu:         0.1
+ Leave Link  202 at Thu Jul  7 18:27:43 2022, MaxMem=   134217728 cpu:         0.0
  (Enter /home/palacios/gaussian/g09/l301.exe)
  General basis read from cards:  (5D, 7F)
  Centers:       1      2      3      4      5      6      7      8      9     10
@@ -1513,7 +1513,7 @@
  Integral buffers will be    131072 words long.
  Raffenetti 2 integral format.
  Two-electron integral symmetry is turned off.
- Leave Link  301 at Wed Mar 27 15:56:31 2019, MaxMem=   134217728 cpu:         0.7
+ Leave Link  301 at Thu Jul  7 18:27:43 2022, MaxMem=   134217728 cpu:         0.1
  (Enter /home/palacios/gaussian/g09/l302.exe)
  NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
          NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
@@ -1531,10 +1531,10 @@
  Defaulting to unpruned grid for atomic number  79.
  Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
  NSgBfM=   284   284   284   284   284 MxSgAt=    27 MxSgA2=    27.
- Leave Link  302 at Wed Mar 27 15:57:36 2019, MaxMem=   134217728 cpu:       259.4
+ Leave Link  302 at Thu Jul  7 18:29:10 2022, MaxMem=   134217728 cpu:       344.2
  (Enter /home/palacios/gaussian/g09/l303.exe)
  DipDrv:  MaxL=1.
- Leave Link  303 at Wed Mar 27 15:57:36 2019, MaxMem=   134217728 cpu:         0.4
+ Leave Link  303 at Thu Jul  7 18:29:10 2022, MaxMem=   134217728 cpu:         0.1
  (Enter /home/palacios/gaussian/g09/l401.exe)
  ExpMin= 2.79D-02 ExpMax= 3.68D+00 ExpMxC= 3.68D+00 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
  Harris functional with IExCor=  205 and IRadAn=       5 diagonalized for initial guess.
@@ -1551,8 +1551,8 @@
  Symmetry not used in FoFCou.
  Harris En= -1041.77829559928    
  JPrj=0 DoOrth=F DoCkMO=F.
- Leave Link  401 at Wed Mar 27 15:57:44 2019, MaxMem=   134217728 cpu:        29.8
- (Enter ../bin/l502.exe)
+ Leave Link  401 at Thu Jul  7 18:29:21 2022, MaxMem=   134217728 cpu:        46.1
+ (Enter ../../bin/l502.exe)
  Closed shell SCF:
  Using DIIS extrapolation, IDIIS=  1040.
  Two-electron integral symmetry not used.
@@ -1574,7 +1574,7 @@
   ***                      G 0 9                                 *** 
   ***                                                            *** 
   ****************************************************************** 
-  ***                     Version: 2.5.0                         *** 
+  ***                     Version: 2.5.2                         *** 
   ****************************************************************** 
   *  Copyright (c) by                                              * 
   *                                                                * 
@@ -1622,7 +1622,7 @@
  FERMIACC   =    1.0000000000000001E-005  %
  PACC       =    9.9999999999999995E-008  %
  FULLACC    =   F
- MAX        =                        10
+ MAX        =                        15
  SELFACC    =    9.9999999999999995E-007
  SMALL      =    0.1000000000000000     
  SMALLD     =    0.1000000000000000       A
@@ -1632,10 +1632,11 @@
  GLUE       =     1.000000000000000     
  FERMISTART =    -5.000000000000000       eV
  SOC        =   F
- SOCFAC     =                         1
+ SOCFAC     =     0.000000000000000     
  SOC_CFF_P  =     0.000000000000000       eV
  SOC_CFF_D  =     0.000000000000000       eV
  SOC_CFF_F  =     0.000000000000000       eV
+ ROT        =   F
  THETA      =     0.000000000000000       degrees
  PHI        =     0.000000000000000       degrees
  SL         =    1.0000000000000000E-003
@@ -1650,6 +1651,7 @@
  BLPAR2     = Papacon             
  NEMBED1    = ? 
  NEMBED2    = ? 
+ NPC        =                         1
  NATOMEL1   = ? 
  NATOMEL2   = ? 
  OVERLAP    = System Overlap
@@ -1672,7 +1674,9 @@
  MRSTART    =                         0
  SPINDEL    =   F
  SPINEDIT   =                         0
- SPINROT    =                         0
+ SOCFACATOM =                         0
+ SPINROTATO =                         0
+ SOCEDIT    =                         0
  ***********************
  Correlations parameters
  ***********************
@@ -1697,7 +1701,6 @@
  RTM_END    =                         0
  NCHANNELS  =                         0
  LEADDOS    =   F
- ANT1D      =   F
  PRTHATOM   =                         1
  -------------------
  Initializing device
@@ -1740,6 +1743,7 @@
   Center of charge:
    0.000000   0.000000   4.724315
  
+                       13 nlead1
   Atoms in left electrode:                       13
    1  Au   0.000000   0.000000  13.228083
    2  Au  -3.779452   3.779452  13.228083
@@ -1774,7 +1778,7 @@
   27  Au   0.000000   0.000000   4.724315
  
  Plane 1
- with normal vector (  0.000000,  0.000000,  1.000000 )
+ with normal vector ( -0.000000,  0.000000,  1.000000 )
  has    9 atoms:
     1    1   0.000000   0.000000  13.228083
     2    1  -3.779452   3.779452  13.228083
@@ -1787,7 +1791,7 @@
     9    1   0.000000  -7.558905  13.228083
  
  Plane 2
- with normal vector (  0.000000,  0.000000, -1.000000 )
+ with normal vector ( -0.000000, -0.000000, -1.000000 )
  has    9 atoms:
    19    2   0.000000   0.000000  -3.779452
    20    2  -3.779452   3.779452  -3.779452
@@ -1803,39 +1807,39 @@
  Near-neighbor distance at electrode 1 =     2.828442044700474     
 Found         12  lattice directions
   -0.70711   0.70711   0.00000
-   0.70711  -0.70711   0.00000
+   0.70711  -0.70711  -0.00000
    0.70711   0.70711   0.00000
-  -0.70711  -0.70711   0.00000
+  -0.70711  -0.70711  -0.00000
    0.00000   0.70711  -0.70711
-   0.00000  -0.70711   0.70711
+  -0.00000  -0.70711   0.70711
   -0.70711   0.00000  -0.70711
-   0.70711   0.00000   0.70711
+   0.70711  -0.00000   0.70711
    0.00000  -0.70711  -0.70711
-   0.00000   0.70711   0.70711
+  -0.00000   0.70711   0.70711
    0.70711   0.00000  -0.70711
-  -0.70711   0.00000   0.70711
+  -0.70711  -0.00000   0.70711
  Finding lattice directions in electrode 2 ....
  Near-neighbor distance at electrode 2 =     2.828442044700474     
 Found         12  lattice directions
    0.70711   0.70711   0.00000
-  -0.70711  -0.70711   0.00000
+  -0.70711  -0.70711  -0.00000
   -0.70711   0.70711   0.00000
-   0.70711  -0.70711   0.00000
+   0.70711  -0.70711  -0.00000
    0.00000   0.70711   0.70711
-   0.00000  -0.70711  -0.70711
+  -0.00000  -0.70711  -0.70711
   -0.70711   0.00000   0.70711
-   0.70711   0.00000  -0.70711
+   0.70711  -0.00000  -0.70711
    0.00000  -0.70711   0.70711
-   0.00000   0.70711  -0.70711
+  -0.00000   0.70711  -0.70711
    0.70711   0.00000   0.70711
-  -0.70711   0.00000  -0.70711
+  -0.70711  -0.00000  -0.70711
  
  -----------------------------------------------------
  Inititalizing Bethe lattice for electrode No. 1
  -----------------------------------------------------
  
  Open file 
- /home/palacios/ANT.G/pgi/ANT.G-2.5.0/BLDAT/BL079.dat                                                
+ /home/palacios/ANT.Gaussian-master/BLDAT/BL079.dat                                                  
   to read Bethe lattice parameters.
  Reading Papacon                                            parameters.
  es        =   0.1462951858205988     
@@ -1870,14 +1874,14 @@ Found         12  lattice directions
  EMax=    20.00000000000000        Charge=    17.99998590562411     
  Now searching for Fermi energy...
  Secant method:
- Bethe lattice Fermi energy =     2.708929610926656     
+ Bethe lattice Fermi energy =     2.708929610926655     
  
  -----------------------------------------------------
  Inititalizing Bethe lattice for electrode No. 2
  -----------------------------------------------------
  
  Open file 
- /home/palacios/ANT.G/pgi/ANT.G-2.5.0/BLDAT/BL079.dat                                                
+ /home/palacios/ANT.Gaussian-master/BLDAT/BL079.dat                                                  
   to read Bethe lattice parameters.
  Reading Papacon                                            parameters.
  es        =   0.1462951858205988     
@@ -1912,28 +1916,18 @@ Found         12  lattice directions
  EMax=    20.00000000000000        Charge=    17.99998590562411     
  Now searching for Fermi energy...
  Secant method:
- Bethe lattice Fermi energy =     2.708929610926656     
+ Bethe lattice Fermi energy =     2.708929610926655     
  ---------------------------------------------------
   Details on device and contacting atoms -----------
  ---------------------------------------------------
- NEmbed(1) =                        9
- NEmbed(2) =                        9
- Number of electrons in neutral reduced device
- NCDEl =                       305
+ NEmbed(1) =                        0
+ NEmbed(2) =                        0
+ Number of electrons in neutral reduced device (NCDEl) =  
+                      305
  First and last orbital in reduced device
  NCDAO1 =                         1
  NCDAO2 =                       256
  ---------------------------------------------------
- -------------------------------------------------------------------------------------------
- Starting calculation with density matrix from file  
- P.Au9-Au4-Au-Au4-Au9.dat                          
- -------------------------------------------------------------------------------------------
- -------------------------------------------------------------------------------------------
-   ... and using supplementary density matrix from file  
- P.Au9-Au4-Au-Au4-Au9.dat0                         
- -------------------------------------------------------------------------------------------
- Tr[P*S] of initial guess =    301.8510053206097     
- --------------------------------
  FoFJK:  IHMeth= 1 ICntrl=     500 DoSepK=F KAlg= 0 I1Cent=   0 FoldK=F
  IRaf= 990000000 NMat=   1 IRICut=       1 DoRegI=T DoRafI=F ISym2E= 0.
  FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
@@ -1945,231 +1939,142 @@ Found         12  lattice directions
  Defaulting to unpruned grid for atomic number  79.
  Defaulting to unpruned grid for atomic number  79.
  Defaulting to unpruned grid for atomic number  79.
- E= -1042.89330988151    
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        1
- -------------------------------------------------------------------------
- EMin=   -476.3576908307484     
- EMax=    476.3576908307484     
- --------------
- Charge Control
- --------------
- Searching energy boundaries [EMin, EMax] such that
- Total Integrated Spectral Weight (TISW)= 512
- EMin=  -476.35769  EMax=   476.35769  TISW= 511.99998
- --------------------------------------------------
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -8.63080  +/-  0.00067
- 
- Number of alpha electrons:  152.49999
- Number of beta electrons:   152.49999
- Total number of electrons:   304.99998
- -----------------------------------------------
- DIIS: error= 3.97D-01 at cycle   1 NSaved=   1.
- NSaved= 1 IEnMin= 1 EnMin= -1042.89330988151     IErMin= 1 ErrMin= 3.97D-01
- ErrMax= 3.97D-01  0.00D+00 EMaxC= 1.00D-01 BMatC= 8.97D-01 BMatP= 8.97D-01
- IDIUse=3 WtCom= 0.00D+00 WtEn= 1.00D+00
+ E= -1042.15311443319    
+ DIIS: error= 9.35D-02 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -1042.15311443319     IErMin= 1 ErrMin= 9.35D-02
+ ErrMax= 9.35D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 6.05D-01 BMatP= 6.05D-01
+ IDIUse=3 WtCom= 6.54D-02 WtEn= 9.35D-01
  Coeff-Com:  0.100D+01
  Coeff-En:   0.100D+01
  Coeff:      0.100D+01
- GapD=    2.000 DampG=2.000 DampE=0.125 DampFc=0.2500 IDamp=-1.
- Damping current iteration by 2.50D-01
- RMSDP=4.91D-03 MaxDP=2.65D-01              OVMax= 0.00D+00
+ Gap=     0.043 Goal=   None    Shift=    0.000
+ DSYEVD-2 returned Info=       33409 IAlg= 4 N=   256 NDim=   256 NE2=      523320 trying  DSYEV.
+ GapD=    0.043 DampG=0.250 DampE=0.250 DampFc=0.1250 IDamp=-1.
+ Damping current iteration by 1.25D-01
+ RMSDP=2.14D-02 MaxDP=2.24D+00              OVMax= 0.00D+00
 
  Cycle   2  Pass 1  IDiag  1:
- E= -1042.43062634352     Delta-E=        0.462683537991 Rises=F Damp=T
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        2
- -------------------------------------------------------------------------
- EMin=   -545.6949064248810     
- EMax=    545.6949064248810     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -9.75800  +/-  0.00000
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00000
- -----------------------------------------------
- RMSDP=3.80D-03 MaxDP=2.44D-01 DE= 4.63D-01 OVMax= 0.00D+00
+ RMSU=  2.67D-03    CP:  9.98D-01
+ E= -1042.37747934176     Delta-E=       -0.224364908575 Rises=F Damp=T
+ DIIS: error= 5.94D-02 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 2 EnMin= -1042.37747934176     IErMin= 2 ErrMin= 5.94D-02
+ ErrMax= 5.94D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.09D-01 BMatP= 6.05D-01
+ IDIUse=3 WtCom= 4.06D-01 WtEn= 5.94D-01
+ Coeff-Com: -0.117D+01 0.217D+01
+ Coeff-En:   0.000D+00 0.100D+01
+ Coeff:     -0.474D+00 0.147D+01
+ Gap=     0.046 Goal=   None    Shift=    0.000
+ DSYEVD-2 returned Info=         513 IAlg= 4 N=   256 NDim=   256 NE2=      523320 trying  DSYEV.
+ RMSDP=7.14D-03 MaxDP=5.26D-01 DE=-2.24D-01 OVMax= 0.00D+00
 
  Cycle   3  Pass 1  IDiag  1:
- E= -1042.81777156714     Delta-E=       -0.387145223628 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        3
- -------------------------------------------------------------------------
- EMin=   -469.4539254331065     
- EMax=    469.4539254331065     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops  32
- Integration of P has needed a max no. of loops  32
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -8.36758  +/-  0.00005
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00000
- -----------------------------------------------
- RMSDP=2.56D-04 MaxDP=7.12D-03 DE=-3.87D-01 OVMax= 0.00D+00
+ RMSU=  6.88D-03    CP:  1.01D+00  1.69D+00
+ E= -1042.46703034589     Delta-E=       -0.089551004127 Rises=F Damp=F
+ DIIS: error= 5.92D-02 at cycle   3 NSaved=   3.
+ NSaved= 3 IEnMin= 3 EnMin= -1042.46703034589     IErMin= 3 ErrMin= 5.92D-02
+ ErrMax= 5.92D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.33D-01 BMatP= 2.09D-01
+ IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
+ EnCoef did   100 forward-backward iterations
+ Coeff-En:   0.374D+00 0.176D-01 0.609D+00
+ Coeff:      0.374D+00 0.176D-01 0.609D+00
+ Gap=     0.002 Goal=   None    Shift=    0.000
+ RMSDP=1.12D-02 MaxDP=3.12D-01 DE=-8.96D-02 OVMax= 0.00D+00
 
  Cycle   4  Pass 1  IDiag  1:
- E= -1042.78793678706     Delta-E=        0.029834780082 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        4
- -------------------------------------------------------------------------
- EMin=   -469.7348537649128     
- EMax=    469.7348537649128     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -8.32179  +/-  0.00000
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00000
- -----------------------------------------------
- Pulay kick .............
- RMSDP=5.23D-03 MaxDP=1.44D-01 DE= 2.98D-02 OVMax= 0.00D+00
+ RMSU=  8.76D-03    CP:  9.88D-01  2.66D+00  6.49D-02
+ E= -1042.18219018014     Delta-E=        0.284840165753 Rises=F Damp=F
+ DIIS: error= 3.90D-02 at cycle   4 NSaved=   4.
+ NSaved= 4 IEnMin= 3 EnMin= -1042.46703034589     IErMin= 4 ErrMin= 3.90D-02
+ ErrMax= 3.90D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.58D-01 BMatP= 2.09D-01
+ IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
+ EnCoef did   100 forward-backward iterations
+ Coeff-En:   0.347D+00 0.622D-02 0.449D+00 0.198D+00
+ Coeff:      0.347D+00 0.622D-02 0.449D+00 0.198D+00
+ Gap=    -0.002 Goal=   None    Shift=    0.000
+ DSYEVD-2 returned Info=         513 IAlg= 4 N=   256 NDim=   256 NE2=      523320 trying  DSYEV.
+ RMSDP=1.07D-02 MaxDP=3.87D-01 DE= 2.85D-01 OVMax= 0.00D+00
 
  Cycle   5  Pass 1  IDiag  1:
- E= -1042.10864218614     Delta-E=        0.679294600927 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        5
- -------------------------------------------------------------------------
- EMin=   -483.6954582002721     
- EMax=    483.6954582002721     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -7.53669  +/-  0.00019
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00001
- -----------------------------------------------
- RMSDP=1.35D-04 MaxDP=1.02D-02 DE= 6.79D-01 OVMax= 0.00D+00
+ RMSU=  1.93D-03    CP:  1.01D+00  5.45D-01  4.95D-01  5.36D-02
+ E= -1042.81396623065     Delta-E=       -0.631776050508 Rises=F Damp=F
+ DIIS: error= 8.42D-03 at cycle   5 NSaved=   5.
+ NSaved= 5 IEnMin= 5 EnMin= -1042.81396623065     IErMin= 5 ErrMin= 8.42D-03
+ ErrMax= 8.42D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 6.31D-03 BMatP= 2.09D-01
+ IDIUse=3 WtCom= 9.16D-01 WtEn= 8.42D-02
+ Coeff-Com: -0.310D+00 0.530D+00 0.505D-01 0.661D-02 0.723D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.614D-01 0.939D+00
+ Coeff:     -0.284D+00 0.485D+00 0.462D-01 0.112D-01 0.742D+00
+ Gap=     0.009 Goal=   None    Shift=    0.000
+ DSYEVD-2 returned Info=         513 IAlg= 4 N=   256 NDim=   256 NE2=      523320 trying  DSYEV.
+ RMSDP=1.79D-03 MaxDP=1.92D-01 DE=-6.32D-01 OVMax= 0.00D+00
 
  Cycle   6  Pass 1  IDiag  1:
- E= -1042.09952955366     Delta-E=        0.009112632478 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        6
- -------------------------------------------------------------------------
- EMin=   -482.5011880025635     
- EMax=    482.5011880025635     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -7.53071  +/-  0.00000
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00000
- -----------------------------------------------
- RMSDP=1.27D-04 MaxDP=9.05D-03 DE= 9.11D-03 OVMax= 0.00D+00
+ RMSU=  1.31D-03    CP:  1.01D+00  7.77D-01  5.25D-01  7.17D-02  4.68D-01
+ E= -1042.81776168075     Delta-E=       -0.003795450106 Rises=F Damp=F
+ DIIS: error= 7.25D-03 at cycle   6 NSaved=   6.
+ NSaved= 6 IEnMin= 6 EnMin= -1042.81776168075     IErMin= 6 ErrMin= 7.25D-03
+ ErrMax= 7.25D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 5.54D-03 BMatP= 6.31D-03
+ IDIUse=3 WtCom= 9.27D-01 WtEn= 7.25D-02
+ EnCoef did     4 forward-backward iterations
+ Coeff-Com: -0.220D+00 0.364D+00-0.713D-02 0.598D-02 0.521D+00 0.336D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.520D-02 0.423D+00 0.571D+00
+ Coeff:     -0.204D+00 0.338D+00-0.662D-02 0.592D-02 0.514D+00 0.353D+00
+ Gap=     0.006 Goal=   None    Shift=    0.000
+ RMSDP=8.41D-04 MaxDP=4.47D-02 DE=-3.80D-03 OVMax= 0.00D+00
 
  Cycle   7  Pass 1  IDiag  1:
- E= -1042.09048910006     Delta-E=        0.009040453595 Rises=F Damp=F
+ RMSU=  4.99D-04    CP:  1.01D+00  7.85D-01  5.26D-01  7.30D-02  7.39D-01
+                    CP:  6.70D-01
+ E= -1042.82671929477     Delta-E=       -0.008957614015 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                        7
  -------------------------------------------------------------------------
- EMin=   -481.4050906821971     
- EMax=    481.4050906821971     
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -481.5906377049450     
+ EMax=    481.5906377049450     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Checking energy bounds [EMin, EMax] such that ...
+ ...Total Integrated Spectral Weight (TISW)= 512
+TotCharge/Gaussian quadrature gives     3 510.76193
+TotCharge/Gaussian quadrature gives     7 512.02947
+TotCharge/Gaussian quadrature gives    15 512.00006
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00008
+TotCharge/Gaussian quadrature gives   511.99998
+ EMin=       -481.591  EMax=        481.591  TISW=   511.99998 OK
+ --------------------------------------------------
  MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
+ Integration of the density matrix on the complex plane has needed   16 points
+    4.900000000000000         28.75979382754383     
+ Integration of the density matrix on the complex plane has needed   16 points
+    5.000000000000000         27.61405966174368     
+ Integration of the density matrix on the complex plane has needed   16 points
+    5.100000000000000         26.51802309078920     
+ Integration of the density matrix on the complex plane has needed   16 points
+    10.05114372027616        -13.42742792277181     
+ Integration of the density matrix on the complex plane has needed   16 points
+    7.962496992218998         1.142658670324977     
+ Integration of the density matrix on the complex plane has needed   16 points
+    8.110582755273482        5.6812177438246181E-002
+ Integration of the density matrix on the complex plane has needed   16 points
+    8.118361088052877        6.7756160694898426E-004
+ Integration of the density matrix on the complex plane has needed   16 points
+    8.118455050980572       -3.6441235806705663E-008
  -----------------------------------------------
- Fermi energy=  -7.52442  +/-  0.00000
+ Fermi energy=  -8.11846  +/-  0.00009
  
  Number of alpha electrons:  152.50000
  Number of beta electrons:   152.50000
  Total number of electrons:   305.00000
  -----------------------------------------------
- RMSDP=1.20D-04 MaxDP=7.98D-03 DE= 9.04D-03 OVMax= 0.00D+00
-
- Cycle   8  Pass 1  IDiag  1:
- E= -1042.08155255695     Delta-E=        0.008936543117 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        8
- -------------------------------------------------------------------------
- EMin=   -480.4008024366960     
- EMax=    480.4008024366960     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -7.51789  +/-  0.00000
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00000
- -----------------------------------------------
- RMSDP=1.14D-04 MaxDP=7.00D-03 DE= 8.94D-03 OVMax= 0.00D+00
-
- Cycle   9  Pass 1  IDiag  1:
- E= -1042.07274556907     Delta-E=        0.008806987879 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                        9
- -------------------------------------------------------------------------
- EMin=   -479.4821038278687     
- EMax=    479.4821038278687     
- MULLER method
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- Integration of P has needed a max no. of loops 128
- -----------------------------------------------
- Fermi energy=  -7.51116  +/-  0.00000
- 
- Number of alpha electrons:  152.50000
- Number of beta electrons:   152.50000
- Total number of electrons:   305.00000
- -----------------------------------------------
- Pulay kick .............
- RMSDP=2.74D-03 MaxDP=6.27D-02 DE= 8.81D-03 OVMax= 0.00D+00
-
- Cycle  10  Pass 1  IDiag  1:
- E= -1041.79468819931     Delta-E=        0.278057369757 Rises=F Damp=F
- -------------------------------------------------------------------------
- Computing the density matrix at cycle:                       10
- -------------------------------------------------------------------------
- EMin=   -469.1349016126449     
- EMax=    469.1349016126449     
- MULLER method
+ -------------------------------------------------------------------------------------------
+ Starting calculation with density matrix from file  
+ P.Au9-Au4-Au-Au4-Au9.dat                          
+ -------------------------------------------------------------------------------------------
+ -------------------------------------------------------------------------------------------
+   ... and using supplementary density matrix from file  
+ P.Au9-Au4-Au-Au4-Au9.dat0                         
+ -------------------------------------------------------------------------------------------

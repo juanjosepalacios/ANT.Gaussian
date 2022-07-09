@@ -1,0 +1,1750 @@
+ Entering Gaussian System, Link 0=g09
+ Input=Au-Au-Au-Au.gjf
+ Output=Au-Au-Au-Au.log
+ Initial command:
+ /home/palacios/gaussian/g09/l1.exe "/home/palacios/scratch/Gau-6490.inp" -scrdir="/home/palacios/scratch/"
+ Entering Link 1 = /home/palacios/gaussian/g09/l1.exe PID=      6492.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
+                10-Apr-2021 
+ ******************************************
+ %mem=250mb
+ %Subst L502 ../../bin
+ %Subst L101 ../../bin
+ %NProcShared=1
+ Will use up to    1 processors via shared memory.
+ -----------------------------------------------------------
+ #p lsda/gen pseudo=read gfinput Scf=(dsymm,conver=6,nodamp)
+ -----------------------------------------------------------
+ 1/38=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ 3/5=7,11=2,16=1,17=8,24=10,25=1,30=1,74=205/1,2,3;
+ 4//1;
+ 5/5=2,6=6,17=200,18=-2,38=5/2;
+ 6/7=2,8=2,9=2,10=2,28=1/1;
+ 99/5=1,9=1/99;
+ Leave Link    1 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.0
+ (Enter ../../bin/l101.exe)
+ -----------
+ Au-Au-Au-Au
+ -----------
+ Symbolic Z-matrix:
+ Charge =  0 Multiplicity = 1
+ Au                    0.        0.        0. 
+ Au                    0.        0.        3. 
+ Au                    0.        0.        6. 
+ Au                    0.        0.        9. 
+ 
+ NAtoms=      4 NQM=        4 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1           2           3           4
+ IAtWgt=         197         197         197         197
+ AtmWgt= 196.9666000 196.9666000 196.9666000 196.9666000
+ NucSpn=           3           3           3           3
+ AtZEff=   0.0000000   0.0000000   0.0000000   0.0000000
+ NQMom=   54.7000000  54.7000000  54.7000000  54.7000000
+ NMagM=    0.1481590   0.1481590   0.1481590   0.1481590
+ AtZNuc=  79.0000000  79.0000000  79.0000000  79.0000000
+ Leave Link  101 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l202.exe)
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000    0.000000
+      2         79           0        0.000000    0.000000    3.000000
+      3         79           0        0.000000    0.000000    6.000000
+      4         79           0        0.000000    0.000000    9.000000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4
+     1  Au   0.000000
+     2  Au   3.000000   0.000000
+     3  Au   6.000000   3.000000   0.000000
+     4  Au   9.000000   6.000000   3.000000   0.000000
+ Stoichiometry    Au4
+ Framework group  D*H[C*(AuAu.AuAu)]
+ Deg. of freedom     2
+ Full point group                 D*H     NOp   8
+ Largest Abelian subgroup         D2H     NOp   8
+ Largest concise Abelian subgroup C2      NOp   2
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000    4.500000
+      2         79           0        0.000000    0.000000    1.500000
+      3         79           0        0.000000    0.000000   -1.500000
+      4         79           0        0.000000    0.000000   -4.500000
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):      0.0000000      0.0570180      0.0570180
+ Leave Link  202 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l301.exe)
+ General basis read from cards:  (5D, 7F)
+ Centers:       1      2      3      4
+ S 3 1.00
+     Exponent=  4.4090000000D-01 Coefficients= -7.4780000000D-01
+     Exponent=  2.6260000000D-01 Coefficients=  8.1760000000D-01
+     Exponent=  6.1700000000D-02 Coefficients=  8.1130000000D-01
+ ****
+ ======================================================================================================
+                                       Pseudopotential Parameters
+ ======================================================================================================
+  Center     Atomic      Valence      Angular      Power
+  Number     Number     Electrons     Momentum     of R      Exponent        Coefficient   SO-Coeffient
+ ======================================================================================================
+    1         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    2         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    3         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    4         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+ ======================================================================================================
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+ AO basis set in the form of general basis input (Overlap normalization):
+      1 0
+ S   3 1.00       0.000000000000
+      0.4409000000D+00 -0.7477982533D+00
+      0.2626000000D+00  0.8175980902D+00
+      0.6170000000D-01  0.8112981050D+00
+ ****
+      2 0
+ S   3 1.00       0.000000000000
+      0.4409000000D+00 -0.7477982533D+00
+      0.2626000000D+00  0.8175980902D+00
+      0.6170000000D-01  0.8112981050D+00
+ ****
+      3 0
+ S   3 1.00       0.000000000000
+      0.4409000000D+00 -0.7477982533D+00
+      0.2626000000D+00  0.8175980902D+00
+      0.6170000000D-01  0.8112981050D+00
+ ****
+      4 0
+ S   3 1.00       0.000000000000
+      0.4409000000D+00 -0.7477982533D+00
+      0.2626000000D+00  0.8175980902D+00
+      0.6170000000D-01  0.8112981050D+00
+ ****
+
+ There are     2 symmetry adapted cartesian basis functions of AG  symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B1G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B2G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B3G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of AU  symmetry.
+ There are     2 symmetry adapted cartesian basis functions of B1U symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B2U symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B3U symmetry.
+ There are     2 symmetry adapted basis functions of AG  symmetry.
+ There are     0 symmetry adapted basis functions of B1G symmetry.
+ There are     0 symmetry adapted basis functions of B2G symmetry.
+ There are     0 symmetry adapted basis functions of B3G symmetry.
+ There are     0 symmetry adapted basis functions of AU  symmetry.
+ There are     2 symmetry adapted basis functions of B1U symmetry.
+ There are     0 symmetry adapted basis functions of B2U symmetry.
+ There are     0 symmetry adapted basis functions of B3U symmetry.
+     4 basis functions,    12 primitive gaussians,     4 cartesian basis functions
+     2 alpha electrons        2 beta electrons
+       nuclear repulsion energy         0.7643670791 Hartrees.
+ IExCor=  205 DFT=T Ex=S Corr=VWN ExCW=0 ScaHFX=  0.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=      0 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
+ NAtoms=    4 NActive=    4 NUniq=    2 SFac= 4.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned on.
+ Leave Link  301 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
+ One-electron integrals computed using PRISM.
+ One-electron integral symmetry used in STVInt
+   8 Symmetry operations used in ECPInt.
+ ECPInt:  NShTT=      10 NPrTT=      90 LenC2=      11 LenP2D=      89.
+ LDataN:  DoStor=T MaxTD1= 3 Len=   28
+ NBasis=     4 RedAO= T EigKep=  6.97D-01  NBF=     2     0     0     0     0     2     0     0
+ NBsUse=     4 1.00D-06 EigRej= -1.00D+00 NBFU=     2     0     0     0     0     2     0     0
+ Precomputing XC quadrature grid using
+ IXCGrd= 4 IRadAn=           0 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
+ Defaulting to unpruned grid for atomic number  79.
+ Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
+ NSgBfM=     4     4     4     4     4 MxSgAt=     4 MxSgA2=     4.
+ Leave Link  302 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l401.exe)
+ ExpMin= 6.17D-02 ExpMax= 4.41D-01 ExpMxC= 4.41D-01 IAcc=2 IRadAn=         4 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       4 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         4 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ Defaulting to unpruned grid for atomic number  79.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Harris En=-0.895825980465064    
+ JPrj=0 DoOrth=F DoCkMO=F.
+ Initial guess orbital symmetries:
+       Occupied  (SGG) (SGU)
+       Virtual   (SGG) (SGU)
+ The electronic state of the initial guess is 1-SGG.
+ Leave Link  401 at Sat Apr 10 18:11:42 2021, MaxMem=    32768000 cpu:         0.1
+ (Enter ../../bin/l502.exe)
+ Closed shell SCF:
+ Using DIIS extrapolation, IDIIS=  1040.
+ Integral symmetry usage will be decided dynamically.
+ Keep J ints in memory in symmetry-blocked form, NReq=854708.
+ IVT=       20201 IEndB=       20201 NGot=    32768000 MDV=    32747529
+ LenX=    32747529 LenY=    32746647
+ Requested convergence on RMS density matrix=1.00D-06 within 128 cycles.
+ Requested convergence on MAX density matrix=1.00D-04.
+ Requested convergence on             energy=1.00D-04.
+ No special actions if energy rises.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=           0 FMFlg1=           0
+         NFxFlg=           0 DoJE=F BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=     600 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=     10 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+
+ Cycle   1  Pass 0  IDiag  1:
+ 
+  ****************************************************************** 
+  ***                                                            *** 
+  ***                      A l i c a n t e                       *** 
+  ***                      N a n o                               *** 
+  ***                      T r a n s p o r t                     *** 
+  ***                      G 0 9                                 *** 
+  ***                                                            *** 
+  ****************************************************************** 
+  ***                     Version: 2.5.2                         *** 
+  ****************************************************************** 
+  *  Copyright (c) by                                              * 
+  *                                                                * 
+  *  Juan Jose Palacios (1)                                        * 
+  *  David Jacob (2)                                               * 
+  *  Maria Soriano (1,5)                                           * 
+  *  Angel J. Perez-Jimenez (3)                                    * 
+  *  Emilio SanFabian (3)                                          * 
+  *  Jose Antonio Antonio Verges (4)                               * 
+  *  Enrique Louis (5)                                             * 
+  *  Wynand Dednam (5)                                             * 
+  *                                                                * 
+  * (1) Departamento de Fisica de la Materia Condensada            * 
+  *     Universidad Autonoma de Madrid                             * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (2) Theory Department                                          * 
+  *     Max-Planck-Institute for Microstructure Physics            * 
+  *     Halle, 06120 (GERMANY)                                     * 
+  * (3) Departamento de Quimica Fisica                             * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  * (4) Insto. de Ciencias de Materiales de Madrid (ICMM)          * 
+  *     Consejo Superior de Investigacion y Ciencia (CSIC)         * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (5) Departamento de Fisica Aplicada                            * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+  ****************************************************************** 
+  *                                                                * 
+  *              Initializing ANT.G09 modules                      * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+ Scanning Au-Au-Au-Au.ant file for parameter specifications...
+ Done.
+ ****************************
+ Basic calculation parameters
+ ****************************
+ ALPHA      =    2.9999999999999999E-002
+ NPULAY     =                         4
+ CHARGEACC  =    1.0000000000000000E-004  %
+ FERMIACC   =    1.0000000000000000E-004  %
+ PACC       =    9.9999999999999995E-008  %
+ FULLACC    =   F
+ MAX        =                        10
+ SELFACC    =    9.9999999999999995E-007
+ SMALL      =    0.1000000000000000     
+ SMALLD     =    0.1000000000000000       A
+ BIASVOLT   =     0.000000000000000       V
+ QEXCESS    =     0.000000000000000      electrons
+ ETA        =    1.0000000000000000E-010
+ GLUE       =     1.000000000000000     
+ FERMISTART =    -5.000000000000000       eV
+ SOC        =   F
+ SOCFAC     =     0.000000000000000     
+ SOC_CFF_P  =     0.000000000000000       eV
+ SOC_CFF_D  =     0.000000000000000       eV
+ SOC_CFF_F  =     0.000000000000000       eV
+ ROT        =   F
+ THETA      =     0.000000000000000       degrees
+ PHI        =     0.000000000000000       degrees
+ SL         =    1.0000000000000000E-002
+ DMIMAG     =   F
+ FMIXING    =   F
+ ******************
+ 1D lead parameters
+ ******************
+ DEVFILE                                                                                             
+  = 
+ device.dev                                                                                          
+ LEAD1FILE                                                                                           
+  = 
+ lead1.elc                                                                                           
+ LEAD2FILE                                                                                           
+  = 
+ lead2.elc                                                                                           
+ DEVXYZ                                                                                              
+  = 
+ device.xyz                                                                                          
+ LEAD1XYZ                                                                                            
+  = 
+ lead1.xyz                                                                                           
+ LEAD2XYZ                                                                                            
+  = 
+ lead2.xyz                                                                                           
+ ************************
+ Bethe lattice parameters
+ ************************
+ TYPE1      = 1DLEAD    
+ TYPE2      = 1DLEAD    
+ BLPAR1     = Papacon             
+ BLPAR2     = Papacon             
+ NEMBED1    =                         1
+ NEMBED2    =                         1
+ NPC        =                         2
+ NATOMEL1   = ? 
+ NATOMEL2   = ? 
+ NBULKLEAD1 =                         1
+ NBULKLEAD2 = ? 
+ OVERLAP    =     0.000000000000000     
+ *************************
+ Spin transport parameters
+ *************************
+ SWOFFSPL   =    1.0000000000000000E-003
+ NSPINLOCK  =                         0
+ NALPHA     =                        -1
+ NBETA      =                        -1
+ DU         =   F
+ UD         =   F
+ DD         =   F
+ MRSTART    =                         0
+ SPINDEL    =   F
+ SPINEDIT   =                         0
+ SOCFACATOM =                         0
+ SPINROTATO =                         0
+ SOCEDIT    =                         0
+ ***********************
+ Correlations parameters
+ ***********************
+ CORRBLOCKS =                         0
+ PORTHO     =   F
+ HYBFUNC    =   F
+ DFT+U      =   F
+ DIAGCORRBL =   F
+ *****************
+ Output parameters
+ *****************
+ HAMILTON   =   F
+ MULLIKEN   =   F
+ HTRANSM    =   F
+ ESTEP      =    1.0000000000000000E-002
+ DOSENERGY  =     0.000000000000000     
+ EW1        =    -3.000000000000000     
+ EW2        =     3.000000000000000     
+ LDOS_BEG   =                         1
+ LDOS_END   =                         0
+ RTM_BEG    =                         1
+ RTM_END    =                         0
+ NCHANNELS  =                         0
+ LEADDOS    =   T
+ ANT1D      =   F
+ BULK1DLEAD =   F
+ PRTHATOM   =                         1
+ -------------------
+ Initializing device
+ -------------------
+ ----------------------------------------------------------
+ Analyzing cluster for the connection of the  Bethe Lattice
+ ----------------------------------------------------------
+ 
+ Atom type of lead 1: Au
+ Atom type of lead 2: Au
+ 
+    1   79   1.    1    1    1
+    2   79   1.    1    2    2
+    3   79   1.    1    3    3
+    4   79   1.    1    4    4
+ 
+  Center of charge:
+   0.000000   0.000000   0.000000
+ 
+                        2 nlead1
+  Atoms in left electrode:                        2
+   1  Au   0.000000   0.000000   8.503768
+   2  Au   0.000000   0.000000   2.834589
+ 
+  Atoms in molecule:                        0
+ 
+  Atoms in right electrode:                        2
+   3  Au   0.000000   0.000000  -8.503768
+   4  Au   0.000000   0.000000  -2.834589
+ 
+ ---------------------------------------------------
+  Details on device and contacting atoms -----------
+ ---------------------------------------------------
+ NEmbed(1) =                        1
+ NEmbed(2) =                        1
+ Number of electrons in neutral reduced device (NCDEl) =  
+                        2
+ First and last orbital in reduced device
+ NCDAO1 =                         2
+ NCDAO2 =                         3
+ ---------------------------------------------------
+ -------------------------------------------------------------------------------------------
+ Starting calculation with density matrix from file  
+ P.Au-Au-Au-Au.dat                                 
+ -------------------------------------------------------------------------------------------
+ Tr[P*S] of initial guess =    3.802880055701866     
+ --------------------------------
+ Defaulting to unpruned grid for atomic number  79.
+ E=-0.864971728630330    
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        1
+ -------------------------------------------------------------------------
+*******************************
+*    Initializing Lead No.   1
+*******************************
+ 
+ *** Supercell on-site and coupling matrices ***
+ 
+ H0 = 
+   -0.3342E+01   -0.2123E+01
+   -0.2123E+01   -0.3342E+01
+ V1 = 
+   -0.7646E-02   -0.2123E+01
+    0.0000E+00   -0.7646E-02
+ S0 = 
+    0.1000E+01    0.3206E+00
+    0.3206E+00    0.1000E+01
+ S1 = 
+    0.1336E-01    0.3206E+00
+    0.0000E+00    0.1336E-01
+                       15    1.398733064459267     
+                       31    1.601364295509073     
+                       63    1.577739637310066     
+                      127    1.577970787995119     
+ GauLeg quadrature converged after                      127  steps.
+ EMin =     0.000000000000000         1.577970787995119     
+                       15    1.245695619292831     
+                       31    1.460696446852833     
+                       63    1.450572962194729     
+                      127    1.450805067920405     
+ GauLeg quadrature converged after                      127  steps.
+ EMin =    -1.000000000000000         1.450805067920405     
+                       15   0.7438117658790647     
+                       31   0.6234963118572251     
+                       63   0.7475373156620300     
+                      127   0.7727211619119250     
+                      255   0.7722813136509753     
+ GauLeg quadrature converged after                      255  steps.
+ EMin =    -4.000000000000000        0.7722813136509753     
+                       15   2.8936223328183300E-002
+                       31  -1.9245423076020992E-003
+                       63  -1.0429809517376795E-005
+                      127  -2.3587240393920674E-009
+ GauLeg quadrature converged after                      127  steps.
+ EMin =    -11.00000000000000       -2.3587240393920674E-009
+Searching optimum Emin and EMax such that DOS integrates to total number of spin-orbitals in the PC =   2.
+                       15    1.398733064459267     
+                       31    1.601364295509073     
+                       63    1.577739637310066     
+                      127    1.577970787995119     
+ GauLeg quadrature converged after                      127  steps.
+ EMax =     0.000000000000000         1.577970787995119     
+                       15    2.035939421920776     
+                       31    1.999812043913276     
+                       63    2.000000032241438     
+ GauLeg quadrature converged after                       63  steps.
+ EMax =     15.00000000000000         2.000000032241438     
+ EMin=   -11.00000000000000        EMax=    15.00000000000000     
+ Searching Fermi energy...
+ Bisec Method
+                       15    2.035939421920776     
+                       31    1.999812043913276     
+                       63    2.000000032241438     
+ GauLeg quadrature converged after                       63  steps.
+                       15   2.8936223328183300E-002
+                       31  -1.9245423076020992E-003
+                       63  -1.0429809517376795E-005
+                      127  -2.3587240393920674E-009
+ GauLeg quadrature converged after                      127  steps.
+                       15    1.656007354158324     
+                       31    1.874469205346641     
+                       63    1.878806873684657     
+                      127    1.865246506749631     
+                      255    1.865757679787297     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.6626921070874139     
+                       31   0.4089602920741289     
+                       63   0.2782201229235705     
+                      127   0.2525125364956015     
+                      255   0.2897628259518158     
+                      511   0.2893760276368650     
+ GauLeg quadrature converged after                      511  steps.
+                       15    1.205486354531003     
+                       31    1.421656817822321     
+                       63    1.416516127802731     
+                      127    1.416805987376466     
+ GauLeg quadrature converged after                      127  steps.
+                       15   0.9331087282957955     
+                       31    1.058202913014981     
+                       63    1.143307363959635     
+                      127    1.139764440839033     
+                      255    1.139757659128231     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.7957037227095759     
+                       31   0.7578792785625960     
+                       63   0.9114395501740115     
+                      127   0.9098020807347965     
+                      255   0.9099586225396764     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8641043544846830     
+                       31   0.9191002006357936     
+                       63    1.045805441991127     
+                      127    1.039548084397013     
+                      255    1.039555001220384     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8297973117900574     
+                       31   0.8409572552336231     
+                       63   0.9855558005218401     
+                      127   0.9795776317663315     
+                      255   0.9796366168162279     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8469280560236783     
+                       31   0.8807020733832944     
+                       63    1.017016934464152     
+                      127    1.010595570679925     
+                      255    1.010621820359121     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8383565008033869     
+                       31   0.8609922722258806     
+                       63    1.001661200220064     
+                      127   0.9953633137347419     
+                      255   0.9954065947118619     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8383565008033869     
+                       31   0.8609922722258806     
+                       63    1.001661200220064     
+                      127   0.9953633137347419     
+                      255   0.9954065947118619     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8215142060660513     
+                       31   0.8212416135608116     
+ GauLeg quadrature converged after                       31  steps.
+                       15   0.8552467491229909     
+                       31   0.8994837449389227     
+                       63    1.031264481430411     
+                      127    1.024865040419166     
+                      255    1.024878700052377     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8613496252089046     
+                       31   0.9130419855210473     
+                       63    1.041348273912232     
+                      127    1.035036741251706     
+                      255    1.035043479109401     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8409159909347090     
+                       31   0.8669151986023284     
+                       63    1.006323175711334     
+                      127   0.9999716124538647     
+                      255    1.000007775449899     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8409116428476908     
+                       31   0.8669051636209765     
+                       63    1.006315312882655     
+                      127   0.9999638269704814     
+                      255   0.9999999847094333     
+ GauLeg quadrature converged after                      255  steps.
+ EFermi in the bulk electrodes=    -3.418448683363147     
+ Printing DOS of Lead 1to file Lead1DOS.dat
+*******************************
+*    Initializing Lead No.   2
+*******************************
+ 
+ *** Supercell on-site and coupling matrices ***
+ 
+ H0 = 
+   -0.3342E+01   -0.2123E+01
+   -0.2123E+01   -0.3342E+01
+ V1 = 
+   -0.7646E-02   -0.2123E+01
+    0.0000E+00   -0.7646E-02
+ S0 = 
+    0.1000E+01    0.3206E+00
+    0.3206E+00    0.1000E+01
+ S1 = 
+    0.1336E-01    0.3206E+00
+    0.0000E+00    0.1336E-01
+                       15    1.398733064459267     
+                       31    1.601364295509073     
+                       63    1.577739637310066     
+                      127    1.577970787995119     
+ GauLeg quadrature converged after                      127  steps.
+ EMin =     0.000000000000000         1.577970787995119     
+                       15    1.245695619292831     
+                       31    1.460696446852833     
+                       63    1.450572962194729     
+                      127    1.450805067920405     
+ GauLeg quadrature converged after                      127  steps.
+ EMin =    -1.000000000000000         1.450805067920405     
+                       15   0.7438117658790647     
+                       31   0.6234963118572251     
+                       63   0.7475373156620300     
+                      127   0.7727211619119250     
+                      255   0.7722813136509753     
+ GauLeg quadrature converged after                      255  steps.
+ EMin =    -4.000000000000000        0.7722813136509753     
+                       15   2.8936223328183300E-002
+                       31  -1.9245423076020992E-003
+                       63  -1.0429809517376795E-005
+                      127  -2.3587240393920674E-009
+ GauLeg quadrature converged after                      127  steps.
+ EMin =    -11.00000000000000       -2.3587240393920674E-009
+Searching optimum Emin and EMax such that DOS integrates to total number of spin-orbitals in the PC =   2.
+                       15    1.398733064459267     
+                       31    1.601364295509073     
+                       63    1.577739637310066     
+                      127    1.577970787995119     
+ GauLeg quadrature converged after                      127  steps.
+ EMax =     0.000000000000000         1.577970787995119     
+                       15    2.035939421920776     
+                       31    1.999812043913276     
+                       63    2.000000032241438     
+ GauLeg quadrature converged after                       63  steps.
+ EMax =     15.00000000000000         2.000000032241438     
+ EMin=   -11.00000000000000        EMax=    15.00000000000000     
+ Searching Fermi energy...
+ Bisec Method
+                       15    2.035939421920776     
+                       31    1.999812043913276     
+                       63    2.000000032241438     
+ GauLeg quadrature converged after                       63  steps.
+                       15   2.8936223328183300E-002
+                       31  -1.9245423076020992E-003
+                       63  -1.0429809517376795E-005
+                      127  -2.3587240393920674E-009
+ GauLeg quadrature converged after                      127  steps.
+                       15    1.656007354158324     
+                       31    1.874469205346641     
+                       63    1.878806873684657     
+                      127    1.865246506749631     
+                      255    1.865757679787297     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.6626921070874139     
+                       31   0.4089602920741289     
+                       63   0.2782201229235705     
+                      127   0.2525125364956015     
+                      255   0.2897628259518158     
+                      511   0.2893760276368650     
+ GauLeg quadrature converged after                      511  steps.
+                       15    1.205486354531003     
+                       31    1.421656817822321     
+                       63    1.416516127802731     
+                      127    1.416805987376466     
+ GauLeg quadrature converged after                      127  steps.
+                       15   0.9331087282957955     
+                       31    1.058202913014981     
+                       63    1.143307363959635     
+                      127    1.139764440839033     
+                      255    1.139757659128231     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.7957037227095759     
+                       31   0.7578792785625960     
+                       63   0.9114395501740115     
+                      127   0.9098020807347965     
+                      255   0.9099586225396764     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8641043544846830     
+                       31   0.9191002006357936     
+                       63    1.045805441991127     
+                      127    1.039548084397013     
+                      255    1.039555001220384     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8297973117900574     
+                       31   0.8409572552336231     
+                       63   0.9855558005218401     
+                      127   0.9795776317663315     
+                      255   0.9796366168162279     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8469280560236783     
+                       31   0.8807020733832944     
+                       63    1.017016934464152     
+                      127    1.010595570679925     
+                      255    1.010621820359121     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8383565008033869     
+                       31   0.8609922722258806     
+                       63    1.001661200220064     
+                      127   0.9953633137347419     
+                      255   0.9954065947118619     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8383565008033869     
+                       31   0.8609922722258806     
+                       63    1.001661200220064     
+                      127   0.9953633137347419     
+                      255   0.9954065947118619     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8215142060660513     
+                       31   0.8212416135608116     
+ GauLeg quadrature converged after                       31  steps.
+                       15   0.8552467491229909     
+                       31   0.8994837449389227     
+                       63    1.031264481430411     
+                      127    1.024865040419166     
+                      255    1.024878700052377     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8613496252089046     
+                       31   0.9130419855210473     
+                       63    1.041348273912232     
+                      127    1.035036741251706     
+                      255    1.035043479109401     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8409159909347090     
+                       31   0.8669151986023284     
+                       63    1.006323175711334     
+                      127   0.9999716124538647     
+                      255    1.000007775449899     
+ GauLeg quadrature converged after                      255  steps.
+                       15   0.8409116428476908     
+                       31   0.8669051636209765     
+                       63    1.006315312882655     
+                      127   0.9999638269704814     
+                      255   0.9999999847094333     
+ GauLeg quadrature converged after                      255  steps.
+ EFermi in the bulk electrodes=    -3.418448683363147     
+ Printing DOS of Lead 2to file Lead2DOS.dat
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -7.391226979987339     
+ EMax=    7.391226979987339     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Searching energy boundaries [EMin, EMax] such that
+ Total Integrated Spectral Weight (TISW)=   4
+ gaussian quadrature converged after                        7  steps. Error: 
+   1.2432766828172070E-003
+ EMin=         -7.391  EMax=          7.391  TISW=     3.99232
+ --------------------------------------------------
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Warning: MULLER method failed to find root. Using SECANT.
+ SECANT method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Warning: SECANT method failed to find root. Using BISEC.
+ BISEC method
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -3.21020  +/-  0.00100
+ 
+ Number of alpha electrons:    1.00126
+ Number of beta electrons:     1.00126
+ Total number of electrons:     2.00253
+ -----------------------------------------------
+ DIIS: error= 2.86D-03 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin=-0.864971728630330     IErMin= 1 ErrMin= 2.86D-03
+ ErrMax= 2.86D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 3.69D-05 BMatP= 3.69D-05
+ IDIUse=3 WtCom= 9.71D-01 WtEn= 2.86D-02
+ Coeff-Com:  0.100D+01
+ Coeff-En:   0.100D+01
+ Coeff:      0.100D+01
+ RMSDP=7.91D-02 MaxDP=1.20D-01              OVMax= 0.00D+00
+
+ Cycle   2  Pass 0  IDiag  1:
+ E=-0.865446348481513     Delta-E=       -0.000474619851 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        2
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -7.371279053889501     
+ EMax=    7.371279053889501     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -3.20277  +/-  0.00002
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=3.00D-04 MaxDP=6.85D-04 DE=-4.75D-04 OVMax= 0.00D+00
+
+ Cycle   3  Pass 0  IDiag  1:
+ E=-0.865874119456042     Delta-E=       -0.000427770975 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        3
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -7.353623532076494     
+ EMax=    7.353623532076494     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -3.20460  +/-  0.01152
+ 
+ Number of alpha electrons:    0.99677
+ Number of beta electrons:     0.99677
+ Total number of electrons:     1.99353
+ -----------------------------------------------
+ RMSDP=2.61D-04 MaxDP=5.85D-04 DE=-4.28D-04 OVMax= 0.00D+00
+
+ Cycle   4  Pass 0  IDiag  1:
+ E=-0.866224536407760     Delta-E=       -0.000350416952 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        4
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -7.340123490455129     
+ EMax=    7.340123490455129     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -3.21130  +/-  0.02539
+ 
+ Number of alpha electrons:    0.99284
+ Number of beta electrons:     0.99284
+ Total number of electrons:     1.98568
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=1.26D-02 MaxDP=2.88D-02 DE=-3.50D-04 OVMax= 0.00D+00
+
+ Cycle   5  Pass 0  IDiag  1:
+ E=-0.883908119265002     Delta-E=       -0.017683582857 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        5
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.448722407936677     
+ EMax=    6.448722407936677     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ -----------------------------------------------
+ Fermi energy=  -2.67063  +/-  0.01458
+ 
+ Number of alpha electrons:    0.98507
+ Number of beta electrons:     0.98507
+ Total number of electrons:     1.97013
+ -----------------------------------------------
+ RMSDP=4.03D-04 MaxDP=8.64D-04 DE=-1.77D-02 OVMax= 0.00D+00
+
+ Cycle   6  Pass 0  IDiag  1:
+ E=-0.883331940832707     Delta-E=        0.000576178432 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        6
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.483685607389237     
+ EMax=    6.483685607389237     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.66175  +/-  0.01691
+ 
+ Number of alpha electrons:    1.00829
+ Number of beta electrons:     1.00829
+ Total number of electrons:     2.01658
+ -----------------------------------------------
+ RMSDP=2.17D-04 MaxDP=4.91D-04 DE= 5.76D-04 OVMax= 0.00D+00
+
+ Cycle   7  Pass 0  IDiag  1:
+ E=-0.883092693729463     Delta-E=        0.000239247103 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        7
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.496139435247343     
+ EMax=    6.496139435247343     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -2.69829  +/-  0.00007
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=2.86D-04 MaxDP=6.25D-04 DE= 2.39D-04 OVMax= 0.00D+00
+
+ Cycle   8  Pass 0  IDiag  1:
+ E=-0.882747115672997     Delta-E=        0.000345578056 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        8
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.516228311493568     
+ EMax=    6.516228311493568     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.68425  +/-  0.01982
+ 
+ Number of alpha electrons:    1.00721
+ Number of beta electrons:     1.00721
+ Total number of electrons:     2.01442
+ -----------------------------------------------
+ RMSDP=2.02D-04 MaxDP=4.57D-04 DE= 3.46D-04 OVMax= 0.00D+00
+
+ Cycle   9  Pass 0  IDiag  1:
+ E=-0.882518683150427     Delta-E=        0.000228432523 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        9
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.528253131390900     
+ EMax=    6.528253131390900     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -2.71672  +/-  0.00006
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=4.28D-03 MaxDP=9.56D-03 DE= 2.28D-04 OVMax= 0.00D+00
+
+ Cycle  10  Pass 0  IDiag  1:
+ E=-0.877273824691849     Delta-E=        0.005244858459 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       10
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.811120487050977     
+ EMax=    6.811120487050977     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ -----------------------------------------------
+ Fermi energy=  -2.87923  +/-  0.06251
+ 
+ Number of alpha electrons:    0.98495
+ Number of beta electrons:     0.98495
+ Total number of electrons:     1.96990
+ -----------------------------------------------
+ RMSDP=1.81D-04 MaxDP=3.01D-04 DE= 5.24D-03 OVMax= 0.00D+00
+
+ Cycle  11  Pass 0  IDiag  1:
+ E=-0.876969637269470     Delta-E=        0.000304187422 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       11
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.830058704040701     
+ EMax=    6.830058704040701     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Searching energy boundaries [EMin, EMax] such that
+ Total Integrated Spectral Weight (TISW)=   4
+ gaussian quadrature converged after                       15  steps. Error: 
+   1.8050041522794658E-003
+ EMin=         -6.830  EMax=          6.830  TISW=     3.99247
+ --------------------------------------------------
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.86489  +/-  0.02006
+ 
+ Number of alpha electrons:    1.00721
+ Number of beta electrons:     1.00721
+ Total number of electrons:     2.01442
+ -----------------------------------------------
+ RMSDP=1.85D-05 MaxDP=3.12D-05 DE= 3.04D-04 OVMax= 0.00D+00
+
+ Cycle  12  Pass 0  IDiag  1:
+ E=-0.876994544206415     Delta-E=       -0.000024906937 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       12
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.828340914839929     
+ EMax=    6.828340914839929     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.88968  +/-  0.00005
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=6.94D-05 MaxDP=1.17D-04 DE=-2.49D-05 OVMax= 0.00D+00
+
+ Cycle  13  Pass 0  IDiag  1:
+ E=-0.876910186353006     Delta-E=        0.000084357853 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       13
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.833830201535918     
+ EMax=    6.833830201535918     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.89309  +/-  0.00001
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=6.82D-05 MaxDP=1.16D-04 DE= 8.44D-05 OVMax= 0.00D+00
+
+ Cycle  14  Pass 0  IDiag  1:
+ E=-0.876827117717422     Delta-E=        0.000083068636 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       14
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.839216557136140     
+ EMax=    6.839216557136140     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.89644  +/-  0.00001
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=1.02D-03 MaxDP=2.08D-03 DE= 8.31D-05 OVMax= 0.00D+00
+
+ Problem detected with inexpensive integrals.
+ Switching to full accuracy and repeating last cycle.
+ Cycle  15  Pass 1  IDiag  1:
+ E=-0.876827117717422     Delta-E=        0.000000000000 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       15
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.839216557136140     
+ EMax=    6.839216557136140     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -2.85263  +/-  0.14381
+ 
+ Number of alpha electrons:    1.01212
+ Number of beta electrons:     1.01212
+ Total number of electrons:     2.02424
+ -----------------------------------------------
+ RMSDP=9.11D-04 MaxDP=1.90D-03 DE= 0.00D+00 OVMax= 0.00D+00
+
+ Cycle  16  Pass 1  IDiag  1:
+ E=-0.875691245424258     Delta-E=        0.001135872293 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       16
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.908464372232882     
+ EMax=    6.908464372232882     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -2.93827  +/-  0.01436
+ 
+ Number of alpha electrons:    1.00001
+ Number of beta electrons:     1.00001
+ Total number of electrons:     2.00003
+ -----------------------------------------------
+ RMSDP=4.20D-05 MaxDP=6.49D-05 DE= 1.14D-03 OVMax= 0.00D+00
+
+ Cycle  17  Pass 1  IDiag  1:
+ E=-0.875641137807547     Delta-E=        0.000050107617 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       17
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.911786248782570     
+ EMax=    6.911786248782570     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.94039  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=4.15D-05 MaxDP=6.54D-05 DE= 5.01D-05 OVMax= 0.00D+00
+
+ Cycle  18  Pass 1  IDiag  1:
+ E=-0.875591354273463     Delta-E=        0.000049783534 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       18
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.915070771485785     
+ EMax=    6.915070771485785     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.94246  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=4.09D-05 MaxDP=6.55D-05 DE= 4.98D-05 OVMax= 0.00D+00
+
+ Cycle  19  Pass 1  IDiag  1:
+ E=-0.875542120310853     Delta-E=        0.000049233963 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       19
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.918304136691587     
+ EMax=    6.918304136691587     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.94448  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=8.31D-04 MaxDP=1.64D-03 DE= 4.92D-05 OVMax= 0.00D+00
+
+ Cycle  20  Pass 1  IDiag  1:
+ E=-0.874491732634966     Delta-E=        0.001050387676 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       20
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.982939781951503     
+ EMax=    6.982939781951503     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -2.98400  +/-  0.00007
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=2.05D-05 MaxDP=3.23D-05 DE= 1.05D-03 OVMax= 0.00D+00
+
+ Cycle  21  Pass 1  IDiag  1:
+ E=-0.874467766145714     Delta-E=        0.000023966489 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       21
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.984534875778949     
+ EMax=    6.984534875778949     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Searching energy boundaries [EMin, EMax] such that
+ Total Integrated Spectral Weight (TISW)=   4
+ gaussian quadrature converged after                       15  steps. Error: 
+   1.0022449950333190E-003
+ EMin=         -6.985  EMax=          6.985  TISW=     3.99247
+ --------------------------------------------------
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.98500  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=2.02D-05 MaxDP=3.24D-05 DE= 2.40D-05 OVMax= 0.00D+00
+
+ Cycle  22  Pass 1  IDiag  1:
+ E=-0.874444042529327     Delta-E=        0.000023723616 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       22
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.986106286476065     
+ EMax=    6.986106286476065     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.98599  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=1.99D-05 MaxDP=3.24D-05 DE= 2.37D-05 OVMax= 0.00D+00
+
+ Cycle  23  Pass 1  IDiag  1:
+ E=-0.874420566118830     Delta-E=        0.000023476410 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       23
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.987653870668838     
+ EMax=    6.987653870668838     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.98696  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=1.96D-05 MaxDP=3.24D-05 DE= 2.35D-05 OVMax= 0.00D+00
+
+ Cycle  24  Pass 1  IDiag  1:
+ E=-0.874397354699908     Delta-E=        0.000023211419 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       24
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -6.989177097491769     
+ EMax=    6.989177097491769     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ -----------------------------------------------
+ Fermi energy=  -2.98791  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=8.31D-04 MaxDP=1.66D-03 DE= 2.32D-05 OVMax= 0.00D+00
+
+ Cycle  25  Pass 1  IDiag  1:
+ E=-0.873387150310938     Delta-E=        0.001010204389 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       25
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -7.052042759715007     
+ EMax=    7.052042759715007     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -3.02644  +/-  0.00007
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=7.83D-08 MaxDP=1.39D-07 DE= 1.01D-03 OVMax= 0.00D+00
+
+ SCF Done:  E(RS-VWN) = -0.873387150311     A.U. after   25 cycles
+            NFock= 25  Conv=0.78D-07     -V/T= 2.7961
+ KE= 4.862651436214D-01 PE=-2.797185500378D+00 EE= 6.731661273716D-01
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                     1000
+ -------------------------------------------------------------------------
+ --------------------
+ Initial Energy Bounds
+ --------------------
+ EMin=   -7.052042759715007     
+ EMax=    7.052042759715007     
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ -----------------------------------------------
+ Fermi energy=  -3.02644  +/-  0.00000
+ 
+ Number of alpha electrons:    1.00000
+ Number of beta electrons:     1.00000
+ Total number of electrons:     2.00000
+ -----------------------------------------------
+ 
+ ****************************************** 
+ *                                        * 
+ *        ANT.G09 final analysis          * 
+ *                                        * 
+ ****************************************** 
+ 
+ -------------------------------------
+ ---  Self-consistent Hamiltonian  ---
+ -------------------------------------
+ ---------
+ Left lead
+ ---------
+ Atom:   1   -3.098067
+ Atom:   2   -2.978525
+ ----------
+ Right lead
+ ----------
+ Atom:   3   -2.978525
+ Atom:   4   -3.098067
+ 
+ --------------------------------
+ --- Calculating Transmission ---
+ ---  (and DOS if required)   ---
+ --------------------------------
+ 
+ MULLER method
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Warning: MULLER method failed to find root. Using SECANT.
+ SECANT method
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Integration of the density matrix on the complex plane has needed    1 points
+ Warning: SECANT method failed to find root. Using BISEC.
+ BISEC method
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    4 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    4 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    8 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ Integration of the density matrix on the complex plane has needed   16 points
+ Integration of the density matrix on the complex plane has needed    2 points
+ -----------------------------------------------
+ Fermi energy=  -2.99574  +/-  0.01000
+ 
+ Number of alpha electrons:    0.99439
+ Number of beta electrons:     0.99439
+ Total number of electrons:     1.98877
+ -----------------------------------------------
+ -------------------------------------
+ ---  Mulliken population analysis ---
+ -------------------------------------
+ ----------------------
+ Charges in electrode 1
+ ----------------------
+ Atom:   1  El.dens:  0.9281
+ Atom:   2  El.dens:  0.9944
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 1:    1.922528586601263     
+ ---------------------------------------------------------
+ ----------------------------------------------------
+ Total num. of electrons in molecule:    0.000000000000000     
+ ----------------------------------------------------
+ ----------------------
+ Charges in electrode 2
+ ----------------------
+ Atom:   3  El.dens:  0.9944
+ Atom:   4  El.dens:  0.9281
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 2:    1.922528586601263     
+ ---------------------------------------------------------
+  ----------------- End of ANT.G09 ------------------- 
+ Leave Link  502 at Sat Apr 10 18:11:47 2021, MaxMem=    32768000 cpu:         4.5
+ (Enter /home/palacios/gaussian/g09/l601.exe)
+ Copying SCF densities to generalized density rwf, IOpCl= 0 IROHF=0.
+
+ **********************************************************************
+
+            Population analysis using the SCF density.
+
+ **********************************************************************
+
+ Orbital symmetries:
+       Occupied  (SGG) (SGU)
+       Virtual   (SGG) (SGU)
+ The electronic state is 1-SGG.
+ Alpha  occ. eigenvalues --   -0.13168  -0.11022
+ Alpha virt. eigenvalues --   -0.05790   0.04355
+          Condensed to atoms (all electrons):
+               1          2          3          4
+     1  Au   0.790340   0.141711  -0.001294  -0.000018
+     2  Au   0.141711   0.728117   0.131465  -0.001294
+     3  Au  -0.001294   0.131465   0.728117   0.141711
+     4  Au  -0.000018  -0.001294   0.141711   0.790340
+ Mulliken charges:
+               1
+     1  Au   0.069261
+     2  Au   0.000001
+     3  Au   0.000001
+     4  Au   0.069261
+ Sum of Mulliken charges =   0.13852
+ Mulliken charges with hydrogens summed into heavy atoms:
+               1
+     1  Au   0.069261
+     2  Au   0.000001
+     3  Au   0.000001
+     4  Au   0.069261
+ Electronic spatial extent (au):  <R**2>=            185.8813
+ Charge=              0.1385 electrons
+ Dipole moment (field-independent basis, Debye):
+    X=              0.0000    Y=              0.0000    Z=              0.0000  Tot=              0.0000
+ Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=            -18.6386   YY=            -18.6386   ZZ=              3.4048
+   XY=              0.0000   XZ=             -0.0000   YZ=              0.0000
+ Traceless Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=             -7.3478   YY=             -7.3478   ZZ=             14.6956
+   XY=              0.0000   XZ=             -0.0000   YZ=              0.0000
+ Octapole moment (field-independent basis, Debye-Ang**2):
+  XXX=             -0.0000  YYY=              0.0000  ZZZ=              0.0000  XYY=             -0.0000
+  XXY=              0.0000  XXZ=             -0.0000  XZZ=              0.0000  YZZ=              0.0000
+  YYZ=              0.0000  XYZ=              0.0000
+ Hexadecapole moment (field-independent basis, Debye-Ang**3):
+ XXXX=            -55.7089 YYYY=            -55.7089 ZZZZ=           -612.3148 XXXY=              0.0000
+ XXXZ=              0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=             -0.0000
+ ZZZY=              0.0000 XXYY=            -18.5696 XXZZ=           -213.4944 YYZZ=           -213.4944
+ XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=              0.0000
+ N-N= 7.643670790744D-01 E-N=-2.797185588325D+00  KE= 4.862651436214D-01
+ Symmetry AG   KE= 2.766236038669D-01
+ Symmetry B1G  KE= 0.000000000000D+00
+ Symmetry B2G  KE= 0.000000000000D+00
+ Symmetry B3G  KE= 0.000000000000D+00
+ Symmetry AU   KE= 0.000000000000D+00
+ Symmetry B1U  KE= 2.096415397546D-01
+ Symmetry B2U  KE= 0.000000000000D+00
+ Symmetry B3U  KE= 0.000000000000D+00
+ No NMR shielding tensors so no spin-rotation constants.
+ Leave Link  601 at Sat Apr 10 18:11:47 2021, MaxMem=    32768000 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l9999.exe)
+ 1\1\GINC-ASUS\SP\RSVWN\Gen\Au4\PALACIOS\10-Apr-2021\0\\#p lsda/gen pse
+ udo=read gfinput Scf=(dsymm,conver=6,nodamp)\\Au-Au-Au-Au\\0,1\Au,0,0.
+ ,0.,0.\Au,0,0.,0.,3.\Au,0,0.,0.,6.\Au,0,0.,0.,9.\\Version=ES64L-G09Rev
+ D.01\State=1-SGG\HF=-0.8733872\RMSD=7.833e-08\Dipole=0.,0.,0.\Quadrupo
+ le=-5.4629214,-5.4629214,10.9258428,0.,0.,0.\PG=D*H [C*(Au1Au1.Au1Au1)
+ ]\\@
+
+
+ CHEMISTRY BEGAN BY SAYING IT WOULD CHANGE THE BASER
+ METALS INTO GOLD.  BY NOT DOING THAT IT HAS DONE MUCH
+ GREATER THINGS.  --  RALPH WALDO EMERSON
+ Job cpu time:       0 days  0 hours  0 minutes  5.0 seconds.
+ File lengths (MBytes):  RWF=      5 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 09 at Sat Apr 10 18:11:47 2021.

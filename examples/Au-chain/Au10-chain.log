@@ -1,0 +1,560 @@
+ Entering Gaussian System, Link 0=g09
+ Input=Au10-chain.gjf
+ Output=Au10-chain.log
+ Initial command:
+ /home/palacios/Gaussian09/intel/v.D01/g09/l1.exe "/scratch/palacios/Gau-29730.inp" -scrdir="/scratch/palacios/"
+ Entering Link 1 = /home/palacios/Gaussian09/intel/v.D01/g09/l1.exe PID=     29731.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  AS64L-G09RevD.01 24-Apr-2013
+                 8-Jul-2022 
+ ******************************************
+ %mem=1gb
+ %NProcShared=4
+ Will use up to    4 processors via shared memory.
+ %Subst L101 ../../bin
+ %Subst L502 ../../bin
+ ----------------------------------------------------------------
+ #p lsda/lanl2dz pop=min Scf=(conver=6,maxcycle=100,dsymm,nodamp)
+ ----------------------------------------------------------------
+ 1/38=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ 3/5=6,6=3,11=2,16=1,25=1,30=1,74=205/1,2,3;
+ 4//1;
+ 5/5=2,6=6,7=100,17=200,18=-2,38=5/2;
+ 6/7=2,8=2,9=2,10=2,28=1/1;
+ 99/5=1,9=1/99;
+ Leave Link    1 at Fri Jul  8 10:31:13 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter ../../bin/l101.exe)
+ ----------
+ Au10-chain
+ ----------
+ Symbolic Z-matrix:
+ Charge =  0 Multiplicity = 1
+ Au                    0.        0.        0. 
+ Au                    0.        0.        3. 
+ Au                    0.        0.        6. 
+ Au                    0.        0.        9. 
+ Au                    0.        0.        12. 
+ Au                    0.        0.        15. 
+ Au                    0.        0.        18. 
+ Au                    0.        0.        21. 
+ Au                    0.        0.        24. 
+ Au                    0.        0.        27. 
+ 
+ NAtoms=     10 NQM=       10 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1           2           3           4           5           6           7           8           9          10
+ IAtWgt=         197         197         197         197         197         197         197         197         197         197
+ AtmWgt= 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000
+ NucSpn=           3           3           3           3           3           3           3           3           3           3
+ AtZEff=   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
+ NQMom=   54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000
+ NMagM=    0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590
+ AtZNuc=  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000
+ Leave Link  101 at Fri Jul  8 10:31:13 2022, MaxMem=   134217728 cpu:         0.2
+ (Enter /home/palacios/Gaussian09/intel/v.D01/g09/l202.exe)
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000    0.000000
+      2         79           0        0.000000    0.000000    3.000000
+      3         79           0        0.000000    0.000000    6.000000
+      4         79           0        0.000000    0.000000    9.000000
+      5         79           0        0.000000    0.000000   12.000000
+      6         79           0        0.000000    0.000000   15.000000
+      7         79           0        0.000000    0.000000   18.000000
+      8         79           0        0.000000    0.000000   21.000000
+      9         79           0        0.000000    0.000000   24.000000
+     10         79           0        0.000000    0.000000   27.000000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4          5
+     1  Au   0.000000
+     2  Au   3.000000   0.000000
+     3  Au   6.000000   3.000000   0.000000
+     4  Au   9.000000   6.000000   3.000000   0.000000
+     5  Au  12.000000   9.000000   6.000000   3.000000   0.000000
+     6  Au  15.000000  12.000000   9.000000   6.000000   3.000000
+     7  Au  18.000000  15.000000  12.000000   9.000000   6.000000
+     8  Au  21.000000  18.000000  15.000000  12.000000   9.000000
+     9  Au  24.000000  21.000000  18.000000  15.000000  12.000000
+    10  Au  27.000000  24.000000  21.000000  18.000000  15.000000
+                    6          7          8          9         10
+     6  Au   0.000000
+     7  Au   3.000000   0.000000
+     8  Au   6.000000   3.000000   0.000000
+     9  Au   9.000000   6.000000   3.000000   0.000000
+    10  Au  12.000000   9.000000   6.000000   3.000000   0.000000
+ Stoichiometry    Au10
+ Framework group  D*H[C*(AuAuAuAuAu.AuAuAuAuAu)]
+ Deg. of freedom     5
+ Full point group                 D*H     NOp   8
+ Largest Abelian subgroup         D2H     NOp   8
+ Largest concise Abelian subgroup C2      NOp   2
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000   13.500000
+      2         79           0        0.000000    0.000000   10.500000
+      3         79           0        0.000000    0.000000    7.500000
+      4         79           0        0.000000    0.000000    4.500000
+      5         79           0        0.000000    0.000000    1.500000
+      6         79           0        0.000000    0.000000   -1.500000
+      7         79           0        0.000000    0.000000   -4.500000
+      8         79           0        0.000000    0.000000   -7.500000
+      9         79           0        0.000000    0.000000  -10.500000
+     10         79           0        0.000000    0.000000  -13.500000
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):      0.0000000      0.0034556      0.0034556
+ Leave Link  202 at Fri Jul  8 10:31:13 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter /home/palacios/Gaussian09/intel/v.D01/g09/l301.exe)
+ Standard basis: LANL2DZ (5D, 7F)
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+ Ernie:  10 primitive shells out of 170 were deleted.
+ There are    60 symmetry adapted cartesian basis functions of AG  symmetry.
+ There are    10 symmetry adapted cartesian basis functions of B1G symmetry.
+ There are    25 symmetry adapted cartesian basis functions of B2G symmetry.
+ There are    25 symmetry adapted cartesian basis functions of B3G symmetry.
+ There are    10 symmetry adapted cartesian basis functions of AU  symmetry.
+ There are    60 symmetry adapted cartesian basis functions of B1U symmetry.
+ There are    25 symmetry adapted cartesian basis functions of B2U symmetry.
+ There are    25 symmetry adapted cartesian basis functions of B3U symmetry.
+ There are    50 symmetry adapted basis functions of AG  symmetry.
+ There are    10 symmetry adapted basis functions of B1G symmetry.
+ There are    25 symmetry adapted basis functions of B2G symmetry.
+ There are    25 symmetry adapted basis functions of B3G symmetry.
+ There are    10 symmetry adapted basis functions of AU  symmetry.
+ There are    50 symmetry adapted basis functions of B1U symmetry.
+ There are    25 symmetry adapted basis functions of B2U symmetry.
+ There are    25 symmetry adapted basis functions of B3U symmetry.
+   220 basis functions,   430 primitive gaussians,   240 cartesian basis functions
+    95 alpha electrons       95 beta electrons
+       nuclear repulsion energy      1228.3217967660 Hartrees.
+ IExCor=  205 DFT=T Ex=S Corr=VWN ExCW=0 ScaHFX=  0.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=      0 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
+ NAtoms=   10 NActive=   10 NUniq=    5 SFac= 4.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned on.
+ Leave Link  301 at Fri Jul  8 10:31:13 2022, MaxMem=   134217728 cpu:         0.2
+ (Enter /home/palacios/Gaussian09/intel/v.D01/g09/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
+ One-electron integrals computed using PRISM.
+ One-electron integral symmetry used in STVInt
+   8 Symmetry operations used in ECPInt.
+ ECPInt:  NShTT=    3240 NPrTT=   12990 LenC2=    2390 LenP2D=    7280.
+ LDataN:  DoStor=T MaxTD1= 6 Len=  172
+ GSVD:  received Info=                   1 from GESDD.
+ GSVD:  received Info=                   1 from GESDD.
+ NBasis=   220 RedAO= T EigKep=  1.02D-02  NBF=    50    10    25    25    10    50    25    25
+ NBsUse=   220 1.00D-06 EigRej= -1.00D+00 NBFU=    50    10    25    25    10    50    25    25
+ Precomputing XC quadrature grid using
+ IXCGrd= 4 IRadAn=           0 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
+ NSgBfM=   192   192   198   204   204 MxSgAt=    10 MxSgA2=    10.
+ Leave Link  302 at Fri Jul  8 10:31:14 2022, MaxMem=   134217728 cpu:         2.7
+ (Enter /home/palacios/Gaussian09/intel/v.D01/g09/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Fri Jul  8 10:31:14 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/Gaussian09/intel/v.D01/g09/l401.exe)
+ ExpMin= 2.79D-02 ExpMax= 3.68D+00 ExpMxC= 3.68D+00 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       5 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         5 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Harris En= -1356.35469056086    
+ JPrj=0 DoOrth=F DoCkMO=F.
+ Initial guess orbital symmetries:
+       Occupied  (SGU) (SGG) (SGG) (SGU) (SGG) (SGU) (SGG) (SGU)
+                 (SGG) (SGU) (SGG) (SGU) (SGG) (SGU) (SGG) (PIU)
+                 (PIU) (PIG) (PIG) (PIU) (PIU) (PIG) (PIG) (PIU)
+                 (PIU) (PIG) (PIG) (PIU) (PIU) (PIG) (PIG) (PIU)
+                 (PIU) (PIG) (PIG) (SGU) (SGG) (SGU) (SGG) (SGU)
+                 (SGG) (SGU) (SGG) (SGU) (SGG) (PIU) (PIU) (PIG)
+                 (PIG) (SGU) (PIU) (PIU) (SGG) (SGU) (SGG) (PIG)
+                 (PIG) (SGU) (PIU) (PIU) (SGG) (SGG) (DLTG) (DLTG)
+                 (DLTU) (DLTU) (DLTG) (DLTG) (DLTU) (DLTU) (SGU)
+                 (DLTG) (DLTG) (SGU) (PIG) (PIG) (DLTU) (DLTU)
+                 (DLTG) (DLTG) (SGG) (DLTU) (DLTU) (DLTG) (DLTG)
+                 (SGU) (DLTU) (DLTU) (PIU) (PIU) (SGG) (PIG) (PIG)
+                 (PIU) (PIU)
+       Virtual   (PIG) (PIG) (SGU) (SGG) (SGU) (PIU) (PIU) (PIG)
+                 (PIG) (PIU) (PIU) (SGG) (PIG) (PIG) (PIU) (PIU)
+                 (PIG) (PIG) (SGU) (PIU) (PIU) (SGU) (SGG) (PIG)
+                 (PIG) (SGG) (SGU) (SGG) (SGU) (PIU) (PIU) (SGG)
+                 (SGU) (PIG) (PIG) (PIU) (PIU) (PIG) (PIG) (PIU)
+                 (PIU) (SGG) (PIG) (PIG) (PIU) (PIU) (SGU) (SGU)
+                 (PIG) (PIG) (PIU) (PIU) (SGG) (PIG) (PIG) (SGG)
+                 (PIU) (PIU) (PIG) (PIG) (SGU) (SGG) (DLTG) (DLTG)
+                 (SGU) (DLTU) (DLTU) (DLTG) (DLTG) (PIU) (PIU)
+                 (DLTU) (DLTU) (DLTG) (DLTG) (PIG) (PIG) (SGG)
+                 (DLTU) (DLTU) (PIU) (PIU) (DLTG) (DLTG) (PIG)
+                 (PIG) (DLTU) (DLTU) (SGU) (DLTG) (DLTG) (PIU)
+                 (PIU) (DLTU) (DLTU) (SGG) (PIG) (PIG) (SGU) (PIU)
+                 (PIU) (SGG) (SGU) (SGG) (PIG) (PIG) (SGU) (SGG)
+                 (SGU) (PIU) (PIU) (SGG) (SGU) (PIG) (PIG) (SGG)
+                 (SGU) (SGG) (SGU) (SGG) (SGU) (SGG) (SGU) (SGU)
+                 (SGG)
+ The electronic state of the initial guess is 1-SGG.
+ Leave Link  401 at Fri Jul  8 10:31:15 2022, MaxMem=   134217728 cpu:         1.1
+ (Enter ../../bin/l502.exe)
+ Closed shell SCF:
+ Using DIIS extrapolation, IDIIS=  1040.
+ Integral symmetry usage will be decided dynamically.
+ IVT=      188834 IEndB=      188834 NGot=   134217728 MDV=   134096935
+ LenX=   134096935 LenY=   134038894
+ Requested convergence on RMS density matrix=1.00D-06 within 100 cycles.
+ Requested convergence on MAX density matrix=1.00D-04.
+ Requested convergence on             energy=1.00D-04.
+ No special actions if energy rises.
+ Fock matrices will be formed incrementally for  20 cycles.
+
+ Cycle   1  Pass 1  IDiag  1:
+ 
+  ****************************************************************** 
+  ***                                                            *** 
+  ***                      A l i c a n t e                       *** 
+  ***                      N a n o                               *** 
+  ***                      T r a n s p o r t                     *** 
+  ***                      G 0 9                                 *** 
+  ***                                                            *** 
+  ****************************************************************** 
+  ***                     Version: 2.5.2                         *** 
+  ****************************************************************** 
+  *  Copyright (c) by                                              * 
+  *                                                                * 
+  *  Juan Jose Palacios (1)                                        * 
+  *  David Jacob (2)                                               * 
+  *  Maria Soriano (1,5)                                           * 
+  *  Angel J. Perez-Jimenez (3)                                    * 
+  *  Emilio SanFabian (3)                                          * 
+  *  Jose Antonio Antonio Verges (4)                               * 
+  *  Enrique Louis (5)                                             * 
+  *  Wynand Dednam (5)                                             * 
+  *                                                                * 
+  * (1) Departamento de Fisica de la Materia Condensada            * 
+  *     Universidad Autonoma de Madrid                             * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (2) Theory Department                                          * 
+  *     Max-Planck-Institute for Microstructure Physics            * 
+  *     Halle, 06120 (GERMANY)                                     * 
+  * (3) Departamento de Quimica Fisica                             * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  * (4) Insto. de Ciencias de Materiales de Madrid (ICMM)          * 
+  *     Consejo Superior de Investigacion y Ciencia (CSIC)         * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (5) Departamento de Fisica Aplicada                            * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+  ****************************************************************** 
+  *                                                                * 
+  *              Initializing ANT.G09 modules                      * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+ Scanning Au10-chain.ant file for parameter specifications...
+ Done.
+ ****************************
+ Basic calculation parameters
+ ****************************
+ ALPHA      =   1.000000000000000E-002
+ NPULAY     =                      5
+ CHARGEACC  =   1.000000000000000E-004  %
+ FERMIACC   =   1.000000000000000E-004  %
+ PACC       =   1.000000000000000E-007  %
+ FULLACC    =  F
+ MAX        =                     15
+ SELFACC    =   1.000000000000000E-006
+ SMALL      =   0.100000000000000     
+ SMALLD     =   0.100000000000000       A
+ BIASVOLT   =   0.000000000000000E+000  V
+ QEXCESS    =   0.000000000000000E+000 electrons
+ ETA        =   1.000000000000000E-002
+ GLUE       =    1.00000000000000     
+ FERMISTART =   -5.00000000000000       eV
+ SOC        =  F
+ SOCFAC     =   0.000000000000000E+000
+ SOC_CFF_P  =   0.000000000000000E+000  eV
+ SOC_CFF_D  =   0.000000000000000E+000  eV
+ SOC_CFF_F  =   0.000000000000000E+000  eV
+ ROT        =  F
+ THETA      =   0.000000000000000E+000  degrees
+ PHI        =   0.000000000000000E+000  degrees
+ SL         =   1.000000000000000E-003
+ DMIMAG     =  F
+ FMIXING    =  F
+ ************************
+ Bethe lattice parameters
+ ************************
+ TYPE1      = 1DLEAD    
+ TYPE2      = 1DLEAD    
+ BLPAR1     = Papacon             
+ BLPAR2     = Papacon             
+ NEMBED1    =                      1
+ NEMBED2    =                      1
+ NPC        =                      2
+ NATOMEL1   = ? 
+ NATOMEL2   = ? 
+ OVERLAP    = System Overlap
+ *************************
+ Spin transport parameters
+ *************************
+ SWOFFSPL   =   1.000000000000000E-003
+ NSPINLOCK  =                      0
+ NALPHA     =                     -1
+ NBETA      =                     -1
+ DU         =  F
+ UD         =  F
+ DD         =  F
+ MRSTART    =                      0
+ SPINDEL    =  F
+ SPINEDIT   =                      0
+ SOCFACATOM =                      0
+ SPINROTATO =                      0
+ SOCEDIT    =                      0
+ ***********************
+ Correlations parameters
+ ***********************
+ CORRBLOCKS =                      0
+ PORTHO     =  F
+ HYBFUNC    =  F
+ DFT+U      =  F
+ DIAGCORRBL =  F
+ *****************
+ Output parameters
+ *****************
+ HAMILTON   =  F
+ MULLIKEN   =  F
+ HTRANSM    =  F
+ ESTEP      =   1.000000000000000E-002
+ DOSENERGY  =   0.000000000000000E+000
+ EW1        =   -5.00000000000000     
+ EW2        =    5.00000000000000     
+ LDOS_BEG   =                      1
+ LDOS_END   =                      0
+ RTM_BEG    =                      1
+ RTM_END    =                      0
+ NCHANNELS  =                      0
+ LEADDOS    =  F
+ PRTHATOM   =                      1
+ -------------------
+ Initializing device
+ -------------------
+ ----------------------------------------------------------
+ Analyzing cluster for the connection of the  Bethe Lattice
+ ----------------------------------------------------------
+ 
+ Atom type of lead 1: Au
+ Atom type of lead 2: Au
+ 
+    1   79  19.   22    1   22
+    2   79  19.   22   23   44
+    3   79  19.   22   45   66
+    4   79  19.   22   67   88
+    5   79  19.   22   89  110
+    6   79  19.   22  111  132
+    7   79  19.   22  133  154
+    8   79  19.   22  155  176
+    9   79  19.   22  177  198
+   10   79  19.   22  199  220
+ 
+  Center of charge:
+   0.000000   0.000000   0.000000
+ 
+                     5 nlead1
+  Atoms in left electrode:                     5
+   1  Au   0.000000   0.000000  25.511303
+   2  Au   0.000000   0.000000  19.842124
+   3  Au   0.000000   0.000000  14.172946
+   4  Au   0.000000   0.000000   8.503768
+   5  Au   0.000000   0.000000   2.834589
+ 
+  Atoms in molecule:                     0
+ 
+  Atoms in right electrode:                     5
+   6  Au   0.000000   0.000000 -25.511303
+   7  Au   0.000000   0.000000 -19.842124
+   8  Au   0.000000   0.000000 -14.172946
+   9  Au   0.000000   0.000000  -8.503768
+  10  Au   0.000000   0.000000  -2.834589
+ 
+ ---------------------------------------------------
+  Details on device and contacting atoms -----------
+ ---------------------------------------------------
+ NEmbed(1) =                     1
+ NEmbed(2) =                     1
+ Number of electrons in neutral reduced device (NCDEl) =                    152
+ First and last orbital in reduced device
+ NCDAO1 =                     23
+ NCDAO2 =                    198
+ ---------------------------------------------------
+ FoFJK:  IHMeth= 1 ICntrl=     500 DoSepK=F KAlg= 0 I1Cent=   0 FoldK=F
+ IRaf= 640000000 NMat=   1 IRICut=       1 DoRegI=T DoRafI=F ISym2E= 1.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Defaulting to unpruned grid for atomic number  79.
+ E= -1353.78835430290    
+ DIIS: error= 9.88D+09 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -1353.78835430290     IErMin= 1 ErrMin= 9.88D+09
+ ErrMax= 9.88D+09  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.27D+22 BMatP= 1.27D+22
+ IDIUse=3 WtCom= 0.00D+00 WtEn= 1.00D+00
+ Coeff-Com:  0.100D+01
+ Coeff-En:   0.100D+01
+ Coeff:      0.100D+01
+ Gap=     1.116 Goal=   None    Shift=    0.000
+ RMSDP=6.72D-01 MaxDP=3.18D+01              OVMax= 9.09D-01
+
+ Cycle   2  Pass 1  IDiag  1:
+ RMSU=  6.69D-01    CP:  2.44D+00
+ E= -1206.71395954637     Delta-E=      147.074394756532 Rises=F Damp=F
+ DIIS: error= 2.10D+09 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 1 EnMin= -1353.78835430290     IErMin= 2 ErrMin= 2.10D+09
+ ErrMax= 2.10D+09  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.22D+21 BMatP= 1.27D+22
+ IDIUse=3 WtCom= 0.00D+00 WtEn= 1.00D+00
+ Coeff-Com:  0.873D-01 0.913D+00
+ Coeff-En:   0.000D+00 0.100D+01
+ Coeff:      0.000D+00 0.100D+01
+ Gap=   -78.553 Goal=   None    Shift=    0.000
+ RMSDP=4.33D-01 MaxDP=1.44D+01 DE= 1.47D+02 OVMax= 9.90D-01
+
+ Cycle   3  Pass 1  IDiag  1:
+ RMSU=  4.33D-01    CP:  2.64D+00  9.74D-01
+ E= -1044.49247105985     Delta-E=      162.221488486518 Rises=F Damp=F
+ DIIS: error= 6.75D+07 at cycle   3 NSaved=   3.
+ NSaved= 3 IEnMin= 1 EnMin= -1353.78835430290     IErMin= 3 ErrMin= 6.75D+07
+ ErrMax= 6.75D+07  0.00D+00 EMaxC= 1.00D-01 BMatC= 7.19D+17 BMatP= 1.22D+21
+ IDIUse=3 WtCom= 0.00D+00 WtEn= 1.00D+00
+ Coeff-Com:  0.436D-04 0.134D-02 0.999D+00
+ Coeff-En:   0.000D+00 0.500D+00 0.500D+00
+ Coeff:      0.000D+00 0.500D+00 0.500D+00
+ Gap=     6.082 Goal=   None    Shift=    0.000
+ RMSDP=1.74D-01 MaxDP=4.43D+00 DE= 1.62D+02 OVMax= 7.11D-01
+
+ Cycle   4  Pass 1  IDiag  1:
+ RMSU=  1.72D-01    CP:  2.68D+00  9.82D-01  9.48D-01
+ E= -1046.14617097679     Delta-E=       -1.653699916940 Rises=F Damp=F
+ DIIS: error= 5.37D+10 at cycle   4 NSaved=   4.
+ NSaved= 4 IEnMin= 1 EnMin= -1353.78835430290     IErMin= 3 ErrMin= 6.75D+07
+ ErrMax= 5.37D+10  0.00D+00 EMaxC= 1.00D-01 BMatC= 3.19D+23 BMatP= 7.19D+17
+ IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.100D+01
+ Coeff:      0.000D+00 0.000D+00 0.000D+00 0.100D+01
+ Gap=     1.147 Goal=   None    Shift=    0.000
+ RMSDP=2.87D-01 MaxDP=1.16D+01 DE=-1.65D+00 OVMax= 9.65D-01
+
+ Cycle   5  Pass 1  IDiag  1:
+ RMSU=  2.33D-01    CP:  2.47D+00  9.13D-01  5.84D-01  1.18D+00
+ E= -1029.18774466917     Delta-E=       16.958426307620 Rises=F Damp=F
+ DIIS: error= 4.99D+10 at cycle   5 NSaved=   5.
+ NSaved= 5 IEnMin= 1 EnMin= -1353.78835430290     IErMin= 3 ErrMin= 6.75D+07
+ ErrMax= 4.99D+10  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.86D+23 BMatP= 7.19D+17
+ IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.000D+00 0.100D+01
+ Coeff:      0.000D+00 0.000D+00 0.000D+00 0.000D+00 0.100D+01
+ Fock symm off for IB=6 I1=    1 I=  121 J=   50 Cut=1.00D-04 Err=2.27D-04
+ Fock matrix is not symmetric: symmetry in diagonalization turned off.
+ Logic error in AufBlk.
+ Error termination via Lnk1e in ../../bin/l502.exe at Fri Jul  8 10:31:21 2022.
+ Job cpu time:       0 days  0 hours  0 minutes 20.9 seconds.
+ File lengths (MBytes):  RWF=     28 Int=      0 D2E=      0 Chk=      2 Scr=      1

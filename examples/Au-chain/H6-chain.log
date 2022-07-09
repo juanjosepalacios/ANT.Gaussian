@@ -1,0 +1,1899 @@
+ Entering Gaussian System, Link 0=g09
+ Input=H6-chain.gjf
+ Output=H6-chain.log
+ Initial command:
+ /home/palacios/gaussian/g09/l1.exe "/home/palacios/scratch/Gau-27638.inp" -scrdir="/home/palacios/scratch/"
+ Entering Link 1 = /home/palacios/gaussian/g09/l1.exe PID=     27640.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
+                29-Jun-2022 
+ ******************************************
+ %mem=1gb
+ %NProcShared=1
+ Will use up to    1 processors via shared memory.
+ %Subst L101 ../../bin
+ %Subst L502 ../../bin
+ --------------------------------------------------------
+ #p lsda/sto-3g pop=reg Scf=(conver=6,maxcycle=100,dsymm)
+ --------------------------------------------------------
+ 1/38=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ 3/6=3,11=2,16=1,25=1,30=1,74=205/1,2,3;
+ 4//1;
+ 5/5=2,6=6,7=100,17=200,38=5/2;
+ 6/28=1/1;
+ 99/5=1,9=1/99;
+ Leave Link    1 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter ../../bin/l101.exe)
+ --------
+ H6-chain
+ --------
+ Symbolic Z-matrix:
+ Charge =  0 Multiplicity = 1
+ H                     0.        0.        0. 
+ H                     0.        0.        2. 
+ H                     0.        0.        4. 
+ H                     0.        0.        6. 
+ H                     0.        0.        8. 
+ H                     0.        0.        10. 
+ 
+ NAtoms=      6 NQM=        6 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1           2           3           4           5           6
+ IAtWgt=           1           1           1           1           1           1
+ AtmWgt=   1.0078250   1.0078250   1.0078250   1.0078250   1.0078250   1.0078250
+ NucSpn=           1           1           1           1           1           1
+ AtZEff=   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
+ NQMom=    0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
+ NMagM=    2.7928460   2.7928460   2.7928460   2.7928460   2.7928460   2.7928460
+ AtZNuc=   1.0000000   1.0000000   1.0000000   1.0000000   1.0000000   1.0000000
+ Leave Link  101 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l202.exe)
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          1           0        0.000000    0.000000    0.000000
+      2          1           0        0.000000    0.000000    2.000000
+      3          1           0        0.000000    0.000000    4.000000
+      4          1           0        0.000000    0.000000    6.000000
+      5          1           0        0.000000    0.000000    8.000000
+      6          1           0        0.000000    0.000000   10.000000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4          5
+     1  H    0.000000
+     2  H    2.000000   0.000000
+     3  H    4.000000   2.000000   0.000000
+     4  H    6.000000   4.000000   2.000000   0.000000
+     5  H    8.000000   6.000000   4.000000   2.000000   0.000000
+     6  H   10.000000   8.000000   6.000000   4.000000   2.000000
+                    6
+     6  H    0.000000
+ Stoichiometry    H6
+ Framework group  D*H[C*(HHH.HHH)]
+ Deg. of freedom     3
+ Full point group                 D*H     NOp   8
+ Largest Abelian subgroup         D2H     NOp   8
+ Largest concise Abelian subgroup C2      NOp   2
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          1           0        0.000000    0.000000    5.000000
+      2          1           0        0.000000    0.000000    3.000000
+      3          1           0        0.000000    0.000000    1.000000
+      4          1           0        0.000000    0.000000   -1.000000
+      5          1           0        0.000000    0.000000   -3.000000
+      6          1           0        0.000000    0.000000   -5.000000
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):      0.0000000      7.1636443      7.1636443
+ Leave Link  202 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l301.exe)
+ Standard basis: STO-3G (5D, 7F)
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+ There are     3 symmetry adapted cartesian basis functions of AG  symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B1G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B2G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B3G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of AU  symmetry.
+ There are     3 symmetry adapted cartesian basis functions of B1U symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B2U symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B3U symmetry.
+ There are     3 symmetry adapted basis functions of AG  symmetry.
+ There are     0 symmetry adapted basis functions of B1G symmetry.
+ There are     0 symmetry adapted basis functions of B2G symmetry.
+ There are     0 symmetry adapted basis functions of B3G symmetry.
+ There are     0 symmetry adapted basis functions of AU  symmetry.
+ There are     3 symmetry adapted basis functions of B1U symmetry.
+ There are     0 symmetry adapted basis functions of B2U symmetry.
+ There are     0 symmetry adapted basis functions of B3U symmetry.
+     6 basis functions,    18 primitive gaussians,     6 cartesian basis functions
+     3 alpha electrons        3 beta electrons
+       nuclear repulsion energy         2.3019208574 Hartrees.
+ IExCor=  205 DFT=T Ex=S Corr=VWN ExCW=0 ScaHFX=  0.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=      0 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
+ NAtoms=    6 NActive=    6 NUniq=    3 SFac= 4.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned on.
+ Leave Link  301 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
+ One-electron integrals computed using PRISM.
+ One-electron integral symmetry used in STVInt
+ NBasis=     6 RedAO= T EigKep=  1.11D+00  NBF=     3     0     0     0     0     3     0     0
+ NBsUse=     6 1.00D-06 EigRej= -1.00D+00 NBFU=     3     0     0     0     0     3     0     0
+ Precomputing XC quadrature grid using
+ IXCGrd= 4 IRadAn=           0 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
+ Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
+ NSgBfM=     6     6     6     6     6 MxSgAt=     6 MxSgA2=     6.
+ Leave Link  302 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l401.exe)
+ ExpMin= 1.69D-01 ExpMax= 3.43D+00 ExpMxC= 3.43D+00 IAcc=1 IRadAn=         1 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       1 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         1 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Harris En= -2.78267999835927    
+ JPrj=0 DoOrth=F DoCkMO=F.
+ Initial guess orbital symmetries:
+       Occupied  (SGG) (SGU) (SGG)
+       Virtual   (SGU) (SGG) (SGU)
+ The electronic state of the initial guess is 1-SGG.
+ Leave Link  401 at Wed Jun 29 11:59:08 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter ../../bin/l502.exe)
+ Closed shell SCF:
+ Using DIIS extrapolation, IDIIS=  1040.
+ Integral symmetry usage will be decided dynamically.
+ Keep J ints in memory in symmetry-blocked form, NReq=856516.
+ IVT=       13701 IEndB=       13701 NGot=   134217728 MDV=   134203533
+ LenX=   134203533 LenY=   134202651
+ Requested convergence on RMS density matrix=1.00D-06 within 100 cycles.
+ Requested convergence on MAX density matrix=1.00D-04.
+ Requested convergence on             energy=1.00D-04.
+ No special actions if energy rises.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=           0 FMFlg1=           0
+         NFxFlg=           0 DoJE=F BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=     600 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=     21 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Integral accuracy reduced to 1.0D-05 until final iterations.
+
+ Cycle   1  Pass 0  IDiag  1:
+ 
+  ****************************************************************** 
+  ***                                                            *** 
+  ***                      A l i c a n t e                       *** 
+  ***                      N a n o                               *** 
+  ***                      T r a n s p o r t                     *** 
+  ***                      G 0 9                                 *** 
+  ***                                                            *** 
+  ****************************************************************** 
+  ***                     Version: 2.5.2                         *** 
+  ****************************************************************** 
+  *  Copyright (c) by                                              * 
+  *                                                                * 
+  *  Juan Jose Palacios (1)                                        * 
+  *  David Jacob (2)                                               * 
+  *  Maria Soriano (1,5)                                           * 
+  *  Angel J. Perez-Jimenez (3)                                    * 
+  *  Emilio SanFabian (3)                                          * 
+  *  Jose Antonio Antonio Verges (4)                               * 
+  *  Enrique Louis (5)                                             * 
+  *  Wynand Dednam (5)                                             * 
+  *                                                                * 
+  * (1) Departamento de Fisica de la Materia Condensada            * 
+  *     Universidad Autonoma de Madrid                             * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (2) Theory Department                                          * 
+  *     Max-Planck-Institute for Microstructure Physics            * 
+  *     Halle, 06120 (GERMANY)                                     * 
+  * (3) Departamento de Quimica Fisica                             * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  * (4) Insto. de Ciencias de Materiales de Madrid (ICMM)          * 
+  *     Consejo Superior de Investigacion y Ciencia (CSIC)         * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (5) Departamento de Fisica Aplicada                            * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+  ****************************************************************** 
+  *                                                                * 
+  *              Initializing ANT.G09 modules                      * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+ Scanning H6-chain.ant file for parameter specifications...
+ Done.
+ ****************************
+ Basic calculation parameters
+ ****************************
+ ALPHA      =    2.9999999999999999E-002
+ NPULAY     =                         4
+ CHARGEACC  =    1.0000000000000000E-004  %
+ FERMIACC   =    1.0000000000000000E-004  %
+ PACC       =    1.0000000000000001E-005  %
+ FULLACC    =   F
+ MAX        =                        10
+ SELFACC    =    9.9999999999999995E-007
+ SMALL      =    0.1000000000000000     
+ SMALLD     =    0.1000000000000000       A
+ BIASVOLT   =     0.000000000000000       V
+ QEXCESS    =     0.000000000000000      electrons
+ ETA        =    1.0000000000000000E-002
+ GLUE       =     1.000000000000000     
+ FERMISTART =    -5.000000000000000       eV
+ SOC        =   F
+ SOCFAC     =     0.000000000000000     
+ SOC_CFF_P  =     0.000000000000000       eV
+ SOC_CFF_D  =     0.000000000000000       eV
+ SOC_CFF_F  =     0.000000000000000       eV
+ ROT        =   F
+ THETA      =     0.000000000000000       degrees
+ PHI        =     0.000000000000000       degrees
+ SL         =    1.0000000000000000E-002
+ DMIMAG     =   T
+ FMIXING    =   F
+ ******************
+ 1D lead parameters
+ ******************
+ DEVFILE                                                                                             
+  = 
+ device.dev                                                                                          
+ LEAD1FILE                                                                                           
+  = 
+ lead1.elc                                                                                           
+ LEAD2FILE                                                                                           
+  = 
+ lead2.elc                                                                                           
+ DEVXYZ                                                                                              
+  = 
+ device.xyz                                                                                          
+ LEAD1XYZ                                                                                            
+  = 
+ lead1.xyz                                                                                           
+ LEAD2XYZ                                                                                            
+  = 
+ lead2.xyz                                                                                           
+ ************************
+ Bethe lattice parameters
+ ************************
+ TYPE1      = 1DLEAD    
+ TYPE2      = 1DLEAD    
+ BLPAR1     = Papacon             
+ BLPAR2     = Papacon             
+ NEMBED1    =                         1
+ NEMBED2    =                         1
+ NPC        =                         3
+ NATOMEL1   = ? 
+ NATOMEL2   = ? 
+ NBULKLEAD1 =                         1
+ NBULKLEAD2 = ? 
+ OVERLAP    = System Overlap
+ *************************
+ Spin transport parameters
+ *************************
+ SWOFFSPL   =    1.0000000000000000E-003
+ NSPINLOCK  =                         0
+ NALPHA     =                        -1
+ NBETA      =                        -1
+ DU         =   F
+ UD         =   F
+ DD         =   F
+ MRSTART    =                         0
+ SPINDEL    =   F
+ SPINEDIT   =                         0
+ SOCFACATOM =                         0
+ SPINROTATO =                         0
+ SOCEDIT    =                         0
+ ***********************
+ Correlations parameters
+ ***********************
+ CORRBLOCKS =                         0
+ PORTHO     =   F
+ HYBFUNC    =   F
+ DFT+U      =   F
+ DIAGCORRBL =   F
+ *****************
+ Output parameters
+ *****************
+ HAMILTON   =   F
+ MULLIKEN   =   F
+ HTRANSM    =   F
+ ESTEP      =    1.0000000000000000E-002
+ DOSENERGY  =     0.000000000000000     
+ EW1        =    -6.000000000000000     
+ EW2        =     6.000000000000000     
+ LDOS_BEG   =                         1
+ LDOS_END   =                         0
+ RTM_BEG    =                         1
+ RTM_END    =                         0
+ NCHANNELS  =                         0
+ LEADDOS    =   T
+ ANT1D      =   F
+ BULK1DLEAD =   F
+ PRTHATOM   =                         1
+ -------------------
+ Initializing device
+ -------------------
+ ----------------------------------------------------------
+ Analyzing cluster for the connection of the  Bethe Lattice
+ ----------------------------------------------------------
+ 
+ Atom type of lead 1: H 
+ Atom type of lead 2: H 
+ 
+    1    1   1.    1    1    1
+    2    1   1.    1    2    2
+    3    1   1.    1    3    3
+    4    1   1.    1    4    4
+    5    1   1.    1    5    5
+    6    1   1.    1    6    6
+ 
+  Center of charge:
+   0.000000   0.000000   0.000000
+ 
+                        3 nlead1
+  Atoms in left electrode:                        3
+   1  H    0.000000   0.000000   9.448631
+   2  H    0.000000   0.000000   5.669178
+   3  H    0.000000   0.000000   1.889726
+ 
+  Atoms in molecule:                        0
+ 
+  Atoms in right electrode:                        3
+   4  H    0.000000   0.000000  -9.448631
+   5  H    0.000000   0.000000  -5.669178
+   6  H    0.000000   0.000000  -1.889726
+ 
+ ---------------------------------------------------
+  Details on device and contacting atoms -----------
+ ---------------------------------------------------
+ NEmbed(1) =                        1
+ NEmbed(2) =                        1
+ Number of electrons in neutral reduced device (NCDEl) =  
+                        4
+ First and last orbital in reduced device
+ NCDAO1 =                         2
+ NCDAO2 =                         5
+ ---------------------------------------------------
+ E= -2.76845626301926    
+ DIIS: error= 5.75D-03 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -2.76845626301926     IErMin= 1 ErrMin= 5.75D-03
+ ErrMax= 5.75D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 3.06D-04 BMatP= 3.06D-04
+ IDIUse=3 WtCom= 9.42D-01 WtEn= 5.75D-02
+ Coeff-Com:  0.100D+01
+ Coeff-En:   0.100D+01
+ Coeff:      0.100D+01
+ Gap=     0.046 Goal=   None    Shift=    0.000
+ GapD=    0.046 DampG=0.250 DampE=1.000 DampFc=0.2500 IDamp=-1.
+ Damping current iteration by 2.50D-01
+ RMSDP=4.30D-02 MaxDP=1.23D-01              OVMax= 1.35D-01
+
+ Cycle   2  Pass 0  IDiag  1:
+ E= -2.76737748385932     Delta-E=        0.001078779160 Rises=F Damp=T
+ DIIS: error= 5.47D-03 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 1 EnMin= -2.76845626301926     IErMin= 2 ErrMin= 5.47D-03
+ ErrMax= 5.47D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.66D-04 BMatP= 3.06D-04
+ IDIUse=3 WtCom= 9.45D-01 WtEn= 5.47D-02
+ Coeff-Com:  0.483D+00 0.517D+00
+ Coeff-En:   0.704D+00 0.296D+00
+ Coeff:      0.495D+00 0.505D+00
+ Gap=     0.045 Goal=   None    Shift=    0.000
+ RMSDP=4.97D-03 MaxDP=1.33D-02 DE= 1.08D-03 OVMax= 1.22D-01
+
+ Cycle   3  Pass 0  IDiag  1:
+ E= -2.76924976243992     Delta-E=       -0.001872278581 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        3
+ -------------------------------------------------------------------------
+ *******************************
+ *    Initializing Lead No.                         1
+ *******************************
+ 
+ *** Supercell on-site and coupling matrices ***
+ 
+ H0 = 
+   -0.3469E+01   -0.1832E+01   -0.5141E-01
+   -0.1832E+01   -0.3469E+01   -0.1832E+01
+   -0.5141E-01   -0.1832E+01   -0.3469E+01
+ V1 = 
+   -0.2018E-03   -0.5141E-01   -0.1832E+01
+    0.0000E+00   -0.2018E-03   -0.5141E-01
+    0.0000E+00    0.0000E+00   -0.2018E-03
+ S0 = 
+    0.1000E+01    0.1192E+00    0.1770E-02
+    0.1192E+00    0.1000E+01    0.1192E+00
+    0.1770E-02    0.1192E+00    0.1000E+01
+ S1 = 
+    0.3835E-05    0.1770E-02    0.1192E+00
+    0.0000E+00    0.3835E-05    0.1770E-02
+    0.0000E+00    0.0000E+00    0.3835E-05
+ 
+ *** Extended Supercell Matrices ***
+ 
+ HX = 
+   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04    0.0000E+00    0.0000E+00    0.0000E+00
+   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04    0.0000E+00    0.0000E+00
+   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04    0.0000E+00
+   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04
+    0.0000E+00   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02
+    0.0000E+00    0.0000E+00   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00
+    0.0000E+00    0.0000E+00    0.0000E+00   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00
+ SX = 
+    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06    0.0000E+00    0.0000E+00    0.0000E+00
+    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06    0.0000E+00    0.0000E+00
+    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06    0.0000E+00
+    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06
+    0.0000E+00    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03
+    0.0000E+00    0.0000E+00    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01
+    0.0000E+00    0.0000E+00    0.0000E+00    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00
+Searching optimum Emin such that DOS integrates to zero
+ EMin =     0.000000000000000         1.854805417845773     
+ EMin =    -1.000000000000000         1.513591534896567     
+ EMin =    -2.000000000000000         1.291901417277599     
+ EMin =    -3.000000000000000         1.082041442493429     
+ EMin =    -4.000000000000000        0.8549461633778996     
+ EMin =    -5.000000000000000        0.5681188353379675     
+ EMin =    -6.000000000000000        7.0807532608022257E-003
+ EMax =     0.000000000000000         1.854805417845773     
+ EMax =     1.000000000000000         1.997575329827873     
+ EMin=   -6.000000000000000        EMax=    1.000000000000000     
+ Searching Fermi energy...
+ ChargeOffset    1.000000000000000     
+ Bisec Method
+Initial EFermi =   -3.37500
+EFermi in the bulk electrodes=   -3.37500
+ Lead Hamiltonian shifted by -EFermi =     3.375000000000000     
+Printing DOS of Lead 1to file Lead1DOS.dat
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ *******************************
+ *    Initializing Lead No.                         2
+ *******************************
+ 
+ *** Supercell on-site and coupling matrices ***
+ 
+ H0 = 
+   -0.3469E+01   -0.1832E+01   -0.5141E-01
+   -0.1832E+01   -0.3469E+01   -0.1832E+01
+   -0.5141E-01   -0.1832E+01   -0.3469E+01
+ V1 = 
+   -0.2018E-03   -0.5141E-01   -0.1832E+01
+    0.0000E+00   -0.2018E-03   -0.5141E-01
+    0.0000E+00    0.0000E+00   -0.2018E-03
+ S0 = 
+    0.1000E+01    0.1192E+00    0.1770E-02
+    0.1192E+00    0.1000E+01    0.1192E+00
+    0.1770E-02    0.1192E+00    0.1000E+01
+ S1 = 
+    0.3835E-05    0.1770E-02    0.1192E+00
+    0.0000E+00    0.3835E-05    0.1770E-02
+    0.0000E+00    0.0000E+00    0.3835E-05
+ 
+ *** Extended Supercell Matrices ***
+ 
+ HX = 
+   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04    0.0000E+00    0.0000E+00    0.0000E+00
+   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04    0.0000E+00    0.0000E+00
+   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04    0.0000E+00
+   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02   -2.0182E-04
+    0.0000E+00   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00   -5.1409E-02
+    0.0000E+00    0.0000E+00   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00   -1.8316E+00
+    0.0000E+00    0.0000E+00    0.0000E+00   -2.0182E-04   -5.1409E-02   -1.8316E+00   -3.4695E+00
+ SX = 
+    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06    0.0000E+00    0.0000E+00    0.0000E+00
+    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06    0.0000E+00    0.0000E+00
+    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06    0.0000E+00
+    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03    3.8349E-06
+    0.0000E+00    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01    1.7701E-03
+    0.0000E+00    0.0000E+00    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00    1.1922E-01
+    0.0000E+00    0.0000E+00    0.0000E+00    3.8349E-06    1.7701E-03    1.1922E-01    1.0000E+00
+Searching optimum Emin such that DOS integrates to zero
+ EMin =     0.000000000000000         1.854805417845775     
+ EMin =    -1.000000000000000         1.513591534896566     
+ EMin =    -2.000000000000000         1.291901417277600     
+ EMin =    -3.000000000000000         1.082041442493429     
+ EMin =    -4.000000000000000        0.8549461633779001     
+ EMin =    -5.000000000000000        0.5681188353379678     
+ EMin =    -6.000000000000000        7.0807532608025249E-003
+ EMax =     0.000000000000000         1.854805417845775     
+ EMax =     1.000000000000000         1.997575329827874     
+ EMin=   -6.000000000000000        EMax=    1.000000000000000     
+ Searching Fermi energy...
+ ChargeOffset    1.000000000000000     
+ Bisec Method
+Initial EFermi =   -3.37500
+EFermi in the bulk electrodes=   -3.37500
+ Lead Hamiltonian shifted by -EFermi =     3.375000000000000     
+Printing DOS of Lead 2to file Lead2DOS.dat
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ Warning in Dyson selfconsistency
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.36955096942460     
+ EMax=    17.36955096942460     
+ Muller method
+    5.000000000000000         3.333157009162398     
+    5.000000000000000         2.111668666557397     
+    5.000000000000000         2.380401362359471     
+    5.000000000000000         2.325391378067372     
+    5.000000000000000         2.326255567151599     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.000000000000000         3.712592730542541     
+    4.000000000000000         3.376452560739820     
+    4.000000000000000         3.577293475949825     
+    4.000000000000000         3.572189904412719     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    6.000000000000000         2.969198337491382     
+    6.000000000000000        0.8618218602388807     
+    6.000000000000000        0.2260535989691621     
+    6.000000000000000        0.1455599435530758     
+    6.000000000000000        0.1495622370206878     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     5.000000000000000        -1.673744432848401     
+  P1 =     4.000000000000000       -0.4278100955872812     
+  P2 =     6.000000000000000        -3.850437762979312     
+    3.085290212848409         4.065751411045897     
+    3.085290212848409         4.342990327972519     
+    3.085290212848409         4.366457615672104     
+    3.085290212848409         4.367420235414351     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.085290212848409      TotCharge   0.3674202354143512     
+  P0 =     4.000000000000000       -0.4278100955872812     
+  P1 =     5.000000000000000        -1.673744432848401     
+  P2 =     3.085290212848409        0.3674202354143512     
+    3.555195409607203         3.884062692180558     
+    3.555195409607203         3.865778237088676     
+    3.555195409607203         3.970895249766864     
+    3.555195409607203         3.969292070542796     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.555195409607203      TotCharge  -3.0707929457204131E-002
+  P0 =     4.000000000000000       -0.4278100955872812     
+  P1 =     3.085290212848409        0.3674202354143512     
+  P2 =     3.555195409607203       -3.0707929457204131E-002
+    3.519853052024700         3.897719865747774     
+    3.519853052024700         3.902875017904621     
+ Integration of density matrix along imaginary axis has needed    3 points.
+ EFermi    3.519853052024700      TotCharge  -9.7124982095378787E-002
+ -----------------------------------------------
+ Fermi energy=  -3.51985  +/-  0.03534
+ 
+ Number of alpha electrons:    1.95144
+ Number of beta electrons:     1.95144
+ -----------------------------------------------
+ DIIS: error= 5.20D-04 at cycle   3 NSaved=   3.
+ NSaved= 3 IEnMin= 3 EnMin= -2.76924976243992     IErMin= 3 ErrMin= 5.20D-04
+ ErrMax= 5.20D-04  0.00D+00 EMaxC= 1.00D-01 BMatC= 3.72D-06 BMatP= 2.66D-04
+ IDIUse=3 WtCom= 9.95D-01 WtEn= 5.20D-03
+ Coeff-Com:  0.271D+00 0.235D+00 0.494D+00
+ Coeff-En:   0.115D-01 0.000D+00 0.988D+00
+ Coeff:      0.269D+00 0.234D+00 0.497D+00
+ RMSDP=2.36D-03 MaxDP=4.21D-03 DE=-1.87D-03 OVMax= 1.22D-01
+
+ Cycle   4  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=1.20D-02 rel=1.99D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.76635600669154     Delta-E=        0.002893755748 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        4
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.44060506093026     
+ EMax=    17.44060506093026     
+ Muller method
+    3.519853052024700         3.920653382837614     
+    3.519853052024700         3.959825808198863     
+    3.519853052024700         4.049010318970326     
+    3.519853052024700         4.048311834694142     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.519853052024700         4.305178091232335     
+    2.519853052024700         4.945692792923115     
+    2.519853052024700         4.853884945412734     
+    2.519853052024700         4.852757697459372     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    4.519853052024700         3.537838028651233     
+    4.519853052024700         2.816484787515425     
+    4.519853052024700         3.127005031371163     
+    4.519853052024700         3.131589379505025     
+ Integration of density matrix along imaginary axis has needed   15 points.
+  P0 =     3.519853052024700        4.8311834694142242E-002
+  P1 =     2.519853052024700        0.8527576974593725     
+  P2 =     4.519853052024700       -0.8684106204949753     
+    3.575787381232805         3.899110242800490     
+    3.575787381232805         3.901601022126528     
+ Integration of density matrix along imaginary axis has needed    3 points.
+ EFermi    3.575787381232805      TotCharge  -9.8398977873471516E-002
+  P0 =     3.519853052024700        4.8311834694142242E-002
+  P1 =     4.519853052024700       -0.8684106204949753     
+  P2 =     3.575787381232805       -9.8398977873471516E-002
+    3.537802424603797         3.913739508356488     
+    3.537802424603797         3.941200343676716     
+    3.537802424603797         4.033612331810329     
+    3.537802424603797         4.032786199437983     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.537802424603797      TotCharge   3.2786199437983221E-002
+ -----------------------------------------------
+ Fermi energy=  -3.53780  +/-  0.03798
+ 
+ Number of alpha electrons:    2.01639
+ Number of beta electrons:     2.01639
+ -----------------------------------------------
+ RMSDP=1.85D-03 MaxDP=3.36D-03 DE= 2.89D-03 OVMax= 1.22D-01
+
+ Cycle   5  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=1.68D-02 rel=2.80D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.76481535591344     Delta-E=        0.001540650778 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        5
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.45647632343204     
+ EMax=    17.45647632343204     
+ Muller method
+    3.537802424603797         3.919212363080940     
+    3.537802424603797         3.952509296671937     
+    3.537802424603797         4.042534901249905     
+    3.537802424603797         4.041934763042901     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.537802424603797         4.303443060976724     
+    2.537802424603797         4.939209337593688     
+    2.537802424603797         4.846151017263509     
+    2.537802424603797         4.844732891883435     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    4.537802424603797         3.536727300359090     
+    4.537802424603797         2.810416342762492     
+    4.537802424603797         3.118877344541361     
+    4.537802424603797         3.122301843304533     
+ Integration of density matrix along imaginary axis has needed   15 points.
+  P0 =     3.537802424603797        4.1934763042901224E-002
+  P1 =     2.537802424603797        0.8447328918834351     
+  P2 =     4.537802424603797       -0.8776981566954674     
+    3.586335183079977         3.900534948748790     
+    3.586335183079977         3.902034149953310     
+ Integration of density matrix along imaginary axis has needed    3 points.
+ EFermi    3.586335183079977      TotCharge  -9.7965850046690228E-002
+  P0 =     3.537802424603797        4.1934763042901224E-002
+  P1 =     4.537802424603797       -0.8776981566954674     
+  P2 =     3.586335183079977       -9.7965850046690228E-002
+    3.552001059109915         3.913747666333135     
+    3.552001059109915         3.937783830530177     
+    3.552001059109915         4.030377818495236     
+    3.552001059109915         4.029682462335538     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.552001059109915      TotCharge   2.9682462335538062E-002
+ -----------------------------------------------
+ Fermi energy=  -3.55200  +/-  0.03433
+ 
+ Number of alpha electrons:    2.01484
+ Number of beta electrons:     2.01484
+ -----------------------------------------------
+ RMSDP=1.78D-03 MaxDP=3.25D-03 DE= 1.54D-03 OVMax= 1.22D-01
+
+ Cycle   6  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=2.09D-02 rel=3.48D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.76339444271884     Delta-E=        0.001420913195 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        6
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.46980231980109     
+ EMax=    17.46980231980109     
+ Muller method
+    3.552001059109915         3.918330263684940     
+    3.552001059109915         3.947198424140950     
+    3.552001059109915         4.037750993396832     
+    3.552001059109915         4.037238774460405     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.552001059109915         4.302311941000440     
+    2.552001059109915         4.934593175348605     
+    2.552001059109915         4.840279575294430     
+    2.552001059109915         4.838596906906184     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    4.552001059109916         3.536116825835839     
+    4.552001059109916         2.806339820533495     
+    4.552001059109916         3.112938875564309     
+    4.552001059109916         3.115395932783838     
+ Integration of density matrix along imaginary axis has needed   15 points.
+  P0 =     3.552001059109915        3.7238774460405466E-002
+  P1 =     2.552001059109915        0.8385969069061838     
+  P2 =     4.552001059109916       -0.8846040672161624     
+    3.595091698935078         3.901758335095626     
+    3.595091698935078         3.902417863751738     
+ Integration of density matrix along imaginary axis has needed    3 points.
+ EFermi    3.595091698935078      TotCharge  -9.7582136248261619E-002
+  P0 =     3.552001059109915        3.7238774460405466E-002
+  P1 =     4.552001059109916       -0.8846040672161624     
+  P2 =     3.595091698935078       -9.7582136248261619E-002
+    3.563633350013922         3.913856326299047     
+    3.563633350013922         3.935140574724293     
+    3.563633350013922         4.027803778782554     
+    3.563633350013922         4.027216520730907     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.563633350013922      TotCharge   2.7216520730906524E-002
+ -----------------------------------------------
+ Fermi energy=  -3.56363  +/-  0.03146
+ 
+ Number of alpha electrons:    2.01361
+ Number of beta electrons:     2.01361
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=6.26D-02 MaxDP=1.14D-01 DE= 1.42D-03 OVMax= 1.22D-01
+
+ Cycle   7  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=3.32D-02 rel=5.54D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.73060946540165     Delta-E=        0.032784977317 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        7
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.47026213275664     
+ EMax=    17.47026213275664     
+ Muller method
+    3.563633350013922         3.912902132363440     
+    3.563633350013922         3.920768608271054     
+ Integration of density matrix along imaginary axis has needed    3 points.
+    2.563633350013922         4.296908716653098     
+    2.563633350013922         4.910770677962230     
+    2.563633350013922         4.813185257322961     
+    2.563633350013922         4.810598821635159     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    4.563633350013921         3.530807583587698     
+    4.563633350013921         2.784678772318225     
+    4.563633350013921         3.080229095289549     
+    4.563633350013921         3.078800766029678     
+ Integration of density matrix along imaginary axis has needed   15 points.
+  P0 =     3.563633350013922       -7.9231391728946221E-002
+  P1 =     2.563633350013922        0.8105988216351587     
+  P2 =     4.563633350013921       -0.9211992339703219     
+    3.472361700416791         3.948009901937055     
+    3.472361700416791         4.014557805520164     
+    3.472361700416791         4.090661589538037     
+    3.472361700416791         4.091076539958452     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.472361700416791      TotCharge   9.1076539958452329E-002
+  P0 =     3.563633350013922       -7.9231391728946221E-002
+  P1 =     2.563633350013922        0.8105988216351587     
+  P2 =     3.472361700416791        9.1076539958452329E-002
+    3.522359497440026         3.928776614599870     
+    3.522359497440026         3.963333373612140     
+    3.522359497440026         4.048195003612960     
+    3.522359497440026         4.048301450805734     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.522359497440026      TotCharge   4.8301450805733559E-002
+ -----------------------------------------------
+ Fermi energy=  -3.52236  +/-  0.05000
+ 
+ Number of alpha electrons:    2.02415
+ Number of beta electrons:     2.02415
+ -----------------------------------------------
+ RMSDP=2.00D-04 MaxDP=3.36D-04 DE= 3.28D-02 OVMax= 1.22D-01
+
+ Cycle   8  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=3.26D-02 rel=5.43D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.73078646578134     Delta-E=       -0.000177000380 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        8
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.45956973044785     
+ EMax=    17.45956973044785     
+ Muller method
+    3.522359497440026         3.925850233574261     
+    3.522359497440026         3.955200583315312     
+    3.522359497440026         4.041222040374816     
+    3.522359497440026         4.041306649485280     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.522359497440026         4.309966858832864     
+    2.522359497440026         4.943362710816098     
+    2.522359497440026         4.838181248961778     
+    2.522359497440026         4.834869807268146     
+    2.522359497440026         4.834530260785831     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.522359497440027         3.543340150940653     
+    4.522359497440027         2.826788580187311     
+    4.522359497440027         3.116726347357248     
+    4.522359497440027         3.115023179980299     
+    4.522359497440027         3.115506608467649     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     3.522359497440026        4.1306649485280289E-002
+  P1 =     2.522359497440026        0.8345302607858311     
+  P2 =     4.522359497440027       -0.8844933915323514     
+    3.570240950201323         3.907425446458107     
+    3.570240950201323         3.905759083366699     
+    3.570240950201323         4.000297939539493     
+    3.570240950201323         4.000083815598064     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.570240950201323      TotCharge   8.3815598063807784E-005
+  P0 =     3.522359497440026        4.1306649485280289E-002
+  P1 =     4.522359497440027       -0.8844933915323514     
+  P2 =     3.570240950201323        8.3815598063807784E-005
+    3.570337936103263         3.907388130714933     
+    3.570337936103263         3.905658575850065     
+    3.570337936103263         4.000214825374558     
+    3.570337936103263         4.000000092808527     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.570337936103263      TotCharge   9.2808527085708192E-008
+ -----------------------------------------------
+ Fermi energy=  -3.57034  +/-  0.00010
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=2.10D-04 MaxDP=3.36D-04 DE=-1.77D-04 OVMax= 1.22D-01
+
+ Cycle   9  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=3.41D-02 rel=5.69D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.73066122792959     Delta-E=        0.000125237852 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        9
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.46824950361380     
+ EMax=    17.46824950361380     
+ Muller method
+    3.570337936103263         3.910411339812974     
+    3.570337936103263         3.913201855489332     
+    3.570337936103263         4.006450443336449     
+    3.570337936103263         4.006297260651646     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.570337936103263         4.294473851674013     
+    2.570337936103263         4.903724523933865     
+    2.570337936103263         4.806904167169591     
+    2.570337936103263         4.804295764675218     
+    2.570337936103263         4.803972596681810     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.570337936103263         3.528321562059891     
+    4.570337936103263         2.776371244718795     
+    4.570337936103263         3.072313452275009     
+    4.570337936103263         3.070542709065180     
+    4.570337936103263         3.071044637374059     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     3.570337936103263        6.2972606516460417E-003
+  P1 =     2.570337936103263        0.8039725966818096     
+  P2 =     4.570337936103263       -0.9289553626259410     
+    3.577601517206911         3.907617802166124     
+    3.577601517206911         3.905678679863617     
+    3.577601517206911         4.000227899385517     
+    3.577601517206911         4.000028916593293     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.577601517206911      TotCharge   2.8916593293182302E-005
+  P0 =     3.570337936103263        6.2972606516460417E-003
+  P1 =     4.570337936103263       -0.9289553626259410     
+  P2 =     3.577601517206911        2.8916593293182302E-005
+    3.577635004330006         3.907604923430614     
+    3.577635004330006         3.905643976698869     
+    3.577635004330006         4.000199200089863     
+    3.577635004330006         4.000000005934468     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.577635004330006      TotCharge   5.9344680281014917E-009
+ -----------------------------------------------
+ Fermi energy=  -3.57764  +/-  0.00003
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=2.01D-04 MaxDP=3.25D-04 DE= 1.25D-04 OVMax= 1.22D-01
+
+ Cycle  10  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=3.55D-02 rel=5.92D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.73055282708923     Delta-E=        0.000108400840 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       10
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.47631382529432     
+ EMax=    17.47631382529432     
+ Muller method
+    3.577635004330006         3.910394537962926     
+    3.577635004330006         3.912635344461329     
+    3.577635004330006         4.005986910120031     
+    3.577635004330006         4.005843750132424     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.577635004330006         4.294302863715226     
+    2.577635004330006         4.903409527898086     
+    2.577635004330006         4.806357586279487     
+    2.577635004330006         4.803697142634766     
+    2.577635004330006         4.803374237123151     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.577635004330006         3.528458478263531     
+    4.577635004330006         2.775916398749215     
+    4.577635004330006         3.071830918370539     
+    4.577635004330006         3.069945952078503     
+    4.577635004330006         3.070447951679329     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     3.577635004330006        5.8437501324242191E-003
+  P1 =     2.577635004330006        0.8033742371231511     
+  P2 =     4.577635004330006       -0.9295520483206707     
+    3.584375761894127         3.907803122090767     
+    3.584375761894127         3.905653288407894     
+    3.584375761894127         4.000211728959052     
+    3.584375761894127         4.000025827239670     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.584375761894127      TotCharge   2.5827239670483948E-005
+  P0 =     3.577635004330006        5.8437501324242191E-003
+  P1 =     4.577635004330006       -0.9295520483206707     
+  P2 =     3.584375761894127        2.5827239670483948E-005
+    3.584405668754496         3.907791624906530     
+    3.584405668754496         3.905622295076594     
+    3.584405668754496         4.000186096510965     
+    3.584405668754496         4.000000005013162     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.584405668754496      TotCharge   5.0131623297033912E-009
+ -----------------------------------------------
+ Fermi energy=  -3.58441  +/-  0.00003
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=1.93D-04 MaxDP=3.15D-04 DE= 1.08D-04 OVMax= 1.22D-01
+
+ Cycle  11  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=3.68D-02 rel=6.14D-03 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.73045880520897     Delta-E=        0.000094021880 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       11
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.48383634312841     
+ EMax=    17.48383634312841     
+ Muller method
+    3.584405668754496         3.910376495577879     
+    3.584405668754496         3.912128066373390     
+    3.584405668754496         4.005579139028153     
+    3.584405668754496         4.005444272261021     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.584405668754496         4.294141100350616     
+    2.584405668754496         4.903131847493086     
+    2.584405668754496         4.805883624710862     
+    2.584405668754496         4.803178457298060     
+    2.584405668754496         4.802855795422154     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.584405668754496         3.528583738524875     
+    4.584405668754496         2.775492900879166     
+    4.584405668754496         3.071399394841246     
+    4.584405668754496         3.069417930143128     
+    4.584405668754496         3.069919978068387     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     3.584405668754496        5.4442722610206218E-003
+  P1 =     2.584405668754496        0.8028557954221540     
+  P2 =     4.584405668754496       -0.9300800219316132     
+    3.590685819009167         3.907963064471097     
+    3.590685819009167         3.905622695681494     
+    3.590685819009167         4.000198124811870     
+    3.590685819009167         4.000023233924668     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.590685819009167      TotCharge   2.3233924667742656E-005
+  P0 =     3.584405668754496        5.4442722610206218E-003
+  P1 =     4.584405668754496       -0.9300800219316132     
+  P2 =     3.590685819009167        2.3233924667742656E-005
+    3.590712720679752         3.907952726461716     
+    3.590712720679752         3.905594815968598     
+    3.590712720679752         4.000175066702447     
+    3.590712720679752         4.000000004267454     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.590712720679752      TotCharge   4.2674539457721039E-009
+ -----------------------------------------------
+ Fermi energy=  -3.59071  +/-  0.00003
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=5.92D-03 MaxDP=1.02D-02 DE= 9.40D-05 OVMax= 1.22D-01
+
+ Cycle  12  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.33D-02 rel=1.05D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.72945977215729     Delta-E=        0.000999033052 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       12
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.67587085648168     
+ EMax=    17.67587085648168     
+ Muller method
+    3.590712720679752         3.969684283797741     
+    3.590712720679752         4.065991086325325     
+    3.590712720679752         4.134610988857325     
+    3.590712720679752         4.135559360688072     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.590712720679752         4.349311450193342     
+    2.590712720679752         5.055318085642051     
+    2.590712720679752         4.924320789583049     
+    2.590712720679752         4.918006359424094     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    4.590712720679752         3.590618900594678     
+    4.590712720679752         2.959635395372881     
+    4.590712720679752         3.231206736488988     
+    4.590712720679752         3.227907577619705     
+ Integration of density matrix along imaginary axis has needed   15 points.
+  P0 =     3.590712720679752        0.1355593606880721     
+  P1 =     2.590712720679752        0.9180063594240941     
+  P2 =     4.590712720679752       -0.7720924223802954     
+    3.749266275317922         3.909315578471113     
+    3.749266275317922         3.902961614440732     
+ Integration of density matrix along imaginary axis has needed    3 points.
+ EFermi    3.749266275317922      TotCharge  -9.7038385559268026E-002
+  P0 =     3.590712720679752        0.1355593606880721     
+  P1 =     4.590712720679752       -0.7720924223802954     
+  P2 =     3.749266275317922       -9.7038385559268026E-002
+    3.680319185837186         3.935562918621830     
+    3.680319185837186         3.974284241705463     
+    3.680319185837186         4.058637703113183     
+    3.680319185837186         4.058963528515010     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.680319185837186      TotCharge   5.8963528515009855E-002
+ -----------------------------------------------
+ Fermi energy=  -3.68032  +/-  0.06895
+ 
+ Number of alpha electrons:    2.02948
+ Number of beta electrons:     2.02948
+ -----------------------------------------------
+ RMSDP=1.72D-04 MaxDP=2.90D-04 DE= 9.99D-04 OVMax= 1.22D-01
+
+ Cycle  13  Pass 0  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.04D-02 rel=1.01D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.13D-05              Tolerance=1.20D-02
+ Shell     2       signed error=1.13D-05              Tolerance=1.00D-01
+ E= -2.72986269854515     Delta-E=       -0.000402926388 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       13
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.65192814927011     
+ EMax=    17.65192814927011     
+ Muller method
+    3.680319185837186         3.928215741671339     
+    3.680319185837186         3.954810762647572     
+    3.680319185837186         4.042271271705490     
+    3.680319185837186         4.042474412815513     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.680319185837186         4.308662797862413     
+    2.680319185837186         4.947513953468381     
+    2.680319185837186         4.838455393418185     
+    2.680319185837186         4.834397186744086     
+    2.680319185837186         4.834060457661321     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.680319185837186         3.549299432744883     
+    4.680319185837186         2.826983304992564     
+    4.680319185837186         3.118123574311120     
+    4.680319185837186         3.115523710490023     
+    4.680319185837186         3.116001663676432     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     3.680319185837186        4.2474412815512785E-002
+  P1 =     2.680319185837186        0.8340604576613213     
+  P2 =     4.680319185837186       -0.8839983363235682     
+    3.729573375581377         3.909443657860282     
+    3.729573375581377         3.903817877698243     
+    3.729573375581377         4.000130007924955     
+    3.729573375581377         3.999998686487078     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.729573375581377      TotCharge  -1.3135129224295383E-006
+  P0 =     3.680319185837186        4.2474412815512785E-002
+  P1 =     4.680319185837186       -0.8839983363235682     
+  P2 =     3.729573375581377       -1.3135129224295383E-006
+    3.729571858294237         3.909444236070380     
+    3.729571858294237         3.903819454156387     
+    3.729571858294237         4.000131309456972     
+    3.729571858294237         3.999999998295109     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.729571858294237      TotCharge  -1.7048908951267094E-009
+ -----------------------------------------------
+ Fermi energy=  -3.72957  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=5.53D-06 MaxDP=8.13D-06 DE=-4.03D-04 OVMax= 1.22D-01
+
+ Initial convergence to 1.0D-05 achieved.  Increase integral accuracy.
+ Cycle  14  Pass 1  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.05D-02 rel=1.01D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.20D-06              Tolerance=1.20D-02
+ Shell     2       signed error=1.20D-06              Tolerance=1.00D-01
+ E= -2.72984500782548     Delta-E=        0.000017690720 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       14
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.65244045680239     
+ EMax=    17.65244045680239     
+ Muller method
+    3.729571858294237         3.909575678618324     
+    3.729571858294237         3.904176142428335     
+    3.729571858294237         4.000433196238988     
+    3.729571858294237         4.000303674279323     
+    3.729571858294237         4.000405386068560     
+    3.729571858294237         4.000378016841484     
+    3.729571858294237         4.000383937144552     
+ Integration of density matrix along imaginary axis has needed  127 points.
+    2.729571858294237         4.290145380471532     
+    2.729571858294237         4.899332986823202     
+    2.729571858294237         4.801016397022885     
+    2.729571858294237         4.797992956079145     
+    2.729571858294237         4.797675401308851     
+    2.729571858294237         4.797762484281185     
+    2.729571858294237         4.797743671331935     
+    2.729571858294237         4.797749076583029     
+ Integration of density matrix along imaginary axis has needed  255 points.
+    4.729571858294237         3.530971669585531     
+    4.729571858294237         2.766229727499443     
+    4.729571858294237         3.064789639719342     
+    4.729571858294237         3.062214625482095     
+    4.729571858294237         3.062714988227597     
+    4.729571858294237         3.062572324631787     
+    4.729571858294237         3.062603232286402     
+    4.729571858294237         3.062594616024636     
+ Integration of density matrix along imaginary axis has needed  255 points.
+  P0 =     3.729571858294237        3.8393714455153827E-004
+  P1 =     2.729571858294237        0.7977490765830293     
+  P2 =     4.729571858294237       -0.9374053839753635     
+    3.730014381889509         3.909407045304340     
+    3.730014381889509         3.903716366055802     
+    3.730014381889509         4.000053605380409     
+    3.730014381889509         3.999921086768819     
+    3.730014381889509         4.000022986075598     
+    3.730014381889509         3.999995565626991     
+    3.730014381889509         4.000001497035073     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.730014381889509      TotCharge   1.4970350727949722E-006
+  P0 =     3.729571858294237        3.8393714455153827E-004
+  P1 =     4.729571858294237       -0.9374053839753635     
+  P2 =     3.730014381889509        1.4970350727949722E-006
+    3.730016114051655         3.909406385226756     
+    3.730016114051655         3.903714566302485     
+    3.730016114051655         4.000052119519642     
+    3.730016114051655         3.999919589178368     
+    3.730016114051655         4.000021489219146     
+    3.730016114051655         3.999994068570043     
+    3.730016114051655         4.000000000021592     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.730016114051655      TotCharge   2.1591617382910044E-011
+ -----------------------------------------------
+ Fermi energy=  -3.73002  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=5.53D-06 MaxDP=8.13D-06 DE= 1.77D-05 OVMax= 1.22D-01
+
+ Cycle  15  Pass 1  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.05D-02 rel=1.01D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.20D-06              Tolerance=1.20D-02
+ Shell     2       signed error=1.20D-06              Tolerance=1.00D-01
+ E= -2.72983416542322     Delta-E=        0.000010842402 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       15
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.65301201020538     
+ EMax=    17.65301201020538     
+ Muller method
+    3.730016114051655         3.909564130082960     
+    3.730016114051655         3.904141410584060     
+    3.730016114051655         4.000413370760684     
+    3.730016114051655         4.000283004563649     
+    3.730016114051655         4.000384729059211     
+    3.730016114051655         4.000357355965898     
+    3.730016114051655         4.000363277121082     
+ Integration of density matrix along imaginary axis has needed  127 points.
+    2.730016114051655         4.290123136000094     
+    2.730016114051655         4.899308374536067     
+    2.730016114051655         4.801006235859188     
+    2.730016114051655         4.797985844362742     
+    2.730016114051655         4.797668311323031     
+    2.730016114051655         4.797755387563871     
+    2.730016114051655         4.797736576057657     
+    2.730016114051655         4.797741980877997     
+ Integration of density matrix along imaginary axis has needed  255 points.
+    4.730016114051654         3.530970979655885     
+    4.730016114051654         2.766174674775231     
+    4.730016114051654         3.064749816146278     
+    4.730016114051654         3.062179773505170     
+    4.730016114051654         3.062680130485560     
+    4.730016114051654         3.062537466264363     
+    4.730016114051654         3.062568374068525     
+    4.730016114051654         3.062559757874255     
+ Integration of density matrix along imaginary axis has needed  255 points.
+  P0 =     3.730016114051655        3.6327712108175092E-004
+  P1 =     2.730016114051655        0.7977419808779969     
+  P2 =     4.730016114051654       -0.9374402421257448     
+    3.730434819138707         3.909404577888282     
+    3.730434819138707         3.903706374015332     
+    3.730434819138707         4.000054210886921     
+    3.730434819138707         3.999921009664409     
+    3.730434819138707         4.000022911579653     
+    3.730434819138707         3.999995490023180     
+    3.730434819138707         4.000001421685350     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.730434819138707      TotCharge   1.4216853498894011E-006
+  P0 =     3.730016114051655        3.6327712108175092E-004
+  P1 =     4.730016114051654       -0.9374402421257448     
+  P2 =     3.730434819138707        1.4216853498894011E-006
+    3.730436464120427         3.909403951050527     
+    3.730436464120427         3.903704664818572     
+    3.730436464120427         4.000052799811071     
+    3.730436464120427         3.999919587450541     
+    3.730436464120427         4.000021490062821     
+    3.730436464120427         3.999994068315949     
+    3.730436464120427         4.000000000019398     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.730436464120427      TotCharge   1.9397816686250735E-011
+ -----------------------------------------------
+ Fermi energy=  -3.73044  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=5.60D-06 MaxDP=8.80D-06 DE= 1.08D-05 OVMax= 1.22D-01
+
+ Cycle  16  Pass 1  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.06D-02 rel=1.01D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.20D-06              Tolerance=1.20D-02
+ Shell     2       signed error=1.20D-06              Tolerance=1.00D-01
+ E= -2.72982311718492     Delta-E=        0.000011048238 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       16
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.65357386347156     
+ EMax=    17.65357386347156     
+ Muller method
+    3.730436464120427         3.909561806935776     
+    3.730436464120427         3.904130281650998     
+    3.730436464120427         4.000412471194981     
+    3.730436464120427         4.000281503673119     
+    3.730436464120427         4.000383230618791     
+    3.730436464120427         4.000355856520558     
+    3.730436464120427         4.000361777905475     
+ Integration of density matrix along imaginary axis has needed  127 points.
+    2.730436464120427         4.290110240434362     
+    2.730436464120427         4.899306431401740     
+    2.730436464120427         4.801012024182687     
+    2.730436464120427         4.797993774226729     
+    2.730436464120427         4.797676253708443     
+    2.730436464120427         4.797763326046614     
+    2.730436464120427         4.797744515374349     
+    2.730436464120427         4.797749919938520     
+ Integration of density matrix along imaginary axis has needed  255 points.
+    4.730436464120427         3.530979180285534     
+    4.730436464120427         2.766149580238538     
+    4.730436464120427         3.064736061943705     
+    4.730436464120427         3.062170270588375     
+    4.730436464120427         3.062670610925331     
+    4.730436464120427         3.062527948899110     
+    4.730436464120427         3.062558856236933     
+    4.730436464120427         3.062550240259308     
+ Integration of density matrix along imaginary axis has needed  255 points.
+  P0 =     3.730436464120427        3.6177790547498034E-004
+  P1 =     2.730436464120427        0.7977499199385196     
+  P2 =     4.730436464120427       -0.9374497597406921     
+    3.730853437108897         3.909402919224761     
+    3.730853437108897         3.903697038534511     
+    3.730853437108897         4.000054797157228     
+    3.730853437108897         3.999921006571709     
+    3.730853437108897         4.000022910198301     
+    3.730853437108897         3.999995487838774     
+    3.730853437108897         4.000001419686908     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.730853437108897      TotCharge   1.4196869075888685E-006
+  P0 =     3.730436464120427        3.6177790547498034E-004
+  P1 =     4.730436464120427       -0.9374497597406921     
+  P2 =     3.730853437108897        1.4196869075888685E-006
+    3.730855079779866         3.909402293285063     
+    3.730855079779866         3.903695331714473     
+    3.730855079779866         4.000053388063930     
+    3.730855079779866         3.999919586356955     
+    3.730855079779866         4.000021490679584     
+    3.730855079779866         3.999994068129932     
+    3.730855079779866         4.000000000019286     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.730855079779866      TotCharge   1.9285906205368519E-011
+ -----------------------------------------------
+ Fermi energy=  -3.73086  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ Pulay kick .............
+ RMSDP=1.87D-04 MaxDP=2.77D-04 DE= 1.10D-05 OVMax= 1.22D-01
+
+ Cycle  17  Pass 1  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.29D-02 rel=1.05D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.20D-06              Tolerance=1.20D-02
+ Shell     2       signed error=1.20D-06              Tolerance=1.00D-01
+ E= -2.72937639161573     Delta-E=        0.000446725569 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       17
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.67268271676486     
+ EMax=    17.67268271676486     
+ Muller method
+    3.730855079779866         3.915272304469180     
+    3.730855079779866         3.919255999925681     
+    3.730855079779866         4.013108416298072     
+    3.730855079779866         4.013072411228309     
+ Integration of density matrix along imaginary axis has needed   15 points.
+    2.730855079779866         4.295422855798255     
+    2.730855079779866         4.914025856642137     
+    2.730855079779866         4.812401082371035     
+    2.730855079779866         4.809072619692072     
+    2.730855079779866         4.808749647154624     
+ Integration of density matrix along imaginary axis has needed   31 points.
+    4.730855079779866         3.536951448693679     
+    4.730855079779866         2.784144648696430     
+    4.730855079779866         3.080900094369360     
+    4.730855079779866         3.078381941705443     
+    4.730855079779866         3.078874325932726     
+ Integration of density matrix along imaginary axis has needed   31 points.
+  P0 =     3.730855079779866        1.3072411228309377E-002
+  P1 =     2.730855079779866        0.8087496471546238     
+  P2 =     4.730855079779866       -0.9211256740672740     
+    3.745950536083750         3.909525420723863     
+    3.745950536083750         3.903582805398064     
+    3.745950536083750         4.000169213541279     
+    3.745950536083750         4.000030672684448     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.745950536083750      TotCharge   3.0672684448340704E-005
+  P0 =     3.730855079779866        1.3072411228309377E-002
+  P1 =     4.730855079779866       -0.9211256740672740                         NaN                       NaN
+40704E-005
+    3.745985994586220         3.909511922087110     
+    3.745985994586220         3.903545949009852     
+    3.745985994586220         4.000138795573665     
+    3.745985994586220         4.000000013937743     
+ Integration of density matrix along imaginary axis has needed   15 points.
+ EFermi    3.745985994586220      TotCharge   1.3937743403857894E-008
+ -----------------------------------------------
+ Fermi energy=  -3.74599  +/-  0.00004
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=1.10D-06 MaxDP=2.02D-06 DE= 4.47D-04 OVMax= 1.22D-01
+
+ Cycle  18  Pass 1  IDiag  1:
+ Spurious integrated density or basis function:
+ NE=    6 NElCor=    0 El error=6.29D-02 rel=1.05D-02 Tolerance=1.00D-03
+ Shell     2     absolute error=1.20D-06              Tolerance=1.20D-02
+ Shell     2       signed error=1.20D-06              Tolerance=1.00D-01
+ E= -2.72937840704232     Delta-E=       -0.000002015427 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       18
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.67266725186720     
+ EMax=    17.67266725186720     
+ Muller method
+    3.745985994586220         3.909511992882349     
+    3.745985994586220         3.903548702106023     
+    3.745985994586220         4.000141529462692     
+    3.745985994586220         4.000002673112560     
+    3.745985994586220         4.000104450919530     
+    3.745985994586220         4.000077060984145     
+    3.745985994586220         4.000082985885026     
+ Integration of density matrix along imaginary axis has needed  127 points.
+    2.745985994586220         4.289701358211605     
+    2.745985994586220         4.899128398525534     
+    2.745985994586220         4.800870308902162     
+    2.745985994586220         4.797858072973593     
+    2.745985994586220         4.797541032431048     
+    2.745985994586220         4.797627979849967     
+    2.745985994586220         4.797609196234822     
+    2.745985994586220         4.797614592928086     
+ Integration of density matrix along imaginary axis has needed  255 points.
+    4.745985994586221         3.531286480350194     
+    4.745985994586221         2.765300461966234     
+    4.745985994586221         3.064209236128154     
+    4.745985994586221         3.061660593947496     
+    4.745985994586221         3.062160553309733     
+    4.745985994586221         3.062017982866690     
+    4.745985994586221         3.062048870441145     
+    4.745985994586221         3.062040261402387     
+ Integration of density matrix along imaginary axis has needed  255 points.
+  P0 =     3.745985994586220        8.2985885025976813E-005
+  P1 =     2.745985994586220        0.7976145929280865     
+  P2 =     4.745985994586221       -0.9379597385976126     
+    3.746081623152562         3.909475588190876     
+    3.746081623152562         3.903449302568679     
+    3.746081623152562         4.000059494292474     
+    3.746081623152562         3.999919988591577     
+    3.746081623152562         4.000021806879343     
+    3.746081623152562         3.999994405886484     
+    3.746081623152562         4.000000333184654     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.746081623152562      TotCharge   3.3318465408882503E-007
+  P0 =     3.745985994586220        8.2985885025976813E-005
+  P1 =     4.745985994586221       -0.9379597385976126     
+  P2 =     3.746081623152562        3.3318465408882503E-007
+    3.746082008641598         3.909475441439687     
+    3.746082008641598         3.903448901875620     
+    3.746082008641598         4.000059163598188     
+    3.746082008641598         3.999919655279689     
+    3.746082008641598         4.000021473730639     
+    3.746082008641598         3.999994072693205     
+    3.746082008641598         4.000000000001037     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.746082008641598      TotCharge   1.0373923942097463E-012
+ -----------------------------------------------
+ Fermi energy=  -3.74608  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ RMSDP=2.71D-07 MaxDP=6.67D-07 DE=-2.02D-06 OVMax= 1.22D-01
+
+ Density matrix is not changing but DIIS error= 5.20D-04 CofLast= 4.97D-01.
+ SCF Done:  E(RS-VWN) =  -2.72937840704     A.U. after   18 cycles
+            NFock= 18  Conv=0.27D-06     -V/T= 1.6872
+ KE= 3.971840420255D+00 PE=-1.157151731586D+01 EE= 2.568377631196D+00
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                     1000
+ -------------------------------------------------------------------------
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -17.67266725186720     
+ EMax=    17.67266725186720     
+ Muller method
+    3.746082008641598         3.909475441439687     
+    3.746082008641598         3.903448901875620     
+    3.746082008641598         4.000059163598188     
+    3.746082008641598         3.999919655279689     
+    3.746082008641598         4.000021473730639     
+    3.746082008641598         3.999994072693205     
+    3.746082008641598         4.000000000001037     
+ Integration of density matrix along imaginary axis has needed  127 points.
+    2.746082008641598         4.289665044734584     
+    2.746082008641598         4.899033879345909     
+    2.746082008641598         4.800797239672363     
+    2.746082008641598         4.797786999163588     
+    2.746082008641598         4.797469996309679     
+    2.746082008641598         4.797556932710317     
+    2.746082008641598         4.797538151476801     
+    2.746082008641598         4.797543547500117     
+ Integration of density matrix along imaginary axis has needed  255 points.
+    4.746082008641598         3.531250542171016     
+    4.746082008641598         2.765180725093745     
+    4.746082008641598         3.064102751458594     
+    4.746082008641598         3.061553794636266     
+    4.746082008641598         3.062053804005551     
+    4.746082008641598         3.061911222364727     
+    4.746082008641598         3.061942112379223     
+    4.746082008641598         3.061933502712352     
+ Integration of density matrix along imaginary axis has needed  255 points.
+  P0 =     3.746082008641598        1.0373923942097463E-012
+  P1 =     2.746082008641598        0.7975435475001174     
+  P2 =     4.746082008641598       -0.9380664972876485     
+    3.746082008642794         3.909475441439231     
+    3.746082008642794         3.903448901874378     
+    3.746082008642794         4.000059163597162     
+    3.746082008642794         3.999919655278656     
+    3.746082008642794         4.000021473729605     
+    3.746082008642794         3.999994072692172     
+    3.746082008642794         4.000000000000005     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.746082008642794      TotCharge   5.3290705182007514E-015
+  P0 =     3.746082008641598        1.0373923942097463E-012
+  P1 =     4.746082008641598       -0.9380664972876485     
+  P2 =     3.746082008642794        5.3290705182007514E-015
+    3.746082008642800         3.909475441439229     
+    3.746082008642800         3.903448901874371     
+    3.746082008642800         4.000059163597157     
+    3.746082008642800         3.999919655278650     
+    3.746082008642800         4.000021473729600     
+    3.746082008642800         3.999994072692167     
+    3.746082008642800         4.000000000000001     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.746082008642800      TotCharge   8.8817841970012523E-016
+ -----------------------------------------------
+ Fermi energy=  -3.74608  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ 
+ ****************************************** 
+ *                                        * 
+ *        ANT.G09 final analysis          * 
+ *                                        * 
+ ****************************************** 
+ 
+ -------------------------------------
+ ---  Self-consistent Hamiltonian  ---
+ -------------------------------------
+ ---------
+ Left lead
+ ---------
+ Atom:   1   -3.987021
+ Atom:   2   -3.868557
+ Atom:   3   -3.832272
+ ----------
+ Right lead
+ ----------
+ Atom:   4   -3.832272
+ Atom:   5   -3.868557
+ Atom:   6   -3.987021
+ 
+ --------------------------------
+ --- Calculating Transmission ---
+ ---  (and DOS if required)   ---
+ --------------------------------
+ 
+ Muller method
+    3.746082008642800         3.909475441439229     
+    3.746082008642800         3.903448901874371     
+    3.746082008642800         4.000059163597157     
+    3.746082008642800         3.999919655278650     
+    3.746082008642800         4.000021473729600     
+    3.746082008642800         3.999994072692167     
+    3.746082008642800         4.000000000000001     
+ Integration of density matrix along imaginary axis has needed  127 points.
+    2.746082008642800         4.289665044734130     
+    2.746082008642800         4.899033879344725     
+    2.746082008642800         4.800797239671448     
+    2.746082008642800         4.797786999162698     
+    2.746082008642800         4.797469996308790     
+    2.746082008642800         4.797556932709427     
+    2.746082008642800         4.797538151475912     
+    2.746082008642800         4.797543547499228     
+ Integration of density matrix along imaginary axis has needed  255 points.
+    4.746082008642800         3.531250542170566     
+    4.746082008642800         2.765180725092246     
+    4.746082008642800         3.064102751457261     
+    4.746082008642800         3.061553794634929     
+    4.746082008642800         3.062053804004214     
+    4.746082008642800         3.061911222363390     
+    4.746082008642800         3.061942112377887     
+    4.746082008642800         3.061933502711015     
+ Integration of density matrix along imaginary axis has needed  255 points.
+  P0 =     3.746082008642800        8.8817841970012523E-016
+  P1 =     2.746082008642800        0.7975435474992283     
+  P2 =     4.746082008642800       -0.9380664972889852     
+    3.746082008642801         3.909475441439229     
+    3.746082008642801         3.903448901874370     
+    3.746082008642801         4.000059163597156     
+    3.746082008642801         3.999919655278649     
+    3.746082008642801         4.000021473729599     
+    3.746082008642801         3.999994072692165     
+    3.746082008642801         4.000000000000000     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.746082008642801      TotCharge    0.000000000000000     
+  P0 =     3.746082008642800        8.8817841970012523E-016
+  P1 =     4.746082008642800       -0.9380664972889852     
+  P2 =     3.746082008642801         0.000000000000000     
+    3.746082008642801         3.909475441439229     
+    3.746082008642801         3.903448901874370     
+    3.746082008642801         4.000059163597156     
+    3.746082008642801         3.999919655278649     
+    3.746082008642801         4.000021473729599     
+    3.746082008642801         3.999994072692165     
+    3.746082008642801         4.000000000000000     
+ Integration of density matrix along imaginary axis has needed  127 points.
+ EFermi    3.746082008642801      TotCharge    0.000000000000000     
+ -----------------------------------------------
+ Fermi energy=  -3.74608  +/-  0.00000
+ 
+ Number of alpha electrons:    2.00000
+ Number of beta electrons:     2.00000
+ -----------------------------------------------
+ -------------------------------------
+ ---  Mulliken population analysis ---
+ -------------------------------------
+ ----------------------
+ Charges in electrode 1
+ ----------------------
+ Atom:   1  El.dens:  0.9685
+ Atom:   2  El.dens:  1.0000
+ Atom:   3  El.dens:  1.0000
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 1:    2.968530006913588     
+ ---------------------------------------------------------
+ ----------------------------------------------------
+ Total num. of electrons in molecule:    0.000000000000000     
+ ----------------------------------------------------
+ ----------------------
+ Charges in electrode 2
+ ----------------------
+ Atom:   4  El.dens:  1.0000
+ Atom:   5  El.dens:  1.0000
+ Atom:   6  El.dens:  0.9685
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 2:    2.968530006913591     
+ ---------------------------------------------------------
+  ----------------- End of ANT.G09 ------------------- 
+ Leave Link  502 at Wed Jun 29 11:59:12 2022, MaxMem=   134217728 cpu:         3.9
+ (Enter /home/palacios/gaussian/g09/l601.exe)
+ Copying SCF densities to generalized density rwf, IOpCl= 0 IROHF=0.
+
+ **********************************************************************
+
+            Population analysis using the SCF density.
+
+ **********************************************************************
+
+ Orbital symmetries:
+       Occupied  (SGG) (SGU) (SGG)
+       Virtual   (SGU) (SGG) (SGU)
+ The electronic state is 1-SGG.
+ Alpha  occ. eigenvalues --   -0.20959  -0.18627  -0.14975
+ Alpha virt. eigenvalues --   -0.10344  -0.05379  -0.01498
+     Molecular Orbital Coefficients:
+                           1         2         3         4         5
+                       (SGG)--O  (SGU)--O  (SGG)--O  (SGU)--V  (SGG)--V
+     Eigenvalues --    -0.20959  -0.18627  -0.14975  -0.10344  -0.05379
+   1 1   H  1S          0.20597   0.38737   0.50972   0.53687  -0.45282
+   2 2   H  1S          0.37656   0.48676   0.22986  -0.23401   0.56513
+   3 3   H  1S          0.47598   0.21993  -0.40393  -0.43159  -0.25101
+   4 4   H  1S          0.47598  -0.21993  -0.40393   0.43159  -0.25101
+   5 5   H  1S          0.37656  -0.48676   0.22986   0.23401   0.56513
+   6 6   H  1S          0.20597  -0.38737   0.50972  -0.53687  -0.45282
+                           6
+                       (SGU)--V
+     Eigenvalues --    -0.01498
+   1 1   H  1S          0.26271
+   2 2   H  1S         -0.47294
+   3 3   H  1S          0.58495
+   4 4   H  1S         -0.58495
+   5 5   H  1S          0.47294
+   6 6   H  1S         -0.26271
+     Density Matrix:
+                           1         2         3         4         5
+   1 1   H  1S          0.90431
+   2 2   H  1S          0.53934   0.87193
+   3 3   H  1S         -0.05496   0.53594   0.87216
+   4 4   H  1S         -0.20983  -0.03857   0.53748   0.87216
+   5 5   H  1S          0.01527  -0.20872  -0.03857   0.53594   0.87193
+   6 6   H  1S          0.12670   0.01527  -0.20983  -0.05496   0.53934
+                           6
+   6 6   H  1S          0.90431
+    Full Mulliken population analysis:
+                           1         2         3         4         5
+   1 1   H  1S          0.90431
+   2 2   H  1S          0.06430   0.87193
+   3 3   H  1S         -0.00010   0.06389   0.87216
+   4 4   H  1S         -0.00000  -0.00007   0.06408   0.87216
+   5 5   H  1S          0.00000  -0.00000  -0.00007   0.06389   0.87193
+   6 6   H  1S          0.00000   0.00000  -0.00000  -0.00010   0.06430
+                           6
+   6 6   H  1S          0.90431
+     Gross orbital populations:
+                           1
+   1 1   H  1S          0.96851
+   2 2   H  1S          1.00005
+   3 3   H  1S          0.99996
+   4 4   H  1S          0.99996
+   5 5   H  1S          1.00005
+   6 6   H  1S          0.96851
+          Condensed to atoms (all electrons):
+               1          2          3          4          5          6
+     1  H    0.904310   0.064298  -0.000097  -0.000001   0.000000   0.000000
+     2  H    0.064298   0.871931   0.063892  -0.000068  -0.000001   0.000000
+     3  H   -0.000097   0.063892   0.872159   0.064076  -0.000068  -0.000001
+     4  H   -0.000001  -0.000068   0.064076   0.872159   0.063892  -0.000097
+     5  H    0.000000  -0.000001  -0.000068   0.063892   0.871931   0.064298
+     6  H    0.000000   0.000000  -0.000001  -0.000097   0.064298   0.904310
+ Mulliken charges:
+               1
+     1  H    0.031490
+     2  H   -0.000053
+     3  H    0.000039
+     4  H    0.000039
+     5  H   -0.000053
+     6  H    0.031490
+ Sum of Mulliken charges =   0.06295
+ Mulliken charges with hydrogens summed into heavy atoms:
+               1
+ Electronic spatial extent (au):  <R**2>=            254.7698
+ Charge=              0.0630 electrons
+ Dipole moment (field-independent basis, Debye):
+    X=              0.0000    Y=              0.0000    Z=             -0.0000  Tot=              0.0000
+ Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=             -5.5144   YY=             -5.5144   ZZ=              4.5791
+   XY=              0.0000   XZ=             -0.0000   YZ=              0.0000
+ Traceless Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=             -3.3645   YY=             -3.3645   ZZ=              6.7290
+   XY=              0.0000   XZ=             -0.0000   YZ=              0.0000
+ Octapole moment (field-independent basis, Debye-Ang**2):
+  XXX=             -0.0000  YYY=              0.0000  ZZZ=              0.0000  XYY=             -0.0000
+  XXY=              0.0000  XXZ=              0.0000  XZZ=              0.0000  YZZ=              0.0000
+  YYZ=              0.0000  XYZ=              0.0000
+ Hexadecapole moment (field-independent basis, Debye-Ang**3):
+ XXXX=             -4.6414 YYYY=             -4.6414 ZZZZ=            -62.2947 XXXY=              0.0000
+ XXXZ=              0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=             -0.0000
+ ZZZY=              0.0000 XXYY=             -1.5471 XXZZ=            -63.4794 YYZZ=            -63.4794
+ XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=              0.0000
+ N-N= 2.301920857366D+00 E-N=-1.157151746570D+01  KE= 3.971840420255D+00
+ Symmetry AG   KE= 2.322956955754D+00
+ Symmetry B1G  KE= 0.000000000000D+00
+ Symmetry B2G  KE= 0.000000000000D+00
+ Symmetry B3G  KE= 0.000000000000D+00
+ Symmetry AU   KE= 0.000000000000D+00
+ Symmetry B1U  KE= 1.648883464501D+00
+ Symmetry B2U  KE= 0.000000000000D+00
+ Symmetry B3U  KE= 0.000000000000D+00
+ Orbital energies and kinetic energies (alpha):
+                                 1                 2
+   1         (SGG)--O         -0.209593          0.608122
+   2         (SGU)--O         -0.186272          0.650911
+   3         (SGG)--O         -0.149754          0.720404
+   4         (SGU)--V         -0.103443          0.810844
+   5         (SGG)--V         -0.053794          0.907861
+   6         (SGU)--V         -0.014980          0.986112
+ Total kinetic energy from orbitals= 3.958874890943D+00
+ No NMR shielding tensors so no spin-rotation constants.
+ Leave Link  601 at Wed Jun 29 11:59:12 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l9999.exe)
+ 1\1\GINC-JJPASUS\SP\RSVWN\STO-3G\H6\PALACIOS\29-Jun-2022\0\\#p lsda/st
+ o-3g pop=reg Scf=(conver=6,maxcycle=100,dsymm)\\H6-chain\\0,1\H,0,0.,0
+ .,0.\H,0,0.,0.,2.\H,0,0.,0.,4.\H,0,0.,0.,6.\H,0,0.,0.,8.\H,0,0.,0.,10.
+ \\Version=ES64L-G09RevD.01\State=1-SGG\HF=-2.7293784\RMSD=2.708e-07\Di
+ pole=0.,0.,0.\Quadrupole=-2.501433,-2.501433,5.0028661,0.,0.,0.\PG=D*H
+  [C*(H1H1H1.H1H1H1)]\\@
+
+
+ FAULTILY FAULTLESS, ICILY REGULAR, SPLENDIDLY NULL...
+           MAUDE BY TENNYSON
+ Job cpu time:       0 days  0 hours  0 minutes  4.4 seconds.
+ File lengths (MBytes):  RWF=      5 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 09 at Wed Jun 29 11:59:12 2022.
