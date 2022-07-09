@@ -22,8 +22,8 @@ I think the issue of the integration of the advanced density matrix is solved. S
 Just added test version for the manual opening of the gap of molecules
 ********************************************************************************
 ********************************************************************************
-                              Release 2.7.0  (coming soon)                     
+                              Release 2.7.0                  
 Main new Features:
 
-- Implementation of 1D electrodes (preliminary tests are satisfactory)
+- Implementation of 1D electrodes (at least preliminary tests are satisfactory)
 ********************************************************************************
