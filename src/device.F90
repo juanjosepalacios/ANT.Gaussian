@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.6.0  *********************!
+!*********************  ANT.G-2.7.0  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -43,9 +43,10 @@
 
   public :: DevNAOrbs, DevNSpin, DevShift, DevFockMat, DevOverlapMat, DevDensMat, SetDevDensMat
   public :: LeadsOn, SwitchOnLeads, SecantOn, SwitchOnSecant, SwitchOffSecant
-  public :: EvaluationOn, SwitchOnEvaluation, SwitchOn1DElectrodes, SwitchOff1DElectrodes
-  public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock
+  public :: EvaluationOn, SwitchOnEvaluation
+  public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock,OnSigma
   public :: InitDevice, ReadDensMat, ReadFockMat, CleanUpDevice, InitElectrodes, Transport
+  public :: ChargeCntr,Electrodes
 
 
   !*****************************
@@ -87,14 +88,11 @@
   ! *** internal spin variable 1=up,2=down ***
   integer  :: ispin
   
-  ! *** Lowest and highest eigen value of Fock matrix ***
-  !real*8 :: LEV,HEV
- 
   ! *** lower and upper band edge of electrode ***
-  real*8 :: EMinEc, EMaxEc
+  real*8 :: EMinLead, EMaxLead
 
   ! *** lower and upper energy bound ***
-  real*8 :: EMin, EMax
+  real*8 :: EMin = 0.0, EMax = 0.0
 
   ! *** Density of states projected on atoms at the Fermi energy
   real*8, dimension(:,:), allocatable :: AtomDOSEF
@@ -106,7 +104,8 @@
   logical :: UDTrans     = .false.
   logical :: ChargeCntr  = .false.
   logical :: SpinLock    = .true.
-  logical :: Electrodes = .false.  
+  logical :: Electrodes = .false.
+  logical :: InitSigma = .true.
 
   ! Whether device Hamiltonain has been orthogonalized
   logical :: HDOrtho = .false.
@@ -200,6 +199,18 @@
     Secant = .false.
   end subroutine SwitchOffSecant
 
+  logical function OnSigma()
+    implicit none
+    OnSigma = InitSigma
+  end function OnSigma
+
+  ! ***
+  subroutine SwitchOffSigma()
+    implicit none
+    InitSigma = .false.
+  end subroutine SwitchOffSigma
+
+
   ! ***
   logical function EvaluationOn()
     implicit none
@@ -235,18 +246,6 @@
     SpinLock = .true.
   end subroutine SwitchOnSpinLock
   
-  ! ***
-  subroutine SwitchOn1DElectrodes()
-    implicit none
-    Electrodes = .true.
-  end subroutine SwitchOn1DElectrodes 
-  
-  ! ***
-  subroutine SwitchOff1DElectrodes()
-    implicit none
-    Electrodes = .false.
-  end subroutine SwitchOff1DElectrodes   
-  
 
   !***********************************************
   !* Initialize device for transport calculation *
@@ -254,7 +253,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, ANT1DInp, NEmbed
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, NEmbed,NPC
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -334,20 +333,12 @@
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
-    
-    IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
-
-    EMin = 0.0d0
-    EMax = 0.0d0
-
-    !LEV = 0.0d0
-    !HEV = 0.0d0
 
     ! Compute number of electrons in central (reduced) device region
 
     NEmbed1=0
     NEmbed2=0
-    IF (Overlap >= 0.0 .and. (ElType(1) == "BETHE" .and. Eltype(2) == "BETHE")) THEN
+    IF (Overlap >= 0.0 .and. (ElType(1) == "BETHE" .and. ElType(2) == "BETHE")) THEN
        NEmbed1=NEmbedBL(1)
        NEmbed2=NEmbedBL(2)
     ELSE IF  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) THEN 
@@ -356,7 +347,7 @@
     END IF
 
     print *, "---------------------------------------------------"
-    print *, " Details on device and contacting atoms -----------"
+    print *, "----- Details on device and contacting atoms ------"
     print *, "---------------------------------------------------"
 
     print *, "NEmbed(1) =", NEmbed1
@@ -690,7 +681,7 @@
   !*************************
   subroutine InitElectrodes
     use BetheLattice, only: InitBetheLattice, LeadBL, BL_EMin, BL_EMax
-    use OneDLead, only: Init1DLead, Lead1D, L1D_EMin, L1D_EMax
+    use OneDLead, only: Init1DLead, Lead1D, L1D_EMin, L1D_EMax, L1D_H0, L1D_V1
     use parameters, only: ElType
     implicit none 
     integer :: LeadNo
@@ -703,9 +694,11 @@
           EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
           EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
        case( "1DLEAD" )
-          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs)
-          EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
-          EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
+          call Init1DLead ( LeadNo,NSpin,HD,SD,NAOrbs )
+         !EMin(LeadNo) = L1D_EMin( Lead1D(LeadNo) )
+         !EMax(LeadNo) = L1D_EMax( Lead1D(LeadNo) )
+          EMin(LeadNo) = Lead1D(LeadNo)%EMin
+          EMax(LeadNo) = Lead1D(LeadNo)%EMax
        case( "GHOST" )
           EMin(LeadNo) = -100.0                       
           EMax(LeadNo) =  100.0                       
@@ -715,8 +708,8 @@
        end select
     end do
     
-    EMinEc = min( Emin(1),EMin(2) )
-    EMaxEc = max( EMax(1),EMax(2) )
+    EMinLead = min( EMin(1),EMin(2) )
+    EMaxLead = max( EMax(1),EMax(2) )
   end subroutine InitElectrodes
   
   !***************************
@@ -730,6 +723,7 @@
     use correlation
     use orthogonalization
     use molmod, only: Mol_Sub
+    use OneDLead, only: PrintMatrices, PrintDOS, Lead1D, CleanUp1DLead
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms
 #endif
@@ -739,40 +733,46 @@
     implicit none
 
     logical,intent(out) :: ADDP
+    logical :: Bounds
     real*8, dimension(NSpin,NAOrbs,NAOrbs),intent(in) :: F
 
     real*8, dimension(NAOrbs) :: evals
     real*8, dimension(:,:),allocatable :: SPM
 
-    real*8 :: diff !!,TrP,QD
+    real*8 :: diff, EminDev, EMaxDev
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F
     
-    !Initializing 1D electrodes everytime we pass a SCF cycle 
-   !IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr) call InitElectrodes
-    IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. Electrodes == .false. ) THEN 
-            call InitElectrodes
-            call SwitchOn1DElectrodes
-    end if 
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
-    if( NSpin == 1 ) EMax = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
-    if( NSpin == 2 ) EMax = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1)))
-    EMin = -EMax
-       print *, "-----------------------"
-       print *, "Estimated Energy Bounds"
-       print *, "-----------------------"
-    print *, "EMin=", EMin
-    print *, "EMax=", EMax
+    if( NSpin == 1 ) EMaxDev = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
+    if( NSpin == 2 ) EMaxDev = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1))) + 10.0 
+    EMinDev = -EMaxDev
+
+    !Initializing 1D electrodes everytime we pass Charge Control
+    IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr)  then
+        if (Electrodes) call CleanUp1DLead(1) 
+        if (Electrodes) call CleanUp1DLead(2) 
+        call InitElectrodes
+        Electrodes = .true.
+    end if 
 
     if( .not. DMImag .and. ChargeCntr )then
        print *, "-----------------------"
+       print *, "Estimated Energy Bounds"
+       print *, "-----------------------"
+       EMin=Min(EMin,EMinLead,EMinDev)
+       EMax=Max(EMax,EMaxLead,EMaxDev)
+       print *, "EMin=", EMin
+       print *, "EMax=", EMax
+       print *, "-----------------------"
        print *, " Total DOS Point Check "
        print *, "-----------------------"
-       ! Find upper and lower energy bound 
-       call CheckEnergyBounds
+       call CheckEnergyBounds(Bounds)
+       ! Find upper and lower energy bounds 
+       if (.not. Bounds) call FindEnergyBounds
     end if
 
     if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
@@ -794,10 +794,7 @@
        print *, "****************************************** "
        print *
 
-       !IF( ANT1DInp ) call WriteANT1DInput
-       
        if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
-       
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then
@@ -816,9 +813,13 @@
           end do
           HDOrtho = .true.
        end if
+
        if( DiagCorrbl ) call DiagCorrBlocks( HD, SD )
+
        call Hamiltonian
+
        IF ( HybFunc ) call CompHybFunc
+
        IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOS_Beg <= LDOS_End) CALL LDOS
        IF (ElType(1) /= "GHOST" .and. ElType(2) /= "GHOST") THEN            
           IF( RedTransmE >= RedTransmB  ) call EigenChannelAnalysis
@@ -860,58 +861,6 @@
     end if
   end subroutine transport
   
-  subroutine WriteANT1DInput
-    use parameters, only: eta
-    use AntCommon
-#ifdef G03ROOT
-    use g03Common, only: GetNAtoms, GetAtmChg
-#endif
-#ifdef G09ROOT
-    use g09Common, only: GetNAtoms, GetAtmChg
-#endif    
-    implicit none
-
-    real*8 :: dsmall
-    integer :: i,j
-
-    CHARACTER(len=55) :: fname
-
-    dsmall = eta
-    
-    fname='dev.'//trim(ant1dname)//'.dat'
-    open(ifu_ant,file=fname,status='unknown')
-
-    write(ifu_ant,'(A)'),       "&DevParams"
-    write(ifu_ant,'(A,I1)'),    "NDSpin = ", NSpin
-    write(ifu_ant,'(A,I4)'),    "NDAO = ", NAOrbs
-    write(ifu_ant,'(A,I4)'),    "NDEl = ", NCDEl
-    write(ifu_ant,'(A,F12.8)'), "EFermi = ", -shift
-    write(ifu_ant,'(A)'),       "sparse = .true."
-    write(ifu_ant,'(A)'),       "/"
-    write(ifu_ant,*)
-    write(ifu_ant,'(A)'),       "! Hamiltonian"
-    do ispin=1,NSpin
-       if( NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)'),       "! Spin-up"
-       if( NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)'),       "! Spin-down"
-       do i=1,NAOrbs
-          do j=1,NAOrbs        
-             if(abs(HD(ispin,i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, HD(ispin,i,j)
-          enddo
-       enddo
-       write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
-       write(ifu_ant,*)
-    end do
-    write(ifu_ant,'(A)'),       "! Overlap"
-    do i=1,NAOrbs
-       do j=1,NAOrbs
-           if(abs(SD(i,j))>=dsmall) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, SD(i,j)      
-       enddo
-    enddo
-    write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
-    write(ifu_ant,*)
-    close(ifu_ant)
-  end subroutine WriteANT1DInput  
-  
   !**************************************************************
   !* Subroutine for determining Fermi energy and density matrix *
   !* for some total charge                                      *
@@ -941,7 +890,7 @@
     
     logical :: root_fail
     
-    Z=0.1d0
+    Z=1.0d0
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
@@ -967,6 +916,7 @@
                 root_fail = .false.
              end if
           end if
+
           if( root_fail )then
              print*,'SECANT method'
              call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
@@ -979,6 +929,7 @@
                 root_fail = .false.
              end if
           end if
+
           if (root_fail) then
              print *, 'BISEC method'
              if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
@@ -987,6 +938,7 @@
              if(k.lt.5*Max) root_fail = .false.
              if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
           end if
+
           write(ifu_log,*)'--------------------------------------------------------'
           if (ispin.eq.1) then
              write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for alpha electrons= ', -shiftup,'  +/-',dabs(DE)
@@ -1007,34 +959,41 @@
        E0=shift-Z 
        E1=shift
        E2=shift+Z
+    
        if (root_fail) then
-          print*,'SECANT method'                                      
-            call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)    
-            if(k .eq. Max .or. E3<EMin .or. E3>EMax) then             
-               print *, 'Warning: SECANT method failed to find root. Using MULLER.'
-               root_fail = .true.                                     
-            else                                                      
-               shift = E3                                             
-               root_fail = .false.                                    
-            end if                                                    
-         end if                                                       
-         if (root_fail) then                                          
-            print*,'MULLER method'                                    
-            call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond) 
-            if(k .eq. Max .or. E2<EMin .or. E2>EMax) then             
-            print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-            root_fail = .true.
+          print*,'MULLER method'
+          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+         !call MULLER(TotCharge2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+             root_fail = .true.
           else
              shift = E3
              root_fail = .false.
           end if
        end if
+
+       if (root_fail) then
+          print*,'SECANT method'
+          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+         !call SECANT(TotCharge2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+             root_fail = .true.
+          else
+             shift = E3
+             root_fail = .false.
+          end if
+       end if
+ 
        if (root_fail) then
           print *, 'BISEC method'
+          Delta=0.1
           shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
+         !shift = BISEC(TotCharge2,EMin,Emax,Delta,5*Max,K)
           DE=Delta
           if(k.lt.5*Max) root_fail = .false.
-          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
        end if
 
        write(ifu_log,*)'-----------------------------------------------'
@@ -1078,7 +1037,7 @@
     
     logical :: root_fail
     
-    Z=0.1d0               
+    Z=1.0d0               
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
@@ -1169,6 +1128,17 @@
           E1=E0-Z
           E2=E0+Z 
           if( root_fail ) then
+             print*,'Muller method'
+             call MULLER(CompSpinPD,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+             if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
+                print *, 'Warning: Muller method failed to find root. Using BISEC.'
+                root_fail = .true.
+             else
+                if (ispin.eq.1)shiftup=E3
+                if (ispin.eq.2)shiftdown=E3
+                root_fail = .false.
+             end if
+          if( root_fail ) then
              print*,'Secant method'
              call SECANT(CompSpinPD,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
              if(k.eq.Max .or. E2<EMin .or. E2>EMax)then
@@ -1180,17 +1150,6 @@
                 root_fail = .false.
              end if
           end if
-          if( root_fail ) then
-             print*,'Muller method'
-             call MULLER(CompSpinPD,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-             if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
-                print *, 'Warning: Muller method failed to find root. Using BISEC.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E3
-                if (ispin.eq.2)shiftdown=E3
-                root_fail = .false.
-             end if
           end if
           if( root_fail )then
              print *, 'BISEC method'
@@ -1217,6 +1176,17 @@
        E1=E0-Z 
        E2=E0+Z 
        if( root_fail )then
+          print*,'Muller method in CompDensMat2'
+          call MULLER(CompPD,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
+             print *, 'Warning: Muller method failed to find root. Using BISEC.'
+             root_fail = .true.
+          else
+             shift = E3
+             root_fail = .false.
+          end if
+       end if
+       if( root_fail )then
           print*,'Secant method'
           call SECANT(CompPD,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
           if(k.eq.Max .or. E2<EMin .or. E2>EMax)then
@@ -1224,17 +1194,6 @@
              root_fail = .true.
           else
              shift = E2
-             root_fail = .false.
-          end if
-       end if
-       if( root_fail )then
-          print*,'Muller method'
-          call MULLER(CompPD,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
-             print *, 'Warning: Muller method failed to find root. Using BISEC.'
-             root_fail = .true.
-          else
-             shift = E3
              root_fail = .false.
           end if
        end if
@@ -1354,9 +1313,9 @@
 
      complex*16, dimension(NAOrbs,NAOrbs) :: GD
 
-     integer, parameter :: nmin=1, nmax=10, npmax=2**nmax-1
+     integer, parameter :: nmin=1, nmax=20, npmax=2**nmax-1
      real*8, dimension(2*npmax) :: x, w
-     real*8 :: Ei, dEdx, Q, QQ, DPD, E0 !, Qi
+     real*8 :: Ei, dEdx, Q, QQ, E0 
      integer :: n, np, i, j, k, l !, info, ierr
      
      real*8, parameter :: x0 = 0.5d0
@@ -1377,13 +1336,13 @@
         
         QQ = Q
         PD=d_zero
-        QAlpha = d_zero; QBeta = d_zero
         
         ! Compute Gauss-Legendre abcsissas and weights
         call gauleg(0.0d0,2.0d0,x(1:2*np),w(1:2*np),2*np)
 
+        QAlpha = d_zero; QBeta = d_zero
         do ispin=1,NSpin
-!$OMP PARALLEL PRIVATE(Ei,dEdx,GD,DPD)
+!$OMP PARALLEL PRIVATE(Ei,dEdx,GD)
 !$OMP DO
            do i=1,np
               Ei = 2.0d0*EMax*x(i)
@@ -1394,10 +1353,7 @@
 !$OMP CRITICAL
               do k=1,NAOrbs
                  do l=1,NAOrbs
-                    DPD = w(i)*(dEdx*real(GD(k,l))/d_pi + 0.5d0*InvSD(k,l))
-                    PD(ispin,k,l) = PD(ispin,k,l) + DPD
-                    if(ispin.eq.1) QAlpha = QAlpha + DPD*SD(l,k)
-                    if(ispin.eq.2) QBeta = QBeta + DPD*SD(l,k)
+                    PD(ispin,k,l) = PD(ispin,k,l) + w(i)*(dEdx*real(GD(k,l))/d_pi + 0.5d0*InvSD(k,l))
                  end do
               end do
 !$OMP END CRITICAL
@@ -1405,9 +1361,18 @@
 !$OMP END DO
 !$OMP BARRIER
 !$OMP END PARALLEL
+
+           do k=NCDAO1, NCDAO2
+              do l=1,NAOrbs
+                 if(ispin.eq.1) QAlpha = QAlpha + PD(ispin,k,l)*SD(l,k)
+                 if(ispin.eq.2) QBeta = QBeta + PD(ispin,k,l)*SD(l,k)
+              end do
+           end do
         end do
+
         if(NSpin.eq.1) QBeta=QAlpha
         Q = QAlpha + QBeta        
+        print*, shift,Q
         if( n > nmin .and. abs(Q-QQ) < PAcc ) exit
         if (n == nmax) print*, 'Warning!, not enough integration points'
      end do
@@ -1447,7 +1412,7 @@
      
      ! Radius of complex contour integration
      ! add 10eV just in case 
-     R  = 0.5*abs(EMin)+10.0
+     R  = 0.5*abs(EMin)
 
      shift = mu
      PD_SOC=c_zero
@@ -1644,7 +1609,8 @@
   !* Compute retarded Green's function *
   !*************************************
   subroutine gplus0(z,green)
-    use PARAMETERS, only: eta,glue
+    use numeric, only: CInv
+    use parameters, only: eta, glue
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
@@ -1654,39 +1620,30 @@
 
     integer :: i, j, info, omp_get_thread_num
     integer, dimension(NAOrbs) :: ipiv
-    complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr, temp 
+    complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr
     complex*16 :: work(4*NAOrbs) 
-
     complex*16, intent(in) :: z 
-
     complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: green
     
-
-    ! Initilization 
-    green=c_zero
-    sigr=-ui*eta*SD 
-    sigl=-ui*eta*SD 
-
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
+   !print*,'z=',z,'SigmaL=',sigl(1,1),'SigmaR=',sigr(NAOrbs-10,NAOrbs-10)
     sigr=glue*sigr
     sigl=glue*sigl
     
-   !print*,'selfenergy right'
-   !print*,sigr(1,1),sigr(1,2),sigr(2,1)
-   !print*,'selfenergy left'
-   !print*,sigl(1,1),sigl(1,2),sigl(2,1)
-   !print*,'..........'
     !************************************************************************
     !c Retarded "Green" function
     !************************************************************************
+    green=c_zero
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          green(i,j)=(z-shift+ui*eta)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
 
-    call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
-    call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
+    info= CInv(green)
+   !call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
+   !call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
+    if (info /= 0) print*,'Warning inverting Greens function'
 
   end subroutine gplus0
 
@@ -1992,7 +1949,7 @@
 
     ! Radius of complex contour integration
     ! add 10eV just in case 
-    rrr = 0.5*abs(EMin)+10.0d0;
+    rrr = 0.5*abs(EMin)
 
     !c c Integral limits ... (a,b)
     a = 0.d0
@@ -2009,7 +1966,6 @@
     ! Density matrix out of equilibirum
       
     Q=d_zero
-    !do i=1,NAOrbs
     do i=NCDAO1, NCDAO2
        do j=1,NAOrbs
           Q=Q+PD(ispin,i,j)*SD(j,i)
@@ -2017,8 +1973,6 @@
     end do
     if (ispin.eq.1) QAlpha = Q
     if (ispin.eq.2) QBeta  = Q
- !if (ispin.eq.1) f = QAlpha - dble(GetNAE())
- !if (ispin.eq.2) f = QBeta  - dble(GetNBE())
     if (ispin.eq.1) QTot_SPINLOCK = QAlpha - dble(GetNAE()*NCDEl)/dble(GetNAE()+GetNBE()) -QExcess/2.0
     if (ispin.eq.2) QTot_SPINLOCK = QBeta  - dble(GetNBE()*NCDEl)/dble(GetNAE()+GetNBE()) -QExcess/2.0
     return
@@ -2058,7 +2012,7 @@
 
        ! Radius of complex contour integration
        ! add 10eV just in case 
-       rrr = 0.5*abs(EMin)+10.0d0;
+       rrr = 0.5*abs(EMin) 
 
        !c c Integral limits ... (a,b)
        a = 0.d0
@@ -2075,7 +2029,6 @@
        end if
        ! Density matrix out of equilibirum
 
-       !do i=1,NAOrbs
        do i=NCDAO1, NCDAO2
           do j=1,NAOrbs
              Q=Q+PD(ispin,i,j)*SD(j,i)
@@ -2086,8 +2039,8 @@
     end do
 
     if( NSpin == 1 ) QBeta = QAlpha
-    !QTot = QAlpha + QBeta -dble(GetNAE()) -dble(GetNBE())
     QTot = QAlpha + QBeta - dble(NCDEl) - QExcess
+   !print*,shift,QTot
     return
   end function QTot
 
@@ -2121,7 +2074,7 @@
 
        ! Radius of complex contour integration
        ! add 10eV just in case 
-       rrr = 0.5*abs(EMin)+10.0;
+       rrr = 0.5*abs(EMin)
 
        !c c Integral limits ... (a,b)
        M=1000
@@ -2695,7 +2648,7 @@
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
        call spin_orbit
-       
+      
     else
 
        allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2886,9 +2839,11 @@
   subroutine transmission
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, ChargeAcc, DMIMAG
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
+                          ChargeAcc, DMIMAG, ElType
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
+    use OneDlead, only: CleanUp1DLead
 #ifdef PGI
     use lapack_blas, only: zgemm
 #endif
@@ -2926,6 +2881,12 @@
     print *, "--------------------------------"
     print *
 
+    if (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD")  then
+        call CleanUp1DLead(1) 
+        call CleanUp1DLead(2) 
+        call InitElectrodes
+    end if 
+
     if (SOC .or. ROT) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
@@ -2956,7 +2917,7 @@
        allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-       call spin_orbit
+      !call spin_orbit
        
     else
 
@@ -3713,8 +3674,8 @@
     
     integer, intent(in) :: spin,sgn
     complex*16, intent(in) :: cenergy
-    complex*16, dimension(:,:),intent(inout) :: Sigma1
-    complex*16, dimension(:,:),intent(inout) :: Sigma2
+    complex*16, dimension(:,:),intent(out) :: Sigma1
+    complex*16, dimension(:,:),intent(out) :: Sigma2
     complex*16, dimension(NAOrbs,NAOrbs) :: temp
     integer :: is,omp_get_thread_num
     
@@ -3728,12 +3689,11 @@
     if( UD .and. spin == 2 ) is=2
     if( DU .and. spin == 1 ) is=2
     if( DU .and. spin == 2 ) is=1
-    !write(ifu_log,*)omp_get_thread_num(),'in CompSelfEnergies',shift,cenergy,'lead 1'
     select case( ElType(1) )
     case( "BETHE" ) 
        call CompSelfEnergyBL( LeadBL(1), is, cenergy, Sigma1, sgn )
        ! transform to non-orthogonal basis
-       if( Overlap < -0.01 .and. .not. HDOrtho )then
+       if( Overlap < 0.0 .and. .not. HDOrtho )then
           ! Sigma1 -> S^1/2 * Sigma1 * S^1/2
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, Sigma1,NAorbs, SPH,  NAOrbs, c_zero, temp,   NAOrbs)
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma1, NAOrbs)
@@ -3751,12 +3711,11 @@
     if( DU .and. spin == 1 ) is=1
     if( DU .and. spin == 2 ) is=2
     
-    !write(ifu_log,*)omp_get_thread_num(),'in CompSelfEnergies',shift,cenergy,'lead 2'
     select case( ElType(2) )
     case( "BETHE" )
        call CompSelfEnergyBL( LeadBL(2), is, cenergy, Sigma2, sgn )
        ! transform to non-orthogonal basis 
-       if( Overlap < -0.01 .and. .not. HDOrtho )then
+       if( Overlap < 0.0 .and. .not. HDOrtho )then
           ! Sigma2 -> S^1/2 * Sigma2 * S^1/2
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, Sigma2,NAorbs, SPH,  NAOrbs, c_zero, temp,   NAOrbs)
           call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma2, NAOrbs)
@@ -3774,9 +3733,10 @@
   !
   real*8 function DDOS( E0, R, phi )
     use constants, only: c_zero, ui, d_pi
+    implicit none
 
-    real*8, intent(in) :: phi, E0, R
     integer :: i, j !!, ispin 
+    real*8, intent(in) :: phi, E0, R
     complex*16,dimension(NAOrbs,NAOrbs) :: green
     complex*16 :: TrGS, z
 
@@ -3785,7 +3745,6 @@
     TrGS=c_zero
     do ispin=1,NSpin
        call gplus0(z,green)
-       !do i=1,NAOrbs
        do i=NCDAO1,NCDAO2
           do j=1,NAOrbs
              TrGS = TrGS + green(i,j)*SD(j,i)
@@ -3794,6 +3753,7 @@
     end do
     ! Account for spin degeneracy
     if(NSpin==1) TrGS = TrGS * 2.0d0
+   !print*, 'Green=',green(1,1)
     DDOS = -DIMAG(R*(sin(phi)+ui*cos(phi))*TrGS)/d_pi 
   end function DDOS
 
@@ -3801,19 +3761,17 @@
   ! *** Total charge up to energy E, lower bound is EMin ***
   ! 
   real*8 function TotCharge( E )
-    use constants, only: d_zero, d_pi
+    use constants, only: d_zero, d_pi, ui
     use parameters, only: ChargeAcc
     use numeric, only: gauleg 
     implicit none
     
-    real*8, intent(in) :: E
-
     integer, parameter :: nmax = 2047
-    
-    real*8 :: q,qq, E0, R, w_j, phi_j
     integer :: n, n1, n2, j, i
-    
+    real*8, intent(in) :: E
+    real*8 :: q,qq, E0, R, w_j, phi_j, phi
     real*8, dimension(nmax) :: x, w
+    complex*16 :: z
     
     ! Integration contour parameters:
     E0 = 0.5*(E + EMin)
@@ -3827,44 +3785,131 @@
        do j=1,n
           call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
           q = q + w(j)*DDOS( E0, R, x(j) )
+         phi=x(j)
+         z = E0 - R*(cos(phi) - ui*sin(phi)) 
+        !if (j ==1) print*,'z= ',z,'phi=',x(1),'DOS=',DDOS(E0,R,x(1))
        end do
-       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*NCDEl ) ) exit  
+      !print*,'-------------------'
+       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.01 ) ) exit  
        n=2*n+1
        if( n > nmax )then
           print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
           return
        end if
        qq = q
+       print '(A,I4,F10.5)', "TotCharge/Gaussian quadrature gives  ", n, q
     end do
     print '(A,I4,A,F10.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
+    print '(A,F10.5)', "TotCharge/Gaussian quadrature gives  ", q
 
     TotCharge = q
   end function TotCharge
-  
-  ! *************************************                             
-  !  Estimates upper/lower energy                                   
-  !  boundary EMin/EMax,                                            
-  !  above/below which DOS is gauranteed                            
-  !  to be zero                                                     
-  ! *************************************                           
-  subroutine CheckEnergyBounds                                      
-    use parameters, only: ChargeAcc                                 
-                                                                    
-    real*8 :: Q                                                     
-                                                                    
-    print *, "Checking energy bounds [EMin, EMax] such that ..."    
-    print '(A,I4)', " ...Total Integrated Spectral Weight (TISW)=",2*(NCDAO2-NCDAO1+1) 
-                                                                    
-    Q = TotCharge( EMax )                                           
-    if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) then                   
-        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' OK' 
-    else                                                            
-        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' not OK, please check' 
-    end if                                                          
-                                                                    
-    print *, "--------------------------------------------------"   
-                                                                    
-  end subroutine CheckEnergyBounds               
+  ! 
+  ! *** Total charge up to energy 0, lower bound is EMin ***
+  ! 
+  real*8 function TotCharge2( mu )
+    use constants, only: d_zero, d_pi, ui
+    use parameters, only: ChargeAcc, QExcess
+    use numeric, only: gauleg 
+    implicit none
+    
+    integer, parameter :: nmax = 2047
+    integer :: n, n1, n2, j, i, ispin,k,l
+    real*8, intent(in) :: mu
+    real*8 :: Q,qq, E0, R, w_j, phi_j, phi , E
+    real*8, dimension(nmax) :: x, w
+    complex*16 :: z
+    complex*16,dimension(NAOrbs,NAOrbs) :: green
+    
+    shift = mu
+    E=0.0
+    ! Integration contour parameters:
+    E0 = 0.5*(E + EMin)
+    R  = 0.5*(E - EMin)
+    ! Computing integral of DOS over 
+    ! complex contour using Gauss-Legendre 
+    ! quadrature
+    do ispin=1,NSpin
+       n=1
+       qq=0.0d0
+       do  
+          PD = 0.0d0
+          do j=1,n
+             call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
+             phi=x(j)
+             z = E0 - R*(cos(phi) - ui*sin(phi)) 
+             call gplus0(z,green)
+             do k=1,NAOrbs
+             do l=1,NAOrbs
+                PD(ispin,k,l)=PD(ispin,k,l)-w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*green(k,l))/d_pi
+             end do
+             end do
+          end do
+   
+          Q=0.0d0
+          do k=NCDAO1,NCDAO2
+          do l=1,NAOrbs
+             Q = Q + PD(ispin,k,l)*SD(l,k)
+          end do
+          end do
+   
+          if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.01 ) ) exit  
+          n=2*n+1
+          if( n > nmax )then
+             print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
+             return
+          end if
+          qq = q
+       end do
+      !print '(A,I4,F10.5)', "TotCharge/Gaussian quadrature gives  ", n, q
+
+    ! Account for spin degeneracy
+
+       if( ispin == 1 ) QAlpha = Q
+       if( ispin == 2 ) QBeta  = Q
+       if( NSpin == 1 ) QBeta = QAlpha
+
+    end do
+    print '(A,I4,A,F10.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
+    print '(A,F10.5)', "TotCharge/Gaussian quadrature gives  ", q - dble(NCDEl)
+
+    TotCharge2 = QAlpha + QBeta - dble(NCDEl) - QExcess
+    print*,shift,TotCharge2
+  end function TotCharge2
+
+
+  ! *************************************
+  !  Estimates upper/lower energy 
+  !  boundary EMin/EMax,
+  !  above/below which DOS is gauranteed 
+  !  to be zero
+  ! *************************************
+  subroutine CheckEnergyBounds(Bounds)
+    use parameters, only: ChargeAcc
+
+    real*8 :: Q
+    logical :: Bounds
+    
+    print *, "Checking energy bounds [EMin, EMax] such that ..."
+    print '(A,I4)', " ...Total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
+
+    Bounds = .false.
+    Q = TotCharge( EMax )
+    if (Q - 2*(NCDAO2-NCDAO1+1) > 0.1 ) then
+        print *,' Possible problem with unit cell size ..., please check'
+        stop
+    end if
+    if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) then
+        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' OK'
+        Bounds = .true.
+    else
+        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' not OK, finding new ones ...'
+    end if
+
+    print *, "--------------------------------------------------"
+
+  end subroutine CheckEnergyBounds
+
 
   ! *************************************
   !  Estimates upper/lower energy 
@@ -3873,15 +3918,15 @@
   !  to be zero
   ! *************************************
   subroutine FindEnergyBounds
-    use parameters, only: ChargeAcc,eta,ElType
+    use parameters, only: ChargeAcc,eta
 
     integer :: i, cond,k 
     real*8 :: EStep, Q
     
-    print *, "Searching energy boundaries [EMin, EMax] such that ..."
+    print *, "Searching new energy boundaries [EMin, EMax] such that ..."
     print '(A,I4)', " ...total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
 
-    EStep = 1.0 
+    EStep = 10.0
 
     do i = 1,100
        Q = TotCharge( EMax )
@@ -3889,7 +3934,6 @@
        if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
        EMin = EMin - EStep
        EMax = EMax + EStep
-       EStep = Estep*2.0
     end do    
     print *, "--------------------------------------------------"
 
@@ -4205,22 +4249,15 @@
     der0 = 0.5d0*(Em-b)
     E0 = rrr*exp(ui*er0)-rrr+Eq
     call gplus0(E0,green)
-   !print*,green(1,1)
-   !print*,green(1,3),green(3,1)
    
-   !print*,'E0,er0,der0,rrr',E0,er0,der0,rrr            
- CH = 0.d0
+    CH = 0.d0
     do i = 1,NAOrbs
        do j =1,NAOrbs
           PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
           CH = CH + PD(ispin,i,j)*SD(j,i)
        enddo
     enddo
-    !print*,PD(ispin,1,1)
-    !print*,PD(ispin,1,3)
-    !print*,PD(ispin,3,1)
 
-   !print*,'ch', 16*CH/(3*(n+1))
     xp = CH
 1   q = xp + xp
     xp = CH + CH
@@ -4627,7 +4664,6 @@
     return
     
   end subroutine gplus0_SOC
-
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! SOC subroutine
