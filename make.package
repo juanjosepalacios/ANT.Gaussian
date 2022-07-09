@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+version=2.7.0
+
+mkdir -v ANT.G-$version
+mkdir -v ANT.G-$version/BLDAT
+mkdir -v ANT.G-$version/doc
+mkdir -v ANT.G-$version/install
+mkdir -v ANT.G-$version/src
+mkdir -v ANT.G-$version/examples
+
+cp -v BLDAT/*.dat    ANT.G-$version/BLDAT/
+cp -rv doc/* ANT.G-$version/doc/
+cp -rv examples/* ANT.G-$version/examples/
+cp -v install/install* ANT.G-$version/install/
+cp -v make.package ANT.G-$version
+
+sources="
+src/ANT.F90 
+src/BetheLattice.F90 
+src/cluster.F90 
+src/device.F90
+src/numeric.F90
+src/parameters.F90
+src/constants.F90
+src/g03Common.F90
+src/g09Common.F90
+src/OneDLead.F90
+src/util.F90
+src/ortho.F90
+src/correlation.F90
+src/MolMod.F90
+src/antcommon.F90
+src/filemaster.F90
+src/messages.F90
+src/SpinOrbit.F90
+src/SpinRotate.F90
+src/lapack_blas.f
+src/preproc.F
+src/system.c
+src/make.in
+src/make.in.intel
+src/Makefile.pgi.g09
+src/Makefile.intel.g09"
+
+cp -v $sources ANT.G-$version/src/
+
+tar -cvf ANT.G-$version.tar ANT.G-$version
+gzip ANT.G-$version.tar
+
+rm -rf ANT.G-$version
+
+echo "Done."
