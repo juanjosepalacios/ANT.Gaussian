@@ -7,7 +7,7 @@
 !*  Juan Jose Palacios (1)                                *
 !*  David Jacob (2)                                       *
 !*  Maria Soriano (1)                                     *
-!*  Wynand Dednam
+!*  Wynand Dednam (1)
 !*                                                        *
 !* (1) Departamento de Fisica de la Materia Condensada    *
 !*     Universidad Autonoma de Madrid                     *      
@@ -30,7 +30,7 @@
   ! ****************************
 
   ! Mixing parameter (0.0 < alpha < 0.1)
-  REAL*8 :: alpha = 0.03d0         
+  REAL*8 :: alpha = 0.02d0         
   CHARACTER(len=10), PARAMETER ::  alpha_keyw = "ALPHA"     
 
   ! Pulay parameter (1 < NPulay < 1000)
@@ -80,7 +80,8 @@
   
   ! -Infty = Lower integration limit for charge integration 
   REAL*8 :: Infty = 1000.0
-  
+  CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"
+    
   !
   ! Convergence criterion for iterative solution of Dyson equation for self-energy
   !
@@ -414,9 +415,10 @@ CONTAINS
          & THETA_keyw   ,&
          & PHI_keyw   ,&
          & EW1_keyw       ,&
+         & EW2_keyw   ,&
          & UPlus_keyw       ,&
          & Infty_keyw   )
-         & EW2_keyw   )
+        
        !
        ! 1. looking for real variables
        !
@@ -539,9 +541,7 @@ CONTAINS
        CASE( PrtHatom_keyw )
           PrtHatom = ival 
        CASE( NPC_keyw )
-          NPC = ival   
-       CASE( PrintHS_keyw )
-          PrintHS = ival                                     
+          NPC = ival                                       
 
        END SELECT
        
@@ -846,8 +846,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
-    WRITE(unit=logfile,fmt=*) SOCFAC_keyw, " = ", socfac    
+    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc  
     WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
     WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
     WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
@@ -931,8 +930,7 @@ CONTAINS
     END DO          
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                 
-    END DO        
+    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                        
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
