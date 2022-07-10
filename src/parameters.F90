@@ -81,7 +81,7 @@
   ! -Infty = Lower integration limit for charge integration 
   REAL*8 :: Infty = 1000.0
   CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"
-    
+  
   !
   ! Convergence criterion for iterative solution of Dyson equation for self-energy
   !
@@ -418,7 +418,6 @@ CONTAINS
          & EW2_keyw   ,&
          & UPlus_keyw       ,&
          & Infty_keyw   )
-        
        !
        ! 1. looking for real variables
        !
@@ -539,7 +538,7 @@ CONTAINS
        !CASE( SOCFAC_keyw )
        !   socfac = ival     
        CASE( PrtHatom_keyw )
-          PrtHatom = ival                                    
+          PrtHatom = ival 
 
        END SELECT
        
@@ -722,7 +721,6 @@ CONTAINS
          SOCFacAtomD( index ) = rvall
          SOCFacAtomF( index ) = rvalll
          RCutAtom( index ) = rvallll
-         SOCFacAtom( index ) = rval
       END DO       
                          
     CASE ( SPINROTATOM_keyw )
@@ -844,7 +842,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc  
+    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
     WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
     WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
     WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
@@ -928,7 +926,7 @@ CONTAINS
     END DO          
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                        
+    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                 
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
