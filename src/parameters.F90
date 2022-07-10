@@ -539,9 +539,7 @@ CONTAINS
        !CASE( SOCFAC_keyw )
        !   socfac = ival     
        CASE( PrtHatom_keyw )
-          PrtHatom = ival 
-       CASE( NPC_keyw )
-          NPC = ival                                       
+          PrtHatom = ival                                    
 
        END SELECT
        
