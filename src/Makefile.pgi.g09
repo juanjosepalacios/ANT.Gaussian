@@ -27,7 +27,7 @@ BIN=../bin
 include make.in
 
 # use these sources: 
-SRCS= system.c preproc.F constants.f90 messages.f90 util.f90 parameters.f90 antcommon.f90 g09Common.f90 lapack_blas.f numeric.f90 filemaster.f90 atomdata.f90 geom.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 SpinRotate.f90 Zeeman.f90 MolMod.f90 device.f90 ANT.f90
+SRCS= system.c preproc.F constants.f90 messages.f90 util.f90 parameters.f90 antcommon.f90 g09Common.f90 lapack_blas.f numeric.f90 filemaster.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 SpinRotate.f90 Zeeman.f90 MolMod.f90 device.f90 ANT.f90
 # use name of parent directory as library name
 PARDIRNAME=$(shell dirname `pwd`)
 LIBNAME=$(shell basename $(PARDIRNAME))
