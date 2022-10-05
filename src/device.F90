@@ -342,25 +342,7 @@
     END IF
     
     ! Calculate SOC-only hamiltonian just once initially
-    if ((SOC .or. ROT) .and. SCFSOC) then
-       call spin_orbit                 
-       !if (NSpin == 2) then
-       !   do i=1,NAOrbs
-       !   do j=1,NAOrbs
-       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
-       !      HD(2,i,j)=HD(2,i,j)+H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
-       !      SD(i,j)=S_SOC(i,j)                
-       !   end do
-       !   end do
-       !else                 
-       !   do i=1,NAOrbs
-       !   do j=1,NAOrbs
-       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
-       !      SD(i,j)=S_SOC(i,j)                             
-       !   end do
-       !   end do
-       !end if       
-    end if           
+    if ((SOC .or. ROT) .and. SCFSOC) call spin_orbit
     
     IF( ANT1DInp .and. ElType(1) /= "1DLEAD" .and. ElType(1) /= "1DLEAD") call WriteANT1DInput
 
