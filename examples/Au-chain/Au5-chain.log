@@ -1,0 +1,1725 @@
+ Entering Gaussian System, Link 0=g09
+ Input=Au5-chain.gjf
+ Output=Au5-chain.log
+ Initial command:
+ /home/palacios/gaussian/g09/l1.exe "/home/palacios/scratch/Gau-8558.inp" -scrdir="/home/palacios/scratch/"
+ Entering Link 1 = /home/palacios/gaussian/g09/l1.exe PID=      8560.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
+                 7-Jul-2022 
+ ******************************************
+ %mem=1gb
+ %NProcShared=1
+ Will use up to    1 processors via shared memory.
+ %Subst L101 ../../bin
+ %Subst L502 ../../bin
+ ----------------------------------------------------------------------
+ #p lsda/gen pseudo=read pop=reg Scf=(conver=6,maxcycle=100,dsymm,nodam
+ p)
+ ----------------------------------------------------------------------
+ 1/38=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ 3/5=7,11=2,16=1,17=8,25=1,30=1,74=205/1,2,3;
+ 4//1;
+ 5/5=2,6=6,7=100,17=200,18=-2,38=5/2;
+ 6/28=1/1;
+ 99/5=1,9=1/99;
+ Leave Link    1 at Thu Jul  7 15:45:47 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter ../../bin/l101.exe)
+ ---------
+ Au5-chain
+ ---------
+ Symbolic Z-matrix:
+ Charge =  1 Multiplicity = 1
+ Au                    0.        0.        0. 
+ Au                    0.        0.        3. 
+ Au                    0.        0.        6. 
+ Au                    0.        0.        9. 
+ Au                    0.        0.        12. 
+ 
+ NAtoms=      5 NQM=        5 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1           2           3           4           5
+ IAtWgt=         197         197         197         197         197
+ AtmWgt= 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000
+ NucSpn=           3           3           3           3           3
+ AtZEff=   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
+ NQMom=   54.7000000  54.7000000  54.7000000  54.7000000  54.7000000
+ NMagM=    0.1481590   0.1481590   0.1481590   0.1481590   0.1481590
+ AtZNuc=  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000
+ Leave Link  101 at Thu Jul  7 15:45:47 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l202.exe)
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000    0.000000
+      2         79           0        0.000000    0.000000    3.000000
+      3         79           0        0.000000    0.000000    6.000000
+      4         79           0        0.000000    0.000000    9.000000
+      5         79           0        0.000000    0.000000   12.000000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4          5
+     1  Au   0.000000
+     2  Au   3.000000   0.000000
+     3  Au   6.000000   3.000000   0.000000
+     4  Au   9.000000   6.000000   3.000000   0.000000
+     5  Au  12.000000   9.000000   6.000000   3.000000   0.000000
+ Stoichiometry    Au5(1+)
+ Framework group  D*H[O(Au),C*(AuAu.AuAu)]
+ Deg. of freedom     2
+ Full point group                 D*H     NOp   8
+ Largest Abelian subgroup         D2H     NOp   8
+ Largest concise Abelian subgroup C2      NOp   2
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000    6.000000
+      2         79           0        0.000000    0.000000    3.000000
+      3         79           0        0.000000    0.000000    0.000000
+      4         79           0        0.000000    0.000000   -3.000000
+      5         79           0        0.000000    0.000000   -6.000000
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):      0.0000000      0.0285090      0.0285090
+ Leave Link  202 at Thu Jul  7 15:45:47 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l301.exe)
+ General basis read from cards:  (5D, 7F)
+ Centers:       1      2      3      4      5
+ S 3 1.00
+     Exponent=  4.4090000000D-01 Coefficients= -7.4780000000D-01
+     Exponent=  2.6260000000D-01 Coefficients=  8.1760000000D-01
+     Exponent=  6.1700000000D-02 Coefficients=  8.1130000000D-01
+ P 3 1.00
+     Exponent=  6.6420000000D-01 Coefficients= -4.5900000000D-02
+     Exponent=  1.0730000000D-01 Coefficients=  3.7780000000D-01
+     Exponent=  3.1900000000D-02 Coefficients=  7.2330000000D-01
+ D 4 1.00
+     Exponent=  1.3517000000D+00 Coefficients=  4.7870000000D-01
+     Exponent=  5.1490000000D-01 Coefficients=  4.5820000000D-01
+     Exponent=  1.9940000000D-01 Coefficients=  2.2030000000D-01
+     Exponent=  7.7600000000D-02 Coefficients=  4.1200000000D-02
+ ****
+ ======================================================================================================
+                                       Pseudopotential Parameters
+ ======================================================================================================
+  Center     Atomic      Valence      Angular      Power
+  Number     Number     Electrons     Momentum     of R      Exponent        Coefficient   SO-Coeffient
+ ======================================================================================================
+    1         79           11
+                                      G and up 
+                                                     2        0.9657000       -0.98690200    0.00000000
+                                                     2        2.2904000       -9.68630600    0.00000000
+                                                     2        6.4383998      -32.57246399    0.00000000
+                                                     2       16.3645992     -118.53087616    0.00000000
+                                                     2       55.9892998     -286.25463867    0.00000000
+                                                     1      171.1013947      -51.27423096    0.00000000
+                                      S - G
+                                                     2        1.2248000      -84.96929932    0.00000000
+                                                     2        1.4336000      280.17764282    0.00000000
+                                                     2        1.8929000     -354.64355469    0.00000000
+                                                     2        2.6963000      334.33190918    0.00000000
+                                                     2        3.9899001     -219.39260864    0.00000000
+                                                     2        6.0054998      170.85874939    0.00000000
+                                                     1       14.5825996       56.33872986    0.00000000
+                                                     0       39.3106995        6.40929985    0.00000000
+                                      P - G
+                                                     2        0.9064000       -6.91190100    0.00000000
+                                                     2        1.0311000       72.12546539    0.00000000
+                                                     2        1.3287000     -114.97533417    0.00000000
+                                                     2        1.9037000      123.61668396    0.00000000
+                                                     2        2.8364000      -71.13571167    0.00000000
+                                                     2        4.5883999       79.01660156    0.00000000
+                                                     1       11.1981001       51.28700638    0.00000000
+                                                     0       32.2957001        5.65198278    0.00000000
+                                      D - G
+                                                     2        0.2931000       -0.11365700    0.00000000
+                                                     2        1.0301000       -2.40402508    0.00000000
+                                                     2        2.0186000       62.58111572    0.00000000
+                                                     2        3.4391999      255.44717407    0.00000000
+                                                     2        5.1578999     -161.80647278    0.00000000
+                                                     2        2.5149000     -175.77076721    0.00000000
+                                                     1        8.0623999       63.62079239    0.00000000
+                                                     0       41.0284996        6.75031996    0.00000000
+                                      F - G
+                                                     2        0.4335000      -47.60779953    0.00000000
+                                                     2        0.5097000      176.31802368    0.00000000
+                                                     2        0.5796000     -168.67689514    0.00000000
+                                                     2        0.7711000       54.49244690    0.00000000
+                                                     2        2.5934999       37.71539307    0.00000000
+                                                     2        8.3907003      -24.13967514    0.00000000
+                                                     1        6.9294000       49.16802216    0.00000000
+                                                     0       22.2588997        4.75958586    0.00000000
+    2         79           11
+                                      G and up 
+                                                     2        0.9657000       -0.98690200    0.00000000
+                                                     2        2.2904000       -9.68630600    0.00000000
+                                                     2        6.4383998      -32.57246399    0.00000000
+                                                     2       16.3645992     -118.53087616    0.00000000
+                                                     2       55.9892998     -286.25463867    0.00000000
+                                                     1      171.1013947      -51.27423096    0.00000000
+                                      S - G
+                                                     2        1.2248000      -84.96929932    0.00000000
+                                                     2        1.4336000      280.17764282    0.00000000
+                                                     2        1.8929000     -354.64355469    0.00000000
+                                                     2        2.6963000      334.33190918    0.00000000
+                                                     2        3.9899001     -219.39260864    0.00000000
+                                                     2        6.0054998      170.85874939    0.00000000
+                                                     1       14.5825996       56.33872986    0.00000000
+                                                     0       39.3106995        6.40929985    0.00000000
+                                      P - G
+                                                     2        0.9064000       -6.91190100    0.00000000
+                                                     2        1.0311000       72.12546539    0.00000000
+                                                     2        1.3287000     -114.97533417    0.00000000
+                                                     2        1.9037000      123.61668396    0.00000000
+                                                     2        2.8364000      -71.13571167    0.00000000
+                                                     2        4.5883999       79.01660156    0.00000000
+                                                     1       11.1981001       51.28700638    0.00000000
+                                                     0       32.2957001        5.65198278    0.00000000
+                                      D - G
+                                                     2        0.2931000       -0.11365700    0.00000000
+                                                     2        1.0301000       -2.40402508    0.00000000
+                                                     2        2.0186000       62.58111572    0.00000000
+                                                     2        3.4391999      255.44717407    0.00000000
+                                                     2        5.1578999     -161.80647278    0.00000000
+                                                     2        2.5149000     -175.77076721    0.00000000
+                                                     1        8.0623999       63.62079239    0.00000000
+                                                     0       41.0284996        6.75031996    0.00000000
+                                      F - G
+                                                     2        0.4335000      -47.60779953    0.00000000
+                                                     2        0.5097000      176.31802368    0.00000000
+                                                     2        0.5796000     -168.67689514    0.00000000
+                                                     2        0.7711000       54.49244690    0.00000000
+                                                     2        2.5934999       37.71539307    0.00000000
+                                                     2        8.3907003      -24.13967514    0.00000000
+                                                     1        6.9294000       49.16802216    0.00000000
+                                                     0       22.2588997        4.75958586    0.00000000
+    3         79           11
+                                      G and up 
+                                                     2        0.9657000       -0.98690200    0.00000000
+                                                     2        2.2904000       -9.68630600    0.00000000
+                                                     2        6.4383998      -32.57246399    0.00000000
+                                                     2       16.3645992     -118.53087616    0.00000000
+                                                     2       55.9892998     -286.25463867    0.00000000
+                                                     1      171.1013947      -51.27423096    0.00000000
+                                      S - G
+                                                     2        1.2248000      -84.96929932    0.00000000
+                                                     2        1.4336000      280.17764282    0.00000000
+                                                     2        1.8929000     -354.64355469    0.00000000
+                                                     2        2.6963000      334.33190918    0.00000000
+                                                     2        3.9899001     -219.39260864    0.00000000
+                                                     2        6.0054998      170.85874939    0.00000000
+                                                     1       14.5825996       56.33872986    0.00000000
+                                                     0       39.3106995        6.40929985    0.00000000
+                                      P - G
+                                                     2        0.9064000       -6.91190100    0.00000000
+                                                     2        1.0311000       72.12546539    0.00000000
+                                                     2        1.3287000     -114.97533417    0.00000000
+                                                     2        1.9037000      123.61668396    0.00000000
+                                                     2        2.8364000      -71.13571167    0.00000000
+                                                     2        4.5883999       79.01660156    0.00000000
+                                                     1       11.1981001       51.28700638    0.00000000
+                                                     0       32.2957001        5.65198278    0.00000000
+                                      D - G
+                                                     2        0.2931000       -0.11365700    0.00000000
+                                                     2        1.0301000       -2.40402508    0.00000000
+                                                     2        2.0186000       62.58111572    0.00000000
+                                                     2        3.4391999      255.44717407    0.00000000
+                                                     2        5.1578999     -161.80647278    0.00000000
+                                                     2        2.5149000     -175.77076721    0.00000000
+                                                     1        8.0623999       63.62079239    0.00000000
+                                                     0       41.0284996        6.75031996    0.00000000
+                                      F - G
+                                                     2        0.4335000      -47.60779953    0.00000000
+                                                     2        0.5097000      176.31802368    0.00000000
+                                                     2        0.5796000     -168.67689514    0.00000000
+                                                     2        0.7711000       54.49244690    0.00000000
+                                                     2        2.5934999       37.71539307    0.00000000
+                                                     2        8.3907003      -24.13967514    0.00000000
+                                                     1        6.9294000       49.16802216    0.00000000
+                                                     0       22.2588997        4.75958586    0.00000000
+    4         79           11
+                                      G and up 
+                                                     2        0.9657000       -0.98690200    0.00000000
+                                                     2        2.2904000       -9.68630600    0.00000000
+                                                     2        6.4383998      -32.57246399    0.00000000
+                                                     2       16.3645992     -118.53087616    0.00000000
+                                                     2       55.9892998     -286.25463867    0.00000000
+                                                     1      171.1013947      -51.27423096    0.00000000
+                                      S - G
+                                                     2        1.2248000      -84.96929932    0.00000000
+                                                     2        1.4336000      280.17764282    0.00000000
+                                                     2        1.8929000     -354.64355469    0.00000000
+                                                     2        2.6963000      334.33190918    0.00000000
+                                                     2        3.9899001     -219.39260864    0.00000000
+                                                     2        6.0054998      170.85874939    0.00000000
+                                                     1       14.5825996       56.33872986    0.00000000
+                                                     0       39.3106995        6.40929985    0.00000000
+                                      P - G
+                                                     2        0.9064000       -6.91190100    0.00000000
+                                                     2        1.0311000       72.12546539    0.00000000
+                                                     2        1.3287000     -114.97533417    0.00000000
+                                                     2        1.9037000      123.61668396    0.00000000
+                                                     2        2.8364000      -71.13571167    0.00000000
+                                                     2        4.5883999       79.01660156    0.00000000
+                                                     1       11.1981001       51.28700638    0.00000000
+                                                     0       32.2957001        5.65198278    0.00000000
+                                      D - G
+                                                     2        0.2931000       -0.11365700    0.00000000
+                                                     2        1.0301000       -2.40402508    0.00000000
+                                                     2        2.0186000       62.58111572    0.00000000
+                                                     2        3.4391999      255.44717407    0.00000000
+                                                     2        5.1578999     -161.80647278    0.00000000
+                                                     2        2.5149000     -175.77076721    0.00000000
+                                                     1        8.0623999       63.62079239    0.00000000
+                                                     0       41.0284996        6.75031996    0.00000000
+                                      F - G
+                                                     2        0.4335000      -47.60779953    0.00000000
+                                                     2        0.5097000      176.31802368    0.00000000
+                                                     2        0.5796000     -168.67689514    0.00000000
+                                                     2        0.7711000       54.49244690    0.00000000
+                                                     2        2.5934999       37.71539307    0.00000000
+                                                     2        8.3907003      -24.13967514    0.00000000
+                                                     1        6.9294000       49.16802216    0.00000000
+                                                     0       22.2588997        4.75958586    0.00000000
+    5         79           11
+                                      G and up 
+                                                     2        0.9657000       -0.98690200    0.00000000
+                                                     2        2.2904000       -9.68630600    0.00000000
+                                                     2        6.4383998      -32.57246399    0.00000000
+                                                     2       16.3645992     -118.53087616    0.00000000
+                                                     2       55.9892998     -286.25463867    0.00000000
+                                                     1      171.1013947      -51.27423096    0.00000000
+                                      S - G
+                                                     2        1.2248000      -84.96929932    0.00000000
+                                                     2        1.4336000      280.17764282    0.00000000
+                                                     2        1.8929000     -354.64355469    0.00000000
+                                                     2        2.6963000      334.33190918    0.00000000
+                                                     2        3.9899001     -219.39260864    0.00000000
+                                                     2        6.0054998      170.85874939    0.00000000
+                                                     1       14.5825996       56.33872986    0.00000000
+                                                     0       39.3106995        6.40929985    0.00000000
+                                      P - G
+                                                     2        0.9064000       -6.91190100    0.00000000
+                                                     2        1.0311000       72.12546539    0.00000000
+                                                     2        1.3287000     -114.97533417    0.00000000
+                                                     2        1.9037000      123.61668396    0.00000000
+                                                     2        2.8364000      -71.13571167    0.00000000
+                                                     2        4.5883999       79.01660156    0.00000000
+                                                     1       11.1981001       51.28700638    0.00000000
+                                                     0       32.2957001        5.65198278    0.00000000
+                                      D - G
+                                                     2        0.2931000       -0.11365700    0.00000000
+                                                     2        1.0301000       -2.40402508    0.00000000
+                                                     2        2.0186000       62.58111572    0.00000000
+                                                     2        3.4391999      255.44717407    0.00000000
+                                                     2        5.1578999     -161.80647278    0.00000000
+                                                     2        2.5149000     -175.77076721    0.00000000
+                                                     1        8.0623999       63.62079239    0.00000000
+                                                     0       41.0284996        6.75031996    0.00000000
+                                      F - G
+                                                     2        0.4335000      -47.60779953    0.00000000
+                                                     2        0.5097000      176.31802368    0.00000000
+                                                     2        0.5796000     -168.67689514    0.00000000
+                                                     2        0.7711000       54.49244690    0.00000000
+                                                     2        2.5934999       37.71539307    0.00000000
+                                                     2        8.3907003      -24.13967514    0.00000000
+                                                     1        6.9294000       49.16802216    0.00000000
+                                                     0       22.2588997        4.75958586    0.00000000
+ ======================================================================================================
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+ There are    14 symmetry adapted cartesian basis functions of AG  symmetry.
+ There are     3 symmetry adapted cartesian basis functions of B1G symmetry.
+ There are     5 symmetry adapted cartesian basis functions of B2G symmetry.
+ There are     5 symmetry adapted cartesian basis functions of B3G symmetry.
+ There are     2 symmetry adapted cartesian basis functions of AU  symmetry.
+ There are    11 symmetry adapted cartesian basis functions of B1U symmetry.
+ There are     5 symmetry adapted cartesian basis functions of B2U symmetry.
+ There are     5 symmetry adapted cartesian basis functions of B3U symmetry.
+ There are    11 symmetry adapted basis functions of AG  symmetry.
+ There are     3 symmetry adapted basis functions of B1G symmetry.
+ There are     5 symmetry adapted basis functions of B2G symmetry.
+ There are     5 symmetry adapted basis functions of B3G symmetry.
+ There are     2 symmetry adapted basis functions of AU  symmetry.
+ There are     9 symmetry adapted basis functions of B1U symmetry.
+ There are     5 symmetry adapted basis functions of B2U symmetry.
+ There are     5 symmetry adapted basis functions of B3U symmetry.
+    45 basis functions,   180 primitive gaussians,    50 cartesian basis functions
+    27 alpha electrons       27 beta electrons
+       nuclear repulsion energy       136.9540014565 Hartrees.
+ IExCor=  205 DFT=T Ex=S Corr=VWN ExCW=0 ScaHFX=  0.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=      0 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
+ NAtoms=    5 NActive=    5 NUniq=    3 SFac= 2.78D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned on.
+ Leave Link  301 at Thu Jul  7 15:45:47 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
+ One-electron integrals computed using PRISM.
+ One-electron integral symmetry used in STVInt
+   8 Symmetry operations used in ECPInt.
+ ECPInt:  NShTT=     120 NPrTT=    1335 LenC2=     121 LenP2D=    1250.
+ LDataN:  DoStor=T MaxTD1= 6 Len=  172
+ NBasis=    45 RedAO= T EigKep=  8.79D-02  NBF=    11     3     5     5     2     9     5     5
+ NBsUse=    45 1.00D-06 EigRej= -1.00D+00 NBFU=    11     3     5     5     2     9     5     5
+ Precomputing XC quadrature grid using
+ IXCGrd= 4 IRadAn=           0 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
+ Defaulting to unpruned grid for atomic number  79.
+ Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
+ NSgBfM=    50    50    50    50    50 MxSgAt=     5 MxSgA2=     5.
+ Leave Link  302 at Thu Jul  7 15:45:49 2022, MaxMem=   134217728 cpu:         1.1
+ (Enter /home/palacios/gaussian/g09/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Thu Jul  7 15:45:49 2022, MaxMem=   134217728 cpu:         0.0
+ (Enter /home/palacios/gaussian/g09/l401.exe)
+ ExpMin= 3.19D-02 ExpMax= 1.35D+00 ExpMxC= 1.35D+00 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       5 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         5 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ Defaulting to unpruned grid for atomic number  79.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Harris En= -173.873858875290    
+ JPrj=0 DoOrth=F DoCkMO=F.
+ Initial guess orbital symmetries:
+       Occupied  (SGG) (SGU) (PIG) (PIG) (PIU) (PIU) (SGG) (DLTG)
+                 (DLTG) (PIG) (PIG) (DLTU) (DLTU) (DLTG) (DLTG)
+                 (DLTU) (DLTU) (DLTG) (DLTG) (PIU) (PIU) (SGU)
+                 (PIG) (PIG) (SGG) (SGG) (SGU)
+       Virtual   (SGG) (SGU) (SGG) (PIU) (PIU) (PIG) (PIG) (SGU)
+                 (PIU) (PIU) (PIG) (PIG) (PIU) (PIU) (SGG) (SGU)
+                 (SGG) (SGU)
+ The electronic state of the initial guess is 1-SGG.
+ Leave Link  401 at Thu Jul  7 15:45:49 2022, MaxMem=   134217728 cpu:         0.3
+ (Enter ../../bin/l502.exe)
+ Closed shell SCF:
+ Using DIIS extrapolation, IDIIS=  1040.
+ Integral symmetry usage will be decided dynamically.
+ Keep J ints in memory in symmetry-blocked form, NReq=1429741.
+ IVT=       20374 IEndB=       20374 NGot=   134217728 MDV=   134122397
+ LenX=   134122397 LenY=   134119456
+ Requested convergence on RMS density matrix=1.00D-06 within 100 cycles.
+ Requested convergence on MAX density matrix=1.00D-04.
+ Requested convergence on             energy=1.00D-04.
+ No special actions if energy rises.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=           0 FMFlg1=           0
+         NFxFlg=           0 DoJE=F BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=     600 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=   1035 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+
+ Cycle   1  Pass 1  IDiag  1:
+ 
+  ****************************************************************** 
+  ***                                                            *** 
+  ***                      A l i c a n t e                       *** 
+  ***                      N a n o                               *** 
+  ***                      T r a n s p o r t                     *** 
+  ***                      G 0 9                                 *** 
+  ***                                                            *** 
+  ****************************************************************** 
+  ***                     Version: 2.5.2                         *** 
+  ****************************************************************** 
+  *  Copyright (c) by                                              * 
+  *                                                                * 
+  *  Juan Jose Palacios (1)                                        * 
+  *  David Jacob (2)                                               * 
+  *  Maria Soriano (1,5)                                           * 
+  *  Angel J. Perez-Jimenez (3)                                    * 
+  *  Emilio SanFabian (3)                                          * 
+  *  Jose Antonio Antonio Verges (4)                               * 
+  *  Enrique Louis (5)                                             * 
+  *  Wynand Dednam (5)                                             * 
+  *                                                                * 
+  * (1) Departamento de Fisica de la Materia Condensada            * 
+  *     Universidad Autonoma de Madrid                             * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (2) Theory Department                                          * 
+  *     Max-Planck-Institute for Microstructure Physics            * 
+  *     Halle, 06120 (GERMANY)                                     * 
+  * (3) Departamento de Quimica Fisica                             * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  * (4) Insto. de Ciencias de Materiales de Madrid (ICMM)          * 
+  *     Consejo Superior de Investigacion y Ciencia (CSIC)         * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (5) Departamento de Fisica Aplicada                            * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+  ****************************************************************** 
+  *                                                                * 
+  *              Initializing ANT.G09 modules                      * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+ Scanning Au5-chain.ant file for parameter specifications...
+ Done.
+ ****************************
+ Basic calculation parameters
+ ****************************
+ ALPHA      =    1.0000000000000000E-002
+ NPULAY     =                         5
+ CHARGEACC  =    1.0000000000000000E-004  %
+ FERMIACC   =    1.0000000000000000E-004  %
+ PACC       =    9.9999999999999995E-007  %
+ FULLACC    =   F
+ MAX        =                        10
+ SELFACC    =    9.9999999999999995E-007
+ SMALL      =    0.1000000000000000     
+ SMALLD     =    0.1000000000000000       A
+ BIASVOLT   =     0.000000000000000       V
+ QEXCESS    =     0.000000000000000      electrons
+ ETA        =    1.0000000000000000E-003
+ GLUE       =     1.000000000000000     
+ FERMISTART =    -5.000000000000000       eV
+ SOC        =   F
+ SOCFAC     =     0.000000000000000     
+ SOC_CFF_P  =     0.000000000000000       eV
+ SOC_CFF_D  =     0.000000000000000       eV
+ SOC_CFF_F  =     0.000000000000000       eV
+ ROT        =   F
+ THETA      =     0.000000000000000       degrees
+ PHI        =     0.000000000000000       degrees
+ SL         =    1.0000000000000000E-003
+ DMIMAG     =   F
+ FMIXING    =   F
+ ************************
+ Bethe lattice parameters
+ ************************
+ TYPE1      = 1DLEAD    
+ TYPE2      = 1DLEAD    
+ BLPAR1     = Papacon             
+ BLPAR2     = Papacon             
+ NEMBED1    =                         2
+ NEMBED2    =                         2
+ NPC        =                         1
+ NATOMEL1   = ? 
+ NATOMEL2   = ? 
+ OVERLAP    = System Overlap
+ *************************
+ Spin transport parameters
+ *************************
+ SWOFFSPL   =    1.0000000000000000E-003
+ NSPINLOCK  =                         0
+ NALPHA     =                        -1
+ NBETA      =                        -1
+ DU         =   F
+ UD         =   F
+ DD         =   F
+ MRSTART    =                         0
+ SPINDEL    =   F
+ SPINEDIT   =                         0
+ SOCFACATOM =                         0
+ SPINROTATO =                         0
+ SOCEDIT    =                         0
+ ***********************
+ Correlations parameters
+ ***********************
+ CORRBLOCKS =                         0
+ PORTHO     =   F
+ HYBFUNC    =   F
+ DFT+U      =   F
+ DIAGCORRBL =   F
+ *****************
+ Output parameters
+ *****************
+ HAMILTON   =   F
+ MULLIKEN   =   F
+ HTRANSM    =   F
+ ESTEP      =    1.0000000000000000E-002
+ DOSENERGY  =     0.000000000000000     
+ EW1        =    -5.000000000000000     
+ EW2        =     5.000000000000000     
+ LDOS_BEG   =                         1
+ LDOS_END   =                         0
+ RTM_BEG    =                         1
+ RTM_END    =                         0
+ NCHANNELS  =                         0
+ LEADDOS    =   T
+ PRTHATOM   =                         1
+ -------------------
+ Initializing device
+ -------------------
+ ----------------------------------------------------------
+ Analyzing cluster for the connection of the  Bethe Lattice
+ ----------------------------------------------------------
+ 
+ Atom type of lead 1: Au
+ Atom type of lead 2: Au
+ 
+    1   79  11.    9    1    9
+    2   79  11.    9   10   18
+    3   79  11.    9   19   27
+    4   79  11.    9   28   36
+    5   79  11.    9   37   45
+ 
+  Center of charge:
+   0.000000   0.000000   0.000000
+ 
+                        2 nlead1
+  Atoms in left electrode:                        2
+   1  Au   0.000000   0.000000  11.338357
+   2  Au   0.000000   0.000000   5.669178
+ 
+  Atoms in molecule:                        0
+ 
+  Atoms in right electrode:                        3
+   3  Au   0.000000   0.000000 -11.338357
+   4  Au   0.000000   0.000000  -5.669178
+   5  Au   0.000000   0.000000   0.000000
+ 
+ ---------------------------------------------------
+  Details on device and contacting atoms -----------
+ ---------------------------------------------------
+ NEmbed(1) =                        2
+ NEmbed(2) =                        2
+ Number of electrons in neutral reduced device (NCDEl) =  
+                       11
+ First and last orbital in reduced device
+ NCDAO1 =                        19
+ NCDAO2 =                        27
+ ---------------------------------------------------
+ Defaulting to unpruned grid for atomic number  79.
+ E= -174.011374392825    
+ DIIS: error= 5.37D-03 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -174.011374392825     IErMin= 1 ErrMin= 5.37D-03
+ ErrMax= 5.37D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.04D-03 BMatP= 1.04D-03
+ IDIUse=3 WtCom= 9.46D-01 WtEn= 5.37D-02
+ Coeff-Com:  0.100D+01
+ Coeff-En:   0.100D+01
+ Coeff:      0.100D+01
+ Gap=     0.013 Goal=   None    Shift=    0.000
+ RMSDP=1.07D-02 MaxDP=2.01D-01              OVMax= 6.75D-03
+
+ Cycle   2  Pass 1  IDiag  1:
+ E= -173.986529495315     Delta-E=        0.024844897510 Rises=F Damp=F
+ DIIS: error= 1.74D-02 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 1 EnMin= -174.011374392825     IErMin= 1 ErrMin= 5.37D-03
+ ErrMax= 1.74D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 5.28D-03 BMatP= 1.04D-03
+ IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
+ Coeff-En:   0.829D+00 0.171D+00
+ Coeff:      0.829D+00 0.171D+00
+ Gap=     0.013 Goal=   None    Shift=    0.000
+ RMSDP=9.57D-03 MaxDP=2.04D-01 DE= 2.48D-02 OVMax= 2.89D-03
+
+ Cycle   3  Pass 1  IDiag  1:
+ E= -174.010549931932     Delta-E=       -0.024020436617 Rises=F Damp=F
+ DIIS: error= 9.70D-03 at cycle   3 NSaved=   3.
+ NSaved= 3 IEnMin= 1 EnMin= -174.011374392825     IErMin= 1 ErrMin= 5.37D-03
+ ErrMax= 9.70D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 9.99D-04 BMatP= 1.04D-03
+ IDIUse=3 WtCom= 9.03D-01 WtEn= 9.70D-02
+ EnCoef did     4 forward-backward iterations
+ Coeff-Com:  0.416D+00 0.191D+00 0.393D+00
+ Coeff-En:   0.413D+00 0.158D+00 0.429D+00
+ Coeff:      0.416D+00 0.188D+00 0.396D+00
+ Gap=     0.022 Goal=   None    Shift=    0.000
+ RMSDP=5.61D-03 MaxDP=1.64D-01 DE=-2.40D-02 OVMax= 2.60D-03
+
+ Cycle   4  Pass 1  IDiag  1:
+ E= -174.016128060797     Delta-E=       -0.005578128865 Rises=F Damp=F
+ DIIS: error= 4.43D-03 at cycle   4 NSaved=   4.
+ NSaved= 4 IEnMin= 4 EnMin= -174.016128060797     IErMin= 4 ErrMin= 4.43D-03
+ ErrMax= 4.43D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.76D-04 BMatP= 9.99D-04
+ IDIUse=3 WtCom= 9.56D-01 WtEn= 4.43D-02
+ Coeff-Com:  0.758D-01 0.163D-01 0.287D+00 0.621D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.224D+00 0.776D+00
+ Coeff:      0.724D-01 0.156D-01 0.284D+00 0.628D+00
+ Gap=     0.021 Goal=   None    Shift=    0.000
+ RMSDP=1.45D-03 MaxDP=4.00D-02 DE=-5.58D-03 OVMax= 9.04D-04
+
+ Cycle   5  Pass 1  IDiag  1:
+ E= -174.017204789244     Delta-E=       -0.001076728447 Rises=F Damp=F
+ DIIS: error= 3.85D-04 at cycle   5 NSaved=   5.
+ NSaved= 5 IEnMin= 5 EnMin= -174.017204789244     IErMin= 5 ErrMin= 3.85D-04
+ ErrMax= 3.85D-04  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.90D-06 BMatP= 1.76D-04
+ IDIUse=3 WtCom= 9.96D-01 WtEn= 3.85D-03
+ Coeff-Com:  0.426D-02-0.129D-01 0.418D-01 0.658D-01 0.901D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.000D+00 0.100D+01
+ Coeff:      0.424D-02-0.128D-01 0.416D-01 0.656D-01 0.901D+00
+ Gap=     0.021 Goal=   None    Shift=    0.000
+ RMSDP=1.50D-04 MaxDP=3.14D-03 DE=-1.08D-03 OVMax= 8.75D-05
+
+ Cycle   6  Pass 1  IDiag  1:
+ E= -174.017216928517     Delta-E=       -0.000012139274 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        6
+ -------------------------------------------------------------------------
+ *******************************
+ *    Initializing Lead No.                         1
+ *******************************
+Searching optimum Emin such that DOS integrates to zero ...
+GauLeg quadrature converged after   63 steps.
+ EMin =    -10.00000000000000         21.89325535673406     
+GauLeg quadrature converged after  127 steps.
+ EMin =    -20.00000000000000        1.5198734609784825E-003
+Searching optimum EMax such that the DOS integrates to the total spectral weight in the unit cell ...
+GauLeg quadrature converged after   63 steps.
+ EMax =     30.00000000000000         34.70920637090165     
+GauLeg quadrature converged after   31 steps.
+ EMax =     40.00000000000000         35.65369760728816     
+GauLeg quadrature converged after   31 steps.
+ EMax =     50.00000000000000         35.99922414803018     
+ EMin=   -30.00000000000000        EMax=    50.00000000000000     
+ Searching Fermi energy...
+ ChargeOffset    22.00000000000000     
+ Bisec Method
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    3 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    3 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after    7 steps.
+EFermi in bulk electrode   1 =   -9.92188
+ Lead Hamiltonian shifted by -EFermi =     9.921875000000000     
+Printing DOS of Lead 1to file Lead1DOS.dat
+ *******************************
+ *    Initializing Lead No.                         2
+ *******************************
+Searching optimum Emin such that DOS integrates to zero ...
+GauLeg quadrature converged after   63 steps.
+ EMin =    -10.00000000000000         21.89325535673406     
+GauLeg quadrature converged after  127 steps.
+ EMin =    -20.00000000000000        1.5198734609784825E-003
+Searching optimum EMax such that the DOS integrates to the total spectral weight in the unit cell ...
+GauLeg quadrature converged after   63 steps.
+ EMax =     30.00000000000000         34.70920637090165     
+GauLeg quadrature converged after   31 steps.
+ EMax =     40.00000000000000         35.65369760728816     
+GauLeg quadrature converged after   31 steps.
+ EMax =     50.00000000000000         35.99922414803018     
+ EMin=   -30.00000000000000        EMax=    50.00000000000000     
+ Searching Fermi energy...
+ ChargeOffset    22.00000000000000     
+ Bisec Method
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    3 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    3 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after   15 steps.
+GauLeg quadrature converged after    7 steps.
+GauLeg quadrature converged after    7 steps.
+EFermi in bulk electrode   2 =   -9.92188
+ Lead Hamiltonian shifted by -EFermi =     9.921875000000000     
+Printing DOS of Lead 2to file Lead2DOS.dat
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -45.60272749581638     
+ EMax=    59.92187500000000     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Checking energy bounds [EMin, EMax] such that ...
+ ...Total Integrated Spectral Weight (TISW)=  18
+TotCharge/Gaussian quadrature gives     3  16.65867
+TotCharge/Gaussian quadrature gives     7  18.03697
+TotCharge/Gaussian quadrature gives    15  17.99983
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00006
+TotCharge/Gaussian quadrature gives    17.99976
+ EMin=        -45.603  EMax=         59.922  TISW=    17.99976 OK
+ --------------------------------------------------
+ MULLER method
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00027
+TotCharge/Gaussian quadrature gives     1.85725
+    4.900000000000000         1.857251719615885     
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00944
+TotCharge/Gaussian quadrature gives     1.88642
+    5.000000000000000         1.886416578328664     
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00217
+TotCharge/Gaussian quadrature gives     1.91433
+    5.100000000000000         1.914330921532276     
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00015
+TotCharge/Gaussian quadrature gives     5.35016
+    1.334220286151714         5.350159631249230     
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00470
+TotCharge/Gaussian quadrature gives     0.85284
+    6.162670856847212        0.8528442628898354     
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00654
+TotCharge/Gaussian quadrature gives     0.83216
+    6.530305075770521        0.8321612327638679     
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00373
+TotCharge/Gaussian quadrature gives     5.20141
+   -5.044724562524589         5.201409877829480     
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00822
+TotCharge/Gaussian quadrature gives     5.25969
+   -13.68627199015070         5.259687778909186     
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00019
+TotCharge/Gaussian quadrature gives     6.87602
+   -27.47811960116859         6.876021079430146     
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00018
+TotCharge/Gaussian quadrature gives   -10.99997
+    46.81746334199342        -10.99996629590704     
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00123
+TotCharge/Gaussian quadrature gives   -11.00016
+    22.44024937193861        -11.00016369408573     
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00613
+TotCharge/Gaussian quadrature gives     5.34950
+    1.216739848997193         5.349501460047954     
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00339
+TotCharge/Gaussian quadrature gives    -0.99713
+    12.37273560946801       -0.9971264734935392     
+ Warning: MULLER method failed to find root. Using SECANT.
+ SECANT method
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00123
+TotCharge/Gaussian quadrature gives   -11.00016
+    22.44024937193861        -11.00016369408573     
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00339
+TotCharge/Gaussian quadrature gives    -0.99713
+    12.37273560946801       -0.9971264734935392     
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00043
+TotCharge/Gaussian quadrature gives    -1.00697
+    11.36918196136654        -1.006974380594345     
+TotCharge/Gaussian quadrature has converged after   7 steps. Error:   0.00343
+TotCharge/Gaussian quadrature gives   -10.99999
+    113.9851797409843        -10.99998527162419     
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00034
+TotCharge/Gaussian quadrature gives     5.35673
+    1.028786866234995         5.356733465457538     
+TotCharge/Gaussian quadrature has converged after  15 steps. Error:   0.00018
+TotCharge/Gaussian quadrature gives   -10.99997
+    38.02137074418539        -10.99996617710285     
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00006
+TotCharge/Gaussian quadrature gives    -0.99730
+    13.14366433926433       -0.9973021989074198     
+TotCharge/Gaussian quadrature has converged after 127 steps. Error:   0.00594
+TotCharge/Gaussian quadrature gives    -0.22281
+    10.66326598183825       -0.2228104218051428     
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00101
+TotCharge/Gaussian quadrature gives     0.07280
+    9.949690162698337        7.2803044061119593E-002
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00304
+TotCharge/Gaussian quadrature gives     0.01541
+    10.12542806979793        1.5405027034393726E-002
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00370
+TotCharge/Gaussian quadrature gives     0.00296
+    10.17259428476623        2.9577202064885455E-003
+ -----------------------------------------------
+ Fermi energy= -10.17259  +/-  0.04717
+ 
+ Number of alpha electrons:    5.50148
+ Number of beta electrons:     5.50148
+ Total number of electrons:    11.00296
+ -----------------------------------------------
+ DIIS: error= 1.17D-05 at cycle   6 NSaved=   6.
+ NSaved= 6 IEnMin= 6 EnMin= -174.017216928517     IErMin= 6 ErrMin= 1.17D-05
+ ErrMax= 1.17D-05  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.64D-09 BMatP= 1.90D-06
+ IDIUse=1 WtCom= 1.00D+00 WtEn= 0.00D+00
+ Coeff-Com: -0.560D-04-0.453D-03 0.613D-03-0.243D-02 0.321D-01 0.970D+00
+ Coeff:     -0.560D-04-0.453D-03 0.613D-03-0.243D-02 0.321D-01 0.970D+00
+ RMSDP=9.41D-17 MaxDP=1.11D-15 DE=-1.21D-05 OVMax= 8.75D-05
+
+ SCF Done:  E(RS-VWN) =  -174.017216929     A.U. after    6 cycles
+            NFock=  6  Conv=0.94D-16     -V/T= 2.3943
+ KE= 1.248075970537D+02 PE=-6.995594886856D+02 EE= 2.637806732469D+02
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                     1000
+ -------------------------------------------------------------------------
+ MULLER method
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00207
+TotCharge/Gaussian quadrature gives     0.03025
+    10.07259428476623        3.0250423412791605E-002
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00371
+TotCharge/Gaussian quadrature gives     0.00225
+    10.17259428476623        2.2503840183549784E-003
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00149
+TotCharge/Gaussian quadrature gives    -0.02450
+    10.27259428476623       -2.4495035416965294E-002
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00380
+TotCharge/Gaussian quadrature gives     0.00020
+    10.18083109583571        2.0203215356140447E-004
+ -----------------------------------------------
+ Fermi energy= -10.18083  +/-  0.09176
+ 
+ Number of alpha electrons:    5.50010
+ Number of beta electrons:     5.50010
+ Total number of electrons:    11.00020
+ -----------------------------------------------
+ 
+ ****************************************** 
+ *                                        * 
+ *        ANT.G09 final analysis          * 
+ *                                        * 
+ ****************************************** 
+ 
+ -------------------------------------
+ ---  Self-consistent Hamiltonian  ---
+ -------------------------------------
+ ---------
+ Left lead
+ ---------
+ Atom:   1  -10.918145
+ Atom:   2  -10.619427
+ ----------
+ Right lead
+ ----------
+ Atom:   3  -10.953156
+ Atom:   4  -10.619427
+ Atom:   5  -10.918145
+ 
+ --------------------------------
+ --- Calculating Transmission ---
+ ---  (and DOS if required)   ---
+ --------------------------------
+ 
+ MULLER method
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00224
+TotCharge/Gaussian quadrature gives     0.02772
+    10.08083109583571        2.7724083686644363E-002
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00380
+TotCharge/Gaussian quadrature gives     0.00020
+    10.18083109583571        2.0203215356140447E-004
+TotCharge/Gaussian quadrature has converged after  31 steps. Error:   0.00023
+TotCharge/Gaussian quadrature gives    -0.02612
+    10.28083109583570       -2.6123331327825738E-002
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:   0.00381
+TotCharge/Gaussian quadrature gives     0.00002
+    10.18158160858137        1.7277489440914451E-005
+ -----------------------------------------------
+ Fermi energy= -10.18158  +/-  0.09925
+ 
+ Number of alpha electrons:    5.50001
+ Number of beta electrons:     5.50001
+ Total number of electrons:    11.00002
+ -----------------------------------------------
+ -------------------------------------
+ ---  Mulliken population analysis ---
+ -------------------------------------
+ ----------------------
+ Charges in electrode 1
+ ----------------------
+ Atom:   1  El.dens: 10.7343
+ Atom:   2  El.dens: 10.9260
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 1:    21.66024980952031     
+ ---------------------------------------------------------
+ ----------------------------------------------------
+ Total num. of electrons in molecule:    0.000000000000000     
+ ----------------------------------------------------
+ ----------------------
+ Charges in electrode 2
+ ----------------------
+ Atom:   3  El.dens: 10.6795
+ Atom:   4  El.dens: 10.9260
+ Atom:   5  El.dens: 10.7343
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 2:    32.33975019047968     
+ ---------------------------------------------------------
+  ----------------- End of ANT.G09 ------------------- 
+ Leave Link  502 at Thu Jul  7 15:46:25 2022, MaxMem=   134217728 cpu:        36.6
+ (Enter /home/palacios/gaussian/g09/l601.exe)
+ Copying SCF densities to generalized density rwf, IOpCl= 0 IROHF=0.
+
+ **********************************************************************
+
+            Population analysis using the SCF density.
+
+ **********************************************************************
+
+ Orbital symmetries:
+       Occupied  (SGG) (SGU) (PIG) (PIG) (SGG) (PIU) (PIU) (DLTG)
+                 (DLTU) (DLTG) (DLTU) (PIG) (PIG) (DLTG) (DLTG)
+                 (SGU) (PIU) (PIU) (PIG) (PIG) (DLTU) (DLTU) (DLTG)
+                 (DLTG) (SGG) (SGG) (SGU)
+       Virtual   (SGG) (SGU) (SGG) (PIU) (PIU) (SGU) (PIG) (PIG)
+                 (PIU) (PIU) (PIG) (PIG) (PIU) (PIU) (SGG) (SGU)
+                 (SGG) (SGU)
+ The electronic state is 1-SGG.
+ Alpha  occ. eigenvalues --   -0.57809  -0.56913  -0.55792  -0.55792  -0.55715
+ Alpha  occ. eigenvalues --   -0.55705  -0.55705  -0.55097  -0.55097  -0.55096
+ Alpha  occ. eigenvalues --   -0.55096  -0.55015  -0.55015  -0.53864  -0.53863
+ Alpha  occ. eigenvalues --   -0.52626  -0.52527  -0.52527  -0.51887  -0.51887
+ Alpha  occ. eigenvalues --   -0.51786  -0.51785  -0.51765  -0.51764  -0.51154
+ Alpha  occ. eigenvalues --   -0.39462  -0.38791
+ Alpha virt. eigenvalues --   -0.36731  -0.32216  -0.25934  -0.18054  -0.18054
+ Alpha virt. eigenvalues --   -0.16710  -0.16581  -0.16581  -0.14532  -0.14532
+ Alpha virt. eigenvalues --   -0.11288  -0.11288  -0.07524  -0.07524   0.01326
+ Alpha virt. eigenvalues --    0.25166   0.61561   0.71565
+     Molecular Orbital Coefficients:
+                          23        24        25        26        27
+                       (DLTG)--  (DLTG)--  (SGG)--O  (SGG)--O  (SGU)--O
+     Eigenvalues --    -0.51765  -0.51764  -0.51154  -0.39462  -0.38791
+   1 1   Au 1S         -0.00000   0.00000   0.03657   0.17361   0.51544
+   2        2PX         0.00000   0.00000   0.00000   0.00000   0.00000
+   3        2PY         0.00000   0.00000   0.00000   0.00000   0.00000
+   4        2PZ         0.00000   0.00000  -0.01297   0.04126  -0.05717
+   5        3D 0        0.00000   0.00000  -0.23771  -0.04112  -0.05739
+   6        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+   7        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+   8        3D+2       -0.03025   0.00000  -0.00000  -0.00000  -0.00000
+   9        3D-2        0.00000  -0.03024   0.00000   0.00000   0.00000
+  10 2   Au 1S         -0.00000   0.00000  -0.01747   0.39655   0.46979
+  11        2PX         0.00000   0.00000   0.00000   0.00000   0.00000
+  12        2PY         0.00000   0.00000   0.00000   0.00000   0.00000
+  13        2PZ         0.00000   0.00000   0.01017   0.03288  -0.11151
+  14        3D 0       -0.00000   0.00000   0.57159  -0.13048  -0.10700
+  15        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+  16        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+  17        3D+2        0.70412   0.00000   0.00000   0.00000   0.00000
+  18        3D-2        0.00000   0.70412   0.00000   0.00000   0.00000
+  19 3   Au 1S         -0.00000   0.00000   0.06446   0.55847   0.00000
+  20        2PX         0.00000   0.00000   0.00000   0.00000   0.00000
+  21        2PY         0.00000   0.00000   0.00000   0.00000   0.00000
+  22        2PZ         0.00000   0.00000   0.00000   0.00000  -0.16660
+  23        3D 0        0.00000   0.00000  -0.54022  -0.11225   0.00000
+  24        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+  25        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+  26        3D+2       -0.09604   0.00000  -0.00000   0.00000   0.00000
+  27        3D-2        0.00000  -0.09604   0.00000   0.00000   0.00000
+  28 4   Au 1S         -0.00000   0.00000  -0.01747   0.39655  -0.46979
+  29        2PX         0.00000   0.00000   0.00000   0.00000   0.00000
+  30        2PY         0.00000   0.00000   0.00000   0.00000   0.00000
+  31        2PZ        -0.00000   0.00000  -0.01017  -0.03288  -0.11151
+  32        3D 0       -0.00000   0.00000   0.57159  -0.13048   0.10700
+  33        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+  34        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+  35        3D+2        0.70412   0.00000   0.00000   0.00000  -0.00000
+  36        3D-2        0.00000   0.70412   0.00000   0.00000   0.00000
+  37 5   Au 1S         -0.00000   0.00000   0.03657   0.17361  -0.51544
+  38        2PX         0.00000   0.00000   0.00000   0.00000   0.00000
+  39        2PY         0.00000   0.00000   0.00000   0.00000   0.00000
+  40        2PZ        -0.00000   0.00000   0.01297  -0.04126  -0.05717
+  41        3D 0        0.00000   0.00000  -0.23771  -0.04112   0.05739
+  42        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+  43        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+  44        3D+2       -0.03025   0.00000  -0.00000  -0.00000   0.00000
+  45        3D-2        0.00000  -0.03024   0.00000   0.00000   0.00000
+                          28        29        30        31        32
+                       (SGG)--V  (SGU)--V  (SGG)--V  (PIU)--V  (PIU)--V
+     Eigenvalues --    -0.36731  -0.32216  -0.25934  -0.18054  -0.18054
+   1 1   Au 1S          0.58258  -0.51338   0.42680   0.00000   0.00000
+   2        2PX        -0.00000   0.00000   0.00000   0.00000   0.18893
+   3        2PY        -0.00000   0.00000   0.00000   0.18893   0.00000
+   4        2PZ        -0.04462  -0.01662   0.22612   0.00000   0.00000
+   5        3D 0       -0.02483  -0.04164   0.06256   0.00000   0.00000
+   6        3D+1       -0.00000   0.00000   0.00000   0.00000   0.02680
+   7        3D-1       -0.00000   0.00000   0.00000   0.02680   0.00000
+   8        3D+2       -0.00000   0.00000  -0.00000   0.00000   0.00000
+   9        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  10 2   Au 1S          0.03807   0.52781  -0.56118   0.00000   0.00000
+  11        2PX        -0.00000   0.00000   0.00000   0.00000   0.34242
+  12        2PY        -0.00000   0.00000   0.00000   0.34242   0.00000
+  13        2PZ        -0.00056  -0.10396  -0.07052   0.00000   0.00000
+  14        3D 0       -0.00906   0.02206  -0.08929   0.00000   0.00000
+  15        3D+1       -0.00000   0.00000   0.00000   0.00000   0.02194
+  16        3D-1       -0.00000   0.00000   0.00000   0.02194   0.00000
+  17        3D+2       -0.00000   0.00000  -0.00000   0.00000   0.00000
+  18        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  19 3   Au 1S         -0.58187   0.00000   0.63129   0.00000   0.00000
+  20        2PX        -0.00000   0.00000   0.00000   0.00000   0.45700
+  21        2PY        -0.00000   0.00000   0.00000   0.45700   0.00000
+  22        2PZ        -0.00000   0.12134   0.00000   0.00000   0.00000
+  23        3D 0        0.03335   0.00000   0.10262   0.00000   0.00000
+  24        3D+1       -0.00000   0.00000   0.00000   0.00000   0.00000
+  25        3D-1       -0.00000   0.00000   0.00000   0.00000   0.00000
+  26        3D+2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  27        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  28 4   Au 1S          0.03807  -0.52781  -0.56118   0.00000   0.00000
+  29        2PX        -0.00000   0.00000   0.00000   0.00000   0.34242
+  30        2PY        -0.00000   0.00000   0.00000   0.34242   0.00000
+  31        2PZ         0.00056  -0.10396   0.07052   0.00000   0.00000
+  32        3D 0       -0.00906  -0.02206  -0.08929   0.00000   0.00000
+  33        3D+1       -0.00000   0.00000   0.00000   0.00000  -0.02194
+  34        3D-1       -0.00000   0.00000   0.00000  -0.02194   0.00000
+  35        3D+2       -0.00000  -0.00000  -0.00000   0.00000   0.00000
+  36        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  37 5   Au 1S          0.58258   0.51338   0.42680   0.00000   0.00000
+  38        2PX        -0.00000   0.00000   0.00000   0.00000   0.18893
+  39        2PY        -0.00000   0.00000   0.00000   0.18893   0.00000
+  40        2PZ         0.04462  -0.01662  -0.22612   0.00000   0.00000
+  41        3D 0       -0.02483   0.04164   0.06256   0.00000   0.00000
+  42        3D+1       -0.00000   0.00000   0.00000   0.00000  -0.02680
+  43        3D-1       -0.00000   0.00000   0.00000  -0.02680   0.00000
+  44        3D+2       -0.00000  -0.00000  -0.00000   0.00000   0.00000
+  45        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+     Density Matrix:
+                           1         2         3         4         5
+   1 1   Au 1S          0.60694
+   2        2PX        -0.00000   0.00026
+   3        2PY        -0.00000  -0.00000   0.00026
+   4        2PZ        -0.04982   0.00000   0.00000   0.01237
+   5        3D 0       -0.02233   0.00000   0.00000  -0.01975   1.99991
+   6        3D+1       -0.00000  -0.02110   0.00000  -0.00000  -0.00000
+   7        3D-1       -0.00000  -0.00000  -0.02110  -0.00000  -0.00000
+   8        3D+2        0.00000  -0.00000   0.00000   0.00000   0.00000
+   9        3D-2        0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  10 2   Au 1S          0.63269  -0.00000  -0.00000  -0.02263   0.01391
+  11        2PX        -0.00000  -0.00033  -0.00000   0.00000  -0.00000
+  12        2PY        -0.00000  -0.00000  -0.00033   0.00000  -0.00000
+  13        2PZ        -0.11111   0.00000   0.00000   0.01842  -0.01587
+  14        3D 0       -0.01361  -0.00000  -0.00000  -0.02986  -0.08292
+  15        3D+1       -0.00000  -0.00256   0.00000  -0.00000  -0.00000
+  16        3D-1       -0.00000   0.00000  -0.00256  -0.00000  -0.00000
+  17        3D+2        0.00000  -0.00000   0.00000   0.00000  -0.00000
+  18        3D-2        0.00000  -0.00000  -0.00000   0.00000   0.00000
+  19 3   Au 1S          0.19663   0.00000   0.00000   0.04826  -0.09202
+  20        2PX        -0.00000   0.00017  -0.00000   0.00000  -0.00000
+  21        2PY        -0.00000  -0.00000   0.00017   0.00000  -0.00000
+  22        2PZ        -0.18025   0.00000   0.00000   0.02221  -0.05735
+  23        3D 0       -0.10075   0.00000   0.00000   0.03930  -0.00212
+  24        3D+1       -0.00000   0.00780  -0.00000   0.00000  -0.00000
+  25        3D-1       -0.00000  -0.00000   0.00780   0.00000  -0.00000
+  26        3D+2       -0.00000   0.00000  -0.00000   0.00000  -0.00000
+  27        3D-2        0.00000   0.00000   0.00000  -0.00000   0.00000
+  28 4   Au 1S         -0.35938   0.00000   0.00000   0.09279  -0.00519
+  29        2PX        -0.00000  -0.00002  -0.00000   0.00000  -0.00000
+  30        2PY        -0.00000  -0.00000  -0.00002   0.00000  -0.00000
+  31        2PZ        -0.13531   0.00000   0.00000   0.01237  -0.01003
+  32        3D 0        0.01299   0.00000   0.00000   0.00147   0.00390
+  33        3D+1        0.00000  -0.00203  -0.00000   0.00000   0.00000
+  34        3D-1        0.00000  -0.00000  -0.00203   0.00000   0.00000
+  35        3D+2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  36        3D-2       -0.00000  -0.00000  -0.00000  -0.00000  -0.00000
+  37 5   Au 1S         -0.47822   0.00000   0.00000   0.07522   0.02665
+  38        2PX        -0.00000  -0.00000  -0.00000   0.00000  -0.00000
+  39        2PY        -0.00000  -0.00000  -0.00000   0.00000  -0.00000
+  40        2PZ        -0.07522   0.00000   0.00000   0.00314  -0.00497
+  41        3D 0        0.02665   0.00000   0.00000   0.00497  -0.00340
+  42        3D+1        0.00000   0.00149  -0.00000   0.00000  -0.00000
+  43        3D-1        0.00000  -0.00000   0.00149   0.00000  -0.00000
+  44        3D+2        0.00000   0.00000  -0.00000  -0.00000  -0.00000
+  45        3D-2       -0.00000   0.00000   0.00000  -0.00000   0.00000
+                           6         7         8         9        10
+   6        3D+1        2.00568
+   7        3D-1        0.00000   2.00568
+   8        3D+2        0.00000  -0.00000   2.00011
+   9        3D-2        0.00000   0.00000   0.00000   2.00011
+  10 2   Au 1S          0.00000   0.00000  -0.00000  -0.00000   0.77715
+  11        2PX         0.02612   0.00000   0.00000   0.00000  -0.00000
+  12        2PY         0.00000   0.02612  -0.00000   0.00000  -0.00000
+  13        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.08570
+  14        3D 0       -0.00000  -0.00000  -0.00000   0.00000  -0.08501
+  15        3D+1        0.07118   0.00000   0.00000   0.00000  -0.00000
+  16        3D-1        0.00000   0.07118  -0.00000   0.00000  -0.00000
+  17        3D+2        0.00000  -0.00000  -0.01493  -0.00000   0.00000
+  18        3D-2        0.00000   0.00000   0.00000  -0.01493   0.00000
+  19 3   Au 1S         -0.00000  -0.00000  -0.00000   0.00000   0.45100
+  20        2PX        -0.01489   0.00000  -0.00000  -0.00000  -0.00000
+  21        2PY         0.00000  -0.01489   0.00000  -0.00000  -0.00000
+  22        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.16697
+  23        3D 0       -0.00000  -0.00000   0.00000   0.00000   0.01397
+  24        3D+1        0.00103   0.00000   0.00000   0.00000   0.00000
+  25        3D-1        0.00000   0.00103  -0.00000   0.00000   0.00000
+  26        3D+2        0.00000  -0.00000   0.00007  -0.00000   0.00000
+  27        3D-2        0.00000   0.00000   0.00000   0.00007  -0.00000
+  28 4   Au 1S         -0.00000  -0.00000   0.00000   0.00000  -0.13188
+  29        2PX         0.00517   0.00000   0.00000   0.00000  -0.00000
+  30        2PY         0.00000   0.00517  -0.00000   0.00000  -0.00000
+  31        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.14114
+  32        3D 0        0.00000   0.00000  -0.00000  -0.00000  -0.06522
+  33        3D+1        0.00120  -0.00000   0.00000   0.00000  -0.00000
+  34        3D-1       -0.00000   0.00120  -0.00000   0.00000  -0.00000
+  35        3D+2        0.00000  -0.00000  -0.00000  -0.00000  -0.00000
+  36        3D-2        0.00000   0.00000  -0.00000  -0.00000   0.00000
+  37 5   Au 1S          0.00000   0.00000   0.00000  -0.00000  -0.35938
+  38        2PX        -0.00149   0.00000  -0.00000  -0.00000  -0.00000
+  39        2PY         0.00000  -0.00149   0.00000  -0.00000  -0.00000
+  40        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.09279
+  41        3D 0       -0.00000  -0.00000  -0.00000   0.00000  -0.00519
+  42        3D+1       -0.00044   0.00000  -0.00000  -0.00000  -0.00000
+  43        3D-1        0.00000  -0.00044   0.00000  -0.00000  -0.00000
+  44        3D+2       -0.00000   0.00000   0.00000  -0.00000   0.00000
+  45        3D-2       -0.00000  -0.00000   0.00000   0.00000   0.00000
+                          11        12        13        14        15
+  11        2PX         0.00046
+  12        2PY        -0.00000   0.00046
+  13        2PZ         0.00000   0.00000   0.03386
+  14        3D 0       -0.00000  -0.00000  -0.03165   2.00402
+  15        3D+1       -0.00282   0.00000  -0.00000  -0.00000   2.00618
+  16        3D-1        0.00000  -0.00282  -0.00000  -0.00000   0.00000
+  17        3D+2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  18        3D-2       -0.00000  -0.00000   0.00000   0.00000   0.00000
+  19 3   Au 1S          0.00000   0.00000   0.04100  -0.00835  -0.00000
+  20        2PX        -0.00027  -0.00000   0.00000  -0.00000   0.00708
+  21        2PY        -0.00000  -0.00027   0.00000  -0.00000   0.00000
+  22        2PZ         0.00000   0.00000   0.04343  -0.01781  -0.00000
+  23        3D 0        0.00000   0.00000   0.00631  -0.07640  -0.00000
+  24        3D+1       -0.01225  -0.00000   0.00000  -0.00000   0.07028
+  25        3D-1       -0.00000  -0.01225   0.00000  -0.00000   0.00000
+  26        3D+2       -0.00000   0.00000   0.00000  -0.00000   0.00000
+  27        3D-2       -0.00000  -0.00000  -0.00000   0.00000   0.00000
+  28 4   Au 1S          0.00000   0.00000   0.14114  -0.06522  -0.00000
+  29        2PX         0.00009  -0.00000   0.00000  -0.00000  -0.00708
+  30        2PY        -0.00000   0.00009   0.00000  -0.00000   0.00000
+  31        2PZ         0.00000   0.00000   0.02803  -0.06320  -0.00000
+  32        3D 0        0.00000   0.00000   0.06320  -0.00429  -0.00000
+  33        3D+1        0.00708  -0.00000   0.00000  -0.00000   0.00242
+  34        3D-1       -0.00000   0.00708   0.00000  -0.00000   0.00000
+  35        3D+2        0.00000  -0.00000   0.00000  -0.00000   0.00000
+  36        3D-2        0.00000   0.00000  -0.00000   0.00000   0.00000
+  37 5   Au 1S          0.00000   0.00000   0.13531   0.01299   0.00000
+  38        2PX        -0.00002  -0.00000   0.00000  -0.00000   0.00203
+  39        2PY        -0.00000  -0.00002   0.00000  -0.00000   0.00000
+  40        2PZ         0.00000   0.00000   0.01237  -0.00147  -0.00000
+  41        3D 0        0.00000   0.00000   0.01003   0.00390   0.00000
+  42        3D+1       -0.00517  -0.00000   0.00000   0.00000   0.00120
+  43        3D-1       -0.00000  -0.00517   0.00000   0.00000  -0.00000
+  44        3D+2       -0.00000   0.00000  -0.00000  -0.00000   0.00000
+  45        3D-2       -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+                          16        17        18        19        20
+  16        3D-1        2.00618
+  17        3D+2       -0.00000   2.00022
+  18        3D-2        0.00000   0.00000   2.00022
+  19 3   Au 1S         -0.00000   0.00000   0.00000   0.65015
+  20        2PX         0.00000   0.00000   0.00000   0.00000   0.00028
+  21        2PY         0.00708  -0.00000   0.00000   0.00000  -0.00000
+  22        2PZ        -0.00000  -0.00000   0.00000   0.00000   0.00000
+  23        3D 0       -0.00000   0.00000   0.00000  -0.03787   0.00000
+  24        3D+1        0.00000   0.00000   0.00000  -0.00000   0.00000
+  25        3D-1        0.07028  -0.00000   0.00000  -0.00000   0.00000
+  26        3D+2       -0.00000  -0.01493  -0.00000   0.00000   0.00000
+  27        3D-2        0.00000   0.00000  -0.01493   0.00000   0.00000
+  28 4   Au 1S         -0.00000  -0.00000   0.00000   0.45100   0.00000
+  29        2PX         0.00000  -0.00000  -0.00000  -0.00000  -0.00027
+  30        2PY        -0.00708   0.00000  -0.00000  -0.00000  -0.00000
+  31        2PZ        -0.00000  -0.00000   0.00000  -0.04100   0.00000
+  32        3D 0       -0.00000  -0.00000   0.00000  -0.00835   0.00000
+  33        3D+1        0.00000   0.00000   0.00000  -0.00000  -0.00708
+  34        3D-1        0.00242  -0.00000   0.00000  -0.00000  -0.00000
+  35        3D+2       -0.00000   0.00007   0.00000   0.00000  -0.00000
+  36        3D-2        0.00000  -0.00000   0.00007   0.00000  -0.00000
+  37 5   Au 1S          0.00000  -0.00000  -0.00000   0.19663   0.00000
+  38        2PX         0.00000   0.00000   0.00000  -0.00000   0.00017
+  39        2PY         0.00203  -0.00000   0.00000  -0.00000  -0.00000
+  40        2PZ        -0.00000  -0.00000   0.00000  -0.04826   0.00000
+  41        3D 0        0.00000  -0.00000  -0.00000  -0.09202   0.00000
+  42        3D+1       -0.00000   0.00000   0.00000  -0.00000   0.01489
+  43        3D-1        0.00120  -0.00000   0.00000  -0.00000  -0.00000
+  44        3D+2       -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  45        3D-2        0.00000  -0.00000  -0.00000   0.00000   0.00000
+                          21        22        23        24        25
+  21        2PY         0.00028
+  22        2PZ         0.00000   0.06480
+  23        3D 0        0.00000   0.00000   1.99727
+  24        3D+1        0.00000   0.00000  -0.00000   2.00798
+  25        3D-1        0.00000   0.00000  -0.00000   0.00000   2.00798
+  26        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  27        3D-2        0.00000   0.00000   0.00000   0.00000   0.00000
+  28 4   Au 1S          0.00000   0.16697   0.01397   0.00000   0.00000
+  29        2PX        -0.00000   0.00000  -0.00000   0.01225   0.00000
+  30        2PY        -0.00027   0.00000  -0.00000   0.00000   0.01225
+  31        2PZ         0.00000   0.04343  -0.00631  -0.00000  -0.00000
+  32        3D 0        0.00000   0.01781  -0.07640  -0.00000  -0.00000
+  33        3D+1       -0.00000   0.00000  -0.00000   0.07028   0.00000
+  34        3D-1       -0.00708   0.00000  -0.00000   0.00000   0.07028
+  35        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  36        3D-2       -0.00000  -0.00000   0.00000   0.00000   0.00000
+  37 5   Au 1S          0.00000   0.18025  -0.10075  -0.00000  -0.00000
+  38        2PX        -0.00000   0.00000  -0.00000  -0.00780   0.00000
+  39        2PY         0.00017   0.00000  -0.00000   0.00000  -0.00780
+  40        2PZ         0.00000   0.02221  -0.03930  -0.00000  -0.00000
+  41        3D 0        0.00000   0.05735  -0.00212  -0.00000  -0.00000
+  42        3D+1       -0.00000   0.00000  -0.00000   0.00103   0.00000
+  43        3D-1        0.01489   0.00000  -0.00000   0.00000   0.00103
+  44        3D+2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  45        3D-2        0.00000  -0.00000   0.00000   0.00000   0.00000
+                          26        27        28        29        30
+  26        3D+2        2.00022
+  27        3D-2        0.00000   2.00022
+  28 4   Au 1S          0.00000  -0.00000   0.77715
+  29        2PX         0.00000   0.00000   0.00000   0.00046
+  30        2PY        -0.00000   0.00000   0.00000  -0.00000   0.00046
+  31        2PZ        -0.00000   0.00000   0.08570   0.00000   0.00000
+  32        3D 0       -0.00000   0.00000  -0.08501   0.00000   0.00000
+  33        3D+1        0.00000   0.00000  -0.00000   0.00282  -0.00000
+  34        3D-1       -0.00000   0.00000  -0.00000  -0.00000   0.00282
+  35        3D+2       -0.01493  -0.00000   0.00000   0.00000  -0.00000
+  36        3D-2        0.00000  -0.01493   0.00000   0.00000   0.00000
+  37 5   Au 1S         -0.00000   0.00000   0.63269   0.00000   0.00000
+  38        2PX        -0.00000  -0.00000   0.00000  -0.00033  -0.00000
+  39        2PY         0.00000  -0.00000   0.00000  -0.00000  -0.00033
+  40        2PZ        -0.00000   0.00000   0.02263   0.00000   0.00000
+  41        3D 0       -0.00000   0.00000   0.01391   0.00000   0.00000
+  42        3D+1        0.00000   0.00000   0.00000  -0.02612  -0.00000
+  43        3D-1       -0.00000   0.00000   0.00000  -0.00000  -0.02612
+  44        3D+2        0.00007  -0.00000  -0.00000  -0.00000   0.00000
+  45        3D-2        0.00000   0.00007  -0.00000  -0.00000  -0.00000
+                          31        32        33        34        35
+  31        2PZ         0.03386
+  32        3D 0        0.03165   2.00402
+  33        3D+1        0.00000  -0.00000   2.00618
+  34        3D-1        0.00000  -0.00000   0.00000   2.00618
+  35        3D+2       -0.00000   0.00000   0.00000  -0.00000   2.00022
+  36        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+  37 5   Au 1S          0.11111  -0.01361  -0.00000  -0.00000   0.00000
+  38        2PX         0.00000   0.00000   0.00256  -0.00000   0.00000
+  39        2PY         0.00000   0.00000  -0.00000   0.00256  -0.00000
+  40        2PZ         0.01842   0.02986   0.00000   0.00000  -0.00000
+  41        3D 0        0.01587  -0.08292  -0.00000  -0.00000  -0.00000
+  42        3D+1        0.00000  -0.00000   0.07118   0.00000   0.00000
+  43        3D-1        0.00000  -0.00000   0.00000   0.07118  -0.00000
+  44        3D+2       -0.00000  -0.00000   0.00000  -0.00000  -0.01493
+  45        3D-2       -0.00000   0.00000   0.00000   0.00000   0.00000
+                          36        37        38        39        40
+  36        3D-2        2.00022
+  37 5   Au 1S          0.00000   0.60694
+  38        2PX         0.00000   0.00000   0.00026
+  39        2PY         0.00000   0.00000  -0.00000   0.00026
+  40        2PZ        -0.00000   0.04982   0.00000   0.00000   0.01237
+  41        3D 0        0.00000  -0.02233  -0.00000  -0.00000   0.01975
+  42        3D+1        0.00000  -0.00000   0.02110  -0.00000   0.00000
+  43        3D-1        0.00000  -0.00000   0.00000   0.02110   0.00000
+  44        3D+2       -0.00000   0.00000   0.00000  -0.00000  -0.00000
+  45        3D-2       -0.01493   0.00000   0.00000   0.00000   0.00000
+                          41        42        43        44        45
+  41        3D 0        1.99991
+  42        3D+1       -0.00000   2.00568
+  43        3D-1       -0.00000   0.00000   2.00568
+  44        3D+2        0.00000   0.00000  -0.00000   2.00011
+  45        3D-2        0.00000   0.00000   0.00000   0.00000   2.00011
+    Full Mulliken population analysis:
+                           1         2         3         4         5
+   1 1   Au 1S          0.60694
+   2        2PX         0.00000   0.00026
+   3        2PY         0.00000   0.00000   0.00026
+   4        2PZ         0.00000  -0.00000   0.00000   0.01237
+   5        3D 0        0.00000   0.00000   0.00000   0.00000   1.99991
+   6        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+   7        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+   8        3D+2        0.00000   0.00000   0.00000   0.00000   0.00000
+   9        3D-2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  10 2   Au 1S          0.20282   0.00000   0.00000   0.01292   0.00101
+  11        2PX        -0.00000  -0.00016   0.00000  -0.00000  -0.00000
+  12        2PY        -0.00000   0.00000  -0.00016  -0.00000  -0.00000
+  13        2PZ        -0.06343  -0.00000  -0.00000  -0.00289  -0.00055
+  14        3D 0       -0.00099   0.00000   0.00000   0.00103  -0.00397
+  15        3D+1       -0.00000  -0.00017  -0.00000   0.00000  -0.00000
+  16        3D-1       -0.00000  -0.00000  -0.00017   0.00000  -0.00000
+  17        3D+2        0.00000  -0.00000  -0.00000   0.00000   0.00000
+  18        3D-2        0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  19 3   Au 1S          0.00263  -0.00000  -0.00000  -0.00546  -0.00030
+  20        2PX        -0.00000   0.00001   0.00000  -0.00000  -0.00000
+  21        2PY        -0.00000   0.00000   0.00001  -0.00000  -0.00000
+  22        2PZ        -0.02039  -0.00000  -0.00000  -0.00642  -0.00103
+  23        3D 0       -0.00033  -0.00000  -0.00000  -0.00070  -0.00000
+  24        3D+1       -0.00000   0.00005   0.00000  -0.00000  -0.00000
+  25        3D-1       -0.00000   0.00000   0.00005  -0.00000  -0.00000
+  26        3D+2        0.00000   0.00000   0.00000   0.00000   0.00000
+  27        3D-2        0.00000   0.00000   0.00000   0.00000   0.00000
+  28 4   Au 1S         -0.00003  -0.00000  -0.00000  -0.00048  -0.00000
+  29        2PX         0.00000  -0.00000   0.00000  -0.00000  -0.00000
+  30        2PY        -0.00000   0.00000  -0.00000  -0.00000  -0.00000
+  31        2PZ        -0.00070  -0.00000  -0.00000  -0.00057  -0.00001
+  32        3D 0        0.00000   0.00000  -0.00000  -0.00000   0.00000
+  33        3D+1        0.00000  -0.00000   0.00000   0.00000   0.00000
+  34        3D-1        0.00000   0.00000  -0.00000  -0.00000   0.00000
+  35        3D+2        0.00000   0.00000  -0.00000   0.00000  -0.00000
+  36        3D-2        0.00000  -0.00000   0.00000   0.00000  -0.00000
+  37 5   Au 1S         -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  38        2PX         0.00000  -0.00000   0.00000  -0.00000  -0.00000
+  39        2PY        -0.00000   0.00000  -0.00000  -0.00000  -0.00000
+  40        2PZ        -0.00000  -0.00000  -0.00000  -0.00001  -0.00000
+  41        3D 0        0.00000   0.00000  -0.00000  -0.00000  -0.00000
+  42        3D+1        0.00000   0.00000   0.00000   0.00000  -0.00000
+  43        3D-1        0.00000   0.00000   0.00000  -0.00000  -0.00000
+  44        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  45        3D-2        0.00000   0.00000   0.00000   0.00000   0.00000
+                           6         7         8         9        10
+   6        3D+1        2.00568
+   7        3D-1        0.00000   2.00568
+   8        3D+2       -0.00000   0.00000   2.00011
+   9        3D-2        0.00000  -0.00000  -0.00000   2.00011
+  10 2   Au 1S          0.00000   0.00000   0.00000  -0.00000   0.77715
+  11        2PX        -0.00177   0.00000  -0.00000  -0.00000   0.00000
+  12        2PY         0.00000  -0.00177  -0.00000  -0.00000   0.00000
+  13        2PZ        -0.00000  -0.00000   0.00000   0.00000   0.00000
+  14        3D 0       -0.00000  -0.00000   0.00000   0.00000   0.00000
+  15        3D+1       -0.00251   0.00000  -0.00000  -0.00000   0.00000
+  16        3D-1        0.00000  -0.00251  -0.00000  -0.00000   0.00000
+  17        3D+2       -0.00000  -0.00000  -0.00011  -0.00000   0.00000
+  18        3D-2       -0.00000  -0.00000  -0.00000  -0.00011   0.00000
+  19 3   Au 1S         -0.00000  -0.00000   0.00000   0.00000   0.14458
+  20        2PX         0.00009   0.00000   0.00000   0.00000  -0.00000
+  21        2PY         0.00000   0.00009   0.00000   0.00000  -0.00000
+  22        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.09531
+  23        3D 0       -0.00000  -0.00000   0.00000   0.00000   0.00101
+  24        3D+1       -0.00000   0.00000  -0.00000  -0.00000   0.00000
+  25        3D-1        0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  26        3D+2       -0.00000  -0.00000   0.00000   0.00000   0.00000
+  27        3D-2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  28 4   Au 1S         -0.00000  -0.00000   0.00000   0.00000  -0.00176
+  29        2PX        -0.00000   0.00000  -0.00000  -0.00000   0.00000
+  30        2PY         0.00000  -0.00000  -0.00000  -0.00000  -0.00000
+  31        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.01597
+  32        3D 0        0.00000   0.00000  -0.00000  -0.00000  -0.00021
+  33        3D+1       -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  34        3D-1       -0.00000  -0.00000  -0.00000  -0.00000  -0.00000
+  35        3D+2       -0.00000  -0.00000  -0.00000   0.00000   0.00000
+  36        3D-2       -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  37 5   Au 1S          0.00000   0.00000   0.00000  -0.00000  -0.00003
+  38        2PX         0.00000   0.00000   0.00000   0.00000   0.00000
+  39        2PY         0.00000   0.00000   0.00000   0.00000  -0.00000
+  40        2PZ        -0.00000  -0.00000   0.00000   0.00000  -0.00048
+  41        3D 0       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  42        3D+1        0.00000   0.00000   0.00000   0.00000   0.00000
+  43        3D-1        0.00000   0.00000   0.00000   0.00000  -0.00000
+  44        3D+2        0.00000   0.00000   0.00000  -0.00000   0.00000
+  45        3D-2        0.00000   0.00000  -0.00000   0.00000   0.00000
+                          11        12        13        14        15
+  11        2PX         0.00046
+  12        2PY         0.00000   0.00046
+  13        2PZ        -0.00000   0.00000   0.03386
+  14        3D 0        0.00000   0.00000   0.00000   2.00402
+  15        3D+1        0.00000   0.00000   0.00000   0.00000   2.00618
+  16        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+  17        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  18        3D-2        0.00000   0.00000   0.00000  -0.00000   0.00000
+  19 3   Au 1S         -0.00000  -0.00000  -0.02340  -0.00061  -0.00000
+  20        2PX        -0.00014   0.00000  -0.00000  -0.00000  -0.00048
+  21        2PY         0.00000  -0.00014  -0.00000  -0.00000   0.00000
+  22        2PZ        -0.00000  -0.00000  -0.00683  -0.00061  -0.00000
+  23        3D 0       -0.00000  -0.00000  -0.00022  -0.00366  -0.00000
+  24        3D+1       -0.00083   0.00000  -0.00000  -0.00000  -0.00248
+  25        3D-1        0.00000  -0.00083  -0.00000  -0.00000   0.00000
+  26        3D+2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  27        3D-2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  28 4   Au 1S         -0.00000  -0.00000  -0.01597  -0.00021  -0.00000
+  29        2PX         0.00001   0.00000  -0.00000  -0.00000   0.00004
+  30        2PY         0.00000   0.00001  -0.00000  -0.00000   0.00000
+  31        2PZ        -0.00000  -0.00000  -0.00811  -0.00113  -0.00000
+  32        3D 0        0.00000  -0.00000  -0.00113  -0.00000  -0.00000
+  33        3D+1        0.00004   0.00000   0.00000  -0.00000  -0.00000
+  34        3D-1        0.00000   0.00004  -0.00000  -0.00000   0.00000
+  35        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  36        3D-2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  37 5   Au 1S         -0.00000  -0.00000  -0.00070   0.00000   0.00000
+  38        2PX        -0.00000   0.00000   0.00000  -0.00000  -0.00000
+  39        2PY         0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  40        2PZ         0.00000  -0.00000  -0.00057  -0.00000  -0.00000
+  41        3D 0        0.00000  -0.00000  -0.00001   0.00000   0.00000
+  42        3D+1       -0.00000   0.00000   0.00000   0.00000  -0.00000
+  43        3D-1        0.00000  -0.00000  -0.00000   0.00000   0.00000
+  44        3D+2        0.00000  -0.00000   0.00000  -0.00000   0.00000
+  45        3D-2       -0.00000   0.00000   0.00000   0.00000  -0.00000
+                          16        17        18        19        20
+  16        3D-1        2.00618
+  17        3D+2        0.00000   2.00022
+  18        3D-2       -0.00000  -0.00000   2.00022
+  19 3   Au 1S         -0.00000   0.00000   0.00000   0.65015
+  20        2PX         0.00000  -0.00000  -0.00000   0.00000   0.00028
+  21        2PY        -0.00048  -0.00000  -0.00000   0.00000   0.00000
+  22        2PZ        -0.00000   0.00000   0.00000   0.00000  -0.00000
+  23        3D 0       -0.00000   0.00000   0.00000   0.00000   0.00000
+  24        3D+1        0.00000  -0.00000  -0.00000   0.00000   0.00000
+  25        3D-1       -0.00248  -0.00000  -0.00000   0.00000   0.00000
+  26        3D+2       -0.00000  -0.00011  -0.00000   0.00000   0.00000
+  27        3D-2       -0.00000  -0.00000  -0.00011   0.00000   0.00000
+  28 4   Au 1S         -0.00000   0.00000   0.00000   0.14458   0.00000
+  29        2PX         0.00000   0.00000   0.00000   0.00000  -0.00014
+  30        2PY         0.00004   0.00000   0.00000  -0.00000   0.00000
+  31        2PZ        -0.00000   0.00000   0.00000  -0.02340   0.00000
+  32        3D 0       -0.00000   0.00000   0.00000  -0.00061   0.00000
+  33        3D+1        0.00000  -0.00000  -0.00000   0.00000  -0.00048
+  34        3D-1       -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  35        3D+2       -0.00000   0.00000  -0.00000   0.00000   0.00000
+  36        3D-2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+  37 5   Au 1S          0.00000   0.00000  -0.00000   0.00263   0.00000
+  38        2PX         0.00000  -0.00000  -0.00000   0.00000   0.00001
+  39        2PY        -0.00000  -0.00000  -0.00000  -0.00000   0.00000
+  40        2PZ        -0.00000   0.00000   0.00000  -0.00546   0.00000
+  41        3D 0        0.00000  -0.00000   0.00000  -0.00030   0.00000
+  42        3D+1        0.00000   0.00000  -0.00000   0.00000   0.00009
+  43        3D-1       -0.00000  -0.00000   0.00000  -0.00000   0.00000
+  44        3D+2       -0.00000  -0.00000   0.00000   0.00000   0.00000
+  45        3D-2        0.00000   0.00000  -0.00000   0.00000   0.00000
+                          21        22        23        24        25
+  21        2PY         0.00028
+  22        2PZ         0.00000   0.06480
+  23        3D 0        0.00000   0.00000   1.99727
+  24        3D+1        0.00000   0.00000   0.00000   2.00798
+  25        3D-1        0.00000   0.00000   0.00000   0.00000   2.00798
+  26        3D+2        0.00000   0.00000   0.00000  -0.00000   0.00000
+  27        3D-2        0.00000   0.00000  -0.00000   0.00000  -0.00000
+  28 4   Au 1S         -0.00000  -0.09531   0.00101   0.00000   0.00000
+  29        2PX         0.00000   0.00000   0.00000  -0.00083   0.00000
+  30        2PY        -0.00014  -0.00000  -0.00000   0.00000  -0.00083
+  31        2PZ        -0.00000  -0.00683  -0.00022   0.00000  -0.00000
+  32        3D 0       -0.00000  -0.00061  -0.00366   0.00000  -0.00000
+  33        3D+1        0.00000   0.00000   0.00000  -0.00248   0.00000
+  34        3D-1       -0.00048  -0.00000  -0.00000   0.00000  -0.00248
+  35        3D+2       -0.00000   0.00000   0.00000   0.00000  -0.00000
+  36        3D-2        0.00000   0.00000   0.00000  -0.00000   0.00000
+  37 5   Au 1S         -0.00000  -0.02039  -0.00033   0.00000  -0.00000
+  38        2PX         0.00000   0.00000   0.00000   0.00005   0.00000
+  39        2PY         0.00001  -0.00000  -0.00000   0.00000   0.00005
+  40        2PZ        -0.00000  -0.00642  -0.00070   0.00000  -0.00000
+  41        3D 0       -0.00000  -0.00103  -0.00000   0.00000  -0.00000
+  42        3D+1        0.00000   0.00000   0.00000  -0.00000   0.00000
+  43        3D-1        0.00009  -0.00000  -0.00000   0.00000  -0.00000
+  44        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  45        3D-2        0.00000   0.00000   0.00000  -0.00000   0.00000
+                          26        27        28        29        30
+  26        3D+2        2.00022
+  27        3D-2       -0.00000   2.00022
+  28 4   Au 1S          0.00000   0.00000   0.77715
+  29        2PX         0.00000  -0.00000   0.00000   0.00046
+  30        2PY        -0.00000   0.00000   0.00000   0.00000   0.00046
+  31        2PZ         0.00000   0.00000   0.00000   0.00000   0.00000
+  32        3D 0        0.00000   0.00000   0.00000   0.00000   0.00000
+  33        3D+1        0.00000  -0.00000   0.00000   0.00000   0.00000
+  34        3D-1       -0.00000   0.00000   0.00000   0.00000   0.00000
+  35        3D+2       -0.00011   0.00000   0.00000   0.00000   0.00000
+  36        3D-2        0.00000  -0.00011   0.00000   0.00000   0.00000
+  37 5   Au 1S          0.00000   0.00000   0.20282   0.00000  -0.00000
+  38        2PX         0.00000   0.00000   0.00000  -0.00016   0.00000
+  39        2PY         0.00000   0.00000   0.00000   0.00000  -0.00016
+  40        2PZ         0.00000   0.00000   0.01292   0.00000  -0.00000
+  41        3D 0        0.00000   0.00000   0.00101   0.00000  -0.00000
+  42        3D+1        0.00000  -0.00000   0.00000  -0.00177   0.00000
+  43        3D-1       -0.00000   0.00000   0.00000   0.00000  -0.00177
+  44        3D+2        0.00000   0.00000   0.00000   0.00000  -0.00000
+  45        3D-2        0.00000   0.00000   0.00000  -0.00000   0.00000
+                          31        32        33        34        35
+  31        2PZ         0.03386
+  32        3D 0        0.00000   2.00402
+  33        3D+1        0.00000   0.00000   2.00618
+  34        3D-1        0.00000   0.00000   0.00000   2.00618
+  35        3D+2        0.00000   0.00000   0.00000   0.00000   2.00022
+  36        3D-2        0.00000   0.00000   0.00000   0.00000   0.00000
+  37 5   Au 1S         -0.06343  -0.00099   0.00000  -0.00000   0.00000
+  38        2PX         0.00000   0.00000  -0.00017   0.00000   0.00000
+  39        2PY        -0.00000   0.00000   0.00000  -0.00017  -0.00000
+  40        2PZ        -0.00289   0.00103   0.00000   0.00000   0.00000
+  41        3D 0       -0.00055  -0.00397   0.00000  -0.00000   0.00000
+  42        3D+1        0.00000   0.00000  -0.00251   0.00000   0.00000
+  43        3D-1       -0.00000  -0.00000   0.00000  -0.00251  -0.00000
+  44        3D+2        0.00000   0.00000   0.00000  -0.00000  -0.00011
+  45        3D-2        0.00000   0.00000  -0.00000   0.00000   0.00000
+                          36        37        38        39        40
+  36        3D-2        2.00022
+  37 5   Au 1S          0.00000   0.60694
+  38        2PX        -0.00000   0.00000   0.00026
+  39        2PY         0.00000   0.00000   0.00000   0.00026
+  40        2PZ         0.00000   0.00000   0.00000   0.00000   0.01237
+  41        3D 0        0.00000   0.00000   0.00000   0.00000   0.00000
+  42        3D+1       -0.00000   0.00000   0.00000   0.00000   0.00000
+  43        3D-1        0.00000   0.00000   0.00000   0.00000   0.00000
+  44        3D+2        0.00000   0.00000   0.00000   0.00000   0.00000
+  45        3D-2       -0.00011   0.00000   0.00000   0.00000   0.00000
+                          41        42        43        44        45
+  41        3D 0        1.99991
+  42        3D+1        0.00000   2.00568
+  43        3D-1        0.00000   0.00000   2.00568
+  44        3D+2        0.00000   0.00000   0.00000   2.00011
+  45        3D-2        0.00000   0.00000   0.00000   0.00000   2.00011
+     Gross orbital populations:
+                           1
+   1 1   Au 1S          0.72651
+   2        2PX        -0.00002
+   3        2PY        -0.00002
+   4        2PZ         0.00976
+   5        3D 0        1.99505
+   6        3D+1        2.00148
+   7        3D-1        2.00148
+   8        3D+2        2.00000
+   9        3D-2        2.00000
+  10 2   Au 1S          1.02572
+  11        2PX        -0.00239
+  12        2PY        -0.00239
+  13        2PZ        -0.08995
+  14        3D 0        1.99386
+  15        3D+1        2.00057
+  16        3D-1        2.00057
+  17        3D+2        2.00000
+  18        3D-2        2.00000
+  19 3   Au 1S          0.88501
+  20        2PX        -0.00074
+  21        2PY        -0.00074
+  22        2PZ        -0.19639
+  23        3D 0        1.98946
+  24        3D+1        2.00145
+  25        3D-1        2.00145
+  26        3D+2        2.00000
+  27        3D-2        2.00000
+  28 4   Au 1S          1.02572
+  29        2PX        -0.00239
+  30        2PY        -0.00239
+  31        2PZ        -0.08995
+  32        3D 0        1.99386
+  33        3D+1        2.00057
+  34        3D-1        2.00057
+  35        3D+2        2.00000
+  36        3D-2        2.00000
+  37 5   Au 1S          0.72651
+  38        2PX        -0.00002
+  39        2PY        -0.00002
+  40        2PZ         0.00976
+  41        3D 0        1.99505
+  42        3D+1        2.00148
+  43        3D-1        2.00148
+  44        3D+2        2.00000
+  45        3D-2        2.00000
+          Condensed to atoms (all electrons):
+               1          2          3          4          5
+     1  Au  10.631310   0.136471  -0.031702  -0.001803  -0.000016
+     2  Au   0.136471  10.828765   0.006866  -0.044309  -0.001803
+     3  Au  -0.031702   0.006866  10.729172   0.006866  -0.031702
+     4  Au  -0.001803  -0.044309   0.006866  10.828765   0.136471
+     5  Au  -0.000016  -0.001803  -0.031702   0.136471  10.631310
+ Mulliken charges:
+               1
+     1  Au   0.265740
+     2  Au   0.074010
+     3  Au   0.320500
+     4  Au   0.074010
+     5  Au   0.265740
+ Sum of Mulliken charges =   1.00000
+ Mulliken charges with hydrogens summed into heavy atoms:
+               1
+     1  Au   0.265740
+     2  Au   0.074010
+     3  Au   0.320500
+     4  Au   0.074010
+     5  Au   0.265740
+ Electronic spatial extent (au):  <R**2>=           3626.2442
+ Charge=              1.0000 electrons
+ Dipole moment (field-independent basis, Debye):
+    X=              0.0000    Y=             -0.0000    Z=             -0.0000  Tot=              0.0000
+ Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=            -87.1974   YY=            -87.1974   ZZ=             52.1446
+   XY=             -0.0000   XZ=             -0.0000   YZ=              0.0000
+ Traceless Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=            -46.4473   YY=            -46.4473   ZZ=             92.8946
+   XY=             -0.0000   XZ=             -0.0000   YZ=              0.0000
+ Octapole moment (field-independent basis, Debye-Ang**2):
+  XXX=             -0.0000  YYY=              0.0000  ZZZ=              0.0000  XYY=             -0.0000
+  XXY=             -0.0000  XXZ=             -0.0000  XZZ=              0.0000  YZZ=             -0.0000
+  YYZ=              0.0000  XYZ=              0.0000
+ Hexadecapole moment (field-independent basis, Debye-Ang**3):
+ XXXX=           -122.9512 YYYY=           -122.9512 ZZZZ=          -3677.7204 XXXY=             -0.0000
+ XXXZ=              0.0000 YYYX=             -0.0000 YYYZ=              0.0000 ZZZX=             -0.0000
+ ZZZY=              0.0000 XXYY=            -40.9837 XXZZ=          -1558.8150 YYZZ=          -1558.8150
+ XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=             -0.0000
+ N-N= 1.369540014565D+02 E-N=-6.995594886856D+02  KE= 1.248075970537D+02
+ Symmetry AG   KE= 2.999643045023D+01
+ Symmetry B1G  KE= 1.489851973917D+01
+ Symmetry B2G  KE= 1.494846784010D+01
+ Symmetry B3G  KE= 1.494846784010D+01
+ Symmetry AU   KE= 9.932009702242D+00
+ Symmetry B1U  KE= 2.017517372809D+01
+ Symmetry B2U  KE= 9.954263876901D+00
+ Symmetry B3U  KE= 9.954263876901D+00
+ Orbital energies and kinetic energies (alpha):
+                                 1                 2
+  23 (DLTG)--O                -0.517652          2.489321
+  24 (DLTG)--O                -0.517644          2.489321
+  25 (SGG)--O                 -0.511545          2.605152
+  26 (SGG)--O                 -0.394621          0.227386
+  27 (SGU)--O                 -0.387909          0.211699
+  28 (SGG)--V                 -0.367309          0.166415
+  29 (SGU)--V                 -0.322156          0.200033
+  30 (SGG)--V                 -0.259339          0.312898
+  31 (PIU)--V                 -0.180543          0.098146
+  32 (PIU)--V                 -0.180543          0.098146
+ Total kinetic energy from orbitals= 1.248075970537D+02
+ No NMR shielding tensors so no spin-rotation constants.
+ Leave Link  601 at Thu Jul  7 15:46:26 2022, MaxMem=   134217728 cpu:         0.1
+ (Enter /home/palacios/gaussian/g09/l9999.exe)
+ 1\1\GINC-JJPASUS\SP\RSVWN\Gen\Au5(1+)\PALACIOS\07-Jul-2022\0\\#p lsda/
+ gen pseudo=read pop=reg Scf=(conver=6,maxcycle=100,dsymm,nodamp)\\Au5-
+ chain\\1,1\Au,0,0.,0.,0.\Au,0,0.,0.,3.\Au,0,0.,0.,6.\Au,0,0.,0.,9.\Au,
+ 0,0.,0.,12.\\Version=ES64L-G09RevD.01\State=1-SGG\HF=-174.0172169\RMSD
+ =9.413e-17\Dipole=0.,0.,0.\Quadrupole=-34.5324377,-34.5324377,69.06487
+ 55,0.,0.,0.\PG=D*H [O(Au1),C*(Au1Au1.Au1Au1)]\\@
+
+
+ COMMON SENSE IS NOT SO COMMON.   -- VOLTAIRE
+ Job cpu time:       0 days  0 hours  0 minutes 38.5 seconds.
+ File lengths (MBytes):  RWF=      5 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 09 at Thu Jul  7 15:46:26 2022.

@@ -1,16 +1,11 @@
 !*********************************************************!
-!*********************  ANT.G-2.6.0  *********************!
+!*********************  ANT.G-2.7.0  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
 !                                                         !
 !  Juan Jose Palacios (1)                                 !
 !  David Jacob (2)                                        !
-!  Maria Soriano (1)                                      !
-!  Angel J. Perez-Jimenez (3)                             !
-!  Emilio SanFabian (3)                                   !
-!  Jose Antonio Antonio Verges (4)                        !
-!  Enrique Louis (5)                                      !
 !  Wynand Dednam (5)                                      !
 !                                                         !
 ! (1) Departamento de Fisica de la Materia Condensada     !
@@ -19,45 +14,21 @@
 ! (2) Theory Department                                   !
 !     Max-Planck-Institute for Microstructure Physics     !
 !     Halle, 06120 (GERMANY)                              !
-! (3) Departamento de Quimica Fisica                      !
-!     Universidad de Alicante                             !
-!     03690 Alicante (SPAIN)                              !
-! (4) Insto. de Ciencias de Materiales de Madrid (ICMM)   !
-!     Consejo Superior de Investigacion y Ciencia (CSIC)  !
-!     28049 Madrid (SPAIN)                                !
 ! (5) Departamento de Fisica Aplicada                     !
 !     Universidad de Alicante                             !    
 !     03690 Alicante (SPAIN)                              !
 !                                                         !
 !*                                     *
 !*  ANT1D - OneDLead.f90               *
-!*                                     *
-!*  Calcluation of 1D self-energies    *
-!*                                     *
-!***************************************
-!*                                     *
-!*  This source file is part of the    *
-!*  ANT1D project.                     *
-!*                                     *
-!*  Copyright (c) 2006 - 2015 by       *
-!*                                     *
-!*  David Jacob                        *
-!*                                     *
-!*  MPI fuer Mikrostrukturphysik       *
-!*  Weinberg 2                         *
-!*  06120 Halle                        *
-!*  Germany                            *
-!*                                     *
-!****************************************************
-!*                                                  *
-!*  Module for description of one-dimensional lead  *
-!*                                                  *
-!****************************************************
+!*********************************************************!
+!                                                         !
+!   Module for description of one-dimensional lead        !
+!                                                         !
+!*********************************************************!
   module OneDLead
-!****************************************************
+!*********************************************************!
   use constants
-  use geom
-  use messages  
+  use parameters
   implicit none
   save
   
@@ -77,12 +48,14 @@
   !Public module procedures
   !************************
   public :: Init1DLead
+  public :: ReadHamiltonian
   public :: CleanUp1DLead
   public :: CompSelfEnergy1D
   public :: L1D_NSpin, L1D_NAOrbs, L1D_NElectrons
   public :: L1D_EMin, L1D_EMax, L1D_EFermi
   public :: L1D_H0, L1D_V1, L1D_V2, L1D_S0, L1D_S1, L1D_S2
-  public :: L1D_NAtoms, L1D_Atom
+ !public :: L1D_NAtoms, L1D_Atom
+  public :: PrintMatrices,PrintDOS
 
   !*******************************
   !One-dimensional lead parameters
@@ -96,7 +69,7 @@
      ! Number of atoms per PUC
      integer :: NPCAtoms
      ! Atom data indices
-     type(TAtom), dimension(MaxPCAtoms) :: PCAtoms
+    !type(TAtom), dimension(MaxPCAtoms) :: PCAtoms
 
      !Number of non-degenerate Spin bands
      integer :: NSpin    
@@ -138,18 +111,17 @@
   !Internal variables
   !******************
  
-  real(double)    :: ChargeOffSet 
+  real(double)    :: ChargeOffset 
   integer :: WhichLead
  
   !eXtended supercell matrices 
   integer :: NXAO, NXDim, NXSpin
   complex(double), dimension(:,:,:), allocatable :: HX
-  real(double), dimension(:,:,:), allocatable :: QD
-  complex(double), dimension(:,:),   allocatable :: GX, SX, InvSX
+  complex(double), dimension(:,:),   allocatable :: GX, SX
   complex(double), dimension(:,:),   allocatable :: Sigma1, Sigma2
 
   ! whether to create a device input file from extended supercell
-  logical :: MakeDevice = .false.
+  logical :: MakeDevice = .false., init=.true.
   integer :: NDevBeg=1,NDevEnd=0
 
 contains
@@ -158,8 +130,6 @@ contains
   !*** Initialize 1D Leads ***
   !***************************
   subroutine Init1DLead (ilead,NSpin,HD,SD,NAOrbs)
-    use filemaster
-    use messages    
     use parameters
 !   use device, only: LeadsOn
     implicit none
@@ -180,37 +150,37 @@ contains
     Lead1D(ilead)%SO = 0
     Lead1D(ilead)%LeadNo = ilead
 
-    if (Prinths > 0) call PrintMatrices( ilead )
-    !
-    ! Extend supercell by one primitive cell to each side 
-    ! in order to compute charge and DOS in the case of 
-    ! non-orthogonal basis set
-    !
+   !call PrintMatrices( ilead )
+   !
+   ! Extend supercell by one or more primitive cells to each side 
+   ! in order to compute charge and DOS in the case of 
+   ! non-orthogonal basis set
+   !
     call CreateXSC( Lead1D(ilead) )
-    !
-    ! If no Energy boundaries have been defined in input find them
-    !
+   !
+   ! If no Energy boundaries have been defined in input find them
+   !
     call FindEBounds( Lead1D(ilead) )
-    !
-    ! Find Fermi level of lead if requested
-    !
+   !
+   ! Find Fermi level of lead if requested
+   !
     call FindFermi( Lead1D(ilead) )
-    !
-    ! Shift Hamiltonian to adjust Fermi level to zero
-    !
+   !
+   ! Shift Hamiltonian to adjust Fermi level to zero
+   !
     call AdjustFermi( ilead ) 
-    !
-    ! Print out DOS of bulk Lead if requested
-    !
-   if( LeadDOS ) then
-      call CreateXSC( Lead1D(ilead) )
+   !
+   ! Print out DOS of bulk Lead if requested
+   !
+     if( LeadDOS ) then 
+      !call CreateXSC( Lead1D(ilead) )
       !call PrintMatrices (ilead)
-      call PrintDOS( ilead )   
-   end if 
+       call PrintDOS( ilead )
+     end if 
     !
     ! Deallocate all extended supercell matrices
     !
-    deallocate( HX, SX, GX, Sigma1, Sigma2, InvSX, QD)
+    deallocate( HX, SX, GX, Sigma1, Sigma2 )
     !
 
   end subroutine Init1DLead
@@ -229,38 +199,46 @@ contains
   !**********************************************************
   !*** Compute self-energy matrices projected into device ***
   !**********************************************************
-  subroutine CompSelfEnergy1D( L1D, spin, z, Sigma, NBasis, idir)
-    use parameters, only: eta, SOC
+  subroutine CompSelfEnergy1D( L1D, spin, z, Sigma, NBasis, idir )
+    use parameters, only: eta
+    use constants, only: ui, c_zero
     implicit none
 
-    type(T1DLead), intent(inout) :: L1D
+    type(T1DLead), intent(in) :: L1D
     integer, intent(in) :: spin
     complex(double), intent(in) :: z
-    !complex(double), dimension( NBasis*(L1D%SO+1), NBasis*(L1D%SO+1) ), intent(out) :: Sigma
+   !complex(double), dimension( NBasis*(L1D%SO+1), NBasis*(L1D%SO+1) ), intent(out) :: Sigma
     complex(double), dimension(:,:), intent(out) :: Sigma
     integer , intent(in) :: idir, NBasis !! AO1, 
 
     integer :: i,j,AOrb1,AOrb2, ispin, jspin, NAO, ierr
 
-    complex(double), dimension(:,:), allocatable :: Veff1, Heff, Veff2, sig
+   !complex(double), dimension(:,:), allocatable :: Veff1, Heff, Veff2
+    complex(double), dimension(L1D%NAOrbs,L1D%NAOrbs) :: Veff1, Heff, Veff2
+    complex(double), dimension(L1D%NAOrbs,L1D%NAOrbs) :: sig
+
+    save 
 
     NAO = L1D%NAOrbs
-    allocate( Veff1(NAO,NAO), Heff(NAO,NAO), Veff2(NAO,NAO), sig(NAO,NAO), STAT=ierr )
-    if( ierr /= 0 )then
-       print *, "OneDLead/CompSelfEnergy1D/ALLOCATION ERROR: Veff1, Heff, Veff2, sig"
-       call AbortProg
-    end if
+   !allocate( Veff1(NAO,NAO), Heff(NAO,NAO), Veff2(NAO,NAO),  STAT=ierr )
+   !if( ierr /= 0 ) then
+   !   print *, "OneDLead/CompSelfEnergy1D/ALLOCATION ERROR: Veff1, Heff, Veff2"
+   !   call AbortProg
+   !end if
+    Veff1 = c_zero
+    Veff2 = c_zero
+    Heff = c_zero
+    sig = c_zero
+    Sigma = c_zero
 
     ispin=spin
     if( L1D%NSpin==1 .and. spin == 2 ) ispin = 1
-
-    Sigma = c_zero
 
     do i=1,NAO
        do j=1,NAO
           Veff1(i,j) =  L1D_V1(L1D,ispin,i,ispin,j) - (z+ui*eta)*L1D_S1(L1D,i,j)
           Veff2(i,j) =  L1D_V2(L1D,ispin,i,ispin,j) - (z+ui*eta)*L1D_S2(L1D,i,j)
-          Heff( i,j) = -L1D_H0(L1D,ispin,i,ispin,j) + (z+ui*eta)*L1D_S0(L1D,i,j) 
+          Heff (i,j) = -L1D_H0(L1D,ispin,i,ispin,j) + (z+ui*eta)*L1D_S0(L1D,i,j) 
        end do
     end do
     if( idir == 1 )then
@@ -278,11 +256,11 @@ contains
           Sigma( i, j ) = sig( i-AOrb1+1, j-AOrb1+1 )
        end do
     end do
-    deallocate( Veff1, Heff, Veff2, sig, STAT=ierr )
-    if( ierr /= 0 )then
-       print *, "OneDLead/CompSelfEnergy1D/DEALLOCATION ERROR: Veff1, Heff, Veff2, sig"
-       call AbortProg
-       end if
+   !deallocate( Veff1, Heff, Veff2, STAT=ierr )
+   !if( ierr /= 0 ) then
+   !   print *, "OneDLead/CompSelfEnergy1D/DEALLOCATION ERROR: Veff1, Heff, Veff2"
+   !   call AbortProg
+   !end if
   end subroutine CompSelfEnergy1D
   
   
@@ -302,19 +280,19 @@ contains
   !**********************************************
   !*** Number of atoms in supercell ***
   !**********************************************
-  integer function L1D_NAtoms( L1D )
-    type(T1DLead),intent(IN) :: L1D
-    L1D_NAtoms = L1D%NPCAtoms*L1D%NPC
-  end function L1D_NAtoms
+ !integer function L1D_NAtoms( L1D )
+ !  type(T1DLead),intent(IN) :: L1D
+ !  L1D_NAtoms = L1D%NPCAtoms*L1D%NPC
+ !end function L1D_NAtoms
 
   !**********************************************
   !*** Number of atoms in supercell ***
   !**********************************************
-  type(TAtom) function L1D_Atom( L1D, iatom )
-    type(T1DLead),intent(IN) :: L1D
-    integer, intent(in) :: iatom
-    L1D_Atom = L1D%PCAtoms( mod(iatom-1,L1D%NPCAtoms)+1 )
-  end function L1D_Atom
+ !type(TAtom) function L1D_Atom( L1D, iatom )
+ !  type(T1DLead),intent(IN) :: L1D
+ !  integer, intent(in) :: iatom
+ !  L1D_Atom = L1D%PCAtoms( mod(iatom-1,L1D%NPCAtoms)+1 )
+ !end function L1D_Atom
 
   !**********************************************
   !*** Number of non-degenerate spin-channels ***
@@ -338,7 +316,7 @@ contains
   !for printing DOS and finding EF
   real(double) function L1D_EMin( L1D )
     type(T1DLead),intent(IN) :: L1D
-    L1D_EMin = L1d%EMin
+    L1D_EMin = L1D%EMin
   end function L1D_EMin
 
   !*****************************
@@ -518,8 +496,8 @@ contains
        if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn1,sn1")
        Lead1D(1)%vn => vn1
        Lead1D(1)%sn => sn1
-       vn1 = 0
-       sn1 = 0
+       vn1 = 0.0d0
+       sn1 = 0.0d0
        do ispin=1,NSpin
         do ipc=0,NPC
             do i=1,NPCAO
@@ -537,14 +515,16 @@ contains
        if( ierr /= 0 )call AllocErr("OneDLead/ReadParameter","vn2,sn2")
        Lead1D(2)%vn => vn2
        Lead1D(2)%sn => sn2
-       vn2 = 0
-       sn2 = 0
+       vn2 = 0.0d0
+       sn2 = 0.0d0
        do ispin=1,NSpin
         do ipc=0,NPC
             do i=1,NPCAO
               do j=1,NPCAO
                vn2(ispin,ispin,ipc,i,j)=HD(ispin,i+(NAOrbs-NPCAO)-ipc*NPCAO ,j+(NAOrbs-NPCAO) )
                sn2(ipc,i,j)=SD(i+(NAOrbs-NPCAO)-ipc*NPCAO ,j+(NAOrbs-NPCAO))
+   !           vn2(ispin,ispin,ipc,i,j)=HD(ispin,i ,j+ipc*NPCAO )
+   !           sn2(ipc,i,j)=SD(i ,j+ipc*NPCAO )
               end do  
           end do  
         end do
@@ -561,11 +541,11 @@ contains
     implicit none
 
     integer, intent(in) :: ilead
-    integer :: NPC, NPCAO, NAO, NSpin, i, j, ispin
+    integer :: NPC, NPCAO, NAO, NSpin, i, j, ispin, proc_id
 
     NAO   = Lead1D(ilead)%NAOrbs
     NSpin = Lead1D(ilead)%NSpin
-    !if(proc_id == 0)then
+    if(proc_id == 0)then
        print *
        print *, "*** Supercell on-site and coupling matrices ***"
        print *
@@ -591,7 +571,8 @@ contains
        do i=1,NAO
           print '(1000(E14.4))', (DREAL(L1D_S1( Lead1D(ilead), i,j)), j=1,NAO )
        end do
-    call FlUSH(6)
+       call FlUSH(6)
+    end if
   end subroutine PrintMatrices
 
   !***************************
@@ -599,6 +580,7 @@ contains
   !***************************
   subroutine CreateXSC( L1D )
     use parameters
+    use constants, only: c_zero
     implicit none
     
     type(T1DLead) :: L1D
@@ -615,14 +597,14 @@ contains
     NXAO   = L1D%NAOrbs + L1D%NPCAO + L1D%NAOrbs
     NXSpin = L1D%NSpin
     NXDim  = NXAO
+   !print*,'NXDim=', NXDim
 
     allocate( &
          HX(NXDim,NXDim,NXSpin), SX(NXDim,NXDim), &
          GX(NXDim,NXDim), Sigma1(NXDim,NXDim), &
-         Sigma2(NXDim,NXDim), InvSX(NXDim,NXDim), &
-         QD(NXSpin,NXDim,NXDim), STAT=ierr )
+         Sigma2(NXDim,NXDim), STAT=ierr )
     if( ierr /= 0 )then
-       print *, "OneDLead/Warning: HX, SX, InvSX, GX, Sigma1, Sigma2 could not be allocated."
+       print *, "OneDLead/Warning: HX, SX, GX, Sigma1, Sigma2 could not be allocated."
       !call AbortProg
     end if
 
@@ -631,7 +613,6 @@ contains
     SX = c_zero
     Sigma1 = c_zero
     Sigma2 = c_zero    
-    InvSX = c_zero
     !
     ! Compute Hamiltonian HX and overlap SX
     !
@@ -667,64 +648,36 @@ contains
        end do
     end do
        
-   if( Prinths > 0 )then       
-       print *
-       print *, "*** Extended Supercell Matrices ***"
-       print *
-       do ispin=1,NXSpin
-          if( NXSpin == 2 .and. ispin == 1) print *, "HX spin-up = "
-          if( NXSpin == 2 .and. ispin == 2) print *, "HX spin-down = "
-          if( NXSpin == 1) print *, "HX = "
-          do i=1,NXDim
-             print '(1000(ES14.4))', ( DREAL(HX( i, j, ispin )), j=1,NXDim )
-          end do
-       end do
-       print *, "SX = "
-       do i=1,NXDim
-          print '(1000(ES14.4))', ( DREAL(SX(i,j)), j=1,NXDim )
-       end do
-       call FLUSH(6)
-   end if
+   !if( PrintHS == 1 )then       
+   !   print *
+   !   print *, "*** Extended Supercell Matrices ***"
+   !   print *
+   !   do ispin=1,NXSpin
+   !      if( NXSpin == 2 .and. ispin == 1) print *, "HX spin-up = "
+   !      if( NXSpin == 2 .and. ispin == 2) print *, "HX spin-down = "
+   !      if( NXSpin == 1) print *, "HX = "
+   !      do i=1,NXDim
+   !         print '(1000(ES14.4))', ( DREAL(HX( i, j, ispin )), j=1,NXDim )
+   !         write(3000,'(1000(ES14.4))'), ( DREAL(HX( i, j, ispin )), j=1,NXDim )
+   !      end do
+   !   end do
+   !   print *, "SX = "
+   !   do i=1,NXDim
+   !      print '(1000(ES14.4))', ( DREAL(SX(i,j)), j=1,NXDim )
+   !      write(3001, '(3001(ES14.4))'), ( DREAL(SX(i,j)), j=1,NXDim )
+   !   end do
+   !   call FLUSH(6)
+   !end if
 
   end subroutine CreateXSC
-
-  !********************************************************
-  ! Creates input file for device from extended super cell
-  !********************************************************
-  subroutine PrintDeviceInp
-    use util
-    implicit none
-
-    integer :: ispin
-    integer :: NDSpin,NDAO
-    logical :: sparse
-    namelist/DevParams/NDSpin,NDAO,sparse
-
-    if(NDevEnd<=0)NDevEnd=NXDim
-
-    NDSpin = NXSpin
-    NDAO = NDevEnd-NDevBeg+1
-    sparse=.true.
-
-    print *, "! === DEVICE INPUT FILE ==="
-    write(*,nml=DevParams)
-    print *, "! HAMILTONIAN"
-    do ispin=1,NXSpin
-       if(NXSpin == 2 .and. ispin==1) print *, "! Spin-up"
-       if(NXSpin == 2 .and. ispin==2) print *, "! Spin-down"
-       call PrintSparseMatrix(real(HX(NDevBeg:NDevEnd,NDevBeg:NDevEnd,ispin)))
-    end do
-    print *, "! OVERLAP"
-    call PrintSparseMatrix(real(SX(NDevBeg:NDevEnd,NDevBeg:NDevEnd)))
-    call AbortProg
-  end subroutine PrintDeviceInp
 
   !****************************************
   ! Write Bulk DOS of an electrode to file 
   !****************************************
   subroutine PrintDOS( ilead )
-    use parameters
-    use FileMaster
+    use parameters, only: gamma, NPoints
+    use constants, only: ui
+    use filemaster
     implicit none
 
     integer, intent(in) :: ilead
@@ -743,7 +696,8 @@ contains
     iunit=fopen(file(ilead),'unknown', ios)
     do energy=EMin, EMax, DE 
       !zenergy=energy-Lead1D(ilead)%EFermi+gamma*ui
-       zenergy=energy
+       zenergy=energy+gamma*ui
+      !zenergy=energy
        write(UNIT=iunit,FMT='(F10.5,(1000(ES14.6)))'), energy,&
             ( BulkSDOS( Lead1D(ilead), ispin, zenergy ), ispin=1,NXSpin )
        call flush(iunit)
@@ -758,20 +712,19 @@ contains
   !*       Sigma = Veff1 ------------ Veff2              *
   !*                     Heff - Sigma                    *
   !*******************************************************
-  subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim ) !!!z, H0, Vi, S0, Si, NAO )
-    use parameters, only: eta, conv => L1DCONV, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
-    use constants, only: c_zero, ui    
-#ifdef PGI
-    USE lapack_blas
-#endif    
+  subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim )
+    use parameters, only: conv => L1DCONV, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
+    use constants, only: c_zero, ui
+   !use device, only: OnSigma
+#ifdef PGI    
+   use lapack_blas
+#endif
     implicit none
-    
-    external zgemm,zgetri,zgetrf    
 
-    integer, intent(IN) :: NDim
+    integer, intent(in) :: NDim
 
-    complex(double), dimension(NDim,NDim),intent(OUT) :: Sigma 
-    complex(double), dimension(NDim,NDim),intent(IN) :: Veff1, Heff, Veff2
+    complex(double), dimension(NDim,NDim),intent(out) :: Sigma 
+    complex(double), dimension(NDim,NDim),intent(in) :: Veff1, Heff, Veff2
 
     integer, dimension(NDim) :: ipiv
     integer :: ispin, i, j, info, ierr
@@ -779,28 +732,22 @@ contains
     integer :: ncycle
     
     !auxiliary self energy for self-consistent calculation, temporary matrix
-    complex(double), dimension(:,:), allocatable :: Sigma_aux, temp 
+    complex(double), dimension(NDim,NDim) :: Sigma_aux, temp 
     !work array for inversion
     complex(double), dimension( 4*NDim ) :: work
 
-    allocate( Sigma_aux(NDim,NDim), temp(NDim,NDim), STAT=ierr )
-    if( ierr /= 0 )then
-       print *, "OneDLead/SolveDyson1D/ERROR: Sigma_aux, temp could not be allocated."
-       call AbortProg
-    end if
-
+    !
+    ! Initializing Sigma
+    !
+    Sigma = c_zero
     do i=1,NDim
-       do j=1,NDim
-          Sigma(i,j) = c_zero
-          if( i == j ) Sigma(i,j) =  -ui
-       end do
+       Sigma(i,i)=-ui
     end do
-
-    error = 1.0d0
-    ncycle = 0
     !
     ! Iterative solution of Dyson equation
     !
+    error = 1.0d0
+    ncycle = 0
     do while ( error.gt.conv .AND. ncycle < MaxCycle )
        ncycle = ncycle+1
        do i=1,NDim
@@ -823,14 +770,15 @@ contains
        !
        do i=1,NDIM
           do j=1,NDIM
-             Sigma(i,j) = (1.0d0-alpha)*Sigma_aux(i,j)+alpha*Sigma(i,j)
+             Sigma(i,j) = alpha*Sigma_aux(i,j)+(1.0d0-alpha)*Sigma(i,j)
              error = error+2.0d0*abs(Sigma_aux(i,j)-Sigma(i,j))
           end do
        end do     
        error=error/(2.0*NDIM*NDIM)
     enddo 
+   !print*,'ncycle Dyson',ncycle
     if (ncycle == MaxCycle) print*, 'Warning in Dyson selfconsistency'
-    deallocate( Sigma_aux, temp )
+
   end subroutine SolveDyson1D
 
 
@@ -840,9 +788,10 @@ contains
   subroutine CompGreensFunc( L1D, spin, z ) 
     use parameters, only: eta
     use numeric, only: CInv
+    use constants, only: ui
     implicit none
 
-    type(T1DLead), intent(inout) :: L1D
+    type(T1DLead), intent(in) :: L1D
     integer,intent(in) :: spin
     complex(double), intent(in) :: z
     integer :: i, j, ispin, jspin, NPCAO, NAO, leadno, iinv
@@ -862,6 +811,7 @@ contains
     end do
 
     iinv = CInv( GX )       
+   !print*,'z=',z,'SigmaL=',Sigma1(1,1),'SigmaR=',Sigma2(NXDim-10,NXDim-10),'Green=', GX(1,1)
   end subroutine CompGreensFunc
 
   !****************************** 
@@ -870,6 +820,7 @@ contains
   real(double) function BulkSDOS( L1D, spin, energy )
     use parameters, only: SOC
     use numeric, only: CInv
+    use constants, only: d_pi
 
     implicit none
 
@@ -883,7 +834,7 @@ contains
     NPCAO = L1D%NPCAO   
     NAO = L1D%NAOrbs
 
-    call CompGreensFunc( L1D, Spin, energy)
+    call CompGreensFunc( L1D, Spin, energy )
 
     GXSX = matmul( GX, SX )
 
@@ -894,399 +845,102 @@ contains
     end do
     BulkSDOS = -BulkSDOS/d_pi
   end function BulkSDOS
-  
 
-  !*******************************************
-  !*** Total charge up to energy E         ***
-  !*** up to Energy E, lower bound is EMin ***
-  !*******************************************
-!  real(double) function TotCharge( E )
-!    use parameters, only: ChargeAcc, Infty, SOC
-!    use numeric, only: gauleg 
-!    implicit none
-!    
-!    real(double), intent(in) :: E
-!    real(double) :: EMin
-!  
-!    integer, parameter :: nmax = 4095
-!    
-!    real(double) :: q,qq, E0, R, phi
-!    integer :: n, j, ispin, k, l, NAO, NPCAO
-!    real(double), dimension(nmax) :: x, w
-!  
-!    complex(double) :: z
-!  
-!    NAO = Lead1D(WhichLead)%NAOrbs
-!    NPCAO = Lead1D(WhichLead)%NPCAO
-!    
-!   EMin = Lead1D(WhichLead)%EMin - 10.0d0    !-10.0 for safety 
-!   ! Integration contour parameters:
-!    If (ChargeOffSet == 0.0d0) then    
-!       E0 = 0.5*(E + Infty)
-!       R  = 0.5*(E - Infty)
-!    else    
-!       E0 = 0.5*(E + EMin)
-!       R  = 0.5*(E - EMin)
-!    end if
-!    !
-!    ! Computing integral of Green's function
-!    ! over complex contour using Gauss-Legendre 
-!    ! quadrature
-!    !
-!    n = 15
-!    do 
-!       call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
-!       q = d_zero
-!       do j = 1,n
-!         
-!          phi = x(j)
-!          z = E0 - R*(cos(phi) - ui*sin(phi))
-!  
-!          do ispin=1, NXSpin
-!             
-!             call CompGreensFunc( Lead1D(WhichLead), ispin, z ) 
-!  
-!             do k=NAO+1, NAO+NPCAO
-!                do l=1,NXAO
-!                   !
-!                   ! Charge = Tr[ P S ]
-!                   !
-!                   q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
-!                   if( SOC ) q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
-!                end do
-!             end do
-!          end do
-!       end do
-!       if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
-!       print *, n, q
-!       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc ) ) exit  
-!       n = 2*n+1
-!       if( n > nmax )then
-!          print *, "WARNING: TotCharge/gaussian quadrature has not converged after", nmax , " steps."
-!          print *, "E = ", E
-!          print *, "deltaq = ", abs(q-qq)
-!          exit
-!       end if
-!       qq = q
-!    end do
-!    print *, "GauLeg quadrature converged after", n, " steps."
-!    call flush(6)
-!    TotCharge = q-ChargeOffSet
-!  end function TotCharge
 
   !*******************************************
   !*** Total charge up to energy E         ***
   !*** up to Energy E, lower bound is EMin ***
   !*******************************************
   real(double) function TotCharge( E )
-    use parameters, only: ChargeAcc, SOC
-    use numeric, only: gauleg, CMatPow 
+    use parameters, only: ChargeAcc, Infty, SOC
+    use numeric, only: gauleg 
+    use constants, only: ui, d_pi
     implicit none
     
     real(double), intent(in) :: E
-    real(double) :: EMin, EMax
-  
-    integer, parameter :: nmax = 4095
+    real(double) :: EMin
+
+    integer, parameter :: nmax = 2047
+   !integer, parameter :: nmax = 1023
+   !integer, parameter :: nmax = 511
+   !integer, parameter :: nmax = 255
+   !integer, parameter :: nmax = 127
+   !integer, parameter :: nmax = 63
     
-    real(double) :: q,qq, dq, Ei, dEdx, phi, E0
-    integer :: n, np, j, ispin, k, l, NAO, NPCAO
+    real(double) :: q,qq, E0, R, phi, qj
+    integer :: n, j, ispin, k, l, NAO, NPCAO
     real(double), dimension(nmax) :: x, w
-  
+
+    complex(double) :: z
+
+
     NAO = Lead1D(WhichLead)%NAOrbs
     NPCAO = Lead1D(WhichLead)%NPCAO
-    
-    EMin = Lead1D(WhichLead)%EMin - 10.0d0    !-10.0 for safety 
-    EMax = Lead1D(WhichLead)%EMax + 10.0d0    !-10.0 for safety 
-    InvSX = c_zero
-    call CMatPow( SX, -1.0d0, InvSX ) 
-
-
-    If (ChargeOffSet == 0.0d0 .or. abs(EMax) - Infty > 0) then  
-       E0 = Infty
-    else if (abs(E) - abs(EMax) > 0) then       
-       E0 = abs(EMax)
-    else 
-       E0 = abs(E)   
-    end if  
+    EMin = Lead1D(WhichLead)%EMin
+    !
+    ! Integration contour parameters:
+    !
+    If (ChargeOffSet == 0.0d0) then
+       E0 = 0.5*(E - Infty)
+       R  = 0.5*(E + Infty)
+    else   
+       E0 = 0.5*(E + EMin)
+       R  = 0.5*(E - EMin)
+    end if 
     !
     ! Computing integral of Green's function
-    ! along imaginary axis using Gauss-Legendre 
+    ! over complex contour using Gauss-Legendre 
     ! quadrature
     !
     n = 1
+
     do 
-       np=2**n-1
-          
-       call gauleg(0.0d0,2.0d0,x(1:2*np),w(1:2*np),2*np)
+       call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
        q = d_zero
-       
-       do j = 1,np    
-            
-          phi = x(j)
-          Ei = 2.0d0*E0*phi
-          if( phi > 0.5d0 ) Ei = 0.5d0*E0/(1.0d0-phi)
-          dEdx = 2.0d0*E0
-          if( phi > 0.5d0 ) dEdx = 0.5d0*E0/(1.0d0-phi)**2             
-          
-          do ispin=1, NXSpin       
-          
-             call CompGreensFunc( Lead1D(WhichLead), ispin, ui*Ei ) 
-	      
+       do ispin=1, NXSpin
+          do j = 1,n
+             phi = x(j)
+             z = E0 - R*(cos(phi) - ui*sin(phi))
+             
+             call CompGreensFunc( Lead1D(WhichLead), ispin, z ) 
+
+             qj= 0.0d0
              do k=NAO+1, NAO+NPCAO
                 do l=1,NXAO
                    !
                    ! Charge = Tr[ P S ]
                    !
-                   dq = w(j)*(dEdx*real(GX(k,l))/d_pi + 0.5d0*InvSX(k,l))
-                   q = q + real(dq*SX(l,k))
-                   if( SOC ) then 
-                      dq = w(j)*(dEdx*real(GX(k+NXAO,l+NXAO))/d_pi + 0.5d0*InvSX(k+NXAO,l+NXAO))
-                      q = q + real(dq*SX(l+NXAO,k+NXAO))
-                   end if
+                  !q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
+                   qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
+                  !if( SOC ) q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
+                   if( SOC ) qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
                 end do
-             end do     
+             end do
+            !if (j == 1) print*,'z= ',z,'phi=',x(1),GX(1,1),'DOS=',qj*2.0
+             q = q + w(j)*qj
           end do
+            !print*,'----------------'
        end do
-       if( NXSpin == 1 .and. .not. SOC ) q= 2.0d0*q
-       print *, n, q
-       if( n > 1 .and. (q == d_zero .or. abs(q -qq) < ChargeAcc) ) exit  
+       if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
+      !print *, n, q
+      !if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*100 ) ) exit  
+       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.1 ) ) exit  
        n = 2*n+1
        if( n > nmax )then
-          print *, "WARNING: TotCharge/gaussian quadrature has not converged after", nmax , " steps."
-          print *, "E = ", E
-          print *, "deltaq = ", abs(q-qq)
+          print '(A,I5,A)', "WARNING: TotCharge/gaussian quadrature has not converged after", nmax , " steps."
+         !print *, "E = ", E
+         !print *, "deltaq = ", abs(q-qq)
           exit
        end if
-       qq = q         
+       qq = q
     end do
-    print *, "GauLeg quadrature converged after", n, " steps."
+    print '(A,I5,A)', "GauLeg quadrature converged after", n, " steps."
     call flush(6)
-    TotCharge = q - ChargeOffSet
+    TotCharge = q-ChargeOffset
+
   end function TotCharge
 
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  !c                                                                              c
-  !c     Change of variable no. 3 for the numerical integration:                  c
-  !c                                                                              c
-  !c     int_{-infty}^{Eq} DOS(E)dE = int_{-1}^{1} DOS(E(x))*(dE/dx)dx            c
-  !c                                                                              c
-  !c     E = Em*(1-bx)/(1+x)                                                      c
-  !c                                                                              c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  real*8 function edex3(a,b,x)
-    implicit none
-    real*8 :: a, b ,x
-    edex3 = 0.5d0*((a-b)*x + (a+b))
-    return
-  end function edex3    
 
-  !****************************************
-  ! Function gives excess charge of device 
-  ! dependent of Fermi energy x (shift)
-  ! integrating in the complex plane
-  ! when SOC is present
-  !****************************************
-  real(double) function QTot(E)
-    use parameters, only: biasvoltage,SOC
-    use constants, only: d_pi, d_zero, c_zero
-    implicit none
-
-    real(double), intent(in) :: E
-
-    real(double) :: rrr, a, b, Q, E0, NAO, NPCAO, EMin, QAlpha, QBEta, R
-    integer :: i,j,M, ispin
-    
-    NAO = Lead1D(WhichLead)%NAOrbs
-    NPCAO = Lead1D(WhichLead)%NPCAO
-    
-    EMin = Lead1D(WhichLead)%EMin
-    
-    QAlpha = d_zero
-    QBeta = d_zero
-    
-    do ispin = 1, NXSpin       
-       QD(ispin,:,:) = d_zero         
-    
-       Q = d_zero    
-       
-       ! Radius of complex contour integration
-       ! add 10eV just in case 
-        If (ChargeOffSet == 0.0d0) then    
-           R  = 0.5*(E - Infty)
-        else    
-           R  = 0.5*(E - EMin)       
-        end if
-        
-        rrr = 0.5*abs(R)+10.0;        
-       !c c Integral limits ... (a,b)
-       M=1000
-       a = 0.d0
-       b = d_pi
-       call IntCompPlane(ispin,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarde
-
-       do i=NAO+1, NAO+NPCAO
-          do j=1,NXAO          
-             Q=Q+real(QD(ispin,i,j)*SX(j,i))
-          end do
-       end do
-       if ( NXSpin .eq. 1 .and. SOC) then
-       do i=NAO+1, NAO+NPCAO
-          do j=1,NXAO                 
-                Q=Q+real(QD(ispin,i+NXAO,j+NXAO)*SX(j+NXAO,i+NXAO))
-             end do
-          end do
-       end if
-       if( ispin == 1 ) QAlpha = Q
-       if( ispin == 2 ) QBeta  = Q       
-    end do
-    
-    if( NXSpin == 1 .and. .not. SOC ) QBeta = QAlpha    
-
-    QTot = QAlpha + QBeta - ChargeOffSet
-    return
-  end function QTot
-
-  
-
-  
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
-  !c second kind                                                                  c
-  !c        eps: Tolerance                                                        c
-  !c        b: parameter of the change of variable                                c
-  !c        Em: maximum value of the energy range                                 c
-  !c        M:   On input, maximum number of points allowed                       c
-  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
-  !c        dn:  On output, the density matrix                                    c
-  !c        CH:  On output, the value of the integral (charge density).           c
-  !c             Interval [-1,1]                                                  c
-  !c        Eq:  On output, the value of the upper bound of the integral.         c
-  !c        The rest of arguments are neeed by the subrtn. gplus                  c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  subroutine IntCompPlane(ispin,rrr,bi,Emi,M,Eq)
-    use parameters, only: PAcc 
-    use constants, only: d_pi, d_zero, ui, c_zero
-!   USE IFLPORT
-!    use omp_lib
-
-    implicit none
-
-    integer,intent(in) :: ispin
-    real(double),intent(in) :: rrr, bi, Emi, Eq    
-    integer,intent(inout) :: M
-    real(double), dimension(NXAO,NXAO) :: QDQ    
-
-    real(double) :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm, NAO, NPCAO
-    integer :: n,i,j,l,k,k1,chunk!,omp_get_thread_num,omp_get_num_threads    
-    real(double), dimension(M) :: xs,xcc
-
-    complex(double) :: E0,E
-    complex(double), dimension(2) :: EE
-    complex(double), dimension(2,NXAO,NXAO) :: GXN
-    
-    NAO = Lead1D(WhichLead)%NAOrbs
-    NPCAO = Lead1D(WhichLead)%NPCAO   
-
- 
-    a = 1.d0/d_pi
-    b = bi
-    Em = Emi
-    QD(ispin,:,:)= d_zero
-    M = (M-1)*0.5
-    n = 1
-    S0 = 1
-    C0 = 0
-    x0 = 0.d0
-    er0 = edex3(Em,b,x0)
-    der0 = 0.5d0*(Em-b)
-    E0 = rrr*exp(ui*er0)-rrr+Eq
-          
-    call CompGreensFunc(Lead1D(WhichLead), ispin,E0)
-
-    CH = 0.d0
-    do i=NAO+1, NAO+NPCAO
-       do j=1,NXAO 
-          QD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*GX(i,j))*der0
-          CH = CH + abs(QD(ispin,i,j)*SX(j,i))
-       enddo
-    enddo
-    
-   !print*,'ch', 16*CH/(3*(n+1))    
-    
-    xp = CH
-1   q = xp + xp
-    xp = CH + CH
-    C1 = C0
-    S1 = S0
-    C0 = sqrt((1+C1)*0.5d0)
-    S0 = S1/(C0+C0)
-    xs(1) = S0
-    xcc(1) = C0
-    do l=1,n,2
-       xs(l+2)=xs(l)*C1+xcc(l)*S1
-       xcc(l+2)=xcc(l)*C1-xs(l)*S1
-    end do
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,GXN,i,j,QDQ)         ! Causes nothing but problems...
-     QDQ=d_zero
-     !chunk=int(Amax0(((n+1)/2)/omp_get_num_threads(),1))
-    !chunk=1
-!!$OMP DO SCHEDULE(STATIC,chunk)
-    do l=1,n,2
-    !print*,n
-       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
-       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-       erp = 0.5d0*((Em-b)*x + (Em+b))
-       erm = 0.5d0*(-(Em-b)*x + (Em+b))
-       EE(1) = rrr*exp(ui*erp)-rrr+Eq
-       EE(2) = rrr*exp(ui*erm)-rrr+Eq
-       do k=1,2
-          GX = c_zero
-          call CompGreensFunc(Lead1D(WhichLead), ispin, EE(k))    
-          GXN(k,:,:) = GX
-       end do
-        
-      do i=NAO+1, NAO+NPCAO
-         do j=1,NXAO 
-             QDQ(i,j) = QDQ(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*GXN(1,i,j))*der0 &
-                  &   +dimag(ui*rrr*exp(ui*erm)*GXN(2,i,j))*der0)*xs(l)**4
-          end do
-       end do
-    end do
-!!$OMP END DO
-!!$OMP CRITICAL
-      do i=NAO+1, NAO+NPCAO
-         do j=1,NXAO 
-             QD(ispin,i,j)=QD(ispin,i,j)+QDQ(i,j)                    
-          end do
-       end do
-!!$OMP END CRITICAL
-!!$OMP END PARALLEL
-    CH = 0.d0
-      do k=NAO+1, NAO+NPCAO
-         do k1=1,NXAO 
-          CH = CH + abs(QD(ispin,k,k1)*SX(k1,k))
-       end do
-    enddo
-    !print*,'ch', 16*CH/(3*(n+1))
-    ! ... replacing n by 2n+1
-    n = n + n + 1
-    ! Stopping?
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
-    ! Test for successfullness and integral final value
-    M = 0
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
-    CH = 16*CH/(3*(n+1))
-    do k=NAO+1, NAO+NPCAO
-       do l=1,NXAO 
-          QD(ispin,k,l) = 16*QD(ispin,k,l)/(3*(n+1))
-       enddo
-    enddo
-   print*,n, CH
-   print'(A,I4,A)', "Integration of the retarded GX on the complex plane has needed ",(((n-1)/2)+1)/2," points"
-
-    return
-  end subroutine IntCompPlane
-  
   !*****************************************************
   !*** Find upper and lower energy bounds for a lead ***
   !*** such that non-zero DOS lies completely inside ***
@@ -1300,41 +954,40 @@ contains
     real(double)    :: EStep, Q, qmax
     
     qmax = 2.0d0*L1D%NPCAO
+   !qmax = 2.0d0*(NXAO-(L1D%NPCAO*2))
 
     ChargeOffSet = d_zero
     WhichLead = L1D%LeadNo
     
     ! 1. Decrease EMin until charge integration becomes zero
     !
-    EStep = 10.0d0    
-    L1D%EMin = -Infty+10.0
-    print '(A)', "Searching optimum Emin such that DOS integrates to zero"
+    EStep = 10.0d0
+    print '(A)', "Searching optimum Emin such that DOS integrates to zero ..."
     do
-       !Q = TotCharge( L1D%EMin )
-       Q = QTot( L1D%EMin)
+       Q = TotCharge( L1D%EMin )
        print *, "EMin = ", L1D%EMin, Q
        call FLUSH(6)
-       if( abs(Q) >  0.01 ) then       
-          L1D%EMin = L1D%EMin - EStep
-          exit
-       end if   
-       L1D%EMin = L1D%EMin + EStep
+       if( abs(Q) <  0.1 ) exit
+       L1D%EMin = L1D%EMin - EStep
+       if (L1D%EMin < -Infty) then
+           print*,'Warning: Emin < -Infty. Decrease this value'
+           stop
+       end if
     end do
+    L1D%EMin = L1D%EMin - 10.0    ! for safety
     L1D%EMax = -L1D%EMin
 
     !
     ! 1. Increase EMax until charge integration becomes number of spin orbitals
     !
-!   EStep = 1.0d0                                                                 
-!   do                                                                            
-!      Q = TotCharge( L1D%EMax )                                                  
-!      if( abs(Q) < 0.01 ) L1D%EMin = L1D%EMax                                    
-!      print *, "EMax = ", L1D%EMax, Q                                            
-!      call FLUSH(6)                                                              
-!      if( abs(Q - qmax ) <  0.01 ) exit                                          
-!      L1D%EMax = L1D%EMax + EStep                                                
-!      EStep = 2.0d0*EStep +1.0d0                                   
-!   end do
+    print '(A)', "Searching optimum EMax such that the DOS integrates to the total spectral weight in the unit cell ..."
+    do 
+       Q = TotCharge( L1D%EMax )
+       print *, "EMax = ", L1D%EMax, Q
+       call FLUSH(6)
+       if( abs(Q - qmax ) <  0.1 ) exit
+       L1D%EMax = L1D%EMax + EStep
+    end do
     !
     ! 2. Try to decrease EMax if possible 
     !
@@ -1364,82 +1017,49 @@ contains
   !***************************************************
   subroutine FindFermi( L1D )
     use parameters, only: ChargeAcc, FermiAcc, Infty, Max
-    use numeric, only: bisec, Muller, Secant
+    use numeric, only: bisec, Muller
     implicit none
 
-    type(T1DLead) :: L1D
+    type(T1DLead), intent(inout) :: L1D
 
     integer :: cond, nsteps ,k
-    real(double) :: EStep, Q, EFermi, EMin, EMax
-    real(double) :: EF0,EF1,EF2, Z, Delta, Epsilon
-    logical :: root_fail
+    real(double) :: EStep, Q, EFermi
+    real(double) :: EF0,EF1,EF2,Z, Delta, Epsilon
 
     print *, "Searching Fermi energy..."
     
     WhichLead = L1D%LeadNo
-    EFermi = L1D%EFermi
+   !EFermi = L1D%EFermi
     ChargeOffset = L1D%NPCEl
-    EMin = L1D%EMin
-    EMax = L1D%EMax
+    print*, 'ChargeOffset', ChargeOffset
     
-    root_fail = .true.
-    
-    !if( L1D%EFermi == 0.0d0 )then
-    !   print *, "Bisec Method"
-    !   call FLUSH(6)
-    !   Delta=0.1
-    !   EFermi = bisec(TotCharge,L1D%EMin,L1D%EMax,Delta,5*Max,K) 
-    !   L1D%EFermi = EFermi
-    !end if
+   !if( L1D%EFermi == 0.0d0 )then
+       print *, "Bisec Method"
+       call FLUSH(6)
+       Delta=0.1
+       EFermi = bisec(TotCharge,L1D%EMin,L1D%EMax,Delta,5*Max,K) 
+       L1D%EFermi = EFermi
+   !end if
 
-    print '(A,F10.5)' , "Initial EFermi = ", L1D%EFermi
-    
-    
-    EF0 = EFermi-1.0
-    EF1 = EFermi
-    EF2 = EFermi+1.0    
+   !print '(A,F10.5)' , "Initial EFermi = ", L1D%EFermi
 
-    nsteps = 25
-    Delta=FermiAcc
-    Epsilon=FermiAcc
+   !EF0 = EFermi-1.0
+   !EF1 = EFermi
+   !EF2 = EFermi+1.0
+
+   !nsteps = 25
+   !Delta=FermiAcc
+   !Epsilon=ChargeAcc
     
+   !print *, "Muller Method"
+   !call FLUSH(6)
     
-    if( root_fail )then
-       print*,'Secant method'
-       call FLUSH(6)
-       call SECANT(QTot,EF0,EF1,Delta,Epsilon,nsteps,EF2,Z,Cond,K)
-       if(K.eq.nsteps .or. EF2<EMin .or. EF2>EMax)then
-          print *, 'Warning: Secant method failed to find root. Using MULLER.'
-          root_fail = .true.
-       else
-          EFermi = EF2
-          root_fail = .false.
-       end if
-    end if
-    if( root_fail )then
-       print*,'Muller method'
-       call FLUSH(6)
-       call MULLER(QTot,EF0,EF1,EF2,Delta,Epsilon,nsteps,EFermi,Z,K,Cond)
-       if(K.eq.nsteps .or. EFermi<EMin .or. EFermi>EMax)then
-          print *, 'Warning: Muller method failed to find root. Using BISEC.'
-          root_fail = .true.
-       else
-          root_fail = .false.
-       end if
-    end if        
-    if( root_fail )then
-       print *, 'Bisec method'
-       call FLUSH(6)
-       print *, EMin, EMax
-       EFermi = BISEC(QTot,EMin,EMax,Delta,5*nsteps,K)
-    end if    
-    
-    L1D%EFermi = EFermi    
-    
-    print '(A,F10.5)', "EFermi in the bulk electrodes= ", L1D%EFermi
+   !call MULLER(TotCharge,EF0,EF1,EF2,Delta,Epsilon,nsteps,EFermi,Z,K,Cond)
+   !L1D%EFermi = EFermi
+
+    print '(A,I3,A,F10.5)', 'EFermi in bulk electrode ', WhichLead,' = ', L1D%EFermi 
     call FLUSH(6)
-    
-    !ChargeOffset = d_zero
+   !init = .true.
 
   end subroutine FindFermi
 
@@ -1451,12 +1071,11 @@ contains
   ! Shifts Lead Hamiltonian to adjust Fermi level to zero
   !
   subroutine AdjustFermi( ilead )
-    use numeric, only : CsetId
+   !use numeric, only : CsetId
     implicit none
     
     integer, intent(in) :: ilead
     integer :: ispin, i, j, ipc, NSpin, NPC, NPCAO
-    complex(double), dimension(Lead1D(1)%NPCAO,Lead1D(1)%NPCAO) :: identity
 
     NSpin = Lead1D(ilead)%NSpin
     NPC = Lead1D(ilead)%NPC
@@ -1464,7 +1083,6 @@ contains
     !
     ! Shift Lead Hamiltonian so that EFermi becomes = 0
     !
-    call CSetId(identity)
     do ispin = 1, NSpin
        do ipc = 0, NPC
           do i = 1, NPCAO
@@ -1476,11 +1094,11 @@ contains
        end do
     end do
     !
-    ! Also shift EMin, EMax, and EFermi to zero
+    ! Also shifts EMin, EMax to zero
     !
     Lead1D(ilead)%EMin = Lead1D(ilead)%EMin - Lead1D(ilead)%EFermi
     Lead1D(ilead)%EMax = Lead1D(ilead)%EMax - Lead1D(ilead)%EFermi       
-    !print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
+    print *, "Lead Hamiltonian shifted by -EFermi = ", -Lead1D(ilead)%EFermi
     !! Lead1D(ilead)%EFermi = 0.0d0
   end subroutine AdjustFermi
 

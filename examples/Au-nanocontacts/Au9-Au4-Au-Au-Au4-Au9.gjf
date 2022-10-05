@@ -1,7 +1,7 @@
 %mem=1gb
 %NProcShared=4
-%Subst L502 ../bin
-%Subst L101 ../bin
+%Subst L502 ../../bin
+%Subst L101 ../../bin
 #p lsda/gen pseudo=read pop=min Scf=(conver=5,maxcycle=100,dsymm)
 
 Au9-Au4-Au-Au-Au4-Au9

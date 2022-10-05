@@ -21,3 +21,13 @@ I think the issue of the integration of the advanced density matrix is solved. S
 ********************************************************************************
 Just added test version for the manual opening of the gap of molecules
 ********************************************************************************
+********************************************************************************
+                              Release 2.7.0                  
+Main new Features:
+
+- Implementation of 1D electrodes (at least preliminary tests are satisfactory). 
+  The 1D Hamiltonians H0, V1, S0, S1 are read from HD and SD. 
+  Still to check with spin and SOC
+- I had to recover previous implementations of MolMod, SpinOrbit and SpinRot (please check)
+- I cleaned up modules from previous 1D stuff not used (geom.F90, atomdata.F90)
+********************************************************************************

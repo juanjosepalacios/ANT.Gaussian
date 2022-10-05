@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.5.2  **********************
+!*********************  ANT.G-2.7.0  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -38,10 +38,9 @@
   USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
   USE constants, ONLY: Hart
   USE preproc
-  USE OneDLead, only: CleanUp1DLead 
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
-       SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, SwitchOn1DElectrodes, &
-       SwitchOff1DElectrodes, SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat
+       SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, &
+       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat, ChargeCntr, Electrodes
 #ifdef G03ROOT
   USE g03Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
 #endif
@@ -106,7 +105,7 @@
      PRINT *
      PRINT *, " ****************************************************************** "
      PRINT *, " ***                                                            *** "
-     PRINT *, " ***                      A l i c a n t e                       *** "
+     PRINT *, " ***                      A t o m i s t i c                     *** "
      PRINT *, " ***                      N a n o                               *** "
      PRINT *, " ***                      T r a n s p o r t                     *** "
 #ifdef G03ROOT
@@ -117,7 +116,7 @@
 #endif
      PRINT *, " ***                                                            *** "
      PRINT *, " ****************************************************************** "
-     PRINT *, " ***                     Version: 2.5.2                         *** "
+     PRINT *, " ***                     Version: 2.7.0                         *** "
      PRINT *, " ****************************************************************** "
      PRINT *, " *  Copyright (c) by                                              * "
      PRINT *, " *                                                                * "
@@ -462,17 +461,9 @@
   ! Turn on charge control every 5 steps in the first cycles
   IF(MOD(NCycLeadsOn-1,10) == 0 .and. NCycLeadsOn <= 21) CALL SwitchOnChargeCntr
   IF(MOD(NCycLeadsOn-1,20) == 0 .and. NCycLeadsOn > 21) CALL SwitchOnChargeCntr
-    
+  
   ! Call subroutine that solves transport problem
   CALL Transport(F,ADDP)
-  
-   if (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD") THEN
-       IF(MOD(NCycLeadsOn-1,10) == 0 .and. NCycLeadsOn >= 6) THEN
-          CALL CleanUp1DLead(1)
-          CALL CleanUp1DLead(2)
-          CALL SwitchOff1DElectrodes
-       END IF 
-   end if   
 
   CALL SwitchOffChargeCntr
   

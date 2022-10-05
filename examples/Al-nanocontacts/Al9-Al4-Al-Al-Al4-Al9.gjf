@@ -2,7 +2,7 @@
 %NProcShared=4
 %Subst L101 ../../bin
 %Subst L502 ../../bin
-#p lsda/gen pseudo=read Scf=(conver=5,dsymm)
+#p lsda/gen pseudo=read Scf=(conver=5,dsymm,nodamp)
 
 Al9-Al4-Al-Al-Al4-Al9
 

@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.6.2  **********************
+!*********************  ANT.G-2.7.0  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -7,6 +7,7 @@
 !*  Juan Jose Palacios (1)                                *
 !*  David Jacob (2)                                       *
 !*  Maria Soriano (1)                                     *
+!*  Wynand Dednam (1)
 !*                                                        *
 !* (1) Departamento de Fisica de la Materia Condensada    *
 !*     Universidad Autonoma de Madrid                     *      
@@ -29,7 +30,7 @@
   ! ****************************
 
   ! Mixing parameter (0.0 < alpha < 0.1)
-  REAL*8 :: alpha = 0.03d0         
+  REAL*8 :: alpha = 0.02d0         
   CHARACTER(len=10), PARAMETER ::  alpha_keyw = "ALPHA"     
 
   ! Pulay parameter (1 < NPulay < 1000)
@@ -55,10 +56,10 @@
   LOGICAL :: FullAcc = .FALSE. ; CHARACTER(len=10), PARAMETER :: FullAcc_keyw = "FULLACC"
 
   ! Maximum number of steps when searching for the Fermi level
-  INTEGER :: Max = 10
+  INTEGER :: Max = 15
   CHARACTER(len=10), PARAMETER :: Max_keyw = "MAX"  
 
-  ! Self-energy accuracy
+  ! Bethe lattice self-energy accuracy
   REAL*8 :: SelfAcc = 1.0d-6     
   CHARACTER(len=10), PARAMETER :: SelfAcc_keyw = "SELFACC"  
 
@@ -72,95 +73,43 @@
   REAL*8 :: eta = 1.0d-10         
   CHARACTER(len=10), PARAMETER :: eta_keyw = "ETA"
   
-  ! ******************************
-  ! 1D Lead calculation parameters
-  ! ******************************  
-  
   !
   ! Broadening for printing out 1D DOS and transmission on real axis
   !
-  REAL*8 :: Gamma = 1.0d-2  
+  REAL*8 :: Gamma = 0.03
   
   ! -Infty = Lower integration limit for charge integration 
-  REAL*8 :: Infty = 100.0
-  CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"    
+  REAL*8 :: Infty = 1000.0
+  CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"
   
   !
   ! Convergence criterion for iterative solution of Dyson equation for self-energy
   !
-  REAL*8 :: L1DConv = 1.0d-8
-  INTEGER :: L1DMaxCyc = 10000
+  REAL*8 :: L1DConv = 1.0d-6
+  integer :: L1DMaxCyc = 10000
   !
-  ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation
+  ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation in 1D leads
   !
-  REAL*8 :: L1DAlpha = 0.5d0  
+  REAL*8 :: L1DAlpha = 0.7d0  
   
-  ! 
-  INTEGER :: NAtomData = 0           
-  
-  ! Input files for device and leads/absorbing boundary conditions
-  CHARACTER(len=100) :: DevFile='device.dev'
-  CHARACTER(len=100) :: Lead1File='lead1.elc'
-  CHARACTER(len=100) :: Lead2File='lead2.elc'  
-  CHARACTER(len=100), PARAMETER :: DevFile_keyw = "DEVFILE"
-  CHARACTER(len=100), PARAMETER :: Lead1File_keyw = "LEAD1FILE"
-  CHARACTER(len=100), PARAMETER :: Lead2File_keyw = "LEAD2FILE" 
-  
-  ! Geometry input files for device and leads
-  CHARACTER(len=100) :: DevXYZ='device.xyz'
-  CHARACTER(len=100) :: Lead1XYZ='lead1.xyz'
-  CHARACTER(len=100) :: Lead2XYZ='lead2.xyz'  
-  CHARACTER(len=100), PARAMETER :: DevXYZ_keyw = "DEVXYZ"
-  CHARACTER(len=100), PARAMETER :: Lead1XYZ_keyw = "LEAD1XYZ"
-  CHARACTER(len=100), PARAMETER :: Lead2XYZ_keyw = "LEAD2XYZ"   
   !
   ! Switch on Bethe lattice electrodes
   ! 
-  LOGICAL :: Bethe= .false.
+  logical :: Bethe= .false.
 
-  !sf absorbing boundary conditions parameters
-  !sf parameter to switch on absorbing boundary conditions
-  LOGICAL :: abc= .false.
-  
-  !
-  ! whether to find Fermi level in leads and/or device
-  ! 0:  do not find Fermi level (default)
-  ! 1:  Bisec method
-  ! 2:  Muller method
-  ! 3:  Secant method
-  !
-  INTEGER :: FindEFL = 0
-  CHARACTER(len=10), PARAMETER ::  FindEFL_keyw = "FINDEFL"  
-
-  !
-  ! Number of primitive unit cells in the 1D electrodes
-  !   
-  INTEGER :: NPC = 1
-  CHARACTER(len=10), PARAMETER ::  NPC_keyw = "NPC"       
-  
   !
   ! Whether to print hamiltonian and overlap information
   ! 0: do not print
   ! 1: print real part only
   ! 2: print as complex matrix
   !
-  INTEGER :: PrintHS = 0
   CHARACTER(len=10), PARAMETER ::  PrintHS_keyw = "PRINTHS"      
+  integer :: PRINTHS = 0
   
-  !
-  ! Whether to shrink the central device region
-  ! or to extend by one unit cell of each lead
-  !
-  LOGICAL :: ShrDev = .false.
-  LOGICAL :: ExtDev = .false.    
-  
-  !
-  ! Whether the basis set is already orthogonal
-  ! Then device and lead overlap matrices are 
-  ! not read from file and set to identity
-  !
-  logical :: OrthogonalBS = .false. 
-  
+  ! Number of primitive cells when using 1D electrodes                            
+  ! 
+  integer :: NPC = 1
+  CHARACTER(len=10), PARAMETER :: NPC_keyw = "NPC"       
   !
   ! Number of points in energy window on regular mesh
   ! 
@@ -229,7 +178,6 @@
   ! *****************
   ! Correlated Blocks
   ! *****************
-  
   CHARACTER(LEN=10), PARAMETER :: CorrBl_keyw = "CORRBLOCKS"
   INTEGER :: NCorrBl = 0
   INTEGER, dimension(MaxAtm) :: CorrBeg=0, CorrEnd=0
@@ -255,7 +203,6 @@
   ! Whether to diagonalize the correlated blocks
   LOGICAL :: DiagCorrBl = .FALSE. ; CHARACTER(len=10), PARAMETER :: DiagCorrBl_keyw = "DIAGCORRBL"
 
-  
   ! *************************
   ! Spin transport parameters
   ! *************************
@@ -326,7 +273,7 @@
   REAL*8 :: soc_cff_f = 0.0d0                             
   CHARACTER(len=10), PARAMETER :: SOC_CFF_F_keyw = "SOC_CFF_F"   
   
-  ! Atom SOC multiplicative factors due to lack of nodal structure in basis set
+  ! Atom SOC multiplicative factor due to lack of nodal structure in basis set
   INTEGER :: NSocFacAtom = 0
   REAL*8, DIMENSION( MaxAtm) :: SOCFacAtomP = 0.0d0, SOCFacAtomD = 0.0d0, SOCFacAtomF = 0.0d0, RCutAtom = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFacAtom_keyw = "SOCFACATOM"   
@@ -413,10 +360,6 @@
   INTEGER :: RedTransmE = 0  
   CHARACTER(len=10), PARAMETER :: RedTransmE_keyw = "RTM_END" 
   
-  ! Whether to generate input for ANT.1D program
-  LOGICAL :: ANT1DInp = .FALSE.
-  CHARACTER(len=10), PARAMETER :: ANT1DInp_keyw = "ANT1D"
-
   ! Number of atom whose Hamiltonian to print out
   INTEGER :: PrtHatom = 1     
   CHARACTER(len=10), PARAMETER :: PrtHatom_keyw = "PRTHATOM"
@@ -480,7 +423,7 @@ CONTAINS
          & PHI_keyw   ,&
          & ZM_keyw   ,&
          & EW1_keyw       ,&
-         & EW2_keyw       ,&
+         & EW2_keyw   ,&
          & UPlus_keyw       ,&
          & Infty_keyw   )
        !
@@ -558,8 +501,8 @@ CONTAINS
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
-         MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw, FindEFL_keyw , NPC_keyw, PrintHS_keyw )
+         MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NPC_keyw, NAtomEl_keyw(1), NAtomEl_keyw(2), &
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
        !
        ! 2. looking for integer variables
        !
@@ -592,10 +535,12 @@ CONTAINS
           NEmbed(1) = ival
        CASE( NEmbed_keyw(2) )
           NEmbed(2) = ival
+       CASE( NPC_keyw )
+          NPC = ival
        CASE( NAtomEl_keyw(1) )
           NAtomEl(1) = ival
        CASE( NAtomEl_keyw(2) )
-          NAtomEl(2) = ival      
+          NAtomEl(2) = ival
        CASE( NPulay_keyw )
           NPulay = ival
        CASE( Max_keyw )
@@ -604,16 +549,10 @@ CONTAINS
        !   socfac = ival     
        CASE( PrtHatom_keyw )
           PrtHatom = ival 
-       CASE( FindEFL_keyw )
-          FindEFL = ival
-       CASE( NPC_keyw )
-          NPC = ival   
-       CASE( PrintHS_keyw )
-          PrintHS = ival                                     
 
        END SELECT
        
-    CASE ( DevFile_keyw, Lead1File_keyw, Lead2File_keyw, DevXYZ_keyw, Lead1XYZ_keyw, Lead2XYZ_keyw, ElType_keyw(1), ElType_keyw(2), BLPar_keyw(1), BLPar_keyw(2) )
+    CASE ( ElType_keyw(1), ElType_keyw(2), BLPar_keyw(1), BLPar_keyw(2) )
        !
        ! 3. looking for string variables
        !
@@ -624,18 +563,6 @@ CONTAINS
        call upcase(keyword)
 
        SELECT CASE ( keyword )
-       CASE( DevFile_keyw ) 
-          DevFile = strval
-       CASE( Lead1File_keyw )
-          Lead1File = strval
-       CASE( Lead2File_keyw )
-          Lead2File = strval
-       CASE( DevXYZ_keyw ) 
-          DevXYZ = strval
-       CASE( Lead1XYZ_keyw )
-          Lead1XYZ = strval
-       CASE( Lead2XYZ_keyw )
-          Lead2XYZ = strval     
        CASE( ElType_keyw(1) ) 
           ElType(1) = strval
        CASE( ElType_keyw(2) )
@@ -664,8 +591,6 @@ CONTAINS
        Mulliken = .TRUE.
     CASE ( FullAcc_keyw )
        FullAcc = .TRUE.
-    CASE ( ANT1DInp_keyw )
-       ANT1DInp = .TRUE.      
     CASE ( DFTU_keyw )
        DFTU = .true.
     CASE ( HybFunc_keyw )
@@ -763,7 +688,6 @@ CONTAINS
              RETURN
           END IF
        END DO
-
 
     CASE ( PFix_keyw )
        PFix = .TRUE.
@@ -930,23 +854,17 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
+    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
+    WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
+    WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
+    WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
+    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
+    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
+    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"   
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) SCFSOC_keyw, " = ", SCFSOC        
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
-    WRITE(unit=logfile,fmt=*) "******************"
-    WRITE(unit=logfile,fmt=*) "1D lead parameters"
-    WRITE(unit=logfile,fmt=*) "******************"    
-    WRITE(unit=logfile,fmt=*) DevFile_keyw, " = ", DevFile
-    WRITE(unit=logfile,fmt=*) Lead1File_keyw, " = ", Lead1File
-    WRITE(unit=logfile,fmt=*) Lead2File_keyw, " = ", Lead2File
-    WRITE(unit=logfile,fmt=*) DevXYZ_keyw, " = ", DevXYZ
-    WRITE(unit=logfile,fmt=*) Lead1XYZ_keyw, " = ", Lead1XYZ
-    WRITE(unit=logfile,fmt=*) Lead2XYZ_keyw, " = ", Lead2XYZ
-    WRITE(unit=logfile,fmt=*) FindEFL_keyw, " = ", FindEFL
-    WRITE(unit=logfile,fmt=*) NPC_keyw, " = ", NPC
-    WRITE(unit=logfile,fmt=*) PrintHS_keyw, " = ", PrintHS
-    WRITE(unit=logfile,fmt=*) Infty_keyw, " = ", Infty    
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
     WRITE(unit=logfile,fmt=*) "************************"
@@ -964,6 +882,7 @@ CONTAINS
     else
     WRITE(unit=logfile,fmt=*) NEmbed_keyw(2), " = ", NEmbed(2)
     end if
+    WRITE(unit=logfile,fmt=*) NPC_keyw, " = ", NPC
     if (NAtomEl(1) == 0) then
     WRITE(unit=logfile,fmt=*) NAtomEl_keyw(1), " = ? "
     else
@@ -1025,7 +944,11 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) ZM_keyw, " = ", ZM, " Tesla"                 
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
-    END DO                                                                        
+    END DO                                                                  
+    WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
+    DO i=1,MaxAtm
+       IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
+    END DO            
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"
     WRITE(unit=logfile,fmt=*) "***********************"
@@ -1058,7 +981,6 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) RedTransmE_keyw, " = ",RedTransmE
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels
     WRITE(unit=logfile,fmt=*) LeadDOS_keyw, " = ", LeadDOS
-    WRITE(unit=logfile,fmt=*) ANT1DInp_keyw, " = ", ANT1DInp 
     WRITE(unit=logfile,fmt=*) PrtHatom_keyw, " = ", PrtHatom
 
     IF (NAtomEl(1)/=0 .and. (NAtomEl(2)==0.and.ElType(2)/='GHOST')) THEN

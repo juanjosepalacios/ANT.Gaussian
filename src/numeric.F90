@@ -655,7 +655,7 @@
        !IF (ABS(Y2).LT.Epsilon) Cond=2
        !print *, "P3 = ", P3
        K=K+1
-      !print *,'RelErr',RelErr,'Y2',Y2
+       !print *,'EFermi',P3,'TotCharge',Y2
     END DO
     RETURN
   END SUBROUTINE MULLER
