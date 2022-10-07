@@ -70,10 +70,9 @@
   complex*16, dimension(:,:),allocatable :: SPH
   
   ! *** Hamiltonian and density matrix of device
-  real*8, dimension(:,:,:),allocatable :: HD
-  real*8, dimension(:,:,:),allocatable :: PD
+  real*8, dimension(:,:,:),allocatable :: HD, PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC,PD_SOC_R,PD_SOC_A
+  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC, PD_SOC_R, PD_SOC_A
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
 
   ! *** Orthognalization matrix for device ***
@@ -253,7 +252,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, NEmbed,NPC
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, NEmbed,NPC, SCFSOC
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -292,10 +291,17 @@
        stop
     end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), S_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs),PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
-       print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
+       print *, "DEVICE/Allocation error for SD, InvSD, HD, S_SOC, H_SOC, PD"
        stop
+    end if
+    if (SCFSOC) then
+       allocate(H_SOC_ONLY(DNAOrbs,DNAOrbs),   STAT=AllocErr )
+       if( AllocErr /= 0 ) then
+          print *, "DEVICE/Allocation error for H_SOC_ONLY"
+          stop
+       end if
     end if
 
     SD = S
@@ -717,7 +723,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus, SCFSOC
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -743,6 +749,26 @@
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F
+    
+    if ((SOC .or. ROT) .and. SCFSOC) then
+       !call spin_orbit                 
+       if (NSpin == 2) then
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+DREAL(H_SOC_ONLY(i,j))
+             HD(2,i,j)=HD(2,i,j)+DREAL(H_SOC_ONLY(i+NAOrbs,j+NAOrbs))
+             SD(i,j)=S_SOC(i,j)                
+          end do
+          end do
+       else                      ! No need to add SOC in non-magnetic cases, at least provisionally
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+DREAL(H_SOC_ONLY(i,j))
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
+       end if       
+    end if       
     
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
@@ -2604,7 +2630,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, SCFSOC
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2635,12 +2661,12 @@
     if (SOC .or. ROT) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2821,6 +2847,7 @@
          deallocate(DSG)
          !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
          deallocate(H_SOC)
+         if (SCFSOC) deallocate(H_SOC_ONLY)           
       else 
          deallocate(GammaL)
          deallocate(GammaR)
@@ -2840,7 +2867,7 @@
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
-                          ChargeAcc, DMIMAG, ElType
+                          ChargeAcc, DMIMAG, ElType, SCFSOC
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
@@ -2890,12 +2917,12 @@
     if (SOC .or. ROT) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       !allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -3322,6 +3349,7 @@
          deallocate(Dctn)
          !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
          deallocate(H_SOC)
+         if (SCFSOC) deallocate(H_SOC_ONLY)              
       else 
          deallocate(GammaL)
          deallocate(GammaR)
@@ -4674,7 +4702,7 @@
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, SOC, ROT
+    use parameters, only: PrtHatom, SOC, ROT, SCFSOC
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
@@ -4693,6 +4721,7 @@
  overlaprot = c_zero
  hamil_SO = c_zero 
  H_SOC = c_zero
+ if (SCFSOC) H_SOC_ONLY = c_zero 
  S_SOC = d_zero
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -4728,7 +4757,7 @@
  nshell = GetNShell()
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
+ If (SOC) CALL CompHSO(hamil_SO,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
@@ -4798,6 +4827,7 @@
  if (SOC) then
    do i=1, totdim*2
       do j=1, totdim*2
+         if (SCFSOC) H_SOC_ONLY(i,j)=hamil_SO(i,j)        
          H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
       end do
    end do

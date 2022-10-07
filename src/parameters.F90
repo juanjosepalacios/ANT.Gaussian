@@ -171,6 +171,9 @@
   ! Whether to compute the density matrix by integration along imaginary axis instead of 
   ! complex contour (default)
   LOGICAL :: DMImag = .false.; CHARACTER(len=10), PARAMETER :: DMImag_keyw = "DMIMAG"
+  
+  ! Whether to include the diagonal blocks of the SOC matrix in the SCF cycles 
+  LOGICAL :: SCFSOC = .false.; CHARACTER(len=10), PARAMETER :: SCFSOC_keyw = "SCFSOC"    
 
   ! *****************
   ! Correlated Blocks
@@ -601,6 +604,8 @@ CONTAINS
        FMixing = .true.
     CASE ( DMImag_keyw )
        DMImag = .true.
+    CASE ( SCFSOC_keyw )
+       SCFSOC = .true.          
        !
        ! 5. Integer arrays
        !
@@ -851,6 +856,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"   
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
+    WRITE(unit=logfile,fmt=*) SCFSOC_keyw, " = ", SCFSOC            
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
     WRITE(unit=logfile,fmt=*) "************************"
     WRITE(unit=logfile,fmt=*) "Bethe lattice parameters"
