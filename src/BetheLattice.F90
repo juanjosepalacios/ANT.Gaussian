@@ -959,7 +959,6 @@ contains
     if (NNeighbs == 6) then
         nj=2
     else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2) then
-    else if (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4) then
         nj=1
     else
         print *,"Incorrect number of directions: Error n. 1"
