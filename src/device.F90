@@ -1624,7 +1624,6 @@
     complex*16, intent(in) :: z 
     complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: green
     
-
     ! Initilization 
     green=c_zero
     sigr=-ui*eta*SD 
@@ -1645,10 +1644,10 @@
    
     info= CInv(green)
    !call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
-   !call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)    
+   !call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
     if (info /= 0) print*,'Warning inverting Greens function'
 
-  end subroutine gplus0  
+  end subroutine gplus0
 
 
   !********************************************************
