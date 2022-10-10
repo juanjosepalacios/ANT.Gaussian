@@ -1044,7 +1044,6 @@ contains
     enddo
 
     ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4  .or. NNeighbs == 2 ) THEN
-    ELSE IF (NNeighbs == 12 .OR. NNeighbs == 8 .or. NNeighbs == 4 ) THEN
 
     do k1=1,NNeighbs  ! Loop over outer cluster atoms
        do k2=1,NNeighbs ! Loop over all BL directions connected to that atom
