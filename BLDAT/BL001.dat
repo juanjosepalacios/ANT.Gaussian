@@ -10,6 +10,7 @@ BEGINSET
 Papacon
 1 1 1 0
 s
+ISPIN = 1
 !
 es = 0.0d0
 !
@@ -21,6 +22,8 @@ BEGINSET
 hydrophene1
 1 1 1 0
 s
+ISPIN = 1
+!
 es = 0.0d0
 !
 sss = -0.1
@@ -32,6 +35,8 @@ BEGINSET
 hydrophene2
 1 1 1 0
 s
+ISPIN = 1
+!
 es = -0.1d0
 !
 sss = -0.1
@@ -43,6 +48,8 @@ BEGINSET
 hydrophene3
 1 1 1 0
 s
+ISPIN = 1
+!
 es = 0.0d0
 !
 sss = -0.2

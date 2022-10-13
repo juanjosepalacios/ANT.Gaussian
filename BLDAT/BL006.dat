@@ -12,6 +12,7 @@ Papacon
 s
 p
 RYD
+ISPIN = 1
 !
 ! Energies in Ryd 
 !
@@ -31,6 +32,7 @@ graphene
 s
 p
 RYD
+ISPIN = 1
 !
 es =    0.1
 ep =    0.0

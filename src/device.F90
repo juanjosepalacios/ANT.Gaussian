@@ -1624,10 +1624,10 @@
     complex*16, intent(in) :: z 
     complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: green
     
-    ! Initilization 
+    ! Initialization 
     green=c_zero
-    sigr=-ui*eta*SD 
-    sigl=-ui*eta*SD 
+    sigr=c_zero
+    sigl=c_zero
 
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
@@ -3676,8 +3676,8 @@
     
     integer, intent(in) :: spin,sgn
     complex*16, intent(in) :: cenergy
-    complex*16, dimension(:,:),intent(inout) :: Sigma1
-    complex*16, dimension(:,:),intent(inout) :: Sigma2
+    complex*16, dimension(:,:),intent(out) :: Sigma1
+    complex*16, dimension(:,:),intent(out) :: Sigma2
     complex*16, dimension(NAOrbs,NAOrbs) :: temp
     integer :: is,omp_get_thread_num
     
