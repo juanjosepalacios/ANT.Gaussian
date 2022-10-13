@@ -17,6 +17,7 @@ d
 ! Energies in Ryd
 ! 
 RYD
+ISPIN = 1
 es  = 0.65687
 ep  = 1.45952
 edd = 0.45445
@@ -43,6 +44,7 @@ s
 p
 d
 RYD
+ISPIN = 1
 !
 ! On-site enrgies in Ryd
 !

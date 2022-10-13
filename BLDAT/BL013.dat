@@ -17,6 +17,7 @@ Papacon-old
 s
 p
 RYD
+ISPIN = 1
 !
 ! Energies in Ryd 
 !
@@ -66,6 +67,7 @@ Papacon
 s
 p
 RYD
+ISPIN = 1
 !
 ! On-site enrgies in Ryd
 !
