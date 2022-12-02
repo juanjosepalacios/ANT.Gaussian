@@ -1629,7 +1629,6 @@
      CompSpinPD = Q - NCDAB
 
    end function CompSpinPD
-
   
   !*************************************
   !* Compute retarded Green's function *
@@ -1651,21 +1650,24 @@
     complex*16, intent(in) :: z 
     complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: green
     
+    ! Initialization 
+    green=c_zero
+    sigr=c_zero
+    sigl=c_zero
+
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
-   !print*,'z=',z,'SigmaL=',sigl(1,1),'SigmaR=',sigr(NAOrbs-10,NAOrbs-10)
     sigr=glue*sigr
     sigl=glue*sigl
     
     !************************************************************************
     !c Retarded "Green" function
     !************************************************************************
-    green=c_zero
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift+ui*eta)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
-
+   
     info= CInv(green)
    !call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
    !call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
@@ -2944,7 +2946,7 @@
        allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-      !call spin_orbit
+       call spin_orbit
        
     else
 
