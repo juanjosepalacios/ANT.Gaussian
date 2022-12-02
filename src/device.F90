@@ -2596,7 +2596,7 @@
    write(ifu_log,*)'---------------------------------------------------------'    
 
 2011 format(a6,i4,a10,f8.4)
-2012 format(a6,i4,a10,f8.4,3(a12,f9.4),a16,f9.4)
+2012 format(a6,i4,a10,f8.4,3(a12,f9.6),a16,f9.6)
 2013 format(10f9.4)
   end subroutine MullPop_SOC  
 
