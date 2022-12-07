@@ -3799,10 +3799,10 @@
           return
        end if
        qq = q
-       print '(A,I4,F10.5)', "TotCharge/Gaussian quadrature gives  ", n, q
+       print '(A,I4,F13.5)', "TotCharge/Gaussian quadrature gives  ", n, q
     end do
-    print '(A,I4,A,F10.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
-    print '(A,F10.5)', "TotCharge/Gaussian quadrature gives  ", q
+    print '(A,I4,A,F13.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
+    print '(A,F13.5)', "TotCharge/Gaussian quadrature gives  ", q
 
     TotCharge = q
   end function TotCharge
@@ -3965,7 +3965,7 @@
     complex*16, dimension(NAOrbs,NAOrbs) :: p,q
     complex*16, dimension(NAOrbs,NAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,k1
+    integer :: n,i,j,l,k,k1,chunk
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
 
       pi=d_pi
@@ -4007,8 +4007,10 @@
       end do
 ! ... computing F() at the new points
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
-       PDP=d_zero
-!$OMP DO SCHEDULE(STATIC,1)
+      PDP=d_zero
+      chunk=max(((n+1)/2)/omp_get_num_threads(),1)
+     !chunk=1
+!$OMP DO SCHEDULE(STATIC,chunk)
       do l=1,n,2
         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
         Em=edex3(El,Er,-xx)
@@ -4064,8 +4066,8 @@
         PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
       enddo
       enddo
-      if (M == 1) write(ifu_log,'(A)')'Unsuccesful integration'
-      write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
+      if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
+      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
 
       return
     end subroutine IntRealAxis
@@ -4094,7 +4096,7 @@
 !   complex*16, dimension(DNAOrbs,DNAOrbs) :: p,q
     complex*16, dimension(DNAOrbs,DNAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,k1
+    integer :: n,i,j,l,k,k1,chunk
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI
 
       pi=d_pi
@@ -4137,8 +4139,10 @@
       end do
 ! ... computing F() at the new points
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
-       PDP=d_zero
-!$OMP DO SCHEDULE(STATIC,1)
+      PDP=d_zero
+      chunk=max(((n+1)/2)/omp_get_num_threads(),1)
+     !chunk=1
+!$OMP DO SCHEDULE(STATIC,chunk)
       do l=1,n,2
         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
         Em=edex3(El,Er,-xx)
@@ -4194,9 +4198,8 @@
        enddo
     enddo
 
-
-      if (M == 1) write(ifu_log,'(A)')'Unsuccesful integration'
-      write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
+      if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
+      if (M == 1) write(ifu_log,'(A,i5,A)')'Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
 
       return
     end subroutine IntRealAxis_SOC     
