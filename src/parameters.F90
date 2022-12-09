@@ -299,8 +299,11 @@
   ! Atom spin orientation manipulation of initial guess
   INTEGER :: NSpinRotAtom = 0
   REAL*8, DIMENSION( MaxAtm) :: SpinRotAtomTheta = 0.0d0, SpinRotAtomPhi = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"       
+  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"     
   
+  ! Strong-field anomalous Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
+  REAL*8 :: ZM = 0.0d0                           
+  CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"        
 
   ! *********************
   ! Output parameters
@@ -414,6 +417,7 @@ CONTAINS
          & SOC_CFF_F_keyw   ,&         
          & THETA_keyw   ,&
          & PHI_keyw   ,&
+         & ZM_keyw   ,&         
          & EW1_keyw       ,&
          & EW2_keyw   ,&
          & UPlus_keyw       ,&
@@ -480,6 +484,8 @@ CONTAINS
           theta = rval    
        CASE ( PHI_keyw )   
           phi = rval     
+       CASE ( ZM_keyw )   
+          ZM = rval               
        CASE ( EW1_keyw ) 
           EW1 = rval
        CASE ( EW2_keyw ) 
@@ -926,7 +932,8 @@ CONTAINS
     END DO          
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"                 
+    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          
+    WRITE(unit=logfile,fmt=*) ZM_keyw, " = ", ZM, " Tesla"             
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
