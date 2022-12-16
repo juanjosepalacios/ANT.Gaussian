@@ -301,9 +301,28 @@
   REAL*8, DIMENSION( MaxAtm) :: SpinRotAtomTheta = 0.0d0, SpinRotAtomPhi = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"     
   
-  ! Strong-field anomalous Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
-  REAL*8 :: ZM = 0.0d0                           
-  CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"        
+  LOGICAL :: ZM = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"  
+  
+  ! Global B_x
+  REAL*8 :: B_x = 0.0d0                           
+  CHARACTER(len=10), PARAMETER :: B_x_keyw = "B_X"
+  
+  ! Global B_y                                             
+  REAL*8 :: B_y = 0.0d0                             
+  CHARACTER(len=10), PARAMETER :: B_y_keyw = "B_Y"    
+
+  ! Global B_z                                             
+  REAL*8 :: B_z = 0.0d0                             
+  CHARACTER(len=10), PARAMETER :: B_z_keyw = "B_Z"      
+  
+  INTEGER :: NZMAtom = 0 
+  REAL*8, DIMENSION( MaxAtm ) :: ZMAtomX = 0.0d0, ZMAtomY = 0.0d0,  ZMAtomZ = 0.0d0
+  CHARACTER(LEN=10), PARAMETER :: NZMAtom_keyw = "NZMAtom"  
+  
+!  ! Strong-field anomalous Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
+!  REAL*8 :: ZM = 0.0d0                           
+!  CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"        
 
   ! *********************
   ! Output parameters
