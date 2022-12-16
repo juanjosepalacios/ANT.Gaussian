@@ -2418,8 +2418,8 @@
     implicit none
 
     integer :: i,j, I1, is ,n, l, iAtom, jAtom
-    real*8 :: sdeg, ro_a, ro_ab, ro_ba, ro_ab_I, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
-    real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ab, rho_ba, rho_ab_I, rho_ba_I, rho_b, tmp
+    real*8 :: sdeg, ro_a, ro_ba, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol !,ro_ab, ro_ab_I
+    real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ba, rho_ba_I, rho_b, tmp !,rho_ab, rho_ab_I  
     complex*16, dimension(DNAOrbs,DNAOrbs) :: rho
 
     write(ifu_log,*)'-----------------------------------------------'
@@ -2428,8 +2428,8 @@
 
     rho = c_zero
     rho_a = d_zero
-    rho_ab = d_zero
-    rho_ab_I = d_zero
+    !rho_ab = d_zero
+    !rho_ab_I = d_zero
     rho_ba = d_zero
     rho_ba_I = d_zero
     rho_b = d_zero     
@@ -2440,9 +2440,9 @@
     do j=1,NAOrbs
        rho_a(i,j)=rho_a(i,j)+rho(i,j)
        rho_b(i,j)=rho_b(i,j)+rho(i+NAOrbs,j+NAOrbs)
-       rho_ab(i,j)=rho_ab(i,j)+REAL(rho(i,j+NAOrbs))
+       !rho_ab(i,j)=rho_ab(i,j)+REAL(rho(i,j+NAOrbs))
        rho_ba(i,j)=rho_ba(i,j)+REAL(rho(i+NAOrbs,j))
-       rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
+       !rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
        rho_ba_I(i,j)=rho_ba_I(i,j)+IMAG(rho(i+NAOrbs,j))
     end do
     end do             
@@ -2455,8 +2455,8 @@
     spinlead1=0.0
     do j=1,NALead(1)
        ro_a=0.0d0
-       ro_ab=0.0d0
-       ro_ab_I=0.0d0
+       !ro_ab=0.0d0
+       !ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2466,26 +2466,30 @@
          !print*,rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
        !  IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            ro_ab=ro_ab+rho_ab(i,i)
-            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+            !ro_ab=ro_ab+rho_ab(i,i)
+            !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
             ro_ba=ro_ba+rho_ba(i,i)  
             ro_ba_I=ro_ba_I+rho_ba_I(i,i)
        !  END IF 
        end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-         spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
+         spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
+         !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
       !END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
       !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
        ! if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
        ! if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
        END IF
        chargelead1=chargelead1+(ro_a+ro_b)
        spinlead1=spinlead1+spindens
@@ -2505,8 +2509,8 @@
        write(ifu_log,*)'-------------------'
        do j = NALead(1)+1,NALead(1)+NAMol()
        ro_a=0.0d0
-       ro_ab=0.0d0
-       ro_ab_I=0.0d0
+       !ro_ab=0.0d0
+       !ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2515,26 +2519,30 @@
              ro_a=ro_a+rho_a(i,i)
              ro_b=ro_b+rho_b(i,i)
          !   IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-                ro_ab=ro_ab+rho_ab(i,i)
-                ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+                !ro_ab=ro_ab+rho_ab(i,i)
+                !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
                 ro_ba=ro_ba+rho_ba(i,i)  
                 ro_ba_I=ro_ba_I+rho_ba_I(i,i)
          !   END IF 
           end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-            spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
-            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+            !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
+            spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
+            !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
       !   END IF
           IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !     if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
-      !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+      !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+            !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
           END IF
           IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
          !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
-         !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+         !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+            !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
           END IF
           chargemol=chargemol+ro_a+ro_b
           spinmol=spinmol+spindens
@@ -2554,8 +2562,8 @@
     spinlead2=0.0
     do j=NALead(1)+NAMol()+1,NALead(1)+NAMol()+NALead(2)
        ro_a=0.0d0
-       ro_ab=0.0d0
-       ro_ab_I=0.0d0
+       !ro_ab=0.0d0
+       !ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2564,8 +2572,8 @@
           ro_a=ro_a+rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
          !IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            ro_ab=ro_ab+rho_ab(i,i)
-            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+            !ro_ab=ro_ab+rho_ab(i,i)
+            !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
             ro_ba=ro_ba+rho_ba(i,i)  
             ro_ba_I=ro_ba_I+rho_ba_I(i,i)
          !END IF 
@@ -2573,18 +2581,22 @@
        I1 = I1 + NAOAtom(j)
     !  if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
     !  IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-         spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
+         spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
+         !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
     !  END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
     !    if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
     !    if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
      !   if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
        END IF
        chargelead2=chargelead2+ro_a+ro_b
        spinlead2=spinlead2+spindens
