@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.7.0  *********************!
+!*********************  ANT.G-2.7.1  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -60,7 +60,7 @@
   integer :: NCDEl, NCDAO1, NCDAO2
 
   ! *** Actual electron charge for certain Fermi energy ***
-  real*8 :: QAlpha, QBeta, Q_SOC
+  real*8 :: QAlpha, QBeta, Q_SOC, Q_Tot
 
   ! *** Overlap matrix S of device ***
   real*8, dimension(:,:),allocatable :: SD, InvSD
@@ -717,7 +717,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -852,7 +852,7 @@
           end do
        end if   
         
-       if (SOC .or. ROT .or. (ZM .ne. 0.0)) then 
+       if (SOC .or. ROT) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -880,7 +880,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,FixEFermi,FermiStart
     !use ieee_arithmetic
     implicit none
 
@@ -890,53 +890,58 @@
     
     logical :: root_fail
     
+    DE = 0.0d0
     Z=1.0d0
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
     if( NSpin == 2 .and. SPINLOCK )then
        print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+
        do ispin=1,NSpin
-          if (ispin == 1) print*,'Spin alpha'
-          if (ispin == 2) print*,'Spin beta'
-          root_fail = .true.
-          if (ispin.eq.1) E1=shiftup
-          if (ispin.eq.2) E1=shiftdown
-          E0=E1-Z
-          E2=E1+Z
-          if( root_fail )then
-             print*,'MULLER method'
-             call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-             if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
-                print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E3
-                if (ispin.eq.2)shiftdown=E3
-                root_fail = .false.
-             end if
-          end if
 
-          if( root_fail )then
-             print*,'SECANT method'
-             call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-             if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
-                print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E3
-                if (ispin.eq.2)shiftdown=E3
-                root_fail = .false.
+          if (FixEFermi) then
+             Q_Tot=QTot_SPINLOCK(-FermiStart)
+          else
+             if (ispin == 1) print*,'Spin alpha'
+             if (ispin == 2) print*,'Spin beta'
+             root_fail = .true.
+             if (ispin.eq.1) E1=shiftup
+             if (ispin.eq.2) E1=shiftdown
+             E0=E1-Z
+             E2=E1+Z
+             if( root_fail )then
+                print*,'MULLER method'
+                call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+                if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+                   print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+                   root_fail = .true.
+                else
+                   if (ispin.eq.1)shiftup=E3
+                   if (ispin.eq.2)shiftdown=E3
+                   root_fail = .false.
+                end if
              end if
-          end if
-
-          if (root_fail) then
-             print *, 'BISEC method'
-             if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-             if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-             DE=Delta
-             if(k.lt.5*Max) root_fail = .false.
-             if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+             if( root_fail )then
+                print*,'SECANT method'
+                call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+                if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+                   print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+                   root_fail = .true.
+                else
+                   if (ispin.eq.1)shiftup=E3
+                   if (ispin.eq.2)shiftdown=E3
+                   root_fail = .false.
+                end if
+             end if
+             if (root_fail) then
+                print *, 'BISEC method'
+                if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+                if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+                DE=Delta
+                if(k.lt.5*Max) root_fail = .false.
+                if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+             end if
           end if
 
           write(ifu_log,*)'--------------------------------------------------------'
@@ -954,46 +959,49 @@
           end if
           write(ifu_log,*)'--------------------------------------------------------'
        end do
-    else
-       root_fail = .true.
-       E0=shift-Z 
-       E1=shift
-       E2=shift+Z
-    
-       if (root_fail) then
-          print*,'MULLER method'
-          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-         !call MULLER(TotCharge2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
-       end if
 
-       if (root_fail) then
-          print*,'SECANT method'
-          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-         !call SECANT(TotCharge2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
+    else
+
+       if (FixEFermi) then
+          Q_Tot=QTot(-FermiStart)
+       else
+          root_fail = .true.
+          E0=shift-Z 
+          E1=shift
+          E2=shift+Z
+          if (root_fail) then
+             print*,'MULLER method'
+             call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+            !call MULLER(TotCharge2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+             if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+                print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+                root_fail = .true.
+             else
+                shift = E3
+                root_fail = .false.
+             end if
           end if
-       end if
- 
-       if (root_fail) then
-          print *, 'BISEC method'
-          Delta=0.1
-          shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
-         !shift = BISEC(TotCharge2,EMin,Emax,Delta,5*Max,K)
-          DE=Delta
-          if(k.lt.5*Max) root_fail = .false.
-          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
+          if (root_fail) then
+             print*,'SECANT method'
+             call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+            !call SECANT(TotCharge2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+             if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+                print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+                root_fail = .true.
+             else
+                shift = E3
+                root_fail = .false.
+             end if
+          end if
+          if (root_fail) then
+             print *, 'BISEC method'
+             Delta=0.1
+             shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
+            !shift = BISEC(TotCharge2,EMin,Emax,Delta,5*Max,K)
+             DE=Delta
+             if(k.lt.5*Max) root_fail = .false.
+             if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
+          end if
        end if
 
        write(ifu_log,*)'-----------------------------------------------'
@@ -1003,6 +1011,7 @@
        write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
        write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', QAlpha+QBeta
        write(ifu_log,*)'-----------------------------------------------'
+
     end if
     ADDP = .not. root_fail
     return
@@ -1027,7 +1036,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,FixEFermi,FermiStart
     !use ieee_arithmetic
     implicit none
 
@@ -1037,42 +1046,47 @@
     
     logical :: root_fail
     
+    DE = 0.0d0
     Z=1.0d0               
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
-    root_fail = .true.
-    E0=shift-Z 
-    E1=shift
-    E2=shift+Z  
-    if (root_fail) then
-        print*,'SECANT method'
-        call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-        if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-           print *, 'Warning: SECANT method failed to find root. Using MULLER.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
-        end if
-    end if      
-    if (root_fail) then
-        print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
+    if (FixEFermi) then
+       Q_Tot=QTot_SOC(-FermiStart)
+    else
+       root_fail = .true.
+       E0=shift-Z 
+       E1=shift
+       E2=shift+Z  
+       if (root_fail) then
+          print*,'MULLER method'
+          call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+             print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+             root_fail = .true.
+          else
+             shift = E3
+             root_fail = .false.
+          end if
        end if
-    end if  
-    if (root_fail) then
-       print *, 'BISEC method'
-       shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
-       DE=Delta
-       if(k.lt.5*Max) root_fail = .false.
-       if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+       if (root_fail) then
+          print*,'SECANT method'
+          call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+             print *, 'Warning: SECANT method failed to find root. Using MULLER.'
+             root_fail = .true.
+          else
+             shift = E3
+             root_fail = .false.
+          end if
+       end if  
+       if (root_fail) then
+          print *, 'BISEC method'
+          shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
+          DE=Delta
+          if(k.lt.5*Max) root_fail = .false.
+          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+       end if
     end if
 
     write(ifu_log,*)'-----------------------------------------------'
@@ -1929,7 +1943,7 @@
   ! when spin is locked
   !****************************************
   double precision function QTot_SPINLOCK(x)
-    use parameters, only: biasvoltage,QExcess
+    use parameters, only: biasvoltage,QExcess,NIP
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -1940,7 +1954,6 @@
     implicit none
 
     real*8, intent(in) :: x
-
     real*8 :: chargeup, chargedown, rrr, a, b, Q
     integer :: i,j,M
 
@@ -1956,12 +1969,12 @@
     !c c Integral limits ... (a,b)
     a = 0.d0
     b = d_pi
-    M=1000
+    M=NIP
     call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
       
     ! Density matrix out of equilibirum
     if (biasvoltage /= 0.0) then
-       M=1000
+       M=NIP
        call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
        PD(ispin,:,:) = PD(ispin,:,:) + REAL(PDOUT(ispin,:,:))
     end if
@@ -1987,7 +2000,7 @@
   ! when spin is not locked
   !****************************************
   double precision function QTot(x)
-    use parameters, only: biasvoltage,QExcess
+    use parameters, only: biasvoltage,QExcess,NIP
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2000,7 +2013,7 @@
     real*8, intent(in) :: x
 
     real*8 :: rrr, a, b, Q
-    integer :: i,j,M,omp_get_thread_num
+    integer :: i,j,M
 
 
     do ispin=1,NSpin
@@ -2019,13 +2032,13 @@
        !c c Integral limits ... (a,b)
        a = 0.d0
        b = d_pi
-       M=1000
 
+       M=NIP
        call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
-          M=1000
+          M=NIP
           call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
           PD(ispin,:,:) = PD(ispin,:,:) + REAL(PDOUT(ispin,:,:))
        end if
@@ -2042,7 +2055,6 @@
 
     if( NSpin == 1 ) QBeta = QAlpha
     QTot = QAlpha + QBeta - dble(NCDEl) - QExcess
-   !print*,shift,QTot
     return
   end function QTot
 
@@ -2053,7 +2065,7 @@
   ! when SOC is present
   !****************************************
   double precision function QTot_SOC(x)
-    use parameters, only: biasvoltage,QExcess
+    use parameters, only: biasvoltage,QExcess,NIP
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2066,7 +2078,7 @@
     real*8, intent(in) :: x
 
     real*8 :: rrr, a, b, Q, E0
-    integer :: i,j,M,omp_get_thread_num
+    integer :: i,j,M
 
        shift=x
     !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
@@ -2079,29 +2091,26 @@
        rrr = 0.5*abs(EMin)
 
        !c c Integral limits ... (a,b)
-       M=1000
        a = 0.d0
        b = d_pi
+       M=NIP
        call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
        PD_SOC_R=PD_SOC
-	   
-       M=1000
+
        a = -d_pi
        b = 0.d0
+       M=NIP
        call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
        PD_SOC_A=PD_SOC
-	   
-       PD_SOC = PD_SOC_R - PD_SOC_A
 
-      !if (NSpin == 2)
+       PD_SOC = PD_SOC_R - PD_SOC_A
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
-          M=1000
+          M=NIP
           call IntRealAxis_SOC(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
           PD_SOC = PD_SOC + PDOUT_SOC
        end if
-       ! Density matrix out of equilibirum
 
       do i=NCDAO1, NCDAO2
           do j=1,NAOrbs
@@ -2418,8 +2427,8 @@
     implicit none
 
     integer :: i,j, I1, is ,n, l, iAtom, jAtom
-    real*8 :: sdeg, ro_a, ro_ba, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol !,ro_ab, ro_ab_I
-    real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ba, rho_ba_I, rho_b, tmp !,rho_ab, rho_ab_I  
+    real*8 :: sdeg, ro_a, ro_ab, ro_ba, ro_ab_I, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
+    real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ab, rho_ba, rho_ab_I, rho_ba_I, rho_b, tmp
     complex*16, dimension(DNAOrbs,DNAOrbs) :: rho
 
     write(ifu_log,*)'-----------------------------------------------'
@@ -2428,8 +2437,8 @@
 
     rho = c_zero
     rho_a = d_zero
-    !rho_ab = d_zero
-    !rho_ab_I = d_zero
+    rho_ab = d_zero
+    rho_ab_I = d_zero
     rho_ba = d_zero
     rho_ba_I = d_zero
     rho_b = d_zero     
@@ -2440,9 +2449,9 @@
     do j=1,NAOrbs
        rho_a(i,j)=rho_a(i,j)+rho(i,j)
        rho_b(i,j)=rho_b(i,j)+rho(i+NAOrbs,j+NAOrbs)
-       !rho_ab(i,j)=rho_ab(i,j)+REAL(rho(i,j+NAOrbs))
+       rho_ab(i,j)=rho_ab(i,j)+REAL(rho(i,j+NAOrbs))
        rho_ba(i,j)=rho_ba(i,j)+REAL(rho(i+NAOrbs,j))
-       !rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
+       rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
        rho_ba_I(i,j)=rho_ba_I(i,j)+IMAG(rho(i+NAOrbs,j))
     end do
     end do             
@@ -2455,8 +2464,8 @@
     spinlead1=0.0
     do j=1,NALead(1)
        ro_a=0.0d0
-       !ro_ab=0.0d0
-       !ro_ab_I=0.0d0
+       ro_ab=0.0d0
+       ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2466,30 +2475,26 @@
          !print*,rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
        !  IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            !ro_ab=ro_ab+rho_ab(i,i)
-            !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+            ro_ab=ro_ab+rho_ab(i,i)
+            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
             ro_ba=ro_ba+rho_ba(i,i)  
             ro_ba_I=ro_ba_I+rho_ba_I(i,i)
        !  END IF 
        end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-         !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
-         spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
-         !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
       !END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
       !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
        ! if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
        ! if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
        END IF
        chargelead1=chargelead1+(ro_a+ro_b)
        spinlead1=spinlead1+spindens
@@ -2509,8 +2514,8 @@
        write(ifu_log,*)'-------------------'
        do j = NALead(1)+1,NALead(1)+NAMol()
        ro_a=0.0d0
-       !ro_ab=0.0d0
-       !ro_ab_I=0.0d0
+       ro_ab=0.0d0
+       ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2519,30 +2524,26 @@
              ro_a=ro_a+rho_a(i,i)
              ro_b=ro_b+rho_b(i,i)
          !   IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-                !ro_ab=ro_ab+rho_ab(i,i)
-                !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+                ro_ab=ro_ab+rho_ab(i,i)
+                ro_ab_I=ro_ab_I+rho_ab_I(i,i)
                 ro_ba=ro_ba+rho_ba(i,i)  
                 ro_ba_I=ro_ba_I+rho_ba_I(i,i)
          !   END IF 
           end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-            !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
-            spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
-            !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
-            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+            spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
+            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
       !   END IF
           IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !     if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
-      !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-            !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+      !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
           END IF
           IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
          !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
-         !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
-            !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
-            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
+         !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
           END IF
           chargemol=chargemol+ro_a+ro_b
           spinmol=spinmol+spindens
@@ -2562,8 +2563,8 @@
     spinlead2=0.0
     do j=NALead(1)+NAMol()+1,NALead(1)+NAMol()+NALead(2)
        ro_a=0.0d0
-       !ro_ab=0.0d0
-       !ro_ab_I=0.0d0
+       ro_ab=0.0d0
+       ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2572,8 +2573,8 @@
           ro_a=ro_a+rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
          !IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            !ro_ab=ro_ab+rho_ab(i,i)
-            !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+            ro_ab=ro_ab+rho_ab(i,i)
+            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
             ro_ba=ro_ba+rho_ba(i,i)  
             ro_ba_I=ro_ba_I+rho_ba_I(i,i)
          !END IF 
@@ -2581,22 +2582,18 @@
        I1 = I1 + NAOAtom(j)
     !  if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
     !  IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-         !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
-         spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
-         !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
     !  END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
     !    if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
     !    if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
      !   if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
        END IF
        chargelead2=chargelead2+ro_a+ro_b
        spinlead2=spinlead2+spindens
@@ -2618,7 +2615,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2646,8 +2643,8 @@
     print *, "-------------------------"
     print *
     
-    if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2677,7 +2674,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if ((.not. SOC) .and. (.not. ROT) .and. (ZM == 0.0)) then
+    if ((.not. SOC) .and. (.not. ROT)) then
     
     do ispin=1,NSpin
 
@@ -2751,7 +2748,7 @@
         write(ifu_dos,*) '    '                    
       end do ! End of spin loop
       
-    else !SOC/ROT/ZM case
+    else !SOC case
     
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
@@ -2826,9 +2823,9 @@
        end do
       close(333,status='delete')
 
-  end if !End of SOC/ROT/ZM if
+  end if !End of SOC if
   
-      if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -2853,7 +2850,7 @@
   subroutine transmission
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, ZM, FermiAcc, QExcess, & 
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
                           ChargeAcc, DMIMAG, ElType
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
@@ -2901,8 +2898,8 @@
         call InitElectrodes
     end if 
 
-    if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2955,7 +2952,7 @@
     allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr)
     if( AllocErr /= 0 ) stop
 
-    if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+    if (SOC .or. ROT) then
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
           call CompDensMat2_SOC(ADDP)
@@ -2972,7 +2969,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if ((.not. SOC) .and. (.not. ROT) .and. (ZM == 0.0)) then
+    if ((.not. SOC) .and. (.not. ROT)) then
 
     do ispin=1,NSpin
 
@@ -3125,7 +3122,7 @@
 
     end do ! End of spin loop
 
-    else !SOC/ROT/ZM case
+    else !SOC case
       
       open(334,file='tempT',status='unknown')
       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
@@ -3273,7 +3270,6 @@
           if (dabs(trans2-trans) >= 1.0d-5 .and. wcount < 1) then
                if (SOC) print*,'Warning in the transmission with SOC'
                if (ROT) print*,'Warning in the transmission with spin rotations'
-               if (ZM .ne. 0.0) print*,'Warning in the transmission with Zeeman field'
                wcount = wcount + 1
                !stop
            end if
@@ -3324,9 +3320,9 @@
        end do
       close(334,status='delete')
 
-  end if !End of SOC/ROT/ZM if
+  end if !End of SOC if
 
-      if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -4691,9 +4687,8 @@
 
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
-    use Zeeman, only: CompHZM    
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, SOC, ROT, ZM
+    use parameters, only: PrtHatom, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
@@ -4702,7 +4697,7 @@
     use g09Common, only: GetNShell
 #endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO, hamil_ZM
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
     integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
@@ -4710,8 +4705,7 @@
  totdim=NAOrbs   
  hamilrot = c_zero
  overlaprot = c_zero
- hamil_SO = c_zero
- hamil_ZM = c_zero  
+ hamil_SO = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4748,7 +4742,6 @@
  nshell = GetNShell()
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (ZM .ne. 0.0) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
@@ -4812,14 +4805,6 @@
        do j=1, totdim*2
           S_SOC(i,j)=REAL(overlaprot(i,j))         
           H_SOC(i,j)=hamilrot(i,j)
-       end do
-    end do 
- end if   
- 
- if (ZM .ne. 0.0) then
-    do i=1, totdim*2
-       do j=1, totdim*2
-          H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)
        end do
     end do 
  end if    
