@@ -18,7 +18,7 @@ export OMP_STACKSIZE=2G (*)
 Just added test version for the manual opening of the gap of molecules
 ********************************************************************************
 ********************************************************************************
-                              Release 2.7.0                  
+                              Release 2.7.1                  
 Main new Features:
 
 - Implementation of 1D electrodes (at least preliminary tests are satisfactory). 
@@ -26,4 +26,6 @@ Main new Features:
   Still to check with spin and SOC
 - I had to recover previous implementations of MolMod, SpinOrbit and SpinRot (please check)
 - I cleaned up modules from previous 1D stuff not used (geom.F90, atomdata.F90)
+- Added the possibility of fixing the Fermi energy and let the charge be
+- whatever it may be
 ********************************************************************************
