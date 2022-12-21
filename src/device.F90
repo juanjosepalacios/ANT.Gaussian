@@ -735,7 +735,7 @@
     logical,intent(out) :: ADDP
     logical :: Bounds
     real*8, dimension(NSpin,NAOrbs,NAOrbs),intent(in) :: F
-
+    real*8, dimension(NAOrbs,NAOrbs) :: X, HDOrtho    
     real*8, dimension(NAOrbs) :: evals
     real*8, dimension(:,:),allocatable :: SPM
 
@@ -747,10 +747,18 @@
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
-    if( NSpin == 1 ) EMaxDev = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
-    if( NSpin == 2 ) EMaxDev = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1))) + 10.0 
-    EMinDev = -EMaxDev
-
+    !if( NSpin == 1 ) EMaxDev = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
+    !if( NSpin == 2 ) EMaxDev = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1))) + 10.0 
+    !EMinDev = -EMaxDev
+    
+    call RMatPow(SD(:,:),-0.5,X)
+    HDOrtho = matmul(X,HD(1,:,:))
+    HDOrtho = matmul(HDOrtho,X)
+    call RSDiag(HDOrtho,evals,info)
+    if (info /= 0) print*, 'Warning diagonalizing the device Hamiltonian while cheking energy bounds!!!'
+    EMinDev = evals(1) - 10.0d0 
+    EMaxDev = evals(NAOrbs) + 10.0d0 
+    
     !Initializing 1D electrodes everytime we pass Charge Control
     IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr)  then
         if (Electrodes) call CleanUp1DLead(1) 
@@ -3943,8 +3951,8 @@
        Q = TotCharge( EMax )
        print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
        if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
-       EMin = EMin - EStep
-       EMax = EMax + EStep
+       EMin = EMin - EStep*i
+       EMax = EMax + EStep*i
     end do    
     print *, "--------------------------------------------------"
 
