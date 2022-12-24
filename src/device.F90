@@ -1650,6 +1650,8 @@
     green=c_zero
     sigr=c_zero
     sigl=c_zero
+    sigr=-ui*eta*SD 
+    sigl=-ui*eta*SD 
 
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
@@ -1697,6 +1699,8 @@
     green=c_zero
     gammar=c_zero
     gammal=c_zero
+    sigr=c_zero
+    sigl=c_zero
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
@@ -1761,6 +1765,8 @@
 
     gammar=c_zero
     gammal=c_zero
+    sigr=c_zero
+    sigl=c_zero
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
@@ -1855,6 +1861,10 @@
     sigmal=c_zero
 
 
+    sigr1=c_zero
+    sigl1=c_zero
+    sigr2=c_zero
+    sigl2=c_zero
     sigr1=-ui*eta*SD 
     sigl1=-ui*eta*SD 
     sigr2=-ui*eta*SD 
