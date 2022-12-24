@@ -3989,7 +3989,7 @@
 
 ! Initializing M, n, S0, C0, CH and p
 
-      M = (M-1)*0.5d0
+     !M = (M-1)*0.5d0
       n = 1
       S0=1
       C0=0
@@ -4069,7 +4069,7 @@
         if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
        enddo
       enddo
-! Test for successfullness and integral final value
+! Test for successfulness and integral final value
       M = 0
       do i=1,NAOrbs
       do j=1,NAOrbs
@@ -4120,7 +4120,7 @@
 
 ! Initializing M, n, S0, C0, CH and p
 
-      M = (M-1)*0.5d0
+     !M = (M-1)*0.5d0
       n = 1
       S0=1
       C0=0
