@@ -4072,11 +4072,11 @@
       do i=1,NAOrbs
        do j=1,NAOrbs
         rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+       !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
         rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+       !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
         if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.M) goto 1
-        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
+       !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
        enddo
       enddo
 ! Test for successfulness and integral final value
@@ -4084,11 +4084,11 @@
       do i=1,NAOrbs
       do j=1,NAOrbs
         rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+       !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
         rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+       !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
         if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) M = 1
-        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
+       !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
         PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
         PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
       enddo
@@ -4126,24 +4126,24 @@
     integer :: n,i,j,l,k,k1,chunk
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI
 
-      pi=d_pi
+    pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-     !M = (M-1)*0.5d0
-      n = 1
-      S0=1
-      C0=0
-      E0=edex3(El,Er,d_zero)
-     call glesser_SOC(E0,green)
+    M=M*10 !increasing max number of integration points since now the imaginary part of P is neq zero
+    n = 1
+    S0=1
+    C0=0
+    E0=edex3(El,Er,d_zero)
+    call glesser_SOC(E0,green)
 
     CH = 0.d0
-      do i=1,DNAOrbs
+    do i=1,DNAOrbs
        do j=1,DNAOrbs
         PDOUT_SOC(i,j) = -ui*green(i,j)/(2*pi)
         CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
        enddo
-      enddo
+    enddo
  !print*,'CH',CH
 ! Computing the (2n+1) points quadrature formula ...
 ! ... updating q, p, C1, S1, C0, S0, s and c
@@ -4151,19 +4151,19 @@
     xp = CH
 1   q = xp + xp
     xp = CH + CH
-
-      C1 = C0
-      S1 = S0
-      C0 = sqrt((1+C1)*0.5d0)
-      S0 = S1/(2*C0)
-      !s = S0
-      !cc = C0
-      xs(1) = S0
-      xcc(1) = C0
-      do l=1,n,2
-         xs(l+2)=xs(l)*C1+xcc(l)*S1
-         xcc(l+2)=xcc(l)*C1-xs(l)*S1
-      end do
+ 
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(2*C0)
+    !s = S0
+    !cc = C0
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
 ! ... computing F() at the new points
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
       PDP=d_zero
@@ -4171,36 +4171,36 @@
      !chunk=1
 !$OMP DO SCHEDULE(STATIC,chunk)
       do l=1,n,2
-        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-        Em=edex3(El,Er,-xx)
-        Ep=edex3(El,Er,xx)
+         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+         Em=edex3(El,Er,-xx)
+         Ep=edex3(El,Er,xx)
 !!$OMP  PARALLEL DEFAULT(SHARED)
 !!$OMP  SECTIONS
 !!$OMP  SECTION
-       call glesser_SOC(Em,greenm)
+          call glesser_SOC(Em,greenm)
 !!$OMP  SECTION
-       call glesser_SOC(Ep,greenp)
+          call glesser_SOC(Ep,greenp)
 !!$OMP  END SECTIONS
 !!$OMP  END PARALLEL
-          do i=1,DNAOrbs
-           do j=1,DNAOrbs
-            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
-           enddo
-          enddo
+         do i=1,DNAOrbs
+            do j=1,DNAOrbs
+               pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+            enddo
+         enddo
       enddo
 !$OMP END DO
 !$OMP CRITICAL
-       do i = 1,DNAOrbs
-          do j = 1,DNAOrbs
-             PDOUT_SOC(i,j)=PDOUT_SOC(i,j)+PDP(i,j)
-          end do
-       end do
+      do i = 1,DNAOrbs
+         do j = 1,DNAOrbs
+            PDOUT_SOC(i,j)=PDOUT_SOC(i,j)+PDP(i,j)
+         end do
+      end do
 !$OMP END CRITICAL
 !$OMP END PARALLEL
 
 ! ... replacing n by 2n+1
-         n = n + n + 1
-
+    n = n + n + 1
+ 
     CH = 0.d0
     CHI = 0.d0
     do i=1,DNAOrbs
@@ -4209,43 +4209,44 @@
           CHI = CHI + DIMAG(PDOUT_SOC(k,k1)*S_SOC(k1,k))
        end do
     enddo
-   !print*,n,ch,chi
-      !print*, n,16*CH*(El-Er)/(6*(n+1))
+ 
     ! Stopping?
-   !print*, n,(CH-xp)*(CH-xp)*16-3*(n+1)*abs(CH-q)*PAcc
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+    if ((CHI-xp)*(CHI-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
     ! Test for successfullness and integral final value
     M = 0
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
-
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
+    if ((CHI-xp)*(CHI-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
+ 
     do i=1,DNAOrbs
        do j=1,DNAOrbs
           PDOUT_SOC(i,j) = 16*PDOUT_SOC(i,j)/(3*(n+1))
           PDOUT_SOC(i,j) = PDOUT_SOC(i,j)*(El-Er)/2
        enddo
     enddo
+ 
+    if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
+    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+ 
+    return
+  end subroutine IntRealAxis_SOC     
 
-      if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-      if (M == 1) write(ifu_log,'(A,i5,A)')'Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
-
-      return
-    end subroutine IntRealAxis_SOC     
-
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
-  !c second kind                                                                  c
-  !c        eps: Tolerance                                                        c
-  !c        b: parameter of the change of variable                                c
-  !c        Em: maximum value of the energy range                                 c
-  !c        M:   On input, maximum number of points allowed                       c
-  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
-  !c        dn:  On output, the density matrix                                    c
-  !c        CH:  On output, the value of the integral (charge density).           c
-  !c             Interval [-1,1]                                                  c
-  !c        Eq:  On output, the value of the upper bound of the integral.         c
-  !c        The rest of arguments are neeed by the subrtn. gplus                  c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!c second kind                                                                  c
+!c        eps: Tolerance                                                        c
+!c        b: parameter of the change of variable                                c
+!c        Em: maximum value of the energy range                                 c
+!c        M:   On input, maximum number of points allowed                       c
+!c             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!c        dn:  On output, the density matrix                                    c
+!c        CH:  On output, the value of the integral (charge density).           c
+!c             Interval [-1,1]                                                  c
+!c        Eq:  On output, the value of the upper bound of the integral.         c
+!c        The rest of arguments are neeed by the subrtn. gplus                  c
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
   subroutine IntCompPlane(rrr,bi,Emi,M,Eq)
+
     use parameters, only: PAcc 
     use constants, only: d_pi, d_zero, ui
 !   USE IFLPORT
