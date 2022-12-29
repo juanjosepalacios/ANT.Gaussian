@@ -3977,7 +3977,7 @@
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  subroutine IntRealAxis(Er,El,M)
+subroutine IntRealAxis(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
     use parameters, only: PAcc 
@@ -3992,46 +3992,46 @@
     complex*16, dimension(NAOrbs,NAOrbs) :: p,q
     complex*16, dimension(NAOrbs,NAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,k1,chunk
+    integer :: n,i,j,l,k,chunk,MM
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
 
-      pi=d_pi
+    pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-     !M = (M-1)*0.5d0
-      n = 1
-      S0=1
-      C0=0
-      E0=edex3(El,Er,d_zero)
-      call glesser(E0,green)
-      do i=1,NAOrbs
+    !M = (M-1)*0.5d0
+    n = 1
+    S0=1
+    C0=0
+    E0=edex3(El,Er,d_zero)
+    call glesser(E0,green)
+    do i=1,NAOrbs
        do j=1,NAOrbs
-        PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
-        p(i,j) = PDOUT(ispin,i,j)
-       enddo
-      enddo
+          PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
+          p(i,j) = PDOUT(ispin,i,j)
+        enddo
+    enddo
 ! Computing the (2n+1) points quadrature formula ...
 ! ... updating q, p, C1, S1, C0, S0, s and c
-1     continue
-      do i=1,NAOrbs
+1   continue
+    do i=1,NAOrbs
        do j=1,NAOrbs
-         q(i,j) = 2*p(i,j)
-         p(i,j) = 2*PDOUT(ispin,i,j)
+          q(i,j) = p(i,j) + p(i,j)
+          p(i,j) = PDOUT(ispin,i,j) + PDOUT(ispin,i,j)
        enddo
-      enddo
-      C1 = C0
-      S1 = S0
-      C0 = sqrt((1+C1)*0.5d0)
-      S0 = S1/(2*C0)
-      !s = S0
-      !cc = C0
-      xs(1) = S0
-      xcc(1) = C0
-      do l=1,n,2
-         xs(l+2)=xs(l)*C1+xcc(l)*S1
-         xcc(l+2)=xcc(l)*C1-xs(l)*S1
-      end do
+    enddo
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(2*C0)
+    !s = S0
+    !cc = C0
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
 ! ... computing F() at the new points
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
       PDP=d_zero
@@ -4039,22 +4039,22 @@
      !chunk=1
 !$OMP DO SCHEDULE(STATIC,chunk)
       do l=1,n,2
-        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-        Em=edex3(El,Er,-xx)
-        Ep=edex3(El,Er,xx)
+         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+         Em=edex3(El,Er,-xx)
+         Ep=edex3(El,Er,xx)
 !!$OMP  PARALLEL DEFAULT(SHARED)
 !!$OMP  SECTIONS
 !!$OMP  SECTION
-       call glesser(Em,greenm)
+           call glesser(Em,greenm)
 !!$OMP  SECTION
-       call glesser(Ep,greenp)
+           call glesser(Ep,greenp)
 !!$OMP  END SECTIONS
 !!$OMP  END PARALLEL
-          do i=1,NAOrbs
-           do j=1,NAOrbs
-            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
-           enddo
-          enddo
+         do i=1,NAOrbs
+            do j=1,NAOrbs
+              pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+            enddo
+         enddo
       enddo
 !$OMP END DO
 !$OMP CRITICAL
@@ -4067,37 +4067,41 @@
 !$OMP END PARALLEL
 
 ! ... replacing n by 2n+1
-         n = n + n + 1
+      n = n + n + 1
 ! Stopping?
       do i=1,NAOrbs
-       do j=1,NAOrbs
-        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-       !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
-        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-       !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
-        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.M) goto 1
-       !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
-       enddo
+         do j=1,NAOrbs
+            rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+           !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+            rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+           !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.M) goto 1
+           !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
+         enddo
       enddo
 ! Test for successfulness and integral final value
       M = 0
+      MM = 0
       do i=1,NAOrbs
-      do j=1,NAOrbs
-        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-       !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
-        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-       !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
-        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) M = 1
-       !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
-        PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
-        PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
-      enddo
+         do j=1,NAOrbs
+            rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+           !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+            rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+           !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) M = 1
+           !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
+            PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
+            PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
+            aCHq=dabs(dimag(PDOUT(ispin,i,j))) ! test for reality of density matrix diagonal elements
+            if (i.eq.j .and. aCHq.gt.PAcc) MM=1
+         enddo
       enddo
       if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration using up to',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+      if (MM == 1) write(ifu_log,'(A,i5,A)')' The density matrix diagonal elements contain non-zero imaginary contributions. Continue at your own risk...'
 
       return
-    end subroutine IntRealAxis
+end subroutine IntRealAxis
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
@@ -4108,7 +4112,7 @@
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  subroutine IntRealAxis_SOC(Er,El,M)
+subroutine IntRealAxis_SOC(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
     use parameters, only: PAcc 
@@ -4120,17 +4124,16 @@
     real*8, dimension(M) :: xs,xcc
     complex*16, dimension(DNAOrbs,DNAOrbs) :: green
     complex*16, dimension(DNAOrbs,DNAOrbs) :: greenp,greenm 
-!   complex*16, dimension(DNAOrbs,DNAOrbs) :: p,q
     complex*16, dimension(DNAOrbs,DNAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,k1,chunk
-    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI
+    integer :: n,i,j,l,k,chunk
+    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI,xpi,qi
 
     pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-    M=M*10 !increasing max number of integration points since now the imaginary part of P is neq zero
+   !M=M*10 !increasing max number of integration points since now the imaginary part of P is neq zero
     n = 1
     S0=1
     C0=0
@@ -4138,10 +4141,12 @@
     call glesser_SOC(E0,green)
 
     CH = 0.d0
+    CHI = 0.d0
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-        PDOUT_SOC(i,j) = -ui*green(i,j)/(2*pi)
-        CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
+          PDOUT_SOC(i,j) = -ui*green(i,j)/(2*pi)
+          CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
+          CHI = CHI + DIMAG(PDOUT_SOC(i,j)*S_SOC(j,i))
        enddo
     enddo
  !print*,'CH',CH
@@ -4149,8 +4154,11 @@
 ! ... updating q, p, C1, S1, C0, S0, s and c
 
     xp = CH
+    xpi = CHI
 1   q = xp + xp
+    qi = xpi + xpi
     xp = CH + CH
+    xpi = CHI + CHI
  
     C1 = C0
     S1 = S0
@@ -4206,17 +4214,18 @@
     do i=1,DNAOrbs
        do j=1,DNAOrbs
           CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
-          CHI = CHI + DIMAG(PDOUT_SOC(k,k1)*S_SOC(k1,k))
+          CHI = CHI + DIMAG(PDOUT_SOC(i,j)*S_SOC(j,i))
        end do
     enddo
  
     ! Stopping?
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
-    if ((CHI-xp)*(CHI-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CH-qi)*PAcc.and.n.le.M) goto 1
     ! Test for successfullness and integral final value
     M = 0
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
-    if ((CHI-xp)*(CHI-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
+    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc) M = 2
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc .and. (CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc) M = 3
  
     do i=1,DNAOrbs
        do j=1,DNAOrbs
@@ -4226,7 +4235,9 @@
     enddo
  
     if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of real part using up to',(((n-1)/2)+1)/2,' points. Please check ...'
+    if (M == 2) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of imaginary part using up to',(((n-1)/2)+1)/2,' points. Please check ...'
+    if (M == 3) write(ifu_log,'(A,i5,A)')' Unsuccessful integration using up to',(((n-1)/2)+1)/2,' points. Please check ...'
  
     return
   end subroutine IntRealAxis_SOC     
@@ -4391,7 +4402,7 @@
 
     integer,intent(inout) :: M
     integer,intent(in) :: sgn
-    integer :: n,i,j,l,k,k1,chunk!,omp_get_thread_num,omp_get_num_threads
+    integer :: n,i,j,l,k,chunk!,omp_get_thread_num,omp_get_num_threads
 
     real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
     real*8,intent(in) :: rrr, bi, Emi, Eq
