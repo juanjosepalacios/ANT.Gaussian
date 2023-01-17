@@ -3293,7 +3293,7 @@
            end if
 
           call flush(334)
-          write(334,1002)energy,trans,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          write(334,1002)energy,trans,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
 
 #ifdef PGI
 !$OMP END CRITICAL
@@ -3330,8 +3330,8 @@
           read(334,*)energ
           if (dabs(energy-energ) < 0.000001) then
              backspace(334)
-             read(334,1002) (xxx(j),j=1,3+NChannels)
-             write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             read(334,1002) (xxx(j),j=1,4+NChannels)
+             write(ifu_tra,1002) (xxx(j),j=1,4+NChannels)
              exit
           end if
           end do
