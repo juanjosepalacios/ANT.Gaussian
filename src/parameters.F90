@@ -304,20 +304,20 @@
   LOGICAL :: ZM = .FALSE. 
   CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"  
   
-  ! Global B_x
-  REAL*8 :: B_x = 0.0d0                           
-  CHARACTER(len=10), PARAMETER :: B_x_keyw = "B_X"
+  ! Global Bx
+  REAL*8 :: Bx = 0.0d0                           
+  CHARACTER(len=10), PARAMETER :: Bx_keyw = "BX"
   
-  ! Global B_y                                             
-  REAL*8 :: B_y = 0.0d0                             
-  CHARACTER(len=10), PARAMETER :: B_y_keyw = "B_Y"    
+  ! Global By                                             
+  REAL*8 :: By = 0.0d0                             
+  CHARACTER(len=10), PARAMETER :: By_keyw = "BY"    
 
-  ! Global B_z                                             
-  REAL*8 :: B_z = 0.0d0                             
-  CHARACTER(len=10), PARAMETER :: B_z_keyw = "B_Z"      
+  ! Global Bz                                             
+  REAL*8 :: Bz = 0.0d0                             
+  CHARACTER(len=10), PARAMETER :: Bz_keyw = "BZ"      
   
   INTEGER :: NZMAtom = 0 
-  REAL*8, DIMENSION( MaxAtm ) :: ZMAtomX = 0.0d0, ZMAtomY = 0.0d0,  ZMAtomZ = 0.0d0
+  REAL*8, DIMENSION( MaxAtm ) :: ZMAtomBx = 0.0d0, ZMAtomBy = 0.0d0,  ZMAtomBz = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: NZMAtom_keyw = "NZMAtom"  
   
 !  ! Strong-field anomalous Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
@@ -436,7 +436,10 @@ CONTAINS
          & SOC_CFF_F_keyw   ,&         
          & THETA_keyw   ,&
          & PHI_keyw   ,&
-         & ZM_keyw   ,&         
+         & ZM_keyw   ,&
+         & Bx_keyw   ,&
+         & By_keyw   ,&
+         & Bz_keyw   ,&         
          & EW1_keyw       ,&
          & EW2_keyw   ,&
          & UPlus_keyw       ,&
@@ -502,9 +505,13 @@ CONTAINS
        CASE ( THETA_keyw )
           theta = rval    
        CASE ( PHI_keyw )   
-          phi = rval     
-       CASE ( ZM_keyw )   
-          ZM = rval               
+          phi = rval      
+       CASE ( BX_keyw ) 
+          Bx = rval
+       CASE ( BY_keyw ) 
+          By = rval
+       CASE ( BZ_keyw ) 
+          Bz = rval
        CASE ( EW1_keyw ) 
           EW1 = rval
        CASE ( EW2_keyw ) 
@@ -619,7 +626,9 @@ CONTAINS
     CASE ( SOC_keyw )
        soc = .true.   
     CASE ( ROT_keyw )
-       rot = .true.               
+       rot = .true.    
+    CASE ( ZM_keyw )   
+       ZM = .true.                          
     CASE ( SpinDel_keyw )
        SpinDel = .true.
     CASE ( FMixing_keyw )
@@ -797,6 +806,24 @@ CONTAINS
          SOCEditD( index ) = rvall
          SOCEditF( index ) = rvalll
       END DO
+      
+    CASE ( ZM_keyw )
+      READ (unit=inpfile,fmt=*,iostat=ios), NZMAtom
+      IF( ios /= 0 ) RETURN 
+      DO i=1,NZMAtom
+         READ (unit=inpfile,fmt=*,iostat=ios), index, rval, rvall, rvalll
+         IF( ios /= 0 ) RETURN 
+         IF( index > MaxAtm .OR. index < 1 )THEN
+            WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCEDIT field"
+            WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
+            ios = 1
+            RETURN
+         END IF
+         ZMAtomBx( index ) = rval
+         ZMAtomBy( index ) = rvall
+         ZMAtomBz( index ) = rvalll
+      END DO
+      
 
     CASE default
        WRITE( unit=logfile, fmt=* ) "ERROR - Undefined keyword: ", keyword
@@ -952,14 +979,17 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          
-    WRITE(unit=logfile,fmt=*) ZM_keyw, " = ", ZM, " Tesla"             
+    WRITE(unit=logfile,fmt=*) ZM_keyw, " = ", ZM
+    WRITE(unit=logfile,fmt=*) Bx_keyw, " = ", BX, " Tesla"
+    WRITE(unit=logfile,fmt=*) By_keyw, " = ", BY, " Tesla"
+    WRITE(unit=logfile,fmt=*) Bz_keyw, " = ", BZ, " Tesla"                         
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
     END DO                                                                  
-    WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
+    WRITE(unit=logfile,fmt=*) NZAtom_keyw, " = ", NZMAtom
     DO i=1,MaxAtm
-       IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
+       IF( dabs(ZMAtomBx(i)) > 0.0d0 .OR. dabs(ZMAtomBy(i)) .OR. dabs(ZMAtomBz(i)) ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, ZMAtomBx(i), ZMAtomBy(i), ZMAtomBz(i)
     END DO            
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"

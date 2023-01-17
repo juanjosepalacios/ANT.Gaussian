@@ -852,7 +852,7 @@
           end do
        end if   
         
-       if (SOC .or. ROT .or. (ZM .ne. 0.0)) then 
+       if (SOC .or. ROT .or. ZM) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -2634,7 +2634,7 @@
     print *, "-------------------------"
     print *
     
-    if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+    if (SOC .or. ROT .or. ZM) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2665,7 +2665,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if ((.not. SOC) .and. (.not. ROT) .and. (ZM == 0.0)) then
+    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
     
     do ispin=1,NSpin
 
@@ -2816,7 +2816,7 @@
 
   end if !End of SOC/ROT/ZM if
   
-      if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+      if (SOC .or. ROT .or. ZM) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -2889,7 +2889,7 @@
         call InitElectrodes
     end if 
 
-    if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+    if (SOC .or. ROT .or. ZM) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2943,7 +2943,7 @@
     allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr)
     if( AllocErr /= 0 ) stop
 
-    if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+    if (SOC .or. ROT .or. ZM) then
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
           call CompDensMat2_SOC(ADDP)
@@ -2960,7 +2960,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if ((.not. SOC) .and. (.not. ROT) .and. (ZM == 0.0)) then
+    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
 
     do ispin=1,NSpin
 
@@ -3261,7 +3261,7 @@
           if (dabs(trans2-trans) >= 1.0d-5 .and. wcount < 1) then
                if (SOC) print*,'Warning in the transmission with SOC'
                if (ROT) print*,'Warning in the transmission with spin rotations'
-               if (ZM .ne. 0.0) print*,'Warning in the transmission with Zeeman field'
+               if (ZM) print*,'Warning in the transmission with Zeeman field'
                wcount = wcount + 1
                !stop
            end if
@@ -3314,7 +3314,7 @@
 
   end if !End of SOC/ROT/ZM if
 
-      if (SOC .or. ROT .or. (ZM .ne. 0.0)) then
+      if (SOC .or. ROT .or. ZM) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -4736,7 +4736,7 @@
  nshell = GetNShell()
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (ZM .ne. 0.0) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
+ If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
@@ -4804,7 +4804,7 @@
     end do 
  end if   
  
- if (ZM .ne. 0.0) then
+ if (ZM) then
     do i=1, totdim*2
        do j=1, totdim*2
           H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)

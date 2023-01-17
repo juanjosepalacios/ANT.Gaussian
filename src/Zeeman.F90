@@ -209,7 +209,7 @@ CONTAINS
   !*** Compute matrix of Zeemn Hamiltonian for a given basis set ***
   !*****************************************************************
   SUBROUTINE CompHZM(hamil_ZM,NAOs,Nshell)
-    USE parameters, ONLY: Bx, By, Bz, NZMAtom, ZMAtomX, ZMAtomY, ZMAtomZ
+    USE parameters, ONLY: Bx, By, Bz, NZMAtom, ZMAtomBx, ZMAtomBy, ZMAtomBz
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -291,9 +291,9 @@ CONTAINS
           	DO q=1,2*ShellT2+1
           	  IF (AtomID2 == AtomID1) THEN
                     IF( NZMAtom > 0) THEN  ! User-defined Zeeman field at atom AtomID2
-                      Bx_atom = ZMAtomX(AtomID2)
-                      By_atom = ZMAtomY(AtomID2)
-                      Bz_atom = ZMAtomZ(AtomID2)
+                      Bx_atom = ZMAtomBx(AtomID2)
+                      By_atom = ZMAtomBy(AtomID2)
+                      Bz_atom = ZMAtomBz(AtomID2)
                     ELSE
                       Bx_atom = Bx
                       By_atom = By
