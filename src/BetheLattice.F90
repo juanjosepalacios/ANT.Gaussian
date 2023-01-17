@@ -506,49 +506,6 @@ contains
     !
     call AdjustFermi( BL )
 
- !  if( ANT1DInp )then
-
- !     if(LeadNo==1) open(unit=ifu_ant,file='bl1.'//trim(ant1dname)//'.dat',status='unknown')
- !     if(LeadNo==2) open(unit=ifu_ant,file='bl2.'//trim(ant1dname)//'.dat',status='unknown')
-
- !     n = BL%NAOrbs
- !     nnn = BL%NNeighbs
-
- !     write(ifu_ant,'(A)') '&BLParams'
- !     write(ifu_ant,'(A,I3)') 'NAOBL= ', BL%NAOrbs
- !     write(ifu_ant,'(A,I1)') 'NSpinBL= ', BL%NSpin
- !     write(ifu_ant,'(A,I2)') 'NNNBL= ', BL%NNeighbs
- !     write(ifu_ant,'(A,I3)') 'NConnect = ', NConnect(LeadNo) 
-!
-!      do k=1,nnn
-!         write(ifu_ant,'(A,I2,A,3(F10.5))') 'VNN(', k,',:) = ', VPB( LeadNo, 1, k ), VPB( LeadNo, 2, k ), VPB( LeadNo, 3, k )
-!      end do
-
-!      write(ifu_ant,'(A)') '/'
-!      write(ifu_ant,*) 
-
-!      do ispin=1,BL%NSpin
-!         if( BL%NSpin == 2 .and. ispin == 1 ) write(ifu_ant,'(A)') "! spin-up "
-!         if( BL%NSpin == 2 .and. ispin == 2 ) write(ifu_ant,'(A)') "! spin-down "
-!         do k=0,nnn
-!            if( k == 0 ) write(ifu_ant,'(A)') "! H0 = "
-!            if( k /= 0 ) write(ifu_ant,'(A,I2,A)') "! V(k=", k, ") = "
-!            do i=1,n
-!               do j=1,n
-!                  if( k == 0 ) hij = real(BL%H0(ispin,i,j))
-!                  if( k /= 0 ) hij = real(BL%Vk(ispin,k,i,j))
-!                  if( abs(hij) > eta ) write(ifu_ant,'(I6,I6,ES20.8)'), i, j, hij
-!               end do
-!            end do
-!            write(ifu_ant,'(I6,I6,ES20.8)'), 0, 0, 0.0d0
-!            write(ifu_ant,*) 
-!         end do
-!         write(ifu_ant,*) 
-!      end do
-!      close(ifu_ant)
-!   end if
-
-
     if (.not.LeadDOS) return
 
     ! Write electrode bulk DOS to file

@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.7.0  **********************
+!*********************  ANT.G-2.7.1  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -59,6 +59,11 @@
   INTEGER :: Max = 15
   CHARACTER(len=10), PARAMETER :: Max_keyw = "MAX"  
 
+  ! Maximum number of integration points n=(NIP+1)/2 ; NIP=3 (n=2); NIP=7 (n=4) ; NIP=15 (n=8) ...
+  !
+  INTEGER :: NIP = 127
+  CHARACTER(len=10), PARAMETER :: Nip_keyw = "NIP"  
+
   ! Bethe lattice self-energy accuracy
   REAL*8 :: SelfAcc = 1.0d-6     
   CHARACTER(len=10), PARAMETER :: SelfAcc_keyw = "SELFACC"  
@@ -81,9 +86,8 @@
   ! -Infty = Lower integration limit for charge integration 
   REAL*8 :: Infty = 1000.0
   CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"
-  
   !
-  ! Convergence criterion for iterative solution of Dyson equation for self-energy
+  ! Convergence criterion for iterative solution of Dyson equation for 1D self-energy
   !
   REAL*8 :: L1DConv = 1.0d-6
   integer :: L1DMaxCyc = 10000
@@ -91,28 +95,22 @@
   ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation in 1D leads
   !
   REAL*8 :: L1DAlpha = 0.7d0  
-  
   !
   ! Switch on Bethe lattice electrodes
-  ! 
   logical :: Bethe= .false.
-
-  !
+   
   ! Whether to print hamiltonian and overlap information
   ! 0: do not print
   ! 1: print real part only
   ! 2: print as complex matrix
-  !
   CHARACTER(len=10), PARAMETER ::  PrintHS_keyw = "PRINTHS"      
   integer :: PRINTHS = 0
-  
+   
   ! Number of primitive cells when using 1D electrodes                            
-  ! 
   integer :: NPC = 1
   CHARACTER(len=10), PARAMETER :: NPC_keyw = "NPC"       
-  !
+   
   ! Number of points in energy window on regular mesh
-  ! 
   integer :: NPoints = 1000     
 
   ! Bethe lattice glue parameter
@@ -134,6 +132,10 @@
   ! Starting value for Fermi level search (eV)
   REAL*8 :: FermiStart = -5.00d0   
   CHARACTER(len=10), PARAMETER :: FermiStart_keyw = "FERMISTART"
+
+  ! Fixing Fermi energy 
+  LOGICAL :: FixEFermi = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: FixEFermi_keyw = "FIXEFERMI"
 
   ! Type of left and right electrode: "BETHE" or "1DLEAD"
   CHARACTER(LEN=10), DIMENSION(2) :: ElType = (/"BETHE","BETHE"/)
@@ -299,7 +301,7 @@
   ! Atom spin orientation manipulation of initial guess
   INTEGER :: NSpinRotAtom = 0
   REAL*8, DIMENSION( MaxAtm) :: SpinRotAtomTheta = 0.0d0, SpinRotAtomPhi = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"     
+  CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"       
   
   LOGICAL :: ZM = .FALSE. 
   CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"  
@@ -318,7 +320,7 @@
   
   INTEGER :: NZMAtom = 0 
   REAL*8, DIMENSION( MaxAtm ) :: ZMAtomBx = 0.0d0, ZMAtomBy = 0.0d0,  ZMAtomBz = 0.0d0
-  CHARACTER(LEN=10), PARAMETER :: NZMAtom_keyw = "NZMAtom"  
+  CHARACTER(LEN=10), PARAMETER :: ZMAtom_keyw = "ZMATOM"  
   
 !  ! Strong-field anomalous Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
 !  REAL*8 :: ZM = 0.0d0                           
@@ -436,7 +438,6 @@ CONTAINS
          & SOC_CFF_F_keyw   ,&         
          & THETA_keyw   ,&
          & PHI_keyw   ,&
-         & ZM_keyw   ,&
          & Bx_keyw   ,&
          & By_keyw   ,&
          & Bz_keyw   ,&         
@@ -524,7 +525,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NPC_keyw, NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, PrtHatom_keyw  )
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, Nip_keyw, PrtHatom_keyw  )
        !
        ! 2. looking for integer variables
        !
@@ -567,8 +568,8 @@ CONTAINS
           NPulay = ival
        CASE( Max_keyw )
           Max = ival
-       !CASE( SOCFAC_keyw )
-       !   socfac = ival     
+       CASE( Nip_keyw )
+          NIP = ival
        CASE( PrtHatom_keyw )
           PrtHatom = ival 
 
@@ -635,6 +636,8 @@ CONTAINS
        FMixing = .true.
     CASE ( DMImag_keyw )
        DMImag = .true.
+    CASE ( FixEFermi_keyw )
+       FixEFErmi = .true.
        !
        ! 5. Integer arrays
        !
@@ -659,27 +662,6 @@ CONTAINS
           SpinEdit( index ) = ival
        END DO
        
-     !CASE ( SOCEDIT_keyw )
-     !  READ (unit=inpfile,fmt=*,iostat=ios), NSOCEdit
-     !  IF( ios /= 0 ) RETURN 
-     !  DO i=1,NSOCEdit
-     !     READ (unit=inpfile,fmt=*,iostat=ios), index, ival
-     !     IF( ios /= 0 ) RETURN 
-     !     IF( abs(ival) > 1 )THEN
-     !        WRITE( unit=logfile, fmt=* ) "ERROR - Illegal soc value in SOCEDIT field"
-     !        WRITE( unit=logfile, fmt=* ) "Allowed values: 0, 1"
-     !        ios = 1
-     !        RETURN
-     !     END IF
-     !     IF( index > MaxAtm .OR. index < 1 )THEN
-     !        WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCEDIT field"
-     !        WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
-     !        ios = 1
-     !        RETURN
-     !     END IF
-     !     SOCEdit( index ) = ival
-     !  END DO
-
     CASE ( CorrBl_keyw )
        READ (unit=inpfile,fmt=*,iostat=ios), NCorrBl
        print *, "Correlated Blocks: NCorrBlocks = ", NCorrBl
@@ -807,7 +789,7 @@ CONTAINS
          SOCEditF( index ) = rvalll
       END DO
       
-    CASE ( ZM_keyw )
+    CASE ( ZMATOM_keyw )
       READ (unit=inpfile,fmt=*,iostat=ios), NZMAtom
       IF( ios /= 0 ) RETURN 
       DO i=1,NZMAtom
@@ -886,6 +868,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) PAcc_keyw, " = ", PA, " %"
     WRITE(unit=logfile,fmt=*) FullAcc_keyw, " = ", FullAcc
     WRITE(unit=logfile,fmt=*) Max_keyw, " = ", Max
+    WRITE(unit=logfile,fmt=*) Nip_keyw, " = ", NIP
     WRITE(unit=logfile,fmt=*) SelfAcc_keyw, " = ", SelfAcc
     WRITE(unit=logfile,fmt=*) Small_keyw, " = ", Small
     WRITE(unit=logfile,fmt=*) SmallD_keyw, " = ", SmallD, " A"
@@ -894,13 +877,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
-    WRITE(unit=logfile,fmt=*) SOC_CFF_P_keyw, " = ", soc_cff_p, " eV"
-    WRITE(unit=logfile,fmt=*) SOC_CFF_D_keyw, " = ", soc_cff_d, " eV"    
-    WRITE(unit=logfile,fmt=*) SOC_CFF_F_keyw, " = ", soc_cff_f, " eV"        
-    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
-    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"   
+    WRITE(unit=logfile,fmt=*) FixEFermi_keyw, " = ", FixEFermi
     WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
@@ -987,9 +964,9 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
     END DO                                                                  
-    WRITE(unit=logfile,fmt=*) NZAtom_keyw, " = ", NZMAtom
+    WRITE(unit=logfile,fmt=*) ZMAtom_keyw, " = ", NZMAtom
     DO i=1,MaxAtm
-       IF( dabs(ZMAtomBx(i)) > 0.0d0 .OR. dabs(ZMAtomBy(i)) .OR. dabs(ZMAtomBz(i)) ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, ZMAtomBx(i), ZMAtomBy(i), ZMAtomBz(i)
+       IF( dabs(ZMAtomBx(i)) > 0.0d0 .OR. dabs(ZMAtomBy(i)) > 0.0d0 .OR. dabs(ZMAtomBz(i)) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, ZMAtomBx(i), ZMAtomBy(i), ZMAtomBz(i)
     END DO            
     WRITE(unit=logfile,fmt=*) "***********************"
     WRITE(unit=logfile,fmt=*) "Correlations parameters"

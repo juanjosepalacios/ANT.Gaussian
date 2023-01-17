@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.7.0  *********************!
+!*********************  ANT.G-2.7.1  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -60,7 +60,7 @@
   integer :: NCDEl, NCDAO1, NCDAO2
 
   ! *** Actual electron charge for certain Fermi energy ***
-  real*8 :: QAlpha, QBeta, Q_SOC
+  real*8 :: QAlpha, QBeta, Q_SOC, Q_Tot
 
   ! *** Overlap matrix S of device ***
   real*8, dimension(:,:),allocatable :: SD, InvSD
@@ -735,7 +735,7 @@
     logical,intent(out) :: ADDP
     logical :: Bounds
     real*8, dimension(NSpin,NAOrbs,NAOrbs),intent(in) :: F
-
+    real*8, dimension(NAOrbs,NAOrbs) :: X, HDOrtho    
     real*8, dimension(NAOrbs) :: evals
     real*8, dimension(:,:),allocatable :: SPM
 
@@ -747,10 +747,18 @@
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
-    if( NSpin == 1 ) EMaxDev = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
-    if( NSpin == 2 ) EMaxDev = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1))) + 10.0 
-    EMinDev = -EMaxDev
-
+    !if( NSpin == 1 ) EMaxDev = maxval(sum(abs(HD(1,:,:)),1)) + 10.0   !buffer energy of 10 eV
+    !if( NSpin == 2 ) EMaxDev = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1))) + 10.0 
+    !EMinDev = -EMaxDev
+    
+    call RMatPow(SD(:,:),-0.5,X)
+    HDOrtho = matmul(X,HD(1,:,:))
+    HDOrtho = matmul(HDOrtho,X)
+    call RSDiag(HDOrtho,evals,info)
+    if (info /= 0) print*, 'Warning diagonalizing the device Hamiltonian while cheking energy bounds!!!'
+    EMinDev = evals(1) - 10.0d0 
+    EMaxDev = evals(NAOrbs) + 10.0d0 
+    
     !Initializing 1D electrodes everytime we pass Charge Control
     IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr)  then
         if (Electrodes) call CleanUp1DLead(1) 
@@ -880,7 +888,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,FixEFermi,FermiStart
     !use ieee_arithmetic
     implicit none
 
@@ -890,53 +898,58 @@
     
     logical :: root_fail
     
+    DE = 0.0d0
     Z=1.0d0
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
     if( NSpin == 2 .and. SPINLOCK )then
        print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
+
        do ispin=1,NSpin
-          if (ispin == 1) print*,'Spin alpha'
-          if (ispin == 2) print*,'Spin beta'
-          root_fail = .true.
-          if (ispin.eq.1) E1=shiftup
-          if (ispin.eq.2) E1=shiftdown
-          E0=E1-Z
-          E2=E1+Z
-          if( root_fail )then
-             print*,'MULLER method'
-             call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-             if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
-                print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E3
-                if (ispin.eq.2)shiftdown=E3
-                root_fail = .false.
-             end if
-          end if
 
-          if( root_fail )then
-             print*,'SECANT method'
-             call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-             if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
-                print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E3
-                if (ispin.eq.2)shiftdown=E3
-                root_fail = .false.
+          if (FixEFermi) then
+             Q_Tot=QTot_SPINLOCK(-FermiStart)
+          else
+             if (ispin == 1) print*,'Spin alpha'
+             if (ispin == 2) print*,'Spin beta'
+             root_fail = .true.
+             if (ispin.eq.1) E1=shiftup
+             if (ispin.eq.2) E1=shiftdown
+             E0=E1-Z
+             E2=E1+Z
+             if( root_fail )then
+                print*,'MULLER method'
+                call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+                if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+                   print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+                   root_fail = .true.
+                else
+                   if (ispin.eq.1)shiftup=E3
+                   if (ispin.eq.2)shiftdown=E3
+                   root_fail = .false.
+                end if
              end if
-          end if
-
-          if (root_fail) then
-             print *, 'BISEC method'
-             if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-             if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-             DE=Delta
-             if(k.lt.5*Max) root_fail = .false.
-             if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+             if( root_fail )then
+                print*,'SECANT method'
+                call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+                if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
+                   print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+                   root_fail = .true.
+                else
+                   if (ispin.eq.1)shiftup=E3
+                   if (ispin.eq.2)shiftdown=E3
+                   root_fail = .false.
+                end if
+             end if
+             if (root_fail) then
+                print *, 'BISEC method'
+                if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+                if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
+                DE=Delta
+                if(k.lt.5*Max) root_fail = .false.
+                if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+             end if
           end if
 
           write(ifu_log,*)'--------------------------------------------------------'
@@ -954,46 +967,49 @@
           end if
           write(ifu_log,*)'--------------------------------------------------------'
        end do
-    else
-       root_fail = .true.
-       E0=shift-Z 
-       E1=shift
-       E2=shift+Z
-    
-       if (root_fail) then
-          print*,'MULLER method'
-          call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-         !call MULLER(TotCharge2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-             print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
-       end if
 
-       if (root_fail) then
-          print*,'SECANT method'
-          call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-         !call SECANT(TotCharge2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
+    else
+
+       if (FixEFermi) then
+          Q_Tot=QTot(-FermiStart)
+       else
+          root_fail = .true.
+          E0=shift-Z 
+          E1=shift
+          E2=shift+Z
+          if (root_fail) then
+             print*,'MULLER method'
+             call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+            !call MULLER(TotCharge2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+             if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+                print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+                root_fail = .true.
+             else
+                shift = E3
+                root_fail = .false.
+             end if
           end if
-       end if
- 
-       if (root_fail) then
-          print *, 'BISEC method'
-          Delta=0.1
-          shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
-         !shift = BISEC(TotCharge2,EMin,Emax,Delta,5*Max,K)
-          DE=Delta
-          if(k.lt.5*Max) root_fail = .false.
-          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
+          if (root_fail) then
+             print*,'SECANT method'
+             call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+            !call SECANT(TotCharge2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+             if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+                print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+                root_fail = .true.
+             else
+                shift = E3
+                root_fail = .false.
+             end if
+          end if
+          if (root_fail) then
+             print *, 'BISEC method'
+             Delta=0.1
+             shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
+            !shift = BISEC(TotCharge2,EMin,Emax,Delta,5*Max,K)
+             DE=Delta
+             if(k.lt.5*Max) root_fail = .false.
+             if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
+          end if
        end if
 
        write(ifu_log,*)'-----------------------------------------------'
@@ -1003,6 +1019,7 @@
        write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
        write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', QAlpha+QBeta
        write(ifu_log,*)'-----------------------------------------------'
+
     end if
     ADDP = .not. root_fail
     return
@@ -1027,7 +1044,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAE, GetNBE
 #endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
+    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,FixEFermi,FermiStart
     !use ieee_arithmetic
     implicit none
 
@@ -1037,42 +1054,47 @@
     
     logical :: root_fail
     
+    DE = 0.0d0
     Z=1.0d0               
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
-    root_fail = .true.
-    E0=shift-Z 
-    E1=shift
-    E2=shift+Z  
-    if (root_fail) then
-        print*,'SECANT method'
-        call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-        if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-           print *, 'Warning: SECANT method failed to find root. Using MULLER.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
-        end if
-    end if      
-    if (root_fail) then
-        print*,'MULLER method'
-        call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-        if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-           print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-           root_fail = .true.
-        else
-           shift = E3
-           root_fail = .false.
+    if (FixEFermi) then
+       Q_Tot=QTot_SOC(-FermiStart)
+    else
+       root_fail = .true.
+       E0=shift-Z 
+       E1=shift
+       E2=shift+Z  
+       if (root_fail) then
+          print*,'MULLER method'
+          call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
+             print *, 'Warning: MULLER method failed to find root. Using BISEC.'
+             root_fail = .true.
+          else
+             shift = E3
+             root_fail = .false.
+          end if
        end if
-    end if  
-    if (root_fail) then
-       print *, 'BISEC method'
-       shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
-       DE=Delta
-       if(k.lt.5*Max) root_fail = .false.
-       if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+       if (root_fail) then
+          print*,'SECANT method'
+          call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
+             print *, 'Warning: SECANT method failed to find root. Using MULLER.'
+             root_fail = .true.
+          else
+             shift = E3
+             root_fail = .false.
+          end if
+       end if  
+       if (root_fail) then
+          print *, 'BISEC method'
+          shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
+          DE=Delta
+          if(k.lt.5*Max) root_fail = .false.
+          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
+       end if
     end if
 
     write(ifu_log,*)'-----------------------------------------------'
@@ -1628,6 +1650,8 @@
     green=c_zero
     sigr=c_zero
     sigl=c_zero
+    sigr=-ui*eta*SD 
+    sigl=-ui*eta*SD 
 
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
@@ -1675,6 +1699,8 @@
     green=c_zero
     gammar=c_zero
     gammal=c_zero
+    sigr=c_zero
+    sigl=c_zero
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
@@ -1739,6 +1765,8 @@
 
     gammar=c_zero
     gammal=c_zero
+    sigr=c_zero
+    sigl=c_zero
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
@@ -1833,6 +1861,10 @@
     sigmal=c_zero
 
 
+    sigr1=c_zero
+    sigl1=c_zero
+    sigr2=c_zero
+    sigl2=c_zero
     sigr1=-ui*eta*SD 
     sigl1=-ui*eta*SD 
     sigr2=-ui*eta*SD 
@@ -1929,7 +1961,7 @@
   ! when spin is locked
   !****************************************
   double precision function QTot_SPINLOCK(x)
-    use parameters, only: biasvoltage,QExcess
+    use parameters, only: biasvoltage,QExcess,NIP
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -1940,7 +1972,6 @@
     implicit none
 
     real*8, intent(in) :: x
-
     real*8 :: chargeup, chargedown, rrr, a, b, Q
     integer :: i,j,M
 
@@ -1956,12 +1987,12 @@
     !c c Integral limits ... (a,b)
     a = 0.d0
     b = d_pi
-    M=1000
+    M=NIP
     call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
       
     ! Density matrix out of equilibirum
     if (biasvoltage /= 0.0) then
-       M=1000
+       M=NIP
        call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
        PD(ispin,:,:) = PD(ispin,:,:) + REAL(PDOUT(ispin,:,:))
     end if
@@ -1987,7 +2018,7 @@
   ! when spin is not locked
   !****************************************
   double precision function QTot(x)
-    use parameters, only: biasvoltage,QExcess
+    use parameters, only: biasvoltage,QExcess,NIP
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2000,7 +2031,7 @@
     real*8, intent(in) :: x
 
     real*8 :: rrr, a, b, Q
-    integer :: i,j,M,omp_get_thread_num
+    integer :: i,j,M
 
 
     do ispin=1,NSpin
@@ -2019,13 +2050,13 @@
        !c c Integral limits ... (a,b)
        a = 0.d0
        b = d_pi
-       M=1000
 
+       M=NIP
        call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
-          M=1000
+          M=NIP
           call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
           PD(ispin,:,:) = PD(ispin,:,:) + REAL(PDOUT(ispin,:,:))
        end if
@@ -2042,7 +2073,6 @@
 
     if( NSpin == 1 ) QBeta = QAlpha
     QTot = QAlpha + QBeta - dble(NCDEl) - QExcess
-   !print*,shift,QTot
     return
   end function QTot
 
@@ -2053,7 +2083,7 @@
   ! when SOC is present
   !****************************************
   double precision function QTot_SOC(x)
-    use parameters, only: biasvoltage,QExcess
+    use parameters, only: biasvoltage,QExcess,NIP
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2066,7 +2096,7 @@
     real*8, intent(in) :: x
 
     real*8 :: rrr, a, b, Q, E0
-    integer :: i,j,M,omp_get_thread_num
+    integer :: i,j,M
 
        shift=x
     !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
@@ -2079,29 +2109,26 @@
        rrr = 0.5*abs(EMin)
 
        !c c Integral limits ... (a,b)
-       M=1000
        a = 0.d0
        b = d_pi
+       M=NIP
        call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
        PD_SOC_R=PD_SOC
-	   
-       M=1000
+
        a = -d_pi
        b = 0.d0
+       M=NIP
        call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
        PD_SOC_A=PD_SOC
-	   
-       PD_SOC = PD_SOC_R - PD_SOC_A
 
-      !if (NSpin == 2)
+       PD_SOC = PD_SOC_R - PD_SOC_A
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
-          M=1000
+          M=NIP
           call IntRealAxis_SOC(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
           PD_SOC = PD_SOC + PDOUT_SOC
        end if
-       ! Density matrix out of equilibirum
 
       do i=NCDAO1, NCDAO2
           do j=1,NAOrbs
@@ -2739,7 +2766,7 @@
         write(ifu_dos,*) '    '                    
       end do ! End of spin loop
       
-    else !SOC/ROT/ZM case
+    else !SOC case
     
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
@@ -2814,7 +2841,7 @@
        end do
       close(333,status='delete')
 
-  end if !End of SOC/ROT/ZM if
+  end if !End of SOC if
   
       if (SOC .or. ROT .or. ZM) then
          deallocate(DGammaL)
@@ -3113,7 +3140,7 @@
 
     end do ! End of spin loop
 
-    else !SOC/ROT/ZM case
+    else !SOC case
       
       open(334,file='tempT',status='unknown')
       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
@@ -3312,7 +3339,7 @@
        end do
       close(334,status='delete')
 
-  end if !End of SOC/ROT/ZM if
+  end if !End of SOC if
 
       if (SOC .or. ROT .or. ZM) then
          deallocate(DGammaL)
@@ -3935,8 +3962,8 @@
        Q = TotCharge( EMax )
        print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
        if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
-       EMin = EMin - EStep
-       EMax = EMax + EStep
+       EMin = EMin - EStep*i
+       EMax = EMax + EStep*i
     end do    
     print *, "--------------------------------------------------"
 
@@ -3951,7 +3978,7 @@
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  subroutine IntRealAxis(Er,El,M)
+subroutine IntRealAxis(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
     use parameters, only: PAcc 
@@ -3966,46 +3993,46 @@
     complex*16, dimension(NAOrbs,NAOrbs) :: p,q
     complex*16, dimension(NAOrbs,NAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,k1,chunk
+    integer :: n,i,j,l,k,chunk,MM
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
 
-      pi=d_pi
+    pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-      M = (M-1)*0.5d0
-      n = 1
-      S0=1
-      C0=0
-      E0=edex3(El,Er,d_zero)
-      call glesser(E0,green)
-      do i=1,NAOrbs
+    !M = (M-1)*0.5d0
+    n = 1
+    S0=1
+    C0=0
+    E0=edex3(El,Er,d_zero)
+    call glesser(E0,green)
+    do i=1,NAOrbs
        do j=1,NAOrbs
-        PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
-        p(i,j) = PDOUT(ispin,i,j)
-       enddo
-      enddo
+          PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
+          p(i,j) = PDOUT(ispin,i,j)
+        enddo
+    enddo
 ! Computing the (2n+1) points quadrature formula ...
 ! ... updating q, p, C1, S1, C0, S0, s and c
-1     continue
-      do i=1,NAOrbs
+1   continue
+    do i=1,NAOrbs
        do j=1,NAOrbs
-         q(i,j) = 2*p(i,j)
-         p(i,j) = 2*PDOUT(ispin,i,j)
+          q(i,j) = p(i,j) + p(i,j)
+          p(i,j) = PDOUT(ispin,i,j) + PDOUT(ispin,i,j)
        enddo
-      enddo
-      C1 = C0
-      S1 = S0
-      C0 = sqrt((1+C1)*0.5d0)
-      S0 = S1/(2*C0)
-      !s = S0
-      !cc = C0
-      xs(1) = S0
-      xcc(1) = C0
-      do l=1,n,2
-         xs(l+2)=xs(l)*C1+xcc(l)*S1
-         xcc(l+2)=xcc(l)*C1-xs(l)*S1
-      end do
+    enddo
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(2*C0)
+    !s = S0
+    !cc = C0
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
 ! ... computing F() at the new points
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
       PDP=d_zero
@@ -4013,22 +4040,22 @@
      !chunk=1
 !$OMP DO SCHEDULE(STATIC,chunk)
       do l=1,n,2
-        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-        Em=edex3(El,Er,-xx)
-        Ep=edex3(El,Er,xx)
+         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+         Em=edex3(El,Er,-xx)
+         Ep=edex3(El,Er,xx)
 !!$OMP  PARALLEL DEFAULT(SHARED)
 !!$OMP  SECTIONS
 !!$OMP  SECTION
-       call glesser(Em,greenm)
+           call glesser(Em,greenm)
 !!$OMP  SECTION
-       call glesser(Ep,greenp)
+           call glesser(Ep,greenp)
 !!$OMP  END SECTIONS
 !!$OMP  END PARALLEL
-          do i=1,NAOrbs
-           do j=1,NAOrbs
-            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
-           enddo
-          enddo
+         do i=1,NAOrbs
+            do j=1,NAOrbs
+              pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+            enddo
+         enddo
       enddo
 !$OMP END DO
 !$OMP CRITICAL
@@ -4041,37 +4068,41 @@
 !$OMP END PARALLEL
 
 ! ... replacing n by 2n+1
-         n = n + n + 1
+      n = n + n + 1
 ! Stopping?
       do i=1,NAOrbs
-       do j=1,NAOrbs
-        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
-        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
-        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.M) goto 1
-        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
-       enddo
+         do j=1,NAOrbs
+            rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+           !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+            rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+           !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.M) goto 1
+           !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
+         enddo
       enddo
-! Test for successfullness and integral final value
+! Test for successfulness and integral final value
       M = 0
+      MM = 0
       do i=1,NAOrbs
-      do j=1,NAOrbs
-        rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-        aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
-        rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-        aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
-        if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) M = 1
-        if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
-        PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
-        PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
-      enddo
+         do j=1,NAOrbs
+            rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+           !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
+            rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+           !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
+            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) M = 1
+           !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
+            PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
+            PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
+            aCHq=dabs(dimag(PDOUT(ispin,i,j))) ! test for reality of density matrix diagonal elements
+            if (i.eq.j .and. aCHq.gt.PAcc) MM=1
+         enddo
       enddo
       if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration using up to',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+      if (MM == 1) write(ifu_log,'(A,i5,A)')' The density matrix diagonal elements contain non-zero imaginary contributions. Continue at your own risk...'
 
       return
-    end subroutine IntRealAxis
+end subroutine IntRealAxis
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
@@ -4082,7 +4113,7 @@
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  subroutine IntRealAxis_SOC(Er,El,M)
+subroutine IntRealAxis_SOC(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
     use parameters, only: PAcc 
@@ -4094,50 +4125,54 @@
     real*8, dimension(M) :: xs,xcc
     complex*16, dimension(DNAOrbs,DNAOrbs) :: green
     complex*16, dimension(DNAOrbs,DNAOrbs) :: greenp,greenm 
-!   complex*16, dimension(DNAOrbs,DNAOrbs) :: p,q
     complex*16, dimension(DNAOrbs,DNAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,k1,chunk
-    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI
+    integer :: n,i,j,l,k,chunk
+    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI,xpi,qi
 
-      pi=d_pi
+    pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-      M = (M-1)*0.5d0
-      n = 1
-      S0=1
-      C0=0
-      E0=edex3(El,Er,d_zero)
-     call glesser_SOC(E0,green)
+   !M=M*10 !increasing max number of integration points since now the imaginary part of P is neq zero
+    n = 1
+    S0=1
+    C0=0
+    E0=edex3(El,Er,d_zero)
+    call glesser_SOC(E0,green)
 
     CH = 0.d0
-      do i=1,DNAOrbs
+    CHI = 0.d0
+    do i=1,DNAOrbs
        do j=1,DNAOrbs
-        PDOUT_SOC(i,j) = -ui*green(i,j)/(2*pi)
-        CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
+          PDOUT_SOC(i,j) = -ui*green(i,j)/(2*pi)
+          CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
+          CHI = CHI + DIMAG(PDOUT_SOC(i,j)*S_SOC(j,i))
        enddo
-      enddo
+    enddo
  !print*,'CH',CH
 ! Computing the (2n+1) points quadrature formula ...
 ! ... updating q, p, C1, S1, C0, S0, s and c
 
     xp = CH
+    xpi = CHI
 1   q = xp + xp
+    qi = xpi + xpi
     xp = CH + CH
-
-      C1 = C0
-      S1 = S0
-      C0 = sqrt((1+C1)*0.5d0)
-      S0 = S1/(2*C0)
-      !s = S0
-      !cc = C0
-      xs(1) = S0
-      xcc(1) = C0
-      do l=1,n,2
-         xs(l+2)=xs(l)*C1+xcc(l)*S1
-         xcc(l+2)=xcc(l)*C1-xs(l)*S1
-      end do
+    xpi = CHI + CHI
+ 
+    C1 = C0
+    S1 = S0
+    C0 = sqrt((1+C1)*0.5d0)
+    S0 = S1/(2*C0)
+    !s = S0
+    !cc = C0
+    xs(1) = S0
+    xcc(1) = C0
+    do l=1,n,2
+       xs(l+2)=xs(l)*C1+xcc(l)*S1
+       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    end do
 ! ... computing F() at the new points
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
       PDP=d_zero
@@ -4145,81 +4180,85 @@
      !chunk=1
 !$OMP DO SCHEDULE(STATIC,chunk)
       do l=1,n,2
-        xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-        Em=edex3(El,Er,-xx)
-        Ep=edex3(El,Er,xx)
+         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+         Em=edex3(El,Er,-xx)
+         Ep=edex3(El,Er,xx)
 !!$OMP  PARALLEL DEFAULT(SHARED)
 !!$OMP  SECTIONS
 !!$OMP  SECTION
-       call glesser_SOC(Em,greenm)
+          call glesser_SOC(Em,greenm)
 !!$OMP  SECTION
-       call glesser_SOC(Ep,greenp)
+          call glesser_SOC(Ep,greenp)
 !!$OMP  END SECTIONS
 !!$OMP  END PARALLEL
-          do i=1,DNAOrbs
-           do j=1,DNAOrbs
-            pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
-           enddo
-          enddo
+         do i=1,DNAOrbs
+            do j=1,DNAOrbs
+               pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
+            enddo
+         enddo
       enddo
 !$OMP END DO
 !$OMP CRITICAL
-       do i = 1,DNAOrbs
-          do j = 1,DNAOrbs
-             PDOUT_SOC(i,j)=PDOUT_SOC(i,j)+PDP(i,j)
-          end do
-       end do
+      do i = 1,DNAOrbs
+         do j = 1,DNAOrbs
+            PDOUT_SOC(i,j)=PDOUT_SOC(i,j)+PDP(i,j)
+         end do
+      end do
 !$OMP END CRITICAL
 !$OMP END PARALLEL
 
 ! ... replacing n by 2n+1
-         n = n + n + 1
-
+    n = n + n + 1
+ 
     CH = 0.d0
     CHI = 0.d0
     do i=1,DNAOrbs
        do j=1,DNAOrbs
           CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
-          CHI = CHI + DIMAG(PDOUT_SOC(k,k1)*S_SOC(k1,k))
+          CHI = CHI + DIMAG(PDOUT_SOC(i,j)*S_SOC(j,i))
        end do
     enddo
-   !print*,n,ch,chi
-      !print*, n,16*CH*(El-Er)/(6*(n+1))
+ 
     ! Stopping?
-   !print*, n,(CH-xp)*(CH-xp)*16-3*(n+1)*abs(CH-q)*PAcc
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CH-qi)*PAcc.and.n.le.M) goto 1
     ! Test for successfullness and integral final value
     M = 0
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
-
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
+    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc) M = 2
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc .and. (CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc) M = 3
+ 
     do i=1,DNAOrbs
        do j=1,DNAOrbs
           PDOUT_SOC(i,j) = 16*PDOUT_SOC(i,j)/(3*(n+1))
           PDOUT_SOC(i,j) = PDOUT_SOC(i,j)*(El-Er)/2
        enddo
     enddo
+ 
+    if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
+    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of real part using up to',(((n-1)/2)+1)/2,' points. Please check ...'
+    if (M == 2) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of imaginary part using up to',(((n-1)/2)+1)/2,' points. Please check ...'
+    if (M == 3) write(ifu_log,'(A,i5,A)')' Unsuccessful integration using up to',(((n-1)/2)+1)/2,' points. Please check ...'
+ 
+    return
+  end subroutine IntRealAxis_SOC     
 
-      if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-      if (M == 1) write(ifu_log,'(A,i5,A)')'Unsuccessful integration after',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
-
-      return
-    end subroutine IntRealAxis_SOC     
-
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
-  !c second kind                                                                  c
-  !c        eps: Tolerance                                                        c
-  !c        b: parameter of the change of variable                                c
-  !c        Em: maximum value of the energy range                                 c
-  !c        M:   On input, maximum number of points allowed                       c
-  !c             On output, 0 for an alleged successfull calculation, 1 otherwise c
-  !c        dn:  On output, the density matrix                                    c
-  !c        CH:  On output, the value of the integral (charge density).           c
-  !c             Interval [-1,1]                                                  c
-  !c        Eq:  On output, the value of the upper bound of the integral.         c
-  !c        The rest of arguments are neeed by the subrtn. gplus                  c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
+!c second kind                                                                  c
+!c        eps: Tolerance                                                        c
+!c        b: parameter of the change of variable                                c
+!c        Em: maximum value of the energy range                                 c
+!c        M:   On input, maximum number of points allowed                       c
+!c             On output, 0 for an alleged successfull calculation, 1 otherwise c
+!c        dn:  On output, the density matrix                                    c
+!c        CH:  On output, the value of the integral (charge density).           c
+!c             Interval [-1,1]                                                  c
+!c        Eq:  On output, the value of the upper bound of the integral.         c
+!c        The rest of arguments are neeed by the subrtn. gplus                  c
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
   subroutine IntCompPlane(rrr,bi,Emi,M,Eq)
+
     use parameters, only: PAcc 
     use constants, only: d_pi, d_zero, ui
 !   USE IFLPORT
@@ -4364,7 +4403,7 @@
 
     integer,intent(inout) :: M
     integer,intent(in) :: sgn
-    integer :: n,i,j,l,k,k1,chunk!,omp_get_thread_num,omp_get_num_threads
+    integer :: n,i,j,l,k,chunk!,omp_get_thread_num,omp_get_num_threads
 
     real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
     real*8,intent(in) :: rrr, bi, Emi, Eq
@@ -4679,7 +4718,7 @@
 
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
-    use Zeeman, only: CompHZM    
+    use Zeeman, only: CompHZM
     use cluster, only: LoAOrbNo, HiAOrbNo
     use parameters, only: PrtHatom, SOC, ROT, ZM
     use constants, only: c_zero, d_zero
@@ -4699,7 +4738,7 @@
  hamilrot = c_zero
  overlaprot = c_zero
  hamil_SO = c_zero
- hamil_ZM = c_zero  
+ hamil_ZM = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4707,7 +4746,7 @@
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (SOC) then 
+ if (SOC .OR. ZM) then 
    if (NSpin == 2) then
       do i=1,NAOrbs
       do j=1,NAOrbs

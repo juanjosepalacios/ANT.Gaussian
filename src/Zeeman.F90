@@ -53,11 +53,11 @@ CONTAINS
   !*** quantization axis z of |alpha>, |beta> parallel to     ***
   !*** global z axis                                          ***
   !**************************************************************
-  SUBROUTINE PAULI_MATRIX(sigma_z)
+  SUBROUTINE PAULI_MATRIX(sigma_z, sigma_p, sigma_m)
     IMPLICIT NONE
 
     !Output: Pauli z matrix 
-    COMPLEX*16, DIMENSION(2,2), INTENT(out) :: sigma_z, sigma_p, sigma_m, sigma_x, sigma_y
+    COMPLEX*16, DIMENSION(2,2), INTENT(out) :: sigma_z, sigma_p, sigma_m
     
     sigma_z = 0.0d0
     sigma_p = 0.0d0
@@ -228,7 +228,7 @@ CONTAINS
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2
     REAL*8 :: zz, Bx_atom, By_atom, Bz_atom
 
-    COMPLEX*16, DIMENSION(2,2) :: sigma_z
+    COMPLEX*16, DIMENSION(2,2) :: sigma_z, sigma_p, sigma_m
     COMPLEX*16, DIMENSION(3,3) :: L_z1
     COMPLEX*16, DIMENSION(5,5) :: L_z2
     COMPLEX*16, DIMENSION(7,7) :: L_z3
