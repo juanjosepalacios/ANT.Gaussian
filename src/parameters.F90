@@ -302,7 +302,10 @@
   INTEGER :: NSpinRotAtom = 0
   REAL*8, DIMENSION( MaxAtm) :: SpinRotAtomTheta = 0.0d0, SpinRotAtomPhi = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SpinRotAtom_keyw = "SPINROTATOM"       
-  
+
+! Weak-field spin-only Zeeman effect. E_ZM=g*muB*B_i*m_i = 2*muB*B_i*S_i/hbar and S_i=0.5*hbar*sigma_i. So, E_ZM = muB*B_i*sigma_i with i=x,y,z
+! See Zettili, Quantum Mechanics, 2nd ed., section 9.2.3.4. pp 484-485! 
+! Positive for anti-parallel and negative for parallel spins. (Convention: muS=-1/2*g*muB*sigma=-muB*sigma)  
   LOGICAL :: ZM = .FALSE. 
   CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"  
   
@@ -322,7 +325,7 @@
   REAL*8, DIMENSION( MaxAtm ) :: ZMAtomBx = 0.0d0, ZMAtomBy = 0.0d0,  ZMAtomBz = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: ZMAtom_keyw = "ZMATOM"  
   
-!  ! Strong-field anomalous Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
+!  ! Weak-field spin-only Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
 !  REAL*8 :: ZM = 0.0d0                           
 !  CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"        
 
