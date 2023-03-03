@@ -53,20 +53,30 @@ CONTAINS
   !*** quantization axis z of |alpha>, |beta> parallel to     ***
   !*** global z axis                                          ***
   !**************************************************************
-  SUBROUTINE PAULI_MATRIX(sigma_z)
+  SUBROUTINE PAULI_MATRIX(sigma_z, sigma_p, sigma_m)
     IMPLICIT NONE
 
     !Output: Pauli z matrix 
-    COMPLEX*16, DIMENSION(2,2), INTENT(out) :: sigma_z
-    
-    INTEGER :: i,j
+    COMPLEX*16, DIMENSION(2,2), INTENT(out) :: sigma_z, sigma_p, sigma_m
     
     sigma_z = 0.0d0
+    sigma_p = 0.0d0
+    sigma_m = 0.0d0
     
     sigma_z(1,1)=1.d0        
     sigma_z(1,2)=0.d0        
     sigma_z(2,1)=0.d0        
-    sigma_z(2,2)=-1.d0                       
+    sigma_z(2,2)=-1.d0       
+    
+    sigma_p(1,1)=0.d0      
+    sigma_p(1,2)=2.d0      
+    sigma_p(2,1)=0.d0      
+    sigma_p(2,2)=0.d0      
+                           
+    sigma_m(1,1)=0.d0                    
+    sigma_m(1,2)=0.d0                    
+    sigma_m(2,1)=2.d0                    
+    sigma_m(2,2)=0.d0                       
 
   END SUBROUTINE PAULI_MATRIX
 
@@ -199,7 +209,7 @@ CONTAINS
   !*** Compute matrix of Zeemn Hamiltonian for a given basis set ***
   !*****************************************************************
   SUBROUTINE CompHZM(hamil_ZM,NAOs,Nshell)
-    USE parameters, ONLY: ZM
+    USE parameters, ONLY: Bx, By, Bz, NZMAtom, ZMAtomBx, ZMAtomBy, ZMAtomBz
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -216,9 +226,9 @@ CONTAINS
     COMPLEX*16, DIMENSION(2*NAOs,2*NAOs), INTENT(OUT) :: hamil_ZM
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2
-    REAL*8 :: zz
+    REAL*8 :: Bx_atom, By_atom, Bz_atom
 
-    COMPLEX*16, DIMENSION(2,2) :: sigma_z
+    COMPLEX*16, DIMENSION(2,2) :: sigma_z, sigma_p, sigma_m
     COMPLEX*16, DIMENSION(3,3) :: L_z1
     COMPLEX*16, DIMENSION(5,5) :: L_z2
     COMPLEX*16, DIMENSION(7,7) :: L_z3
@@ -257,8 +267,7 @@ CONTAINS
     !END DO  
       
     !PRINT *, "Basis set of each atom extracted from internal Gaussian variables:"
-    
-    zz = ZM*muB/hbar 
+   
                 
 
     !***************************************
@@ -279,21 +288,32 @@ CONTAINS
                 ShellC2 = GetShellC(k)
                 AtomID2 = GetAtm4Sh(k)   
           	DO q=1,2*ShellT2+1
-          	  IF (AtomID2 == AtomID1) THEN                 	    
-                    CALL Pauli_Matrix( sigma_z)                     	        
+          	  IF (AtomID2 == AtomID1) THEN
+                    IF( NZMAtom > 0) THEN  ! User-defined Zeeman field at atom AtomID2
+                      Bx_atom = ZMAtomBx(AtomID2)
+                      By_atom = ZMAtomBy(AtomID2)
+                      Bz_atom = ZMAtomBz(AtomID2)
+                    ELSE
+                      Bx_atom = Bx
+                      By_atom = By
+                      Bz_atom = Bz
+                    END IF	          	                   	    
+                    CALL Pauli_Matrix( sigma_z, sigma_p, sigma_m)                     	        
           	        DO s1 = 1,2        
           	          DO s2 = 1,2
-                         IF( ShellT1 == 0 .and. ShellT2 == 0)THEN               
-                               HZM( s1, ish1, s2, ish2 ) = zz*hbar*sigma_z(s1,s2)     ! Strong-field anomalous Zeeman effect. See Zettili, Quantum Mechanics, 2nd ed., section 9.2.3.4. pp 484-485
+                         IF( ShellT1 == 0 .and. ShellT2 == 0)THEN   
+                               ! Weak-field spin-only Zeeman effect. E_ZM=g*muB*B_i*m_i = 2*muB*B_i*S_i/hbar and S_i=0.5*hbar*sigma_i. So, E_ZM = muB*B_i*sigma_i with i=x,y,z
+                               ! See Zettili, Quantum Mechanics, 2nd ed., section 9.2.3.4. pp 484-485! 
+                               HZM( s1, ish1, s2, ish2 ) = muB*(0.5d0*(sigma_p(s1,s2)+sigma_m(s1,s2))*Bx_atom + 0.5d0*ui*(sigma_m(s1,s2)-sigma_p(s1,s2))*By_atom + sigma_z(s1,s2)*Bz_atom)    
                          ELSE IF( ShellT1 == 1 .and. ShellT2 == 1 .and. (ShellC1 == 0 .or. ShellC1 == 1) .and. (ShellC2 == 0 .or. ShellC2 == 1)) THEN
-                               !HZM( s1, ish1, s2, ish2) = zz*(L_z1(j,q)+hbar*sigma_z(s1,s2))     ! S = 0.5*hbar*sigma                                
-                               HZM( s1, ish1, s2, ish2) = zz*(hbar*sigma_z(s1,s2))     ! S = 0.5*hbar*sigma                                
+                               !HZM( s1, ish1, s2, ish2) = zz*(L_z1(j,q)+hbar*sigma_z(s1,s2))                                    
+                               HZM( s1, ish1, s2, ish2) = muB*(0.5d0*(sigma_p(s1,s2)+sigma_m(s1,s2))*Bx_atom + 0.5d0*ui*(sigma_m(s1,s2)-sigma_p(s1,s2))*By_atom + sigma_z(s1,s2)*Bz_atom)
                          ELSE IF( ShellT1 == 2 .and. ShellT2 == 2 .and. ShellC1 == 2 .and. ShellC2 == 2) THEN
                                !HZM( s1, ish1, s2, ish2) = zz*(L_z2(j,q)+hbar*sigma_z(s1,s2))
-                               HZM( s1, ish1, s2, ish2) = zz*(hbar*sigma_z(s1,s2))
+                               HZM( s1, ish1, s2, ish2) = muB*(0.5d0*(sigma_p(s1,s2)+sigma_m(s1,s2))*Bx_atom + 0.5d0*ui*(sigma_m(s1,s2)-sigma_p(s1,s2))*By_atom + sigma_z(s1,s2)*Bz_atom)
                          ELSE IF( ShellT1 == 3 .and. ShellT2 == 3 .and. ShellC1 == 2 .and. ShellC2 == 2) THEN
                                !HZM( s1, ish1, s2, ish2) = zz*(L_z3(j,q)+hbar*sigma_z(s1,s2))
-                               HZM( s1, ish1, s2, ish2) = zz*(hbar*sigma_z(s1,s2))
+                               HZM( s1, ish1, s2, ish2) = muB*(0.5d0*(sigma_p(s1,s2)+sigma_m(s1,s2))*Bx_atom + 0.5d0*ui*(sigma_m(s1,s2)-sigma_p(s1,s2))*By_atom + sigma_z(s1,s2)*Bz_atom)
                          END IF                              
                       END DO
                     END DO                
