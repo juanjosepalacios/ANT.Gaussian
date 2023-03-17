@@ -261,6 +261,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAtoms, GetAtmChg
 #endif
+
     use correlation
     use orthogonalization
     use ANTCommon
@@ -391,6 +392,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNE, GetNAtoms, GetNAE, GetNBE
 #endif
+
     use ANTCommon
     implicit none
     
@@ -571,6 +573,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNE, GetNAtoms, GetNAE, GetNBE
 #endif
+
     use ANTCommon
     implicit none
     
@@ -729,7 +732,7 @@
 #endif
 #ifdef G09ROOT
     use g09Common, only: GetNAtoms
-#endif    
+#endif
     implicit none
 
     logical,intent(out) :: ADDP
@@ -798,6 +801,7 @@
 #ifdef G09ROOT
        print *, "*        ANT.G09 final analysis          * "
 #endif
+
        print *, "*                                        * "       
        print *, "****************************************** "
        print *
@@ -1635,7 +1639,7 @@
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
-#endif 
+#endif
     implicit none
     external zgetrf, zgetri    
 
@@ -1737,7 +1741,7 @@
     use parameters, only: eta, biasvoltage, glue
     use constants, only: c_zero, ui, c_one
 #ifdef PGI
-    use lapack_blas, only: zgetri, zgetrf
+    use lapack_blas, only: zgetri, zgetrf, zgemm
 #endif
 
     implicit none
@@ -2148,7 +2152,7 @@
   end function QTot_SOC
 
 
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   !c                                                                              c
   !c     Change of variable no. 3 for the numerical integration:                  c
   !c                                                                              c
@@ -2156,7 +2160,7 @@
   !c                                                                              c
   !c     E = Em*(1-bx)/(1+x)                                                      c
   !c                                                                              c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   real*8 function edex3(Em,b,x)
     implicit none
     real*8 :: Em, b ,x
@@ -2176,6 +2180,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo
 #endif
+
     use constants, only: Bohr
     implicit none
 
@@ -2270,6 +2275,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo, GetNAtoms
 #endif
+
     use constants, only: Bohr
     implicit none
 
@@ -2441,6 +2447,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo, GetNAtoms
 #endif
+
     use constants, only: Bohr, d_zero, c_zero
     implicit none
 
@@ -2698,7 +2705,7 @@
 
        open(333,file='tempDOS',status='unknown')
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal)
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
@@ -2869,7 +2876,7 @@
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
-                          ChargeAcc, DMIMAG, ElType
+                          ChargeAcc, DMIMAG, ElType, POL
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
@@ -2884,6 +2891,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAtoms
 #endif
+
     implicit none
     external zgemm    
 
@@ -2895,7 +2903,7 @@
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
     complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD
-    complex*16, dimension(:,:), allocatable :: DGreenTC_UU, DGreenTC_DD, DGreenTC_UD, DGreenTC_DU
+    complex*16, dimension(:,:), allocatable :: GreenTC_UU, GreenTC_DD, GreenTC_UD, GreenTC_DU
     complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DT, Dtemp, DSG, DGreenTC
     complex*16, dimension(:,:),allocatable :: dummy
     complex*16, dimension(:), allocatable :: ctn,Dctn
@@ -2940,18 +2948,20 @@
        allocate(Dtn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dctn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 ! matrices for polarization computation
-       allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaR_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       if (POL) then
+          allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GammaR_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       end if 
 
        DGammaR=c_zero
        DGammaL=c_zero
@@ -3001,163 +3011,162 @@
 
     if ((.not. SOC) .and. (.not. ROT)) then
 
-    do ispin=1,NSpin
+       do ispin=1,NSpin
 
-      open(334,file='tempT',status='unknown')
-      if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+          open(334,file='tempT',status='unknown')
+          if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal,T,temp) FIRSTPRIVATE(nsteps)
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
-       do n=1,nsteps
-          energy=EW1+EStep*(n-1)
-          cenergy=dcmplx(energy)
-
-          !*********************************************************************
-          !* Evaluation of the retarded "Green" function and coupling matrices *
-          !*********************************************************************
-          call gplus(cenergy,Green,GammaR,GammaL)
-
-          if( .not. HTransm )then
-             !*************************************************************
-             !* Here we use the following non-Hermitian expression  for T *
-             !* [Gamma_L G^a Gamma_R G^r]                                 *
-             !* It works better for large clusters                        *
-             !*************************************************************
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL,NAorbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
-          else
-             !********************************************************
-             !* Here we use the following Hermitian expression for T *
-             !* [Gamma_L^1/2 G^a Gamma_R G^r Gamma_L^1/2]            *
-             !********************************************************
-             call CMatPow(GammaL,0.5d0,temp)
-             GammaL=temp
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,GammaL,NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaR,NAOrbs,c_zero,T,   NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,T,     NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaL,NAOrbs,c_zero,T,   NAOrbs)
-          end if
+          do n=1,nsteps
+             energy=EW1+EStep*(n-1)
+             cenergy=dcmplx(energy)
+   
+             !*********************************************************************
+             !* Evaluation of the retarded "Green" function and coupling matrices *
+             !*********************************************************************
+             call gplus(cenergy,Green,GammaR,GammaL)
+   
+             if( .not. HTransm )then
+                !*************************************************************
+                !* Here we use the following non-Hermitian expression  for T *
+                !* [Gamma_L G^a Gamma_R G^r]                                 *
+                !* It works better for large clusters                        *
+                   !*************************************************************
+                call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL,NAorbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
+                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR, NAOrbs, c_zero, temp, NAOrbs)
+                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
+             else
+                !********************************************************
+                !* Here we use the following Hermitian expression for T *
+                !* [Gamma_L^1/2 G^a Gamma_R G^r Gamma_L^1/2]            *
+                !********************************************************
+                call CMatPow(GammaL,0.5d0,temp)
+                GammaL=temp
+                call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,GammaL,NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
+                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaR,NAOrbs,c_zero,T,   NAOrbs)
+                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,T,     NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
+                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaL,NAOrbs,c_zero,T,   NAOrbs)
+             end if
 
 #ifdef PGI
 !$OMP CRITICAL
 #endif
-          ! Mulliken DOS 
-          if (LDOS_Beg <= LDOS_End ) then
-            SG = matmul( SD, green )
-            ! computing total DOS
-            DOS=d_zero
-            AtomDOS=d_zero
-            do j=1,GetNAtoms()
-            do i=LoAOrbNo(j),HiAOrbNo(j)
-               AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
-               DOS=DOS-dimag(SG(i,i))/d_pi
-            end do
-            end do
-
-            if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
-
-            ! print out DOS and atomic orbital resolved DOS ***
-            imin = LoAOrbNo(LDOS_Beg)
-            if( imin < 1 ) imin = 1
-            imax = HiAOrbNo(LDOS_End)
-            if( imax > NAOrbs ) imax = NAOrbs
-            call flush(333)
-            write(333,3333) energy,DOS*(-1)**(ispin+1),(AtomDOS(j)*(-1)**(ispin+1),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/d_pi,i=imin,imax)
-          end if
-
-          ! computing transmission T
-          ctrans=c_zero
-          do i=1,NAOrbs
-             ctrans=ctrans + T(i,i)
-          end do
-
-          if (dimag(ctrans).gt.1.0d-5) then
-             write(ifu_log,*)'Transmission not real !!!'
-             stop
-          end if
-
-          !Conductance in units of e^2/h
-
-          if (NSpin == 1) trans=ctrans*2
-          if (NSpin == 2) trans=ctrans
-
-          ! Diagonalize the T matrix to get eigen channels
-          if( NChannels > 0 )then
-             if( HTransm ) then 
-                call CHDiag( T, tn, info )
-             else
-                call CDiag( T, ctn, info )
-                do i=1,NAOrbs
-                  tn(i) = dble( ctn(i) )
-                end do
-                ! sort eigenvalues smallest to biggest
-                call sort(NAOrbs,tn)
+             ! Mulliken DOS 
+             if (LDOS_Beg <= LDOS_End ) then
+               SG = matmul( SD, green )
+               ! computing total DOS
+               DOS=d_zero
+               AtomDOS=d_zero
+               do j=1,GetNAtoms()
+               do i=LoAOrbNo(j),HiAOrbNo(j)
+                  AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+                  DOS=DOS-dimag(SG(i,i))/d_pi
+               end do
+               end do
+   
+               if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
+   
+               ! print out DOS and atomic orbital resolved DOS ***
+               imin = LoAOrbNo(LDOS_Beg)
+               if( imin < 1 ) imin = 1
+               imax = HiAOrbNo(LDOS_End)
+               if( imax > NAOrbs ) imax = NAOrbs
+               call flush(333)
+               write(333,3333) energy,DOS*(-1)**(ispin+1),(AtomDOS(j)*(-1)**(ispin+1),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/d_pi,i=imin,imax)
              end if
-             if( n > 3 ) call SeparateSpaghettis( tchan1, tchan2, tn(NAOrbs-NChannels+1:NAOrbs), dummy, NChannels)
-             tchan1=tchan2
-             tchan2=tn(NAOrbs-NChannels+1:NAOrbs)
-          end if
 
-          call flush(334)
-          write(334,1002)energy,trans,(tn(i),i=NAOrbs,NAOrbs-NChannels+1,-1)
+             ! computing transmission T
+             ctrans=c_zero
+             do i=1,NAOrbs
+                ctrans=ctrans + T(i,i)
+             end do
+
+             if (dabs(dimag(ctrans)).gt.1.0d-10) then
+                write(ifu_log,*)'Transmission not real !!!'
+                stop
+             end if
+
+             !Conductance in units of e^2/h
+   
+             if (NSpin == 1) trans=ctrans*2
+             if (NSpin == 2) trans=ctrans
+   
+             ! Diagonalize the T matrix to get eigen channels
+             if( NChannels > 0 )then
+                if( HTransm ) then 
+                   call CHDiag( T, tn, info )
+                else
+                   call CDiag( T, ctn, info )
+                      do i=1,NAOrbs
+                     tn(i) = dble( ctn(i) )
+                   end do
+                   ! sort eigenvalues smallest to biggest
+                   call sort(NAOrbs,tn)
+                end if
+                   if( n > 3 ) call SeparateSpaghettis( tchan1, tchan2, tn(NAOrbs-NChannels+1:NAOrbs), dummy, NChannels)
+                tchan1=tchan2
+                tchan2=tn(NAOrbs-NChannels+1:NAOrbs)
+             end if
+
+             call flush(334)
+             write(334,1002)energy,trans,(tn(i),i=NAOrbs,NAOrbs-NChannels+1,-1)
           
 #ifdef PGI
 !$OMP END CRITICAL
 #endif
-       end do ! End of energy loop
+          end do ! End of energy loop
 #ifdef PGI
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
 
-  ! Reordering in energy for nice DOS output
-       if (LDOS_Beg <= LDOS_End ) then
-       do n=1,nsteps
-          energy=EW1+EStep*(n-1)
-          rewind(333)
-          do i=1,10000000000
-          read(333,*)energ
-          if (dabs(energy-energ) < 0.000001) then
-             backspace(333)
-             read(333,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
-             write(ifu_dos,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
-             exit
-          end if
+        ! Reordering in energy for nice DOS output
+          if (LDOS_Beg <= LDOS_End ) then
+          do n=1,nsteps
+             energy=EW1+EStep*(n-1)
+             rewind(333)
+             do i=1,10000000000
+             read(333,*)energ
+             if (dabs(energy-energ) < 0.000001) then
+                backspace(333)
+                read(333,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+                write(ifu_dos,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+                exit
+             end if
+             end do
           end do
-       end do
-      write(ifu_dos,*)'   '
-      close(333,status='delete')
-      end if
-
-  ! Reordering in energy for nice T output
-      do n=1,nsteps
-          energy=EW1+EStep*(n-1)
-          rewind(334)
-          do i=1,10000000000
-          read(334,*)energ
-          if (dabs(energy-energ) < 0.000001) then
-             backspace(334)
-             read(334,1002) (xxx(j),j=1,2+NChannels)
-             write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
-             exit
+          write(ifu_dos,*)'   '
+          close(333,status='delete')
           end if
+
+        ! Reordering in energy for nice T output
+          do n=1,nsteps
+             energy=EW1+EStep*(n-1)
+             rewind(334)
+             do i=1,10000000000
+             read(334,*)energ
+             if (dabs(energy-energ) < 0.000001) then
+                backspace(334)
+                read(334,1002) (xxx(j),j=1,2+NChannels)
+                write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
+                exit
+             end if
+             end do
           end do
-       end do
-      write(ifu_tra,*)'   '
-     !close(334,status='delete')
-      close(334)
+          write(ifu_tra,*)'   '
+          close(334)
 
-    end do ! End of spin loop
+       end do ! End of spin loop
 
-    else !SOC case
+    else !SOC or ROT case here
       
-      open(334,file='tempT',status='unknown')
-      if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+       open(334,file='tempT',status='unknown')
+       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
       
-      wcount = 0  ! Issue warning of failure in transmission just once
+       wcount = 0  ! Issue warning of failure in transmission just once
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
@@ -3172,17 +3181,17 @@
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
-             call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGammaL,DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
-             call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
-             call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
+          call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+          call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGammaL,DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
+          call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
+          call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
 
 #ifdef PGI
 !$OMP CRITICAL
 #endif
 
       ! Mulliken DOS 
-           if (LDOS_Beg <= LDOS_End ) then
+          if (LDOS_Beg <= LDOS_End ) then
              DSG = matmul( S_SOC, DGreen )
              DOS=d_zero
              AtomDOS=d_zero
@@ -3202,15 +3211,15 @@
              if( imax > NAOrbs ) imax = NAOrbs
              call flush(333)
              write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
-           end if
+          end if
 
-          ! computing transmission T
+     ! computing transmission T
           ctrans=c_zero
           do i=1,DNAOrbs
              ctrans=ctrans + DT(i,i)
           end do
 
-          print*,'Double-up transmission',ctrans
+          !print*,'Double-up transmission',ctrans
 
           if (dabs(dimag(ctrans)).gt.1.0d-10) then
              write(ifu_log,*)'Doubled-up Transmission not real !!!'
@@ -3238,6 +3247,8 @@
 
      ! Computing polarization
 
+          if (POL) then
+
           DGreenTC=transpose(conjg(DGreen))
 
           do i=1,NAOrbs
@@ -3257,92 +3268,89 @@
           end do
           end do
 
-        !write(587,*)DGammaR(1,1),DGammaR(1,1+NAOrbs)
-        !write(588,*)DGammaL(1,1),DGammaL(1,1+NAOrbs)
-
-! up-up
+     ! up-up
           T=c_zero
           temp=c_zero
             !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_UU,GreenTC_UU)
-             T=matmul(T,GammaR_UU)
-             T=matmul(T,Green_UU)
+          T=matmul(GammaL_UU,GreenTC_UU)
+          T=matmul(T,GammaR_UU)
+          T=matmul(T,Green_UU)
 
           T_uu=c_zero
           do i=1,NAOrbs
              T_uu=T_uu + T(i,i)
           end do
 
-          print*,'T_uu',T_uu
+          !print*,'T_uu',T_uu
           if (dabs(dimag(T_uu)).gt.1.0d-10) then
              write(ifu_log,*)'UU spin-resolved Transmission not real !!!'
              stop
           end if
 
-! up-down
+      ! up-down
           T=0.0d0
           temp=0.0d0
             !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_UU,GreenTC_UD)
-             T=matmul(T,GammaR_DD)
-             T=matmul(T,Green_UD)
+          T=matmul(GammaL_UU,GreenTC_UD)
+          T=matmul(T,GammaR_DD)
+          T=matmul(T,Green_DU)
 
           T_ud=c_zero
           do i=1,NAOrbs
              T_ud=T_ud + T(i,i)
           end do
 
-          print*,'T_ud',T_ud
+          !print*,'T_ud',T_ud
           if (dabs(dimag(T_ud)).gt.1.0d-10) then
              write(ifu_log,*)'UD spin-resolved Transmission not real !!!'
             stop
           end if
 
-! down-up
+      ! down-up
           T=0.0d0
           temp=0.0d0
             !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_DD,GreenTC_DU)
-             T=matmul(T,GammaR_UU)
-             T=matmul(T,Green_DU)
+          T=matmul(GammaL_DD,GreenTC_DU)
+          T=matmul(T,GammaR_UU)
+          T=matmul(T,Green_UD)
 
           T_du=c_zero
           do i=1,NAOrbs
              T_du=T_du + T(i,i)
           end do
 
-          print*,'T_du',T_du
+          !print*,'T_du',T_du
           if (dabs(dimag(T_du)).gt.1.0d-10) then
              write(ifu_log,*)'DU spin-resolved Transmission not real !!!'
              stop
           end if
 
-! down-down
+      ! down-down
           T=0.0d0
           temp=0.0d0
             !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
             !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_DD,GreenTC_DD)
-             T=matmul(T,GammaR_DD)
-             T=matmul(T,Green_DD)
+          T=matmul(GammaL_DD,GreenTC_DD)
+          T=matmul(T,GammaR_DD)
+          T=matmul(T,Green_DD)
 
           T_dd=c_zero
           do i=1,NAOrbs
              T_dd=T_dd + T(i,i)
           end do
 
-          print*,'T_dd',T_dd
+          !print*,'T_dd',T_dd
           if (dabs(dimag(T_dd)).gt.1.0d-10) then
              write(ifu_log,*)'DD spin-resolved Transmission not real !!!'
              stop
@@ -3352,17 +3360,23 @@
           polar = real(T_uu + T_du - T_dd - T_ud)
 
           
-          print*,'sum',trans2
+          !print*,'sum',trans2
 
           if (dabs(trans2-trans) >= 1.0d-10 .and. wcount < 1) then
                if (SOC) print*,'Warning in the transmission with SOC'
                if (ROT) print*,'Warning in the transmission with spin rotations'
                wcount = wcount + 1
                !stop
-           end if
+          end if       
+
+          end if !end if of polatization
 
           call flush(334)
-          write(334,1002)energy,trans,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          if (POL) then
+             write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          else
+             write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          end if
 
 #ifdef PGI
 !$OMP END CRITICAL
@@ -3388,11 +3402,11 @@
           end if
           end do
        end do
-      close(333,status='delete')
-      end if
+       close(333,status='delete')
+       end if
 
   ! Reordering in energy for nice T output
-      do n=1,nsteps
+       do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(334)
           do i=1,10000000000
@@ -3405,31 +3419,45 @@
           end if
           end do
        end do
-      close(334,status='delete')
+       close(334,status='delete')
 
-  end if !End of SOC if
+    end if !End of SOC if
 
-      if (SOC .or. ROT) then
-         deallocate(DGammaL)
-         deallocate(DGammaR)
-         deallocate(DGreen)
-         deallocate(DT)
-         deallocate(Dtemp)
-         deallocate(DSG)
-         deallocate(Dtn)
-         deallocate(Dctn)
-         !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
-         deallocate(H_SOC)
-      else 
-         deallocate(GammaL)
-         deallocate(GammaR)
-         deallocate(Green)
-         deallocate(T)
-         deallocate(temp)
-         deallocate(SG)
-         deallocate(tn)
-         deallocate(ctn)
-      end if
+    if (SOC .or. ROT) then
+       deallocate(DGammaL)
+       deallocate(DGammaR)
+       deallocate(DGreen)
+       deallocate(DT)
+       deallocate(Dtemp)
+       deallocate(DSG)
+       deallocate(Dtn)
+       deallocate(Dctn)
+       !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
+       deallocate(H_SOC)
+       if (POL) then
+          deallocate(GammaL_UU)      
+          deallocate(GammaL_DD)      
+          deallocate(GammaR_UU)      
+          deallocate(GammaR_DD)      
+          deallocate(Green_UU)      
+          deallocate(Green_UD)      
+          deallocate(Green_DU)      
+          deallocate(Green_DD)      
+          deallocate(GreenTC_UU)      
+          deallocate(GreenTC_UD)      
+          deallocate(GreenTC_DU)      
+          deallocate(GreenTC_DD)      
+       end if 
+    else 
+        deallocate(GammaL)
+        deallocate(GammaR)
+        deallocate(Green)
+        deallocate(T)
+        deallocate(temp)
+        deallocate(SG)
+        deallocate(tn)
+        deallocate(ctn)
+    end if
 
     if( NChannels > 0 ) then
        deallocate( tchan1, tchan2, dummy )
@@ -4037,7 +4065,7 @@
 
   end subroutine FindEnergyBounds
 
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
 !    second kind                                                               c
 !        eps: Tolerance                                                        c
@@ -4045,7 +4073,7 @@
 !             On output, 0 for an alleged successfull calculation, 1 otherwise c
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 subroutine IntRealAxis(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
@@ -4172,7 +4200,7 @@ subroutine IntRealAxis(Er,El,M)
       return
 end subroutine IntRealAxis
 
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
 !    second kind                                                               c
 !        eps: Tolerance                                                        c
@@ -4180,7 +4208,7 @@ end subroutine IntRealAxis
 !             On output, 0 for an alleged successfull calculation, 1 otherwise c
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 subroutine IntRealAxis_SOC(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
@@ -4311,7 +4339,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
     return
   end subroutine IntRealAxis_SOC     
 
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
 !c second kind                                                                  c
 !c        eps: Tolerance                                                        c
@@ -4324,7 +4352,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 !c             Interval [-1,1]                                                  c
 !c        Eq:  On output, the value of the upper bound of the integral.         c
 !c        The rest of arguments are neeed by the subrtn. gplus                  c
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
   subroutine IntCompPlane(rrr,bi,Emi,M,Eq)
 
     use parameters, only: PAcc 
@@ -4447,7 +4475,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
     return
   end subroutine IntCompPlane
 
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
   !c second kind                                                                  c
   !c        eps: Tolerance                                                        c
@@ -4460,7 +4488,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
   !c             Interval [-1,1]                                                  c
   !c        Eq:  On output, the value of the upper bound of the integral.         c
   !c        The rest of arguments are neeed by the subrtn. gplus                  c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   subroutine IntCompPlane_SOC(sgn,rrr,bi,Emi,M,Eq)
     use parameters, only: PAcc 
     use constants, only: d_pi, d_zero, ui, c_zero
@@ -4593,6 +4621,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
 #endif
+
 
     implicit none
     external zgetri, zgetrf     
@@ -4778,9 +4807,9 @@ subroutine IntRealAxis_SOC(Er,El,M)
     
   end subroutine gplus0_SOC
 
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 ! SOC subroutine
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 
  subroutine spin_orbit
 
@@ -4794,7 +4823,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 #endif
 #ifdef G09ROOT
     use g09Common, only: GetNShell
-#endif    
+#endif
       
     complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
     integer :: i,j,totdim,nshell,Atom
