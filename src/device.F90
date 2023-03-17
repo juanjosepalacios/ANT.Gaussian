@@ -3287,7 +3287,7 @@
           !print*,'T_uu',T_uu
           if (dabs(dimag(T_uu)).gt.1.0d-10) then
              write(ifu_log,*)'UU spin-resolved Transmission not real !!!'
-             stop
+            !stop
           end if
 
       ! up-down
@@ -3309,7 +3309,7 @@
           !print*,'T_ud',T_ud
           if (dabs(dimag(T_ud)).gt.1.0d-10) then
              write(ifu_log,*)'UD spin-resolved Transmission not real !!!'
-            stop
+            !stop
           end if
 
       ! down-up
@@ -3331,7 +3331,7 @@
           !print*,'T_du',T_du
           if (dabs(dimag(T_du)).gt.1.0d-10) then
              write(ifu_log,*)'DU spin-resolved Transmission not real !!!'
-             stop
+            !stop
           end if
 
       ! down-down
@@ -3353,7 +3353,7 @@
           !print*,'T_dd',T_dd
           if (dabs(dimag(T_dd)).gt.1.0d-10) then
              write(ifu_log,*)'DD spin-resolved Transmission not real !!!'
-             stop
+            !stop
           end if
 
           trans2 = real(T_uu + T_du + T_dd + T_ud)
@@ -3363,10 +3363,10 @@
           !print*,'sum',trans2
 
           if (dabs(trans2-trans) >= 1.0d-10 .and. wcount < 1) then
-               if (SOC) print*,'Warning in the transmission with SOC'
-               if (ROT) print*,'Warning in the transmission with spin rotations'
-               wcount = wcount + 1
-               !stop
+             if (SOC) print*,'Warning in the transmission with SOC'
+             if (ROT) print*,'Warning in the transmission with spin rotations'
+             wcount = wcount + 1
+             !stop
           end if       
 
           end if !end if of polatization
