@@ -288,7 +288,11 @@
   
   ! ROT
   LOGICAL :: rot = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: ROT_keyw = "ROT"      
+  CHARACTER(len=10), PARAMETER :: ROT_keyw = "ROT"     
+  
+   ! POL
+  LOGICAL :: pol = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"       
   
   ! THETA
   REAL*8 :: theta = 0.0d0                           
@@ -630,7 +634,9 @@ CONTAINS
     CASE ( SOC_keyw )
        soc = .true.   
     CASE ( ROT_keyw )
-       rot = .true.    
+       rot = .true.
+    CASE ( POL_keyw )
+       pol = .true.                   
     CASE ( ZM_keyw )   
        ZM = .true.                          
     CASE ( SpinDel_keyw )
@@ -869,6 +875,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) ChargeAcc_keyw, " = ", ChargeA, " %"
     WRITE(unit=logfile,fmt=*) FermiAcc_keyw, " = ", FermiA, " %"
     WRITE(unit=logfile,fmt=*) PAcc_keyw, " = ", PA, " %"
+    WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL    
     WRITE(unit=logfile,fmt=*) FullAcc_keyw, " = ", FullAcc
     WRITE(unit=logfile,fmt=*) Max_keyw, " = ", Max
     WRITE(unit=logfile,fmt=*) Nip_keyw, " = ", NIP
@@ -881,7 +888,6 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
     WRITE(unit=logfile,fmt=*) FixEFermi_keyw, " = ", FixEFermi
-    WRITE(unit=logfile,fmt=*) SL_keyw, " = ", SL
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing
     WRITE(unit=logfile,fmt=*) "************************"
@@ -924,9 +930,9 @@ CONTAINS
        WRITE(unit=logfile,fmt=*) "Supplementary Density Matrix  ", densitymatrixx
        WRITE(unit=logfile,fmt=*) NFix_keyw, " = ", (IFix(i), i=1,NFix)
     end if
-    WRITE(unit=logfile,fmt=*) "*************************"
-    WRITE(unit=logfile,fmt=*) "Spin transport parameters"
-    WRITE(unit=logfile,fmt=*) "*************************"
+    WRITE(unit=logfile,fmt=*) "**********************************"
+    WRITE(unit=logfile,fmt=*) "Spin-resolved transport parameters"
+    WRITE(unit=logfile,fmt=*) "**********************************"
     WRITE(unit=logfile,fmt=*) SwOffSpL_keyw, " = ", SwOffSpL
     WRITE(unit=logfile,fmt=*) NSpinLock_keyw, " = ", NSpinLock
     WRITE(unit=logfile,fmt=*) Nalpha_keyw, " = ", Nalpha
@@ -955,7 +961,8 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) SOCEdit_keyw, " = ", NSOCEdit
     DO i=1,MaxAtm
        IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
-    END DO          
+    END DO
+    WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol              
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          
