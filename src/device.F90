@@ -717,7 +717,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -860,7 +860,7 @@
           end do
        end if   
         
-       if (SOC .or. ROT .or. ZM) then 
+       if (SOC .or. ROT) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -2633,7 +2633,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2661,8 +2661,8 @@
     print *, "-------------------------"
     print *
     
-    if (SOC .or. ROT .or. ZM) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2692,7 +2692,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
+    if ((.not. SOC) .and. (.not. ROT)) then
     
     do ispin=1,NSpin
 
@@ -2843,7 +2843,7 @@
 
   end if !End of SOC if
   
-      if (SOC .or. ROT .or. ZM) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -2868,7 +2868,7 @@
   subroutine transmission
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, ZM, FermiAcc, QExcess, & 
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
                           ChargeAcc, DMIMAG, ElType
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
@@ -2895,12 +2895,14 @@
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
     complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD
-    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DT, Dtemp, DSG
+    complex*16, dimension(:,:), allocatable :: DGreenTC_UU, DGreenTC_DD, DGreenTC_UD, DGreenTC_DU
+    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DT, Dtemp, DSG, DGreenTC
     complex*16, dimension(:,:),allocatable :: dummy
     complex*16, dimension(:), allocatable :: ctn,Dctn
     real*8, dimension(:), allocatable :: tn,Dtn
     real*8, dimension(:),allocatable   :: tchan1,tchan2
-    real*8   :: T_uu,T_dd,T_ud,T_du,polar,trans2
+    complex*16   :: T_uu,T_dd,T_ud,T_du
+    real*8   :: polar,trans2
     logical :: ADDP
 
     print *
@@ -2916,8 +2918,8 @@
         call InitElectrodes
     end if 
 
-    if (SOC .or. ROT .or. ZM) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2927,6 +2929,7 @@
        allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGreenTC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DT(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2936,7 +2939,7 @@
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dtn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dctn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-
+! matrices for polarization computation
        allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2945,6 +2948,15 @@
        allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(GreenTC_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+
+       DGammaR=c_zero
+       DGammaL=c_zero
+       DGreen=c_zero
+       DGreenTC=c_zero
 
        call spin_orbit
        
@@ -2970,7 +2982,7 @@
     allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr)
     if( AllocErr /= 0 ) stop
 
-    if (SOC .or. ROT .or. ZM) then
+    if (SOC .or. ROT) then
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
           call CompDensMat2_SOC(ADDP)
@@ -2987,7 +2999,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
+    if ((.not. SOC) .and. (.not. ROT)) then
 
     do ispin=1,NSpin
 
@@ -3155,6 +3167,8 @@
           energy=EW1+EStep*(n-1)
           cenergy=dcmplx(energy)
 
+          DT = c_zero
+          Dtemp = c_zero
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
@@ -3196,11 +3210,13 @@
              ctrans=ctrans + DT(i,i)
           end do
 
-          if (dimag(ctrans).gt.1.0d-5) then
-             write(ifu_log,*)'Transmission not real !!!'
+          print*,'Double-up transmission',ctrans
+
+          if (dabs(dimag(ctrans)).gt.1.0d-10) then
+             write(ifu_log,*)'Doubled-up Transmission not real !!!'
              stop
           end if
-          trans=ctrans   ! in units of e^2/h
+          trans=real(ctrans)   ! in units of e^2/h
 
           ! Diagonalize the T matrix 
           ! to get eigen channels
@@ -3222,10 +3238,7 @@
 
      ! Computing polarization
 
-          T_uu=0.0d0
-          T_ud=0.0d0
-          T_du=0.0d0
-          T_dd=0.0d0
+          DGreenTC=transpose(conjg(DGreen))
 
           do i=1,NAOrbs
           do j=1,NAOrbs
@@ -3237,58 +3250,113 @@
              Green_DD(i,j) = DGreen(i+NAOrbs,j+NAOrbs)
              Green_UD(i,j) = DGreen(i,j+NAOrbs)
              Green_DU(i,j) = DGreen(i+NAOrbs,j)
+             GreenTC_UU(i,j) = DGreenTC(i,j)
+             GreenTC_DD(i,j) = DGreenTC(i+NAOrbs,j+NAOrbs)
+             GreenTC_UD(i,j) = DGreenTC(i,j+NAOrbs)
+             GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)
           end do
           end do
+
+        !write(587,*)DGammaR(1,1),DGammaR(1,1+NAOrbs)
+        !write(588,*)DGammaL(1,1),DGammaL(1,1+NAOrbs)
 
 ! up-up
-          T=0.0d0
-          temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
+          T=c_zero
+          temp=c_zero
+            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
 
-             do i=1,NAOrbs
-                T_uu = T_uu+REAL(T(i,i))
-             end do
+             T=matmul(GammaL_UU,GreenTC_UU)
+             T=matmul(T,GammaR_UU)
+             T=matmul(T,Green_UU)
+
+          T_uu=c_zero
+          do i=1,NAOrbs
+             T_uu=T_uu + T(i,i)
+          end do
+
+          print*,'T_uu',T_uu
+          if (dabs(dimag(T_uu)).gt.1.0d-10) then
+             write(ifu_log,*)'UU spin-resolved Transmission not real !!!'
+             stop
+          end if
+
 ! up-down
           T=0.0d0
           temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
+            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
 
-             do i=1,NAOrbs
-                T_ud = T_ud+REAL(T(i,i))
-             end do
+             T=matmul(GammaL_UU,GreenTC_UD)
+             T=matmul(T,GammaR_DD)
+             T=matmul(T,Green_UD)
+
+          T_ud=c_zero
+          do i=1,NAOrbs
+             T_ud=T_ud + T(i,i)
+          end do
+
+          print*,'T_ud',T_ud
+          if (dabs(dimag(T_ud)).gt.1.0d-10) then
+             write(ifu_log,*)'UD spin-resolved Transmission not real !!!'
+            stop
+          end if
+
 ! down-up
           T=0.0d0
           temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
+            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
 
-             do i=1,NAOrbs
-                T_du = T_du+REAL(T(i,i))
-             end do
+             T=matmul(GammaL_DD,GreenTC_DU)
+             T=matmul(T,GammaR_UU)
+             T=matmul(T,Green_DU)
+
+          T_du=c_zero
+          do i=1,NAOrbs
+             T_du=T_du + T(i,i)
+          end do
+
+          print*,'T_du',T_du
+          if (dabs(dimag(T_du)).gt.1.0d-10) then
+             write(ifu_log,*)'DU spin-resolved Transmission not real !!!'
+             stop
+          end if
+
 ! down-down
           T=0.0d0
           temp=0.0d0
-             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
+            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
 
+             T=matmul(GammaL_DD,GreenTC_DD)
+             T=matmul(T,GammaR_DD)
+             T=matmul(T,Green_DD)
+
+          T_dd=c_zero
           do i=1,NAOrbs
-             T_dd = T_dd+REAL(T(i,i))
+             T_dd=T_dd + T(i,i)
           end do
 
-          polar = T_uu + T_du - T_dd - T_ud
-          trans2 = T_uu + T_du + T_dd + T_ud
+          print*,'T_dd',T_dd
+          if (dabs(dimag(T_dd)).gt.1.0d-10) then
+             write(ifu_log,*)'DD spin-resolved Transmission not real !!!'
+             stop
+          end if
+
+          trans2 = real(T_uu + T_du + T_dd + T_ud)
+          polar = real(T_uu + T_du - T_dd - T_ud)
 
           
-          if (dabs(trans2-trans) >= 1.0d-5 .and. wcount < 1) then
+          print*,'sum',trans2
+
+          if (dabs(trans2-trans) >= 1.0d-10 .and. wcount < 1) then
                if (SOC) print*,'Warning in the transmission with SOC'
                if (ROT) print*,'Warning in the transmission with spin rotations'
-               if (ZM) print*,'Warning in the transmission with Zeeman field'
                wcount = wcount + 1
                !stop
            end if
@@ -3341,7 +3409,7 @@
 
   end if !End of SOC if
 
-      if (SOC .or. ROT .or. ZM) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -4718,9 +4786,8 @@ subroutine IntRealAxis_SOC(Er,El,M)
 
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
-    use Zeeman, only: CompHZM
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, SOC, ROT, ZM
+    use parameters, only: PrtHatom, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
@@ -4729,7 +4796,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
     use g09Common, only: GetNShell
 #endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO, hamil_ZM
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
     integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
@@ -4737,8 +4804,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
  totdim=NAOrbs   
  hamilrot = c_zero
  overlaprot = c_zero
- hamil_SO = c_zero
- hamil_ZM = c_zero 
+ hamil_SO = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4746,7 +4812,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (SOC .OR. ZM) then 
+ if (SOC) then 
    if (NSpin == 2) then
       do i=1,NAOrbs
       do j=1,NAOrbs
@@ -4775,7 +4841,6 @@ subroutine IntRealAxis_SOC(Er,El,M)
  nshell = GetNShell()
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
@@ -4839,14 +4904,6 @@ subroutine IntRealAxis_SOC(Er,El,M)
        do j=1, totdim*2
           S_SOC(i,j)=REAL(overlaprot(i,j))         
           H_SOC(i,j)=hamilrot(i,j)
-       end do
-    end do 
- end if   
- 
- if (ZM) then
-    do i=1, totdim*2
-       do j=1, totdim*2
-          H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)
        end do
     end do 
  end if    
