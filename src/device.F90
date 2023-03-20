@@ -2873,7 +2873,7 @@
 !* Subroutine to evaluate T(E) *
 !*******************************
   subroutine transmission
-    use Cluster, only : hiaorbno, loaorbno
+    use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
                           ChargeAcc, DMIMAG, ElType, POL
@@ -3222,8 +3222,8 @@
           !print*,'Double-up transmission',ctrans
 
           if (dabs(dimag(ctrans)).gt.1.0d-10) then
-             write(ifu_log,*)'Doubled-up Transmission not real !!!'
-             stop
+             write(ifu_log,*)'Doubled-up Transmission not real !!! ... img=', dabs(dimag(ctrans))
+            !stop
           end if
           trans=real(ctrans)   ! in units of e^2/h
 
@@ -3271,102 +3271,95 @@
      ! up-up
           T=c_zero
           temp=c_zero
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, GreenTC_UU,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
 
-          T=matmul(GammaL_UU,GreenTC_UU)
-          T=matmul(T,GammaR_UU)
-          T=matmul(T,Green_UU)
+         !T=matmul(GammaL_UU,GreenTC_UU)
+         !T=matmul(T,GammaR_UU)
+         !T=matmul(T,Green_UU)
 
           T_uu=c_zero
           do i=1,NAOrbs
              T_uu=T_uu + T(i,i)
           end do
 
-          !print*,'T_uu',T_uu
           if (dabs(dimag(T_uu)).gt.1.0d-10) then
-             write(ifu_log,*)'UU spin-resolved Transmission not real !!!'
+             write(ifu_log,*)'UU spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_uu))
             !stop
           end if
 
       ! up-down
           T=0.0d0
           temp=0.0d0
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, GreenTC_UD,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
 
-          T=matmul(GammaL_UU,GreenTC_UD)
-          T=matmul(T,GammaR_DD)
-          T=matmul(T,Green_DU)
+         !T=matmul(GammaL_UU,GreenTC_UD)
+         !T=matmul(T,GammaR_DD)
+         !T=matmul(T,Green_DU)
 
           T_ud=c_zero
           do i=1,NAOrbs
              T_ud=T_ud + T(i,i)
           end do
 
-          !print*,'T_ud',T_ud
           if (dabs(dimag(T_ud)).gt.1.0d-10) then
-             write(ifu_log,*)'UD spin-resolved Transmission not real !!!'
+             write(ifu_log,*)'UD spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_ud))
             !stop
           end if
 
       ! down-up
           T=0.0d0
           temp=0.0d0
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, GreenTC_DU,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
 
-          T=matmul(GammaL_DD,GreenTC_DU)
-          T=matmul(T,GammaR_UU)
-          T=matmul(T,Green_UD)
+         !T=matmul(GammaL_DD,GreenTC_DU)
+         !T=matmul(T,GammaR_UU)
+         !T=matmul(T,Green_UD)
 
           T_du=c_zero
           do i=1,NAOrbs
              T_du=T_du + T(i,i)
           end do
 
-          !print*,'T_du',T_du
           if (dabs(dimag(T_du)).gt.1.0d-10) then
-             write(ifu_log,*)'DU spin-resolved Transmission not real !!!'
+             write(ifu_log,*)'DU spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_du))
             !stop
           end if
 
       ! down-down
           T=0.0d0
           temp=0.0d0
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, GreenTC_DD,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
 
-          T=matmul(GammaL_DD,GreenTC_DD)
-          T=matmul(T,GammaR_DD)
-          T=matmul(T,Green_DD)
+         !T=matmul(GammaL_DD,GreenTC_DD)
+         !T=matmul(T,GammaR_DD)
+         !T=matmul(T,Green_DD)
 
           T_dd=c_zero
           do i=1,NAOrbs
              T_dd=T_dd + T(i,i)
           end do
 
-          !print*,'T_dd',T_dd
           if (dabs(dimag(T_dd)).gt.1.0d-10) then
-             write(ifu_log,*)'DD spin-resolved Transmission not real !!!'
+             write(ifu_log,*)'DD spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_dd))
             !stop
           end if
 
           trans2 = real(T_uu + T_du + T_dd + T_ud)
           polar = real(T_uu + T_du - T_dd - T_ud)
 
-          
-          !print*,'sum',trans2
-
           if (dabs(trans2-trans) >= 1.0d-10 .and. wcount < 1) then
-             if (SOC) print*,'Warning in the transmission with SOC'
-             if (ROT) print*,'Warning in the transmission with spin rotations'
-             wcount = wcount + 1
-             !stop
+               if (SOC) print*,'Warning in the transmission with SOC'
+               if (ROT) print*,'Warning in the transmission with spin rotations'
+               wcount = wcount + 1
+               !stop
           end if       
 
           end if !end if of polatization
@@ -3413,8 +3406,10 @@
           read(334,*)energ
           if (dabs(energy-energ) < 0.000001) then
              backspace(334)
-             read(334,1002) (xxx(j),j=1,3+NChannels)
-             write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             if (POL) read(334,1002) (xxx(j),j=1,3+NChannels)
+             if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
+             if (POL) write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             if (.not. POL) write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
              exit
           end if
           end do
