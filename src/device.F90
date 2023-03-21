@@ -261,6 +261,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNAtoms, GetAtmChg
 #endif
+
     use correlation
     use orthogonalization
     use ANTCommon
@@ -391,6 +392,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNE, GetNAtoms, GetNAE, GetNBE
 #endif
+
     use ANTCommon
     implicit none
     
@@ -571,6 +573,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetNE, GetNAtoms, GetNAE, GetNBE
 #endif
+
     use ANTCommon
     implicit none
     
@@ -717,7 +720,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -729,7 +732,7 @@
 #endif
 #ifdef G09ROOT
     use g09Common, only: GetNAtoms
-#endif    
+#endif
     implicit none
 
     logical,intent(out) :: ADDP
@@ -798,6 +801,7 @@
 #ifdef G09ROOT
        print *, "*        ANT.G09 final analysis          * "
 #endif
+
        print *, "*                                        * "       
        print *, "****************************************** "
        print *
@@ -860,7 +864,7 @@
           end do
        end if   
         
-       if (SOC .or. ROT .or. ZM) then 
+       if (SOC .or. ROT) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -1635,7 +1639,7 @@
     use constants, only: c_zero, ui
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
-#endif 
+#endif
     implicit none
     external zgetrf, zgetri    
 
@@ -1737,7 +1741,7 @@
     use parameters, only: eta, biasvoltage, glue
     use constants, only: c_zero, ui, c_one
 #ifdef PGI
-    use lapack_blas, only: zgetri, zgetrf
+    use lapack_blas, only: zgetri, zgetrf, zgemm
 #endif
 
     implicit none
@@ -2148,7 +2152,7 @@
   end function QTot_SOC
 
 
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   !c                                                                              c
   !c     Change of variable no. 3 for the numerical integration:                  c
   !c                                                                              c
@@ -2156,7 +2160,7 @@
   !c                                                                              c
   !c     E = Em*(1-bx)/(1+x)                                                      c
   !c                                                                              c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   real*8 function edex3(Em,b,x)
     implicit none
     real*8 :: Em, b ,x
@@ -2176,6 +2180,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo
 #endif
+
     use constants, only: Bohr
     implicit none
 
@@ -2270,6 +2275,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo, GetNAtoms
 #endif
+
     use constants, only: Bohr
     implicit none
 
@@ -2441,6 +2447,7 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo, GetNAtoms
 #endif
+
     use constants, only: Bohr, d_zero, c_zero
     implicit none
 
@@ -2633,7 +2640,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2661,8 +2668,8 @@
     print *, "-------------------------"
     print *
     
-    if (SOC .or. ROT .or. ZM) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+    if (SOC .or. ROT) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2692,13 +2699,13 @@
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
+    if ((.not. SOC) .and. (.not. ROT)) then
     
     do ispin=1,NSpin
 
        open(333,file='tempDOS',status='unknown')
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal)
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
@@ -2843,7 +2850,7 @@
 
   end if !End of SOC if
   
-      if (SOC .or. ROT .or. ZM) then
+      if (SOC .or. ROT) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
@@ -4055,7 +4062,7 @@
 
   end subroutine FindEnergyBounds
 
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
 !    second kind                                                               c
 !        eps: Tolerance                                                        c
@@ -4063,7 +4070,7 @@
 !             On output, 0 for an alleged successfull calculation, 1 otherwise c
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 subroutine IntRealAxis(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
@@ -4190,7 +4197,7 @@ subroutine IntRealAxis(Er,El,M)
       return
 end subroutine IntRealAxis
 
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
 !    second kind                                                               c
 !        eps: Tolerance                                                        c
@@ -4198,7 +4205,7 @@ end subroutine IntRealAxis
 !             On output, 0 for an alleged successfull calculation, 1 otherwise c
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 subroutine IntRealAxis_SOC(Er,El,M)
 
     use constants, only: ui,d_pi,d_zero
@@ -4329,7 +4336,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
     return
   end subroutine IntRealAxis_SOC     
 
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
 !c second kind                                                                  c
 !c        eps: Tolerance                                                        c
@@ -4342,7 +4349,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 !c             Interval [-1,1]                                                  c
 !c        Eq:  On output, the value of the upper bound of the integral.         c
 !c        The rest of arguments are neeed by the subrtn. gplus                  c
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
   subroutine IntCompPlane(rrr,bi,Emi,M,Eq)
 
     use parameters, only: PAcc 
@@ -4465,7 +4472,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
     return
   end subroutine IntCompPlane
 
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
   !c second kind                                                                  c
   !c        eps: Tolerance                                                        c
@@ -4478,7 +4485,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
   !c             Interval [-1,1]                                                  c
   !c        Eq:  On output, the value of the upper bound of the integral.         c
   !c        The rest of arguments are neeed by the subrtn. gplus                  c
-  !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !ccccccccccccccccccccccccccccccc
   subroutine IntCompPlane_SOC(sgn,rrr,bi,Emi,M,Eq)
     use parameters, only: PAcc 
     use constants, only: d_pi, d_zero, ui, c_zero
@@ -4611,6 +4618,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 #ifdef PGI
     use lapack_blas, only: zgetri, zgetrf
 #endif
+
 
     implicit none
     external zgetri, zgetrf     
@@ -4796,26 +4804,25 @@ subroutine IntRealAxis_SOC(Er,El,M)
     
   end subroutine gplus0_SOC
 
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 ! SOC subroutine
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!ccccccccccccccccccccccccccccccc
 
  subroutine spin_orbit
 
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
-    use Zeeman, only: CompHZM
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, SOC, ROT, ZM
+    use parameters, only: PrtHatom, SOC, ROT
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
 #endif
 #ifdef G09ROOT
     use g09Common, only: GetNShell
-#endif    
+#endif
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO, hamil_ZM
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
     integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
@@ -4823,8 +4830,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
  totdim=NAOrbs   
  hamilrot = c_zero
  overlaprot = c_zero
- hamil_SO = c_zero
- hamil_ZM = c_zero 
+ hamil_SO = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4832,7 +4838,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (SOC .OR. ZM) then 
+ if (SOC) then 
    if (NSpin == 2) then
       do i=1,NAOrbs
       do j=1,NAOrbs
@@ -4861,7 +4867,6 @@ subroutine IntRealAxis_SOC(Er,El,M)
  nshell = GetNShell()
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
@@ -4925,14 +4930,6 @@ subroutine IntRealAxis_SOC(Er,El,M)
        do j=1, totdim*2
           S_SOC(i,j)=REAL(overlaprot(i,j))         
           H_SOC(i,j)=hamilrot(i,j)
-       end do
-    end do 
- end if   
- 
- if (ZM) then
-    do i=1, totdim*2
-       do j=1, totdim*2
-          H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)
        end do
     end do 
  end if    
