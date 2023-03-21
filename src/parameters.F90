@@ -288,11 +288,11 @@
   
   ! ROT
   LOGICAL :: rot = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: ROT_keyw = "ROT"     
+  CHARACTER(len=10), PARAMETER :: ROT_keyw = "ROT"      
   
-   ! POL
+  ! POL
   LOGICAL :: pol = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"       
+  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"      
   
   ! THETA
   REAL*8 :: theta = 0.0d0                           
@@ -634,9 +634,9 @@ CONTAINS
     CASE ( SOC_keyw )
        soc = .true.   
     CASE ( ROT_keyw )
-       rot = .true.
+       rot = .true.               
     CASE ( POL_keyw )
-       pol = .true.                   
+       pol = .true.                  
     CASE ( ZM_keyw )   
        ZM = .true.                          
     CASE ( SpinDel_keyw )

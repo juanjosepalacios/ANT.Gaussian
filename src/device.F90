@@ -2866,10 +2866,10 @@
 !* Subroutine to evaluate T(E) *
 !*******************************
   subroutine transmission
-    use Cluster, only : hiaorbno, loaorbno
+    use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, ZM, FermiAcc, QExcess, & 
-                          ChargeAcc, DMIMAG, ElType
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
+                          ChargeAcc, DMIMAG, ElType, ZM, POL
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
@@ -2940,23 +2940,25 @@
        allocate(Dtn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dctn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 ! matrices for polarization computation
-       allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaR_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       if (POL) then
+          allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GammaR_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(Green_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       end if 
 
        DGammaR=c_zero
        DGammaL=c_zero
        DGreen=c_zero
-       DGreenTC=c_zero       
+       DGreenTC=c_zero      
 
        call spin_orbit
        
@@ -3152,12 +3154,12 @@
 
     end do ! End of spin loop
 
-    else !SOC case
+    else !SOC or Rot or ZM case here
       
-      open(334,file='tempT',status='unknown')
-      if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+       open(334,file='tempT',status='unknown')
+       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
       
-      wcount = 0  ! Issue warning of failure in transmission just once
+       wcount = 0  ! Issue warning of failure in transmission just once
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
@@ -3166,23 +3168,23 @@
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
           cenergy=dcmplx(energy)
-          
+
           DT = c_zero
-          Dtemp = c_zero          
+          Dtemp = c_zero
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
-             call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGammaL,DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
-             call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
-             call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
+          call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+          call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGammaL,DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
+          call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
+          call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
 
 #ifdef PGI
 !$OMP CRITICAL
 #endif
 
       ! Mulliken DOS 
-           if (LDOS_Beg <= LDOS_End ) then
+          if (LDOS_Beg <= LDOS_End ) then
              DSG = matmul( S_SOC, DGreen )
              DOS=d_zero
              AtomDOS=d_zero
@@ -3202,19 +3204,19 @@
              if( imax > NAOrbs ) imax = NAOrbs
              call flush(333)
              write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
-           end if
+          end if
 
-          ! computing transmission T
+     ! computing transmission T
           ctrans=c_zero
           do i=1,DNAOrbs
              ctrans=ctrans + DT(i,i)
           end do
 
-          print*,'Double-up transmission',ctrans
+          !print*,'Double-up transmission',ctrans
 
           if (dabs(dimag(ctrans)).gt.1.0d-10) then
-             write(ifu_log,*)'Doubled-up Transmission not real !!!'
-             stop
+             write(ifu_log,*)'Doubled-up Transmission not real !!! ... img=', dabs(dimag(ctrans))
+            !stop
           end if
           trans=real(ctrans)   ! in units of e^2/h
 
@@ -3238,8 +3240,11 @@
 
      ! Computing polarization
 
+
+          if (POL) then
+
           DGreenTC=transpose(conjg(DGreen))
-          
+
           do i=1,NAOrbs
           do j=1,NAOrbs
              GammaR_UU(i,j) = DGammaR(i,j)
@@ -3253,102 +3258,96 @@
              GreenTC_UU(i,j) = DGreenTC(i,j)
              GreenTC_DD(i,j) = DGreenTC(i+NAOrbs,j+NAOrbs)
              GreenTC_UD(i,j) = DGreenTC(i,j+NAOrbs)
-             GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)             
+             GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)
           end do
           end do
 
-        !write(587,*)DGammaR(1,1),DGammaR(1,1+NAOrbs)
-        !write(588,*)DGammaL(1,1),DGammaL(1,1+NAOrbs)
-
-! up-up
+     ! up-up
           T=c_zero
           temp=c_zero
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UU,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, GreenTC_UU,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UU,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_UU,GreenTC_UU)
-             T=matmul(T,GammaR_UU)
-             T=matmul(T,Green_UU)
+         !T=matmul(GammaL_UU,GreenTC_UU)
+         !T=matmul(T,GammaR_UU)
+         !T=matmul(T,Green_UU)
 
           T_uu=c_zero
           do i=1,NAOrbs
              T_uu=T_uu + T(i,i)
           end do
 
-          print*,'T_uu',T_uu
           if (dabs(dimag(T_uu)).gt.1.0d-10) then
-             write(ifu_log,*)'UU spin-resolved Transmission not real !!!'
-             stop
-          end if          
-! up-down
+             write(ifu_log,*)'UU spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_uu))
+            !stop
+          end if
+
+      ! up-down
           T=0.0d0
           temp=0.0d0
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, Green_UD,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_UU,NAOrbs, GreenTC_UD,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_UU,GreenTC_UD)
-             T=matmul(T,GammaR_DD)
-             T=matmul(T,Green_UD)
+         !T=matmul(GammaL_UU,GreenTC_UD)
+         !T=matmul(T,GammaR_DD)
+         !T=matmul(T,Green_DU)
 
           T_ud=c_zero
           do i=1,NAOrbs
              T_ud=T_ud + T(i,i)
           end do
 
-          print*,'T_ud',T_ud
           if (dabs(dimag(T_ud)).gt.1.0d-10) then
-             write(ifu_log,*)'UD spin-resolved Transmission not real !!!'
-            stop
+             write(ifu_log,*)'UD spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_ud))
+            !stop
           end if
-! down-up
+
+      ! down-up
           T=0.0d0
           temp=0.0d0
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DU,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DU,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, GreenTC_DU,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_UU, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_UD,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_DD,GreenTC_DU)
-             T=matmul(T,GammaR_UU)
-             T=matmul(T,Green_DU)
+         !T=matmul(GammaL_DD,GreenTC_DU)
+         !T=matmul(T,GammaR_UU)
+         !T=matmul(T,Green_UD)
 
           T_du=c_zero
           do i=1,NAOrbs
              T_du=T_du + T(i,i)
           end do
 
-          print*,'T_du',T_du
           if (dabs(dimag(T_du)).gt.1.0d-10) then
-             write(ifu_log,*)'DU spin-resolved Transmission not real !!!'
-             stop
+             write(ifu_log,*)'DU spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_du))
+            !stop
           end if
-! down-down
+
+      ! down-down
           T=0.0d0
           temp=0.0d0
-            !call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, Green_DD,  NAOrbs, c_zero, T, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
-            !call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL_DD,NAOrbs, GreenTC_DD,  NAOrbs, c_zero, T, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR_DD, NAOrbs, c_zero, temp, NAOrbs)
+          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green_DD,  NAOrbs, c_zero, T,    NAOrbs)
 
-             T=matmul(GammaL_DD,GreenTC_DD)
-             T=matmul(T,GammaR_DD)
-             T=matmul(T,Green_DD)
+         !T=matmul(GammaL_DD,GreenTC_DD)
+         !T=matmul(T,GammaR_DD)
+         !T=matmul(T,Green_DD)
 
           T_dd=c_zero
           do i=1,NAOrbs
              T_dd=T_dd + T(i,i)
           end do
 
-          print*,'T_dd',T_dd
           if (dabs(dimag(T_dd)).gt.1.0d-10) then
-             write(ifu_log,*)'DD spin-resolved Transmission not real !!!'
-             stop
+             write(ifu_log,*)'DD spin-resolved Transmission not real !!! ...  img=', dabs(dimag(T_dd))
+            !stop
           end if
 
           trans2 = real(T_uu + T_du + T_dd + T_ud)
           polar = real(T_uu + T_du - T_dd - T_ud)
-          
-           print*,'sum',trans2
 
           if (dabs(trans2-trans) >= 1.0d-10 .and. wcount < 1) then
                if (SOC) print*,'Warning in the transmission with SOC'
@@ -3358,8 +3357,14 @@
                !stop
            end if
 
+          end if !end if of polatization
+
           call flush(334)
-          write(334,1002)energy,trans,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          if (POL) then
+             write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          else
+             write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+          end if
 
 #ifdef PGI
 !$OMP END CRITICAL
@@ -3385,48 +3390,64 @@
           end if
           end do
        end do
-      close(333,status='delete')
-      end if
+       close(333,status='delete')
+       end if
 
   ! Reordering in energy for nice T output
-      do n=1,nsteps
+       do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(334)
           do i=1,10000000000
           read(334,*)energ
           if (dabs(energy-energ) < 0.000001) then
              backspace(334)
-             read(334,1002) (xxx(j),j=1,3+NChannels)
-             write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             if (POL) read(334,1002) (xxx(j),j=1,3+NChannels)
+             if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
+             if (POL) write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             if (.not. POL) write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
              exit
           end if
           end do
        end do
-      close(334,status='delete')
+       close(334,status='delete')
 
   end if !End of SOC if
 
       if (SOC .or. ROT .or. ZM) then
-         deallocate(DGammaL)
-         deallocate(DGammaR)
-         deallocate(DGreen)
-         deallocate(DT)
-         deallocate(Dtemp)
-         deallocate(DSG)
-         deallocate(Dtn)
-         deallocate(Dctn)
-         !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
-         deallocate(H_SOC)
-      else 
-         deallocate(GammaL)
-         deallocate(GammaR)
-         deallocate(Green)
-         deallocate(T)
-         deallocate(temp)
-         deallocate(SG)
-         deallocate(tn)
-         deallocate(ctn)
-      end if
+       deallocate(DGammaL)
+       deallocate(DGammaR)
+       deallocate(DGreen)
+       deallocate(DT)
+       deallocate(Dtemp)
+       deallocate(DSG)
+       deallocate(Dtn)
+       deallocate(Dctn)
+       !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
+       deallocate(H_SOC)
+       if (POL) then
+          deallocate(GammaL_UU)      
+          deallocate(GammaL_DD)      
+          deallocate(GammaR_UU)      
+          deallocate(GammaR_DD)      
+          deallocate(Green_UU)      
+          deallocate(Green_UD)      
+          deallocate(Green_DU)      
+          deallocate(Green_DD)      
+          deallocate(GreenTC_UU)      
+          deallocate(GreenTC_UD)      
+          deallocate(GreenTC_DU)      
+          deallocate(GreenTC_DD)      
+       end if 
+    else 
+        deallocate(GammaL)
+        deallocate(GammaR)
+        deallocate(Green)
+        deallocate(T)
+        deallocate(temp)
+        deallocate(SG)
+        deallocate(tn)
+        deallocate(ctn)
+    end if
 
     if( NChannels > 0 ) then
        deallocate( tchan1, tchan2, dummy )
