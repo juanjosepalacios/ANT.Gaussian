@@ -4813,17 +4813,18 @@ subroutine IntRealAxis_SOC(Er,El,M)
 
     use SpinOrbit, only: CompHSO
     use SpinRotate, only: CompHROT
+    use Zeeman, only: CompHZM
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, SOC, ROT
+    use parameters, only: PrtHatom, SOC, ROT, ZM
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
 #endif
 #ifdef G09ROOT
     use g09Common, only: GetNShell
-#endif
+#endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO, hamil_ZM
     integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
@@ -4831,7 +4832,8 @@ subroutine IntRealAxis_SOC(Er,El,M)
  totdim=NAOrbs   
  hamilrot = c_zero
  overlaprot = c_zero
- hamil_SO = c_zero 
+ hamil_SO = c_zero
+ hamil_ZM = c_zero 
  H_SOC = c_zero
  S_SOC = d_zero
 
@@ -4839,7 +4841,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (SOC) then 
+ if (SOC .OR. ZM) then 
    if (NSpin == 2) then
       do i=1,NAOrbs
       do j=1,NAOrbs
@@ -4868,6 +4870,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
  nshell = GetNShell()
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
+ If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
@@ -4933,6 +4936,14 @@ subroutine IntRealAxis_SOC(Er,El,M)
           H_SOC(i,j)=hamilrot(i,j)
        end do
     end do 
+ end if   
+ 
+ if (ZM) then
+    do i=1, totdim*2
+       do j=1, totdim*2
+          H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)
+       end do
+    end do 
  end if    
 
  if (SOC) then
@@ -4945,5 +4956,4 @@ subroutine IntRealAxis_SOC(Er,El,M)
 
  return
  end subroutine spin_orbit
-
 END MODULE device
