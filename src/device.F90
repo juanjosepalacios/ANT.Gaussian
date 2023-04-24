@@ -720,7 +720,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -864,7 +864,7 @@
           end do
        end if   
         
-       if (SOC .or. ROT) then 
+       if (SOC .or. ROT .or. ZM) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -2640,7 +2640,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2668,8 +2668,8 @@
     print *, "-------------------------"
     print *
     
-    if (SOC .or. ROT) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC or rotating spins or both ..........'
+    if (SOC .or. ROT .or. ZM) then
+       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
 
        allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2699,7 +2699,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if ((.not. SOC) .and. (.not. ROT)) then
+    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
     
     do ispin=1,NSpin
 
@@ -2850,7 +2850,7 @@
 
   end if !End of SOC if
   
-      if (SOC .or. ROT) then
+      if (SOC .or. ROT .or. ZM) then
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
