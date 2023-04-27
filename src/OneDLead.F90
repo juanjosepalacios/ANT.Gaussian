@@ -675,7 +675,7 @@ contains
   ! Write Bulk DOS of an electrode to file 
   !****************************************
   subroutine PrintDOS( ilead )
-    use parameters, only: gamma, NPoints
+    use parameters, only: gamma, DE => EStep
     use constants, only: ui
     use filemaster
     implicit none
@@ -691,7 +691,6 @@ contains
     
     EMin = Lead1D(ilead)%EMin
     EMax = Lead1D(ilead)%EMax
-    DE = (EMax-EMin)/dble(NPoints)
 
     iunit=fopen(file(ilead),'unknown', ios)
     do energy=EMin, EMax, DE 
@@ -713,7 +712,7 @@ contains
   !*                     Heff - Sigma                    *
   !*******************************************************
   subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim )
-    use parameters, only: conv => L1DCONV, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
+    use parameters, only: conv => selfacc, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
     use constants, only: c_zero, ui
    !use device, only: OnSigma
 #ifdef PGI    

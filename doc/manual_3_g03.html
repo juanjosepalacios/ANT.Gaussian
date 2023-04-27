@@ -139,7 +139,18 @@ Default: <em>FERMIACC</em> = 1.0D-5</li>
   <li><br>
   </li>
   <li><em>FULLACC </em>(logical)</li>
-  <li>Turns on full accuracy from the first cycle.
+  <li>Turns on full accuracy from the first cycle.</li><br>
+ <li> <em>SELFACC</em> (real)<br>
+Self-energy accuracy (Dyson selfconsistency). <br>
+Default: <em>SELFACC</em> = 1.0D-6</li> <br>
+  <li> <em>NIP (integer)</em> (real)<br>
+Maximum number of points for integration on the real axis. <br>
+It follows the rule: n=(NIP+1)/2 ; NIP=3 (n=2); NIP=7 (n=4) ; NIP=15 (n=8) ...<br>
+Default: <em>NIP</em> = 127 </li> <br>
+<li><em>FMIXING </em>(logical)</li>
+<li>Switch on Fock matrix mixing (instead of density matrix) for damping.</li> <br>
+<li><em>DMIMAG </em>(logical)</li>
+<li> Computes the density matrix by integration along imaginary axis instead of along a complex contour (default).
 </ol>
 <div style="margin-left: 40px;"><span style="font-style: italic;">SMALL,
 SMALLD
@@ -182,8 +193,8 @@ P.job_name.dat file it is overruled by the existing value in
 P.job_name;.dat.<br>
     </div> Default: <em>FERMISTART</em> = -5.0D0</li><br>
   <li><em>FIXFERMI </em>(logical)</li>
-  <li>The SCF procedure is carried out fixing the Fermi energy all along (gran canonical esemble). 
-This is a fast option, but the charge fluctuates and the convergence is not easily achieved.</li>
+  <li>The SCF procedure is carried out fixing the Fermi energy all along (gran canonical esemble). The value is
+fixed by FERMISTART.  This is a fast option, but the charge fluctuates and the convergence is not easily achieved.</li>
 </ol>
 <div style="margin-left: 40px;"><span style="font-style: italic;">TYPE1
 and TYPE2 </span>(string)<br>
@@ -230,6 +241,16 @@ Bethe lattice.<br>
   <li>Default: <span style="font-style: italic;">GLUE</span> = 1.0</li>
   <li><br>
   </li>
+  <li><em>HTRANSM</em> (logical)<br>
+    <div style="text-align: justify;"> Compute Transmision matrix in
+hermitian form T = \Gamma_L^{1/2} G^\dagger \Gamma_R G \Gamma_L^{1/2}.
+The default is the easier non-hermitian form \Gamma_L G^\dagger
+\Gamma_R G which is considerably faster for large clusters. The
+diagonalization of both forms yield the same eigenvalues.<br>
+    </div>
+Default: .false. (transmission matrix in non-hermitian form).</li>
+  <em> <br>
+  </em>
   <li><em>NEMBED1</em> and <em>NEMBED2</em> (integer)<br>
     <div style="text-align: justify;"> Number of atoms to be connected
 to a Bethe lattice branch. These atoms are not taken into account on
@@ -538,11 +559,8 @@ and the per-atom cutoff of the modified Yukawa nuclear screening potential
 Default: .false. (off) <br>
   </li>  
 <br>
-  <li><em>POL</em> (logical) <br>
-Evaluation of the polarization. It gets printed along the transmission in the corresponding T.jobname.dat file  <br> 
-Default: .false.
 </ol>
-<strong>Evaluation parameters</strong>
+<strong>Output parameters</strong>
 <ol>
   <em> </em>
   <li> <em>ESTEP</em> (real)<br>
@@ -566,6 +584,9 @@ and <em>LDOS_END</em> = 0 (LDOS evaluation off).</div>
   </li>
   <em> <br>
   </em>
+  <li><em>POL</em> (logical) <br>
+Evaluation of the polarization. It gets printed along the transmission in the corresponding T.jobname.dat file  <br> 
+Default: .false. </li> <br>
   <li> <em>NCHANNELS</em> (integer)<br>
     <div style="text-align: justify;"> Number of eigenchannles to print
 out in <i>T.job_name.dat</i>. If <em>NCHANNELS</em> &gt; 0 then the
@@ -581,16 +602,6 @@ Default: <em>NCHANNELS</em> = 0 (eigenchannel calculation off).</li>
 lattice. Output files: Lead1DOS.dat, Lead2DOS.dat<br>
     </div>
 Default: .false. (off).</li>
-  <em> <br>
-  </em>
-  <li><em>HTRANSM</em> (logical)<br>
-    <div style="text-align: justify;"> Compute Transmision matrix in
-hermitian form T = \Gamma_L^{1/2} G^\dagger \Gamma_R G \Gamma_L^{1/2}.
-The default is the easier non-hermitian form \Gamma_L G^\dagger
-\Gamma_R G which is considerably faster for large clusters. The
-diagonalization of both forms yield the same eigenvalues.<br>
-    </div>
-Default: .false. (transmission matrix in non-hermitian form).</li>
   <em> <br>
   </em>
   <li><em>RTM_BEG</em> and <em>RTM_END</em> (integer)<br>
@@ -610,18 +621,30 @@ selected by DOSENERGY) is also dumped when<span
  style="font-style: italic;"> LDOS_BEG &lt; LDOS_END</span>.<br>
 </div>
 <div style="text-align: justify;">Default: .false. (not print).<br>
-<br></li>
-<li>
-<span style="font-style: italic;">ANT1D</span> (logical)<br>
-<div style="text-align: justify;"> Requests to write all the necessary input files to be used with the <a
- href="ant_1D.html">ANT1D transport program</a>. <br>
-</div>
-</li>
 </ol>
-<br>
 <b>Options for electronic correlations </b>
 <ol>
 <div style="text-align: justify;">
+<span style="font-style: italic;">MOLBLOCKS</span><br>
+<div style="text-align: justify;">This keyword specifies a block of
+atomic orbitals (typically defining a molecule) for further treatment beyond DFT to open a charge gap.                               
+<br>
+</div>
+Syntax:<br>
+&lt;num_corrblocks&gt;<br>
+&lt;ao_beg&gt; &lt;ao_end&gt
+<br>
+<div style="text-align: justify;">where &lt;num_corrblocks&gt; is the
+number of correlated blocks within the device region. For each
+correlated block a line "&lt;ao_beg&gt; &lt;ao_end&gt
+" has to be specified where &lt;ao_beg&gt; is the number of
+the first atomic orbital and &lt;ao_end&gt; is the last atomic orbital
+of the correlated block. <br>
+</div>
+<br>
+  <li><em>UPLUS</em> (real)<br>
+Charging energy of the correlated block (molecule) defined by MOLBLOCKS (same for all blocks at this point). <br>
+Default: <em>UPLUS </em> = 0.0   </li><br>
 <span style="font-style: italic;">CORRBLOCKS</span><br>
 <div style="text-align: justify;">This keyword specifies a block of
 atomic orbitals (usually a d- or f-shell of an atom) for further

@@ -79,9 +79,10 @@
   CHARACTER(len=10), PARAMETER :: eta_keyw = "ETA"
   
   !
-  ! Broadening for printing out 1D DOS and transmission on real axis
+  ! Broadening for printing out 1D DOS on real axis
   !
-  REAL*8 :: Gamma = 0.03
+  REAL*8 :: gamma = 0.03
+  CHARACTER(len=10), PARAMETER :: gamma_keyw = "GAMMA"
   
   ! -Infty = Lower integration limit for charge integration 
   REAL*8 :: Infty = 1000.0
@@ -89,12 +90,11 @@
   !
   ! Convergence criterion for iterative solution of Dyson equation for 1D self-energy
   !
-  REAL*8 :: L1DConv = 1.0d-6
   integer :: L1DMaxCyc = 10000
   !
   ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation in 1D leads
   !
-  REAL*8 :: L1DAlpha = 0.7d0  
+  REAL*8 :: L1DAlpha = 0.5d0  
   !
   ! Switch on Bethe lattice electrodes
   logical :: Bethe= .false.
@@ -106,13 +106,10 @@
   CHARACTER(len=10), PARAMETER ::  PrintHS_keyw = "PRINTHS"      
   integer :: PRINTHS = 0
    
-  ! Number of primitive cells when using 1D electrodes                            
+  ! Number of primitive cells when using 1D electrodes (keep it at this value unless you know what you are doing)                           
   integer :: NPC = 1
   CHARACTER(len=10), PARAMETER :: NPC_keyw = "NPC"       
    
-  ! Number of points in energy window on regular mesh
-  integer :: NPoints = 1000     
-
   ! Bethe lattice glue parameter
   REAL*8 :: Glue = 1.0     
   CHARACTER(len=10), PARAMETER :: Glue_keyw = "GLUE"       
@@ -429,6 +426,7 @@ CONTAINS
          & Bias_keyw      ,&
          & QExcess_keyw   ,&
          & eta_keyw       ,&
+         & gamma_keyw       ,&
          & glue_keyw      ,&
          & SL_keyw        ,&
          & SwOffSpL_keyw  ,&
@@ -482,6 +480,8 @@ CONTAINS
           QExcess = rval 
        CASE ( eta_keyw )
           eta = rval
+       CASE ( eta_keyw )
+          gamma = rval
        CASE ( glue_keyw )
           glue = rval
        CASE ( SL_keyw )
@@ -885,6 +885,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) Bias_keyw, " = ", BiasVoltage, " V"
     WRITE(unit=logfile,fmt=*) QExcess_keyw, " = ", QExcess, "electrons"
     WRITE(unit=logfile,fmt=*) eta_keyw, " = ", eta
+    WRITE(unit=logfile,fmt=*) gamma_keyw, " = ", gamma
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
     WRITE(unit=logfile,fmt=*) FixEFermi_keyw, " = ", FixEFermi
