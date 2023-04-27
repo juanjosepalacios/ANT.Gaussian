@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.7.1  **********************
+!*********************  ANT.G-2.7.2  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -116,18 +116,18 @@
 #endif
      PRINT *, " ***                                                            *** "
      PRINT *, " ****************************************************************** "
-     PRINT *, " ***                     Version: 2.7.0                         *** "
+     PRINT *, " ***                     Version: 2.7.2                         *** "
      PRINT *, " ****************************************************************** "
      PRINT *, " *  Copyright (c) by                                              * "
      PRINT *, " *                                                                * "
      PRINT *, " *  Juan Jose Palacios (1)                                        * "
      PRINT *, " *  David Jacob (2)                                               * "
+     PRINT *, " *  Wynand Dednam (5)                                             * "
      PRINT *, " *  Maria Soriano (1,5)                                           * "
      PRINT *, " *  Angel J. Perez-Jimenez (3)                                    * "
      PRINT *, " *  Emilio SanFabian (3)                                          * "
      PRINT *, " *  Jose Antonio Antonio Verges (4)                               * "
      PRINT *, " *  Enrique Louis (5)                                             * "
-     PRINT *, " *  Wynand Dednam (5)                                             * "
      PRINT *, " *                                                                * "
      PRINT *, " * (1) Departamento de Fisica de la Materia Condensada            * "
      PRINT *, " *     Universidad Autonoma de Madrid                             * "

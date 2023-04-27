@@ -1,4 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html;
@@ -107,7 +108,7 @@ dumps the Mulliken population analysis into a file.<span
   <li><em>ALPHA</em> (real)<br>
 Mixing parameter for density matrix (typically 0.01 &lt; <em>ALPHA</em>
 &lt; 0.1).<br>
-Default: <em>ALPHA</em> = 5.0D-2</li>
+Default: <em>ALPHA</em> = 2.0D-2</li>
   <li><br>
   </li>
   <li><span style="font-style: italic;">NPULAY</span> (integer)</li>
@@ -121,17 +122,24 @@ Pulay extrapolation kicks in.<br>
 </ol>
 <ol>
   <li><span style="font-style: italic;">PACC </span>(real)</li>
-  <li>Numerical integration maximum accuracy for density matrix.</li>
-  <li>Default: <span style="font-style: italic;">PACC </span>= 1.0D-5</li>
+  <li>Numerical integration maximum accuracy for density matrix. </li>
+  <li>(It starts at larger values in the early cycles, reaching the selected accuracy towards the end) </li>
+  <li>Default: <span style="font-style: italic;">PACC </span>= 1.0D-7</li>
   <li><br>
   </li>
   <li><em>CHARGEACC</em> (real) <br>
 Total charge maximum accuracy. <br>
-Default: <em>CHARGEACC</em> = 1.0D-3</li>
+(It starts at larger values in the early cycles, reaching the selected accuracy towards the end) <br>
+Default: <em>CHARGEACC</em> = 1.0D-5</li>
   <br>
   <li> <em>FERMIACC</em> (real)<br>
 Fermi level maximum accuracy (in eV). <br>
-Default: <em>FERMIACC</em> = 1.0D-3</li>
+(It starts at larger values in the early cycles, reaching the selected accuracy towards the end) <br>
+Default: <em>FERMIACC</em> = 1.0D-5</li> 
+  <li><br>
+  </li>
+  <li><em>FULLACC </em>(logical)</li>
+  <li>Turns on full accuracy from the first cycle.
 </ol>
 <div style="margin-left: 40px;"><span style="font-style: italic;">SMALL,
 SMALLD
@@ -146,11 +154,6 @@ Default: <span style="font-style: italic;">SMALLD </span>= 0.1
 (Angstrom)<br>
 </div>
 <ol>
-  <li><em>FULLACC </em>(logical)</li>
-  <li>Turns on full accuracy from the first cycle.<br>
-  </li>
-  <li><br>
-  </li>
   <li><em>ETA</em> (real)<br>
     <div style="text-align: justify;"> Small imaginary part of the
 Green's function. When both electrodes are set to GHOST this number
@@ -161,7 +164,7 @@ might need to be no so small.<br>
   <br>
   <li> <em>SL</em> (real)<br>
     <div style="text-align: justify;"> Convergence criterion for when
-to switch the infinite electrodes (Bethe lattice) on. These are
+to switch the electrodes self-energy on. These are
 connected when the standard GAUSSIAN03/09 SCF convergence for the
 density matrix (RMSDP) reaches RMSDP &lt; <em>SL</em>, where the
 overall convergence criterion is set in the GAUSSIAN03/09 input file
@@ -177,20 +180,22 @@ Default: <em>SL</em> = 1.0D-2</li>
 search (in eV). When reinitializing a calculation from a
 P.job_name.dat file it is overruled by the existing value in
 P.job_name;.dat.<br>
-    </div>
-Default: <em>FERMISTART</em> = -5.0D0</li>
-  <li><br>
-  </li>
+    </div> Default: <em>FERMISTART</em> = -5.0D0</li><br>
+  <li><em>FIXFERMI </em>(logical)</li>
+  <li>The SCF procedure is carried out fixing the Fermi energy all along (gran canonical esemble). 
+This is a fast option, but the charge fluctuates and the convergence is not easily achieved.</li>
 </ol>
 <div style="margin-left: 40px;"><span style="font-style: italic;">TYPE1
 and TYPE2 </span>(string)<br>
-<div style="text-align: justify;"> Type of model for the semiinfinite
-electrode. When set to BETHE the effective selfenergy is connected to
-the electrode. When set to GHOST, nothing is connected. When both
+<div style="text-align: justify;"> Type of model for the semi-infinite
+electrodes. </br>When set to BETHE, the effective selfenergy is connected to
+the electrode.</br> When set to GHOST, nothing is connected. When both
 electrodes are set to GHOST the calculation is similar to the one
 performed by the original GAUSSIAN03/09 code on the input&nbsp;
 cluster, but with all the convergence advantages of <span
  style="font-weight: bold;">ANT.G</span>.<br>
+When set to 1DLEAD, a 1D selfenergy is build out of the selected atoms (see NEMBED keyword). (You must be 
+familiar with the requirements to build 1D self-energies in 1D systems.) <br>
 </div>
 Default: <span style="font-style: italic;">TYPE1 </span>= BETHE and <span
  style="font-style: italic;">TYPE2 = </span>BETHE<br>
@@ -234,10 +239,16 @@ computing the charge of the system when <span
     <div style="text-align: justify;"> 3D Default: <em>NEMBED1</em> =
 All atoms in the outermost plane of first electrode and <em>NEMBED2</em>
 = All atoms in the outermost plane of second electrode (this is
-typically a good choice). 2D Default:&nbsp; <em>NEMBED1</em> = All
+typically a good choice). If you do not like this default, make sure that the atoms in the input file
+are ordered in a way that suits your needs. <br>
+ 2D Default:&nbsp; <em>NEMBED1</em> = All
 atoms in the electrode 1 and <em>NEMBED2</em> = All atoms in electrode
-2 (since you do probably not want this default, you should specify
-these).<br>
+2.  Since you do probably not want this default, you should specify
+these. Make sure that the atoms in the input file
+are ordered in a way that suits your needs. <br>
+When 1DLEAD is selected as type of electrode (see TYPE keyword above), these numbers determine the atoms of 
+the cell used to build the self-energy. Here the choice is the logical one if you are familiar with 1D systems.
+Make sure that the atoms in the input file are ordered in a way that suits your needs.
     </div>
   </li>
 </ol>
@@ -527,7 +538,9 @@ and the per-atom cutoff of the modified Yukawa nuclear screening potential
 Default: .false. (off) <br>
   </li>  
 <br>
-
+  <li><em>POL</em> (logical) <br>
+Evaluation of the polarization. It gets printed along the transmission in the corresponding T.jobname.dat file  <br> 
+Default: .false.
 </ol>
 <strong>Evaluation parameters</strong>
 <ol>
