@@ -2876,7 +2876,7 @@ subroutine transmission
     use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
-                          ChargeAcc, DMIMAG, ElType, ZM, POL
+                          ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, TREV, UD, DU, ElType
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
@@ -2992,6 +2992,24 @@ subroutine transmission
     if( AllocErr /= 0 ) stop
 
     if (SOC .or. ROT .or. ZM) then
+       if (TREV) then
+          print*, "Reinitializing electrodes and toggling UD's value..."
+          if (.not. UD) then 
+            UD = .true.
+          else
+            print*,"Only source drain's magnetization (UD) should be reversed, continue at your own risk..." 
+            UD = .false.
+          end if                   
+          print*, "UD = ", UD
+          do LeadNo=1,2
+             if (ElType(LeadNo) == "BETHE") then
+                call CleanUpBL (LeadBL(LeadNo))
+                call InitBetheLattice( LeadBL(LeadNo), LeadNo )
+                EMin(LeadNo) = BL_EMin( LeadBL(LeadNo) )
+                EMax(LeadNo) = BL_EMax( LeadBL(LeadNo) )
+             end if   
+          end do 
+       end if          
        if (DMIMAG) then
           call RMatPow( S_SOC, -1.0d0, InvS_SOC )
           call CompDensMat2_SOC(ADDP)
@@ -3253,22 +3271,41 @@ subroutine transmission
 
           DGreenTC=transpose(conjg(DGreen))
 
-          do i=1,NAOrbs
-          do j=1,NAOrbs
-             GammaR_UU(i,j) = DGammaR(i,j)
-             GammaR_DD(i,j) = DGammaR(i+NAOrbs,j+NAOrbs)
-             GammaL_UU(i,j) = DGammaL(i,j)
-             GammaL_DD(i,j) = DGammaL(i+NAOrbs,j+NAOrbs)
-             Green_UU(i,j) = DGreen(i,j)
-             Green_DD(i,j) = DGreen(i+NAOrbs,j+NAOrbs)
-             Green_UD(i,j) = DGreen(i,j+NAOrbs)
-             Green_DU(i,j) = DGreen(i+NAOrbs,j)
-             GreenTC_UU(i,j) = DGreenTC(i,j)
-             GreenTC_DD(i,j) = DGreenTC(i+NAOrbs,j+NAOrbs)
-             GreenTC_UD(i,j) = DGreenTC(i,j+NAOrbs)
-             GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)
-          end do
-          end do
+          if (.not. TREV) then  
+             do i=1,NAOrbs
+             do j=1,NAOrbs
+                GammaR_UU(i,j) = DGammaR(i,j)
+                GammaR_DD(i,j) = DGammaR(i+NAOrbs,j+NAOrbs)
+                GammaL_UU(i,j) = DGammaL(i,j)
+                GammaL_DD(i,j) = DGammaL(i+NAOrbs,j+NAOrbs)
+                Green_UU(i,j) = DGreen(i,j)
+                Green_DD(i,j) = DGreen(i+NAOrbs,j+NAOrbs)
+                Green_UD(i,j) = DGreen(i,j+NAOrbs)
+                Green_DU(i,j) = DGreen(i+NAOrbs,j)
+                GreenTC_UU(i,j) = DGreenTC(i,j)
+                GreenTC_DD(i,j) = DGreenTC(i+NAOrbs,j+NAOrbs)
+                GreenTC_UD(i,j) = DGreenTC(i,j+NAOrbs)
+                GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)
+            end do
+            end do
+          else
+            do i=1,NAOrbs
+            do j=1,NAOrbs
+                GammaR_UU(i,j) = DGammaR(i,j)
+                GammaR_DD(i,j) = DGammaR(i+NAOrbs,j+NAOrbs)
+                GammaL_UU(i,j) = DGammaL(i,j)
+                GammaL_DD(i,j) = DGammaL(i+NAOrbs,j+NAOrbs)
+                Green_DD(i,j) = DGreen(i,j)
+                Green_UU(i,j) = DGreen(i+NAOrbs,j+NAOrbs)
+                Green_UD(i,j) = DGreen(i,j+NAOrbs)
+                Green_DU(i,j) = DGreen(i+NAOrbs,j)
+                GreenTC_DD(i,j) = DGreenTC(i,j)
+                GreenTC_UU(i,j) = DGreenTC(i+NAOrbs,j+NAOrbs)
+                GreenTC_UD(i,j) = DGreenTC(i,j+NAOrbs)
+                GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)
+            end do
+            end do
+          end if   
 
      ! up-up
           T=c_zero
@@ -3369,7 +3406,11 @@ subroutine transmission
 
           call flush(334)
           if (POL) then
-             write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             if  (.not. TCOMP) then
+                 write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             else
+                 write(334,1002)energy,trans2,polar,real(T_uu),real(T_ud),real(T_du),real(T_dd),(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             end if  
           else
              write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
           end if
@@ -3409,9 +3450,21 @@ subroutine transmission
           read(334,*)energ
           if (dabs(energy-energ) < 0.000001) then
              backspace(334)
-             if (POL) read(334,1002) (xxx(j),j=1,3+NChannels)
+             if (POL) then
+                if (.not. TCOMP) then 
+                    read(334,1002) (xxx(j),j=1,3+NChannels)
+                else    
+                    read(334,1002) (xxx(j),j=1,7+NChannels)
+                end if
+             end if          
              if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
-             if (POL) write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             if (POL) then 
+                if (.not. TCOMP) then 
+                    write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+                else    
+                    write(ifu_tra,1002) (xxx(j),j=1,7+NChannels)
+                end if
+             end if                 
              if (.not. POL) write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
              exit
           end if

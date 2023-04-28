@@ -289,7 +289,15 @@
   
   ! POL
   LOGICAL :: pol = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"      
+  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"     
+  
+  ! Print all components of transmission
+  LOGICAL :: tcomp = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: TCOMP_keyw = "TCOMP"    
+  
+  ! Reverse spin-diagonal components of transmission
+  LOGICAL :: trev = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: trev_keyw = "TREV"     
   
   ! THETA
   REAL*8 :: theta = 0.0d0                           
@@ -636,7 +644,11 @@ CONTAINS
     CASE ( ROT_keyw )
        rot = .true.               
     CASE ( POL_keyw )
-       pol = .true.                  
+       pol = .true.  
+    CASE ( TCOMP_keyw )   
+       tcomp = .true.       
+    CASE ( TREV_keyw )   
+       trev = .true.                         
     CASE ( ZM_keyw )   
        ZM = .true.                          
     CASE ( SpinDel_keyw )
@@ -963,7 +975,9 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
     END DO
-    WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol              
+    WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol     
+    WRITE(unit=logfile,fmt=*) TCOMP_keyw, " = ", tcomp         
+    WRITE(unit=logfile,fmt=*) TREV_keyw, " = ", trev                 
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          
