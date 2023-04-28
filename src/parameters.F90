@@ -480,7 +480,7 @@ CONTAINS
           QExcess = rval 
        CASE ( eta_keyw )
           eta = rval
-       CASE ( eta_keyw )
+       CASE ( gamma_keyw )
           gamma = rval
        CASE ( glue_keyw )
           glue = rval
