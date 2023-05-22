@@ -529,7 +529,7 @@ CONTAINS
   !**************************************************************
   !*** Compute matrix of SO Hamiltonian for a given basis set ***
   !**************************************************************
-  SUBROUTINE CompHSO(hamil_SO,HD,NAOs,Nshell)
+  SUBROUTINE CompHSO(hamil_SO,NAOs,Nshell)
     USE parameters, ONLY: soc_cff_p, soc_cff_d, soc_cff_f, socfac_p, socfac_d, socfac_f, rcut, NSOCFacAtom, SOCFacAtomP, SOCFacAtomD, SOCFacAtomF, RCutAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh, GetShellN, GetShellA, GetShlADF, GetEXX, GetC1, GetC2, GetC3, GetC4, GetAN, GetAtmCo
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
@@ -546,8 +546,6 @@ CONTAINS
     !*********************************
     COMPLEX*16, DIMENSION(2,NAOs,2,NAOs) :: HSO  ! Need to reshape HSO to H_SOC(i,j) where i = 1, 2*Norb, j = 1, 2*Norb
     COMPLEX*16, DIMENSION(2*NAOs,2*NAOs), INTENT(OUT) :: hamil_SO
-    
-    REAL*8, DIMENSION(2,NAOs,NAOs), INTENT(IN) :: HD
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin, Z, acount
     REAL*8 :: result, A, B, x, zz, socfac_atom_p, socfac_atom_d, socfac_atom_f, rcut_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
