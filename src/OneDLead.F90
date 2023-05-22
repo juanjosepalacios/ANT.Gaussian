@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.7.0  *********************!
+!*********************  ANT.G-2.7.2  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -682,7 +682,7 @@ contains
 
     integer, intent(in) :: ilead
     
-    real(double) :: EMin, EMax, DE, energy
+    real(double) :: EMin, EMax, energy
     complex(double) :: zenergy
     character(len=12),parameter :: file(2) = (/"Lead1DOS.dat","Lead2DOS.dat"/)
     integer :: ispin, ios, iunit
