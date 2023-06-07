@@ -1,6 +1,15 @@
 # ANT.Gaussian
-New version with implementations of SOC and spin rotations by Wynand Dednam
-It also works both with intel and PGI compilers. No need to maintain two versions. Just set your enviroments variables.
+
+********************************************************************************
+Versions notation: The main module ANT.F90 must contains in its header the label
+with the latest version (now 2.7.2). This should coincide with the latest version 
+of the  modules recently changed even though the module ANT itself may have not 
+changed.  This way, a quick look tells you that some module has been changed. 
+Most modules should retain old headers if they have not been changed.
+********************************************************************************
+
+It works both with intel and NVIDIA (PG) compilers. No need to maintain two versions. 
+Just set your enviroment variables.
 
 ********************************************************************************
                            For Intel installations:
@@ -13,10 +22,6 @@ ulimit -s unlimited
 export OMP_STACKSIZE=2G (*)
 
 * May a require larger value as your input system and basis sets become larger **
-
-********************************************************************************
-Just added test version for the manual opening of the gap of molecules
-********************************************************************************
 ********************************************************************************
                               Release 2.7.1                  
 Main new Features:
