@@ -54,7 +54,7 @@
   !*****************************
 
   ! *** Number of atomic orbitals, number of non-degenerate spin-channels ***
-  integer :: NAOrbs, NSpin, DNAOrbs
+  integer :: NAOrbs, NSpin, DNAOrbs, irev
 
   ! *** Total number of electrons in central device region
   integer :: NCDEl, NCDAO1, NCDAO2
@@ -73,7 +73,7 @@
   real*8, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:),allocatable :: H_SOC, PD_SOC,PD_SOC_R,PD_SOC_A
+  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC,PD_SOC_R,PD_SOC_A
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
 
   ! *** Orthognalization matrix for device ***
@@ -253,7 +253,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, biasvoltage, NEmbed,NPC
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed,NPC,SCFSOC
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -293,10 +293,25 @@
        stop
     end if
     ! Dynamic arrays 
-    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs),  PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
+    allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
-       print *, "DEVICE/Allocation error for SD, InvSD, SMH, SPH, H, P"
+       print *, "DEVICE/Allocation error for SD, InvSD, HD, PD"
        stop
+    end if
+    ! Dynamic SOC arrays
+    if (SOC .or. ROT .or. ZM) then 
+    allocate( S_SOC(DNAOrbs,DNAOrbs), InvS_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), PD_SOC(DNAOrbs,DNAOrbs),  STAT=AllocErr )
+    if( AllocErr /= 0 ) then
+       print *, "DEVICE/Allocation error for S_SOC, InvS_SOC, H_SOC, PD_SOC"
+       stop
+    end if    
+    if (SCFSOC) then
+       allocate(H_SOC_ONLY(DNAOrbs,DNAOrbs),   STAT=AllocErr )
+       if( AllocErr /= 0 ) then
+          print *, "DEVICE/Allocation error for H_SOC_ONLY"
+          stop
+       end if
+    end if
     end if
 
     SD = S
@@ -334,6 +349,27 @@
       print *, 'These electrodes are not implemented yet !!!'
       stop
     END IF
+    
+    ! Calculate SOC-only hamiltonian just once initially
+    if ((SOC .or. ROT .or. ZM) .and. SCFSOC) then
+       call spin_orbit                 
+       !if (NSpin == 2) then
+       !   do i=1,NAOrbs
+       !   do j=1,NAOrbs
+       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+       !      HD(2,i,j)=HD(2,i,j)+H_SOC_ONLY(i+NAOrbs,j+NAOrbs)
+       !      SD(i,j)=S_SOC(i,j)                
+       !   end do
+       !   end do
+       !else                 
+       !   do i=1,NAOrbs
+       !   do j=1,NAOrbs
+       !      HD(1,i,j)=HD(1,i,j)+H_SOC_ONLY(i,j)
+       !      SD(i,j)=S_SOC(i,j)                             
+       !   end do
+       !   end do
+       !end if       
+    end if        
 
     ! Compute number of electrons in central (reduced) device region
 
@@ -660,7 +696,7 @@
   subroutine CleanUpDevice
     use BetheLattice, only: CleanUpBL, LeadBL
     use OneDLead, only: CleanUp1DLead
-    use parameters, only: ElType
+    use parameters, only: ElType, SOC, ROT, ZM, SCFSOC
     integer :: AllocErr, LeadNo
 
     deallocate( SD, InvSD, HD, PD, PDOUT, SPH, STAT=AllocErr )
@@ -668,6 +704,21 @@
        print *, "DEVICE/Deallocation error for SD, InvSD, HD, PD, PDOUT, SPH"
        stop
     end if
+    if (SOC .or. ROT .or. ZM) then 
+    deallocate( S_SOC, InvS_SOC, H_SOC, PD_SOC, STAT=AllocErr )
+    if( AllocErr /= 0 ) then
+       print *, "DEVICE/Deallocation error for S_SOC, InvS_SOC, H_SOC, PD_SOC"
+       stop
+    end if   
+    if (SCFSOC) then
+    deallocate( H_SOC_ONLY, STAT=AllocErr )
+    if( AllocErr /= 0 ) then
+       print *, "DEVICE/Deallocation error for H_SOC_ONLY"
+       stop    
+    end if
+    end if
+    end if     
+    
     do LeadNo=1,2
        select case( ElType(LeadNo) )
        case( "BETHE" )
@@ -720,7 +771,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus
+                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use correlation
@@ -746,6 +797,26 @@
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F
+    
+    if ((SOC .or. ROT .or. ZM) .and. SCFSOC) then
+       !call spin_orbit                               ! SOC Hamiltonian already initialized and assigned in InitDevice
+       if (NSpin == 2) then
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+DREAL(H_SOC_ONLY(i,j))
+             HD(2,i,j)=HD(2,i,j)+DREAL(H_SOC_ONLY(i+NAOrbs,j+NAOrbs))
+             SD(i,j)=S_SOC(i,j)                
+          end do
+          end do
+       else                      ! No need to add SOC in non-magnetic cases, at least provisionally
+          do i=1,NAOrbs
+          do j=1,NAOrbs
+             HD(1,i,j)=HD(1,i,j)+DREAL(H_SOC_ONLY(i,j))
+             SD(i,j)=S_SOC(i,j)                             
+          end do
+          end do
+       end if       
+    end if      
     
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
@@ -2447,13 +2518,12 @@
 #ifdef G09ROOT
     use g09Common, only: GetAtmCo, GetNAtoms
 #endif
-
     use constants, only: Bohr, d_zero, c_zero
     implicit none
 
     integer :: i,j, I1, is ,n, l, iAtom, jAtom
-    real*8 :: sdeg, ro_a, ro_ab, ro_ba, ro_ab_I, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol
-    real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ab, rho_ba, rho_ab_I, rho_ba_I, rho_b, tmp
+    real*8 :: sdeg, ro_a, ro_ba, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol !,ro_ab, ro_ab_I
+    real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ba, rho_ba_I, rho_b, tmp !,rho_ab, rho_ab_I  
     complex*16, dimension(DNAOrbs,DNAOrbs) :: rho
 
     write(ifu_log,*)'-----------------------------------------------'
@@ -2462,8 +2532,8 @@
 
     rho = c_zero
     rho_a = d_zero
-    rho_ab = d_zero
-    rho_ab_I = d_zero
+    !rho_ab = d_zero
+    !rho_ab_I = d_zero
     rho_ba = d_zero
     rho_ba_I = d_zero
     rho_b = d_zero     
@@ -2474,9 +2544,9 @@
     do j=1,NAOrbs
        rho_a(i,j)=rho_a(i,j)+rho(i,j)
        rho_b(i,j)=rho_b(i,j)+rho(i+NAOrbs,j+NAOrbs)
-       rho_ab(i,j)=rho_ab(i,j)+REAL(rho(i,j+NAOrbs))
+       !rho_ab(i,j)=rho_ab(i,j)+REAL(rho(i,j+NAOrbs))
        rho_ba(i,j)=rho_ba(i,j)+REAL(rho(i+NAOrbs,j))
-       rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
+       !rho_ab_I(i,j)=rho_ab_I(i,j)+IMAG(rho(i,j+NAOrbs))
        rho_ba_I(i,j)=rho_ba_I(i,j)+IMAG(rho(i+NAOrbs,j))
     end do
     end do             
@@ -2489,8 +2559,8 @@
     spinlead1=0.0
     do j=1,NALead(1)
        ro_a=0.0d0
-       ro_ab=0.0d0
-       ro_ab_I=0.0d0
+       !ro_ab=0.0d0
+       !ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2500,26 +2570,30 @@
          !print*,rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
        !  IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            ro_ab=ro_ab+rho_ab(i,i)
-            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+            !ro_ab=ro_ab+rho_ab(i,i)
+            !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
             ro_ba=ro_ba+rho_ba(i,i)  
             ro_ba_I=ro_ba_I+rho_ba_I(i,i)
        !  END IF 
        end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-         spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
+         spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
+         !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
       !END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
       !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
        ! if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
        ! if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
        END IF
        chargelead1=chargelead1+(ro_a+ro_b)
        spinlead1=spinlead1+spindens
@@ -2539,8 +2613,8 @@
        write(ifu_log,*)'-------------------'
        do j = NALead(1)+1,NALead(1)+NAMol()
        ro_a=0.0d0
-       ro_ab=0.0d0
-       ro_ab_I=0.0d0
+       !ro_ab=0.0d0
+       !ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2549,26 +2623,30 @@
              ro_a=ro_a+rho_a(i,i)
              ro_b=ro_b+rho_b(i,i)
          !   IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-                ro_ab=ro_ab+rho_ab(i,i)
-                ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+                !ro_ab=ro_ab+rho_ab(i,i)
+                !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
                 ro_ba=ro_ba+rho_ba(i,i)  
                 ro_ba_I=ro_ba_I+rho_ba_I(i,i)
          !   END IF 
           end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-            spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
-            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+            !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
+            spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
+            !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
       !   END IF
           IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !     if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
-      !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+      !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+            !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
           END IF
           IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
          !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
-         !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+         !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+            !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+            write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
           END IF
           chargemol=chargemol+ro_a+ro_b
           spinmol=spinmol+spindens
@@ -2588,8 +2666,8 @@
     spinlead2=0.0
     do j=NALead(1)+NAMol()+1,NALead(1)+NAMol()+NALead(2)
        ro_a=0.0d0
-       ro_ab=0.0d0
-       ro_ab_I=0.0d0
+       !ro_ab=0.0d0
+       !ro_ab_I=0.0d0
        ro_ba=0.0d0
        ro_ba_I=0.0d0
        ro_b=0.0d0
@@ -2598,8 +2676,8 @@
           ro_a=ro_a+rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
          !IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            ro_ab=ro_ab+rho_ab(i,i)
-            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+            !ro_ab=ro_ab+rho_ab(i,i)
+            !ro_ab_I=ro_ab_I+rho_ab_I(i,i)
             ro_ba=ro_ba+rho_ba(i,i)  
             ro_ba_I=ro_ba_I+rho_ba_I(i,i)
          !END IF 
@@ -2607,18 +2685,22 @@
        I1 = I1 + NAOAtom(j)
     !  if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
     !  IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
-         spindens = sqrt((ro_ab+ro_ba)**2+(ro_ab_I-ro_ba_I)**2+(ro_a-ro_b)**2)
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ab_I-ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         !spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
+         spindens = sqrt((2.0*ro_ba)**2+(2.0*ro_ba_I)**2+(ro_a-ro_b)**2)
+         !write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(2.0*ro_ba),' Sp.dens.y:',(2.0*ro_ba_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
     !  END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
     !    if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
     !    if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
        IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
      !   if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
-         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
+         !write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
+         write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(2.0*ro_ba),(2.0*ro_ba_I),(ro_a-ro_b)
        END IF
        chargelead2=chargelead2+ro_a+ro_b
        spinlead2=spinlead2+spindens
@@ -2640,7 +2722,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM
+    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM, SCFSOC
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2671,13 +2753,9 @@
     if (SOC .or. ROT .or. ZM) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
 
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
+       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop     
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2705,7 +2783,7 @@
 
        open(333,file='tempDOS',status='unknown')
 #ifdef PGI
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
        do n=1,nsteps
@@ -2851,12 +2929,13 @@
   end if !End of SOC if
   
       if (SOC .or. ROT .or. ZM) then
+         deallocate(PD_SOC_R)
+         deallocate(PD_SOC_A)
+         deallocate(PDOUT_SOC)      
          deallocate(DGammaL)
          deallocate(DGammaR)
          deallocate(DGreen)
-         deallocate(DSG)
-         !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
-         deallocate(H_SOC)
+         deallocate(DSG)         
       else 
          deallocate(GammaL)
          deallocate(GammaR)
@@ -2872,14 +2951,15 @@
 !*******************************
 !* Subroutine to evaluate T(E) *
 !*******************************
-subroutine transmission
+  subroutine transmission
     use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
-                          ChargeAcc, DMIMAG, ElType, ZM, POL
+                          ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, TREV, UD, DU, DD, SCFSOC
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
+    use BetheLattice, only: InitBetheLattice, LeadBL, BL_NSpin, CleanUpBL
 #ifdef PGI
     use lapack_blas, only: zgemm
 #endif
@@ -2898,7 +2978,7 @@ subroutine transmission
     real*8, dimension(MaxAtm) :: AtomDOS
     real*8, dimension(10001) :: xxx
     complex*16 :: cenergy,ctrans
-    integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k, wcount
+    integer :: n, nsteps, i, imin, imax, info, j, AllocErr, cond, k, wcount, LeadNo 
     integer :: Max = 20
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
     complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD
@@ -2911,6 +2991,10 @@ subroutine transmission
     complex*16   :: T_uu,T_dd,T_ud,T_du
     real*8   :: polar,trans2
     logical :: ADDP
+    
+    if (TREV < 1 .or. TREV > 2) TREV = 1
+    
+    do irev=1,TREV    
 
     print *
     print *, "--------------------------------"
@@ -2918,6 +3002,37 @@ subroutine transmission
     print *, "---  (and DOS if required)   ---"
     print *, "--------------------------------"
     print *
+    
+    if (irev == 2) then
+     
+    if (BL_NSpin (LeadBL(1)) == 1 .and. BL_NSpin (LeadBL(2)) == 2) then 
+      UD = .true.
+      DU = .false.
+      DD = .false.
+      print *, "UD : ", UD
+    else if (BL_NSpin (LeadBL(1)) == 2 .and. BL_NSpin (LeadBL(2)) == 1) then
+      DU = .true.
+      UD = .false.
+      DD = .false.      
+      print *, "DU : ", DU
+    else if (BL_NSpin (LeadBL(1)) == 2 .and. BL_NSpin (LeadBL(2)) == 2) then 
+      DD = .true.
+      UD = .false.
+      DU = .false.
+      print *, "DD : ", DD
+    else
+      DD = .false.
+      UD = .false.
+      DU = .false.
+    end if  
+           
+    do LeadNo=1,2
+       if (ElType(LeadNo) == "BETHE") then
+          call CleanUpBL (LeadBL(LeadNo))
+          call InitBetheLattice( LeadBL(LeadNo), LeadNo )
+       end if   
+    end do 
+    end if    
 
     if (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD")  then
         call CleanUp1DLead(1) 
@@ -2926,15 +3041,11 @@ subroutine transmission
     end if 
 
     if (SOC .or. ROT .or. ZM) then
+       !print *, 'In loop irev = ', irev
        write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
-
-       allocate(H_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PD_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(S_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreenTC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
        allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2988,8 +3099,7 @@ subroutine transmission
        if( AllocErr /= 0 ) stop
     end if
 
-    allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr)
-    if( AllocErr /= 0 ) stop
+    allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
     if (SOC .or. ROT .or. ZM) then
        if (DMIMAG) then
@@ -3010,157 +3120,156 @@ subroutine transmission
 
     if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
 
-       do ispin=1,NSpin
+    do ispin=1,NSpin
 
-          open(334,file='tempT',status='unknown')
-          if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+      open(334,file='tempT',status='unknown')
+      if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal,T,temp) FIRSTPRIVATE(nsteps)
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
-          do n=1,nsteps
-             energy=EW1+EStep*(n-1)
-             cenergy=dcmplx(energy)
-   
-             !*********************************************************************
-             !* Evaluation of the retarded "Green" function and coupling matrices *
-             !*********************************************************************
-             call gplus(cenergy,Green,GammaR,GammaL)
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          cenergy=dcmplx(energy)
 
-             if( .not. HTransm )then
-                !*************************************************************
-                !* Here we use the following non-Hermitian expression  for T *
-                !* [Gamma_L G^a Gamma_R G^r]                                 *
-                !* It works better for large clusters                        *
-                !*************************************************************
-                call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL,NAorbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
-                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR, NAOrbs, c_zero, temp, NAOrbs)
-                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
-             else
-                !********************************************************
-                !* Here we use the following Hermitian expression for T *
-                !* [Gamma_L^1/2 G^a Gamma_R G^r Gamma_L^1/2]            *
-                !********************************************************
-                call CMatPow(GammaL,0.5d0,temp)
-                GammaL=temp
-                call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,GammaL,NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
-                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaR,NAOrbs,c_zero,T,   NAOrbs)
-                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,T,     NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
-                call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaL,NAOrbs,c_zero,T,   NAOrbs)
-             end if
-   
+          !*********************************************************************
+          !* Evaluation of the retarded "Green" function and coupling matrices *
+          !*********************************************************************
+          call gplus(cenergy,Green,GammaR,GammaL)
+
+          if( .not. HTransm )then
+             !*************************************************************
+             !* Here we use the following non-Hermitian expression  for T *
+             !* [Gamma_L G^a Gamma_R G^r]                                 *
+             !* It works better for large clusters                        *
+             !*************************************************************
+             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one, GammaL,NAorbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, T,     NAOrbs, GammaR, NAOrbs, c_zero, temp, NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, temp,  NAOrbs, Green,  NAOrbs, c_zero, T,    NAOrbs)
+          else
+             !********************************************************
+             !* Here we use the following Hermitian expression for T *
+             !* [Gamma_L^1/2 G^a Gamma_R G^r Gamma_L^1/2]            *
+             !********************************************************
+             call CMatPow(GammaL,0.5d0,temp)
+             GammaL=temp
+             call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,GammaL,NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaR,NAOrbs,c_zero,T,   NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,T,     NAOrbs,Green, NAOrbs,c_zero,temp,NAOrbs)
+             call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaL,NAOrbs,c_zero,T,   NAOrbs)
+          end if
+
 #ifdef PGI
 !$OMP CRITICAL
 #endif
-         ! Mulliken DOS 
-             if (LDOS_Beg <= LDOS_End ) then
-                SG = matmul( SD, green )
-
+          ! Mulliken DOS 
+          if (LDOS_Beg <= LDOS_End ) then
+            SG = matmul( SD, green )
             ! computing total DOS
-                DOS=d_zero
-                AtomDOS=d_zero
-                do j=1,GetNAtoms()
-                do i=LoAOrbNo(j),HiAOrbNo(j)
-                   AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
-                   DOS=DOS-dimag(SG(i,i))/d_pi
-                end do
-                end do
+            DOS=d_zero
+            AtomDOS=d_zero
+            do j=1,GetNAtoms()
+            do i=LoAOrbNo(j),HiAOrbNo(j)
+               AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+               DOS=DOS-dimag(SG(i,i))/d_pi
+            end do
+            end do
 
-                if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
+            if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
 
             ! print out DOS and atomic orbital resolved DOS ***
-                imin = LoAOrbNo(LDOS_Beg)
-                if( imin < 1 ) imin = 1
-                imax = HiAOrbNo(LDOS_End)
-                if( imax > NAOrbs ) imax = NAOrbs
-                call flush(333)
-                write(333,3333) energy,DOS*(-1)**(ispin+1),(AtomDOS(j)*(-1)**(ispin+1),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/d_pi,i=imin,imax)
-             end if
+            imin = LoAOrbNo(LDOS_Beg)
+            if( imin < 1 ) imin = 1
+            imax = HiAOrbNo(LDOS_End)
+            if( imax > NAOrbs ) imax = NAOrbs
+            call flush(333)
+            write(333,3333) energy,DOS*(-1)**(ispin+1),(AtomDOS(j)*(-1)**(ispin+1),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/d_pi,i=imin,imax)
+          end if
 
           ! computing transmission T
-             ctrans=c_zero
-             do i=1,NAOrbs
-                ctrans=ctrans + T(i,i)
-             end do
+          ctrans=c_zero
+          do i=1,NAOrbs
+             ctrans=ctrans + T(i,i)
+          end do
 
-             if (dimag(ctrans).gt.1.0d-5) then
-                write(ifu_log,*)'Transmission not real !!!'
-                stop
-             end if
+          if (dimag(ctrans).gt.1.0d-5) then
+             write(ifu_log,*)'Transmission not real !!!'
+             stop
+          end if
 
           !Conductance in units of e^2/h
 
-             if (NSpin == 1) trans=ctrans*2
-             if (NSpin == 2) trans=ctrans
-   
+          if (NSpin == 1) trans=ctrans*2
+          if (NSpin == 2) trans=ctrans
+
           ! Diagonalize the T matrix to get eigen channels
-             if( NChannels > 0 )then
-                if( HTransm ) then 
-                   call CHDiag( T, tn, info )
-                else
-                   call CDiag( T, ctn, info )
-                   do i=1,NAOrbs
-                     tn(i) = dble( ctn(i) )
-                   end do
-                   ! sort eigenvalues smallest to biggest
-                   call sort(NAOrbs,tn)
-                end if
-                if( n > 3 ) call SeparateSpaghettis( tchan1, tchan2, tn(NAOrbs-NChannels+1:NAOrbs), dummy, NChannels)
-                tchan1=tchan2
-                tchan2=tn(NAOrbs-NChannels+1:NAOrbs)
+          if( NChannels > 0 )then
+             if( HTransm ) then 
+                call CHDiag( T, tn, info )
+             else
+                call CDiag( T, ctn, info )
+                do i=1,NAOrbs
+                  tn(i) = dble( ctn(i) )
+                end do
+                ! sort eigenvalues smallest to biggest
+                call sort(NAOrbs,tn)
              end if
-   
-             call flush(334)
-             write(334,1002)energy,trans,(tn(i),i=NAOrbs,NAOrbs-NChannels+1,-1)
+             if( n > 3 ) call SeparateSpaghettis( tchan1, tchan2, tn(NAOrbs-NChannels+1:NAOrbs), dummy, NChannels)
+             tchan1=tchan2
+             tchan2=tn(NAOrbs-NChannels+1:NAOrbs)
+          end if
+
+          call flush(334)
+          write(334,1002)energy,trans,(tn(i),i=NAOrbs,NAOrbs-NChannels+1,-1)
           
 #ifdef PGI
 !$OMP END CRITICAL
 #endif
-          end do ! End of energy loop
+       end do ! End of energy loop
 #ifdef PGI
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
 
   ! Reordering in energy for nice DOS output
-          if (LDOS_Beg <= LDOS_End ) then
-          do n=1,nsteps
-             energy=EW1+EStep*(n-1)
-             rewind(333)
-             do i=1,10000000000
-             read(333,*)energ
-             if (dabs(energy-energ) < 0.000001) then
-                backspace(333)
-                read(333,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
-                write(ifu_dos,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
-                exit
-             end if
-             end do
-          end do
-          write(ifu_dos,*)'   '
-          close(333,status='delete')
+       if (LDOS_Beg <= LDOS_End ) then
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          rewind(333)
+          do i=1,10000000000
+          read(333,*)energ
+          if (dabs(energy-energ) < 0.000001) then
+             backspace(333)
+             read(333,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+             write(ifu_dos,3333) (xxx(j),j=1,2+(LDOS_End-LDOS_Beg+1)+(imax-imin+1))
+             exit
           end if
+          end do
+       end do
+      write(ifu_dos,*)'   '
+      close(333,status='delete')
+      end if
 
   ! Reordering in energy for nice T output
-          do n=1,nsteps
-             energy=EW1+EStep*(n-1)
-             rewind(334)
-             do i=1,10000000000
-             read(334,*)energ
-             if (dabs(energy-energ) < 0.000001) then
-                backspace(334)
-                read(334,1002) (xxx(j),j=1,2+NChannels)
-                write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
-                exit
-             end if
-             end do
+      do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          rewind(334)
+          do i=1,10000000000
+          read(334,*)energ
+          if (dabs(energy-energ) < 0.000001) then
+             backspace(334)
+             read(334,1002) (xxx(j),j=1,2+NChannels)
+             write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
+             exit
+          end if
           end do
-          write(ifu_tra,*)'   '
-         !close(334,status='delete')
-          close(334)
+       end do
+      write(ifu_tra,*)'   '
+     !close(334,status='delete')
+      close(334)
 
-       end do ! End of spin loop
+    end do ! End of spin loop
 
     else !SOC or Rot or ZM case here
       
@@ -3252,7 +3361,7 @@ subroutine transmission
           if (POL) then
 
           DGreenTC=transpose(conjg(DGreen))
-
+ 
           do i=1,NAOrbs
           do j=1,NAOrbs
              GammaR_UU(i,j) = DGammaR(i,j)
@@ -3268,7 +3377,7 @@ subroutine transmission
              GreenTC_UD(i,j) = DGreenTC(i,j+NAOrbs)
              GreenTC_DU(i,j) = DGreenTC(i+NAOrbs,j)
           end do
-          end do
+          end do  
 
      ! up-up
           T=c_zero
@@ -3369,7 +3478,11 @@ subroutine transmission
 
           call flush(334)
           if (POL) then
-             write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             if  (.not. TCOMP) then
+                 write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             else
+                 write(334,1002)energy,trans2,polar,real(T_uu),real(T_ud),real(T_du),real(T_dd),(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             end if    
           else
              write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
           end if
@@ -3402,6 +3515,8 @@ subroutine transmission
        end if
 
   ! Reordering in energy for nice T output
+       
+       if (irev == 1) then 
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(334)
@@ -3409,29 +3524,75 @@ subroutine transmission
           read(334,*)energ
           if (dabs(energy-energ) < 0.000001) then
              backspace(334)
-             if (POL) read(334,1002) (xxx(j),j=1,3+NChannels)
+             if (POL) then
+                if (.not. TCOMP) then 
+                    read(334,1002) (xxx(j),j=1,3+NChannels)
+                else    
+                    read(334,1002) (xxx(j),j=1,7+NChannels)
+                end if
+             end if          
              if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
-             if (POL) write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+             if (POL) then 
+                if (.not. TCOMP) then 
+                    write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
+                else    
+                    write(ifu_tra,1002) (xxx(j),j=1,7+NChannels)
+                end if
+             end if                 
              if (.not. POL) write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
              exit
           end if
           end do
        end do
        close(334,status='delete')
+       else
+       do n=1,nsteps
+          energy=EW1+EStep*(n-1)
+          rewind(334)
+          do i=1,10000000000
+          read(334,*)energ
+          if (dabs(energy-energ) < 0.000001) then
+             backspace(334)
+             if (POL) then
+                if (.not. TCOMP) then 
+                    read(334,1002) (xxx(j),j=1,3+NChannels)
+                else    
+                    read(334,1002) (xxx(j),j=1,7+NChannels)
+                end if
+             end if          
+             if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
+             if (POL) then 
+                if (.not. TCOMP) then 
+                    write(666,1002) (xxx(j),j=1,3+NChannels)
+                else    
+                    write(666,1002) (xxx(j),j=1,7+NChannels)
+                end if
+             end if                 
+             if (.not. POL) write(666,1002) (xxx(j),j=1,2+NChannels)
+             exit
+          end if
+          end do
+       end do
+       close(334,status='delete')
+       end if       
 
-    end if !End of SOC if
+  end if !End of SOC if
 
-    if (SOC .or. ROT .or. ZM) then
-       deallocate(DGammaL)
-       deallocate(DGammaR)
+      if (SOC .or. ROT .or. ZM) then      
+       deallocate(PD_SOC_R)
+       deallocate(PD_SOC_A)
+       deallocate(PDOUT_SOC)
        deallocate(DGreen)
+       deallocate(DGreenTC)       
+       deallocate(DGammaR)
+       deallocate(DGammaL)
        deallocate(DT)
+       deallocate(T)
        deallocate(Dtemp)
+       deallocate(temp)
        deallocate(DSG)
        deallocate(Dtn)
        deallocate(Dctn)
-       !deallocate(S_SOC)   ! DO NOT deallocate when calculating Mulliken population analysis with S_SOC!!!
-       deallocate(H_SOC)
        if (POL) then
           deallocate(GammaL_UU)      
           deallocate(GammaL_DD)      
@@ -3447,24 +3608,27 @@ subroutine transmission
           deallocate(GreenTC_DD)      
        end if 
     else 
-       deallocate(GammaL)
-       deallocate(GammaR)
-       deallocate(Green)
-       deallocate(T)
-       deallocate(temp)
-       deallocate(SG)
-       deallocate(tn)
-       deallocate(ctn)
+        deallocate(GammaL)
+        deallocate(GammaR)
+        deallocate(Green)
+        deallocate(T)
+        deallocate(temp)
+        deallocate(SG)
+        deallocate(tn)
+        deallocate(ctn)
     end if
-
+    
+    deallocate(AtomDOSEF)
     if( NChannels > 0 ) then
        deallocate( tchan1, tchan2, dummy )
     end if
+    
+    end do    
 
 1002 format(f10.5,10000E14.5)
 3333 format(f10.5,10000E14.5)
 
-end subroutine transmission
+  end subroutine transmission
 !--------------------------------------------------------------------------------
   subroutine CompHybFunc
   !
@@ -4815,7 +4979,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
     use SpinRotate, only: CompHROT
     use Zeeman, only: CompHZM
     use cluster, only: LoAOrbNo, HiAOrbNo
-    use parameters, only: PrtHatom, SOC, ROT, ZM
+    use parameters, only: PrtHatom, SOC, ROT, ZM, SCFSOC
     use constants, only: c_zero, d_zero
 #ifdef G03ROOT
     use g03Common, only: GetNShell
@@ -4835,14 +4999,40 @@ subroutine IntRealAxis_SOC(Er,El,M)
  hamil_SO = c_zero
  hamil_ZM = c_zero 
  H_SOC = c_zero
+ if (SCFSOC) H_SOC_ONLY = c_zero 
  S_SOC = d_zero
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+ if (irev == 2) then
+  if (SOC .OR. ZM) then 
+   if (NSpin == 2) then
+      print*,'Building the spin-reversed SOC Hamiltonian'
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+         H_SOC(i,j)=dcmplx(HD(2,i,j),0.0d0)
+         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+         S_SOC(i,j)=SD(i,j)              
+         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+      end do
+      end do
+   else 
+      do i=1,NAOrbs
+      do j=1,NAOrbs
+         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+         S_SOC(i,j)=SD(i,j)              
+         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+      end do
+      end do
+   end if
+ end if 
+ else
  if (SOC .OR. ZM) then 
    if (NSpin == 2) then
+      print*,'Building the first SOC Hamiltonian'
       do i=1,NAOrbs
       do j=1,NAOrbs
          H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
@@ -4862,6 +5052,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
       end do
    end if
  end if
+ end if 
  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Return the input matrix with double size plus the soc interaction
@@ -4871,7 +5062,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
  
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
  If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
- If (SOC) CALL CompHSO(hamil_SO,HD,NAOrbs,nshell)
+ If (SOC) CALL CompHSO(hamil_SO,NAOrbs,nshell)
  
 !PRINT *, "Hamil matrix for atom ",Atom," : "
 !PRINT *, "Up-Up" 
@@ -4949,6 +5140,7 @@ subroutine IntRealAxis_SOC(Er,El,M)
  if (SOC) then
    do i=1, totdim*2
       do j=1, totdim*2
+         if (SCFSOC) H_SOC_ONLY(i,j)=hamil_SO(i,j)       
          H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
       end do
    end do
@@ -4956,4 +5148,5 @@ subroutine IntRealAxis_SOC(Er,El,M)
 
  return
  end subroutine spin_orbit
+
 END MODULE device

@@ -241,6 +241,9 @@
   ! REAL*8 :: soc = 0.0d0           
   ! CHARACTER(len=10), PARAMETER :: SOC_keyw = "SOC"
   
+  ! Whether to include the diagonal blocks of the SOC matrix in the SCF cycles           
+  LOGICAL :: SCFSOC = .false.; CHARACTER(len=10), PARAMETER :: SCFSOC_keyw = "SCFSOC"    
+  
   ! Global SOC multiplicative factor for P shells due to lack of nodal structure in basis set
   REAL*8 :: socfac_p = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: SOCFAC_P_keyw = "SOCFAC_P"  
@@ -289,7 +292,15 @@
   
   ! POL
   LOGICAL :: pol = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"      
+  CHARACTER(len=10), PARAMETER :: POL_keyw = "POL"     
+  
+  ! Print all components of transmission
+  LOGICAL :: tcomp = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: TCOMP_keyw = "TCOMP"    
+  
+  ! Prints transmission of reverse spin-diagonal SOC Hamiltonian when set to 2
+  INTEGER :: trev = 1 
+  CHARACTER(len=10), PARAMETER :: TREV_keyw = "TREV"         
   
   ! THETA
   REAL*8 :: theta = 0.0d0                           
@@ -532,7 +543,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NPC_keyw, NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, Nip_keyw, PrtHatom_keyw  )
+         NPulay_keyw, Nalpha_keyw, Nbeta_keyw, Max_keyw, Nip_keyw, PrtHatom_keyw, TREV_keyw   )
        !
        ! 2. looking for integer variables
        !
@@ -579,6 +590,8 @@ CONTAINS
           NIP = ival
        CASE( PrtHatom_keyw )
           PrtHatom = ival 
+       CASE( Trev_keyw )
+          Trev = ival            
 
        END SELECT
        
@@ -633,10 +646,14 @@ CONTAINS
        DiagCorrBl = .true.
     CASE ( SOC_keyw )
        soc = .true.   
+    CASE ( SCFSOC_keyw )  
+       SCFSOC = .true.           
     CASE ( ROT_keyw )
        rot = .true.               
     CASE ( POL_keyw )
-       pol = .true.                  
+       pol = .true.  
+    CASE ( TCOMP_keyw )   
+       tcomp = .true.                             
     CASE ( ZM_keyw )   
        ZM = .true.                          
     CASE ( SpinDel_keyw )
@@ -948,6 +965,7 @@ CONTAINS
        IF( SpinEdit(i) .NE. 1 ) WRITE(unit=logfile,fmt=*) i, SpinEdit(i)
     END DO
     WRITE(unit=logfile,fmt=*) SOC_keyw, " = ", soc
+    WRITE(unit=logfile,fmt=*) SCFSOC_keyw, " = ", SCFSOC         
     WRITE(unit=logfile,fmt=*) SOCFAC_P_keyw, " = ", socfac_p 
     WRITE(unit=logfile,fmt=*) SOCFAC_D_keyw, " = ", socfac_d 
     WRITE(unit=logfile,fmt=*) SOCFAC_F_keyw, " = ", socfac_f 
@@ -963,7 +981,13 @@ CONTAINS
     DO i=1,MaxAtm
        IF( SOCEditP(i) > 0.0d0 .OR. SOCEditD(i) > 0.0d0 .OR. SOCEditF(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4)') i, SOCEditP(i), SOCEditD(i), SOCEditF(i)
     END DO
-    WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol              
+    WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol     
+    WRITE(unit=logfile,fmt=*) TCOMP_keyw, " = ", tcomp         
+    if (Trev < 1 .or. Trev > 2) then
+    WRITE(unit=logfile,fmt=*) TREV_keyw, " = ? "
+    else
+    WRITE(unit=logfile,fmt=*) TREV_keyw, " = ", trev
+    end if              
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          
