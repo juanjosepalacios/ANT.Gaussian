@@ -1,6 +1,6 @@
 !***************************************
 !*                                     *
-!*  ANT.G-2.7.0  - SpinOrbit.f90       *
+!*  ANT.G-2.7.2  - SpinOrbit.f90       *
 !*                                     *
 !*  Calculation of Spin-orbit coupling *
 !*                                     *
