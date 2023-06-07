@@ -29,3 +29,11 @@ Main new Features:
 - Added the possibility of fixing the Fermi energy and let the charge be
 - whatever it may be
 ********************************************************************************
+********************************************************************************
+                              Release 2.7.2                  
+Main new Features:
+
+- SCFSOC implementation only for the real part of the spin diagonal blocks
+- Added feature to fully reverse the magnetization based on the Hamiltonian,
+  not on the density matrix
+********************************************************************************
