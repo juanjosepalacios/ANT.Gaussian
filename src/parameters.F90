@@ -59,9 +59,9 @@
   INTEGER :: Max = 15
   CHARACTER(len=10), PARAMETER :: Max_keyw = "MAX"  
 
-  ! Maximum number of integration points n=(NIP+1)/2 ; NIP=3 (n=2); NIP=7 (n=4) ; NIP=15 (n=8) ...
+  ! Maximum number of integration points defined through 2^(NIP+1) -1 (NIP= 1,2,3,4 ! ...)
   !
-  INTEGER :: NIP = 127
+  INTEGER :: NIP = 6
   CHARACTER(len=10), PARAMETER :: Nip_keyw = "NIP"  
 
   ! Bethe lattice self-energy accuracy

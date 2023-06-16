@@ -2036,7 +2036,7 @@
   ! when spin is locked
   !****************************************
   double precision function QTot_SPINLOCK(x)
-    use parameters, only: biasvoltage,QExcess,NIP
+    use parameters, only: biasvoltage,QExcess
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2062,13 +2062,11 @@
     !c c Integral limits ... (a,b)
     a = 0.d0
     b = d_pi
-    M=NIP
-    call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+    call IntCompPlane(rrr,a,b,d_zero-dabs(biasvoltage/2.0))
       
     ! Density matrix out of equilibirum
     if (biasvoltage /= 0.0) then
-       M=NIP
-       call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+       call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0))
        PD(ispin,:,:) = PD(ispin,:,:) + REAL(PDOUT(ispin,:,:))
     end if
     ! Density matrix out of equilibirum
@@ -2093,7 +2091,7 @@
   ! when spin is not locked
   !****************************************
   double precision function QTot(x)
-    use parameters, only: biasvoltage,QExcess,NIP
+    use parameters, only: biasvoltage,QExcess
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2106,7 +2104,7 @@
     real*8, intent(in) :: x
 
     real*8 :: rrr, a, b, Q
-    integer :: i,j,M
+    integer :: i,j
 
 
     do ispin=1,NSpin
@@ -2126,13 +2124,11 @@
        a = 0.d0
        b = d_pi
 
-       M=NIP
-       call IntCompPlane(rrr,a,b,M,d_zero-dabs(biasvoltage/2.0))
+       call IntCompPlane(rrr,a,b,d_zero-dabs(biasvoltage/2.0))
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
-          M=NIP
-          call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          call IntRealAxis(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0))
           PD(ispin,:,:) = PD(ispin,:,:) + REAL(PDOUT(ispin,:,:))
        end if
        ! Density matrix out of equilibirum
@@ -2158,7 +2154,7 @@
   ! when SOC is present
   !****************************************
   double precision function QTot_SOC(x)
-    use parameters, only: biasvoltage,QExcess,NIP
+    use parameters, only: biasvoltage,QExcess
     use constants, only: d_pi, d_zero, c_zero
 #ifdef G03ROOT
     use g03Common, only: GetNAE, GetNBE
@@ -2171,7 +2167,7 @@
     real*8, intent(in) :: x
 
     real*8 :: rrr, a, b, Q, E0
-    integer :: i,j,M
+    integer :: i,j
 
        shift=x
     !write(ifu_log,*)omp_get_thread_num(),'in qxtot',shift
@@ -2186,22 +2182,19 @@
        !c c Integral limits ... (a,b)
        a = 0.d0
        b = d_pi
-       M=NIP
-       call IntCompPlane_SOC(1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Retarded
+       call IntCompPlane_SOC(1,rrr,a,b,-dabs(biasvoltage/2.0))!Retarded
        PD_SOC_R=PD_SOC
 
        a = -d_pi
        b = 0.d0
-       M=NIP
-       call IntCompPlane_SOC(-1,rrr,a,b,M,-dabs(biasvoltage/2.0))!Advanced
+       call IntCompPlane_SOC(-1,rrr,a,b,-dabs(biasvoltage/2.0))!Advanced
        PD_SOC_A=PD_SOC
 
        PD_SOC = PD_SOC_R - PD_SOC_A
 
        ! Density matrix out of equilibirum
        if (biasvoltage /= 0.0) then
-          M=NIP
-          call IntRealAxis_SOC(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0),M)
+          call IntRealAxis_SOC(-dabs(biasvoltage/2.0),dabs(biasvoltage/2.0))
           PD_SOC = PD_SOC + PDOUT_SOC
        end if
 
@@ -4236,29 +4229,27 @@
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccc
-subroutine IntRealAxis(Er,El,M)
+subroutine IntRealAxis(Er,El)
 
     use constants, only: ui,d_pi,d_zero
-    use parameters, only: PAcc 
+    use parameters, only: PAcc, NIP 
 !   USE IFLPORT
     use omp_lib
    
     real*8,intent(in) :: Er,El
-    integer,intent(inout) :: M
-    real*8, dimension(M) :: xs,xcc
+    real*8, dimension(2**NIP-1) :: xs,xcc
     complex*16, dimension(NAOrbs,NAOrbs) :: green
     complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm 
     complex*16, dimension(NAOrbs,NAOrbs) :: p,q
     complex*16, dimension(NAOrbs,NAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,chunk,MM
+    integer :: n,i,j,l,k,chunk,M,MM
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
 
     pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-    !M = (M-1)*0.5d0
     n = 1
     S0=1
     C0=0
@@ -4334,7 +4325,7 @@ subroutine IntRealAxis(Er,El,M)
            !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
             rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
            !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
-            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.M) goto 1
+            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.(2**NIP-1)) goto 1
            !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
          enddo
       enddo
@@ -4355,8 +4346,8 @@ subroutine IntRealAxis(Er,El,M)
             if (i.eq.j .and. aCHq.gt.PAcc) MM=1
          enddo
       enddo
-      if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration using up to',(((n-1)/2)+1)/2,' points. Continue at your own risk...'
+      if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',n, ' points'
+      if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the non-equilibrium density matrix using up to',n,' points. Continue at your own risk...'
       if (MM == 1) write(ifu_log,'(A,i5,A)')' The density matrix diagonal elements contain non-zero imaginary contributions. Continue at your own risk...'
 
       return
@@ -4371,28 +4362,28 @@ end subroutine IntRealAxis
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccc
-subroutine IntRealAxis_SOC(Er,El,M)
+subroutine IntRealAxis_SOC(Er,El)
 
     use constants, only: ui,d_pi,d_zero
-    use parameters, only: PAcc 
+    use parameters, only: PAcc, NIP
 !   USE IFLPORT
     use omp_lib
    
     real*8,intent(in) :: Er,El
-    integer,intent(inout) :: M
-    real*8, dimension(M) :: xs,xcc
+    real*8, dimension(2**NIP-1) :: xs,xcc
     complex*16, dimension(DNAOrbs,DNAOrbs) :: green
     complex*16, dimension(DNAOrbs,DNAOrbs) :: greenp,greenm 
     complex*16, dimension(DNAOrbs,DNAOrbs) :: PDP
     complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,chunk
+    integer :: n,i,j,l,k,chunk,M
     real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI,xpi,qi
+
+! M on entry: number of integration points. On exit: error flag
 
     pi=d_pi
 
 ! Initializing M, n, S0, C0, CH and p
 
-   !M=M*10 !increasing max number of integration points since now the imaginary part of P is neq zero
     n = 1
     S0=1
     C0=0
@@ -4478,8 +4469,8 @@ subroutine IntRealAxis_SOC(Er,El,M)
     enddo
  
     ! Stopping?
-    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
-    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CH-qi)*PAcc.and.n.le.M) goto 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1)) goto 1
+    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CH-qi)*PAcc.and.n.le.(2**NIP-1)) goto 1
     ! Test for successfullness and integral final value
     M = 0
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
@@ -4493,10 +4484,10 @@ subroutine IntRealAxis_SOC(Er,El,M)
        enddo
     enddo
  
-    if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',(((n-1)/2)+1)/2, ' points'
-    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of real part using up to',(((n-1)/2)+1)/2,' points. Please check ...'
-    if (M == 2) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of imaginary part using up to',(((n-1)/2)+1)/2,' points. Please check ...'
-    if (M == 3) write(ifu_log,'(A,i5,A)')' Unsuccessful integration using up to',(((n-1)/2)+1)/2,' points. Please check ...'
+    if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',n, ' points'
+    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of real part of the non-equilibrium density matrix using up to',n,' points. Please check ...'
+    if (M == 2) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of imaginary part of the non-equilibrium density matrix using up to',n,' points. Please check ...'
+    if (M == 3) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the non-equilibrium density matrix using up to',n,' points. Please check ...'
  
     return
   end subroutine IntRealAxis_SOC     
@@ -4515,9 +4506,9 @@ subroutine IntRealAxis_SOC(Er,El,M)
 !c        Eq:  On output, the value of the upper bound of the integral.         c
 !c        The rest of arguments are neeed by the subrtn. gplus                  c
 !ccccccccccccccccccccccccccccccc
-  subroutine IntCompPlane(rrr,bi,Emi,M,Eq)
+  subroutine IntCompPlane(rrr,bi,Emi,Eq)
 
-    use parameters, only: PAcc 
+    use parameters, only: PAcc, NIP
     use constants, only: d_pi, d_zero, ui
 !   USE IFLPORT
     use omp_lib
@@ -4525,25 +4516,24 @@ subroutine IntRealAxis_SOC(Er,El,M)
     implicit none
 
     real*8,intent(in) :: rrr, bi, Emi, Eq
-    integer,intent(inout) :: M
     real*8, dimension(NAOrbs,NAOrbs) :: PDP
 
     real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
-    integer :: n,i,j,l,k,k1,chunk!,omp_get_thread_num,omp_get_num_threads
-    real*8, dimension(M) :: xs,xcc
+    integer :: n,i,j,l,k,k1,chunk, M                                         
+    real*8, dimension(2**NIP-1) :: xs,xcc
 
     complex*16 :: E0,E
     complex*16, dimension(2) :: EE
     complex*16, dimension(NAOrbs,NAOrbs) :: green
     complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn 
 
-   !logical :: omp_get_nested
+   !M on entry: number of integration points. On exit: error flag
  
     a = 1.d0/d_pi
     b = bi
     Em = Emi
     PD(ispin,:,:) = d_zero
-    M = (M-1)*0.5
+   !M = (M-1)*0.5
     n = 1
     S0 = 1
     C0 = 0
@@ -4621,18 +4611,19 @@ subroutine IntRealAxis_SOC(Er,El,M)
     ! ... replacing n by 2n+1
     n = n + n + 1
     ! Stopping?
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1)) goto 1
     ! Test for successfullness and integral final value
     M = 0
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
     CH = 16*CH/(3*(n+1))
     do k=1,NAOrbs
        do l=1,NAOrbs
           PD(ispin,k,l) = 16*PD(ispin,k,l)/(3*(n+1))
        enddo
     enddo
-   !print*,'ch',n, CH
-    write(ifu_log,'(A,I4,A)')' Integration of the density matrix on the complex plane has needed ',(((n-1)/2)+1)/2,' points'
+
+    if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the density matrix has needed ',n, ' points'
+    if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the density matrix using up to',n,' points. Continue at your own risk ...'
 
     return
   end subroutine IntCompPlane
@@ -4651,35 +4642,34 @@ subroutine IntRealAxis_SOC(Er,El,M)
   !c        Eq:  On output, the value of the upper bound of the integral.         c
   !c        The rest of arguments are neeed by the subrtn. gplus                  c
   !ccccccccccccccccccccccccccccccc
-  subroutine IntCompPlane_SOC(sgn,rrr,bi,Emi,M,Eq)
-    use parameters, only: PAcc 
+  subroutine IntCompPlane_SOC(sgn,rrr,bi,Emi,Eq)
+    use parameters, only: PAcc, NIP
     use constants, only: d_pi, d_zero, ui, c_zero
 !   USE IFLPORT
     use omp_lib
 
     implicit none
 
-    integer,intent(inout) :: M
     integer,intent(in) :: sgn
-    integer :: n,i,j,l,k,chunk!,omp_get_thread_num,omp_get_num_threads
+    integer :: n,i,j,l,k,chunk, M                                       
 
     real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
     real*8,intent(in) :: rrr, bi, Emi, Eq
-    real*8, dimension(M) :: xs,xcc
+    real*8, dimension(2**NIP-1) :: xs,xcc
 
     complex*16 :: E0,E
     complex*16, dimension(2) :: EE
     complex*16, dimension(DNAOrbs,DNAOrbs) :: green,PDP
     complex*16, dimension(2,DNAOrbs,DNAOrbs) :: greenn
 
-   !logical :: omp_get_nested
+   !M on entry: number of integration points. On exit: error flag
  
     a = 1.0/(2.0d0*d_pi)
     b = bi
     Em = Emi
     PD_SOC = c_zero
     PDP = c_zero
-    M = (M-1)*0.5
+   !M = (M-1)*0.5
     n = 1
     S0 = 1
     C0 = 0
@@ -4756,10 +4746,10 @@ subroutine IntRealAxis_SOC(Er,El,M)
     ! ... replacing n by 2n+1
     n = n + n + 1
     ! Stopping?
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.M) goto 1
+     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1)) goto 1
     ! Test for successfullness and integral final value
     M = 0
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
+    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
     CH = 16*CH/(3*(n+1))
     do i=1,DNAOrbs
        do j=1,DNAOrbs
@@ -4767,8 +4757,14 @@ subroutine IntRealAxis_SOC(Er,El,M)
        enddo
     enddo
    !print*,'ch', CH
-    if (sgn == 1) write(ifu_log,'(A,I4,A)')' Integration of the retarded density matrix on the complex plane has needed ',(((n-1)/2)+1)/2,' points'
-    if (sgn == -1) write(ifu_log,'(A,I4,A)')' Integration of the advanced density matrix on the complex plane has needed ',(((n-1)/2)+1)/2,' points'
+    if (M == 0) then 
+       if (sgn == 1) write(ifu_log,'(A,I4,A)')' Integration of the retarded density matrix on the complex plane has needed ',n,' points'
+       if (sgn == -1) write(ifu_log,'(A,I4,A)')' Integration of the advanced density matrix on the complex plane has needed ',n,' points'
+    end if
+    if (M == 1) then 
+       if (sgn == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the retarded density matrix using up to',n,' points. Continue at your own risk ...'
+       if (sgn == -1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the retarded density matrix using up to',n,' points. Continue at your own risk ...'
+    end if
 
     return
   end subroutine IntCompPlane_SOC
