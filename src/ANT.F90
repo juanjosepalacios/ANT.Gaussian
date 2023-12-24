@@ -1,36 +1,37 @@
-!**********************************************************
-!The latest version of any file defines the master version*
-!*********************  ANT.G-2.7.2  **********************
-!**********************************************************
-!*                                                        *
-!*  Copyright (c) by                                      *
-!*                                                        *
-!*  Juan Jose Palacios (1)                                *
-!*  David Jacob (2)     
-!*  Wynand Dednam (3)
-!*  Maria Soriano (1)                                     *
-!*  Angel J. Perez-Jimenez (3)                            *
-!*  Emilio SanFabian (3)                                  *
-!*  Jose Antonio Antonio Verges (4)                       *
-!*  Enrique Louis (5)                                     *
-!*                                                        *
-!* (1) Departamento de Fisica de la Materia Condensada    *
-!*     Universidad Autonoma de Madrid                     *      
-!*     28049 Madrid (SPAIN)                               *
-!* (2) Theory Department                                  *
-!*     Max-Planck-Institute for Microstructure Physics    *
-!*     Halle, 06120 (GERMANY)                             *
-!* (3) Departamento de Quimica Fisica                     *
-!*     Universidad de Alicante                            *
-!*     03690 Alicante (SPAIN)                             *
-!* (4) Insto. de Ciencias de Materiales de Madrid (ICMM)  *
-!*     Consejo Superior de Investigacion y Ciencia (CSIC) *
-!*     28049 Madrid (SPAIN)                               *
-!* (5) Departamento de Fisica Aplicada                    *
-!*     Universidad de Alicante                            *      
-!*     03690 Alicante (SPAIN)                             *
-!*                                                        *
-!**********************************************************
+!*****************************************************************
+!*********************  ANT.G-2.7.2  *****************************
+!*****************************************************************
+!The latest version found in src files defines the master version*
+!*****************************************************************
+!*                                                               *
+!*  Copyright (c) by                                             *
+!*                                                               *
+!*  Juan Jose Palacios (1)                                       *
+!*  David Jacob (2)                                              *
+!*  Wynand Dednam (3)                                            *
+!*  Maria Soriano (1)                                            *
+!*  Angel J. Perez-Jimenez (3)                                   *
+!*  Emilio SanFabian (3)                                         *
+!*  Jose Antonio Antonio Verges (4)                              *
+!*  Enrique Louis (5)                                            *
+!*                                                               *
+!* (1) Departamento de Fisica de la Materia Condensada           *
+!*     Universidad Autonoma de Madrid                            *      
+!*     28049 Madrid (SPAIN)                                      *
+!* (2) Theory Department                                         *
+!*     Max-Planck-Institute for Microstructure Physics           *
+!*     Halle, 06120 (GERMANY)                                    *
+!* (3) Departamento de Quimica Fisica                            *
+!*     Universidad de Alicante                                   *
+!*     03690 Alicante (SPAIN)                                    *
+!* (4) Insto. de Ciencias de Materiales de Madrid (ICMM)         *
+!*     Consejo Superior de Investigacion y Ciencia (CSIC)        *
+!*     28049 Madrid (SPAIN)                                      *
+!* (5) Departamento de Fisica Aplicada                           *
+!*     Universidad de Alicante                                   *      
+!*     03690 Alicante (SPAIN)                                    *
+!*                                                               *
+!*****************************************************************
   SUBROUTINE ANT (UHF,JCycle,IRwH,IRwPA,IRwPB,IRwFA,IRwFB,IRwS1,IRwEig,denerrj,Crit,ANTOn,NBasis)
 !**********************************************************************************************************************
 !* Interface subroutine with Gaussian                                                                                 *
