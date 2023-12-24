@@ -1,11 +1,13 @@
 !**********************************************************
+!The latest version of any file defines the master version*
 !*********************  ANT.G-2.7.2  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
 !*                                                        *
 !*  Juan Jose Palacios (1)                                *
-!*  David Jacob (2)                                       *
+!*  David Jacob (2)     
+!*  Wynand Dednam (3)
 !*  Maria Soriano (1)                                     *
 !*  Angel J. Perez-Jimenez (3)                            *
 !*  Emilio SanFabian (3)                                  *
