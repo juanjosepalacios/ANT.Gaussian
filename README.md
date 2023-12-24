@@ -40,5 +40,5 @@ Main new Features:
 
 - SCFSOC implementation only for the real part of the spin diagonal blocks (added by Wynand)
 - Added feature to fully reverse the magnetization based on the Hamiltonian,
-  not on the density matrix
+  not on the density matrix (not fully tested)
 ********************************************************************************
