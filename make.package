@@ -2,18 +2,18 @@
 #
 version=2.7.2
 
-mkdir -v ANT.G-$version
-mkdir -v ANT.G-$version/BLDAT
-mkdir -v ANT.G-$version/doc
-mkdir -v ANT.G-$version/install
-mkdir -v ANT.G-$version/src
-mkdir -v ANT.G-$version/examples
+mkdir -v ANT.Gaussian-$version
+mkdir -v ANT.Gaussian-$version/BLDAT
+mkdir -v ANT.Gaussian-$version/doc
+mkdir -v ANT.Gaussian-$version/install
+mkdir -v ANT.Gaussian-$version/src
+mkdir -v ANT.Gaussian-$version/examples
 
-cp -v BLDAT/*.dat    ANT.G-$version/BLDAT/
-cp -rv doc/* ANT.G-$version/doc/
-cp -rv examples/* ANT.G-$version/examples/
-cp -v install/install* ANT.G-$version/install/
-cp -v make.package ANT.G-$version
+cp -v BLDAT/*.dat ANT.Gaussian-$version/BLDAT/
+cp -rv doc/* ANT.Gaussian-$version/doc/
+cp -rv examples/* ANT.Gaussian-$version/examples/
+cp -v install/install* ANT.Gaussian-$version/install/
+cp -v make.package ANT.Gaussian-$version
 
 sources="
 src/ANT.F90 
@@ -43,11 +43,11 @@ src/make.in.intel
 src/Makefile.pgi.g09
 src/Makefile.intel.g09"
 
-cp -v $sources ANT.G-$version/src/
+cp -v $sources ANT.Gaussian-$version/src/
 
-tar -cvf ANT.G-$version.tar ANT.G-$version
-gzip ANT.G-$version.tar
+tar -cvf ANT.Gaussian-$version.tar ANT.Gaussian-$version
+gzip ANT.Gaussian-$version.tar
 
-rm -rf ANT.G-$version
+rm -rf ANT.Gaussian-$version
 
 echo "Done."
