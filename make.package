@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-version=master
+version=2.7.2
 
 mkdir -v ANT.G-$version
 mkdir -v ANT.G-$version/BLDAT
