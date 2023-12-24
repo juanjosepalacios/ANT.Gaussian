@@ -38,7 +38,7 @@ Main new Features:
                               Release 2.7.2                  
 Main new Features:
 
-- SCFSOC implementation only for the real part of the spin diagonal blocks
+- SCFSOC implementation only for the real part of the spin diagonal blocks (added by Wynand)
 - Added feature to fully reverse the magnetization based on the Hamiltonian,
   not on the density matrix
 ********************************************************************************
