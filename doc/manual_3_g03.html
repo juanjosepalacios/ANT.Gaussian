@@ -506,7 +506,7 @@ orders of magnitude larger than 1.0. All-electron basis sets, on the other hand,
 a value of exactly 1.0 if they are of high enough quality. For further details, please see S. Pakdel, 
 M. Pourfath, and  J. J. Palacios,
 <span style="font-style: italic;">Beilstein J. Nanotechnol.</span> <span
- style="font-weight: bold;">9</span>, 1015–1023 (2018).
+ style="font-weight: bold;">9</span>, 1015Â–1023 (2018).
 <br>
     </div>
 Default: <em>SOCFAC_P</em> = 0.0<br>
@@ -559,6 +559,52 @@ and the per-atom cutoff of the modified Yukawa nuclear screening potential
 Default: .false. (off) <br>
   </li>  
 <br>
+  <li><em>ROT</em> (logical)<br>
+    <div style="text-align: justify;"> Activates atomic spin rotations. When
+true, the transmission and DOS are computed after rotating the spins of 
+the spin-unrestricted converged solution [see C. R. Phys. <strong>17</strong>, 406-429
+(2016)]. As expected, in magnetic systems the spatial orientation determines the result.
+To be used in conjunction with global or per-atom ROT options. 
+See keywords <em>THETA</em>, <em>PHI</em>, and
+<em>SPINROTATOM</em>.
+  </li>    
+<br>
+  <li><em>THETA</em> (real)<br>
+    <div style="text-align: justify;"> Global polar angle (in degrees) of the spin 
+      rotation operation applied uniformly to all atomic spins in the device. Valid
+      input angle runs from -180.0 to 180.0 degrees. <br>
+    </div>
+Default: <em>THETA</em> = 0.0 degrees<br>
+  </li>
+<br>
+  <li><em>PHI</em> (real)<br>
+    <div style="text-align: justify;"> Global azimuthal angle (in degrees) of the spin 
+      rotation operation applied uniformly to all atomic spins in the device. Valid
+      input angle runs from -360.0 to 360.0 degrees. <br>
+    </div>
+Default: <em>PHI</em> = 0.0 degrees<br>
+  </li>
+  <br>
+<li><em>SPINROTATOM</em> (logical) <br>
+    <div style="text-align: justify;"> Per-atom atomic spin rotation angles. 
+      Useful in systems where only a subset of atoms are magnetic and 
+      a select number of atomic spins are to be rotated.<br>
+    </div>
+Syntax: <br>
+    <em>SPINROTATOM</em><br>
+#natoms<br>
+#atom1, #atomtheta1, #atomphi1 <br>
+#atom2, #atomtheta2, #atomphi2 <br>
+...<br>
+    <div style="text-align: justify;"> where #natoms is the number of
+atoms where the atomic spins are rotated. The list below #natoms gives
+the atom numbers and a set of two user-specified atom theta and phi angles.
+Valid input atomtheta angles run from -180.0 to 180.0 degrees and -360.0 to
+360.0 degrees for the atomphi angles.
+(Default parameter values: 0.0 degrees each). <br></div>
+Default: .false. (off) <br>
+  </li>
+<br>   
 </ol>
 <strong>Output parameters</strong>
 <ol>
