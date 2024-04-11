@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.7.2  *********************!
+!*********************  ANT.G-2.8.0  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -5020,23 +5020,23 @@ subroutine IntRealAxis_SOC(Er,El)
  
  if (PrtHAtom > 0) then 
 
-    PRINT *, "Hamil matrix for atom ",Atom," : "
-    PRINT *, "Up-Up" 
-    do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-        PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
-    end do  
-    PRINT *, "Up-Down" 
-    do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-        PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
-    end do  
-    PRINT *, "Down-Up"
-    do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                     
-        PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
-    end do                                   
-    PRINT *, "Down-Down"
-    do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                     
-        PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
-    end do                                                                                             
+   !PRINT *, "Hamil matrix for atom ",Atom," : "
+   !PRINT *, "Up-Up" 
+   !do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
+   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
+   !end do  
+   !PRINT *, "Up-Down" 
+   !do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
+   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
+   !end do  
+   !PRINT *, "Down-Up"
+   !do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                     
+   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
+   !end do                                   
+   !PRINT *, "Down-Down"
+   !do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                     
+   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
+   !end do                                                                                             
 
     PRINT *, "Real part of Hamil_SO matrix for atom ",Atom," : "
     PRINT *, "Up-Up" 
