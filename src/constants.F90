@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.5.2  *********************!
+!*********************  ANT.G-2.8.0  *********************!
 !*********************************************************!
 !                                                         !
 !   Copyright (c) by                                      !
@@ -21,6 +21,13 @@
 !*********************************************************!
 
   IMPLICIT NONE
+
+
+  ! length of keywords
+  integer, parameter :: keyw_len = 20
+
+  ! length of any names (files,directories,sets...)
+  integer, parameter :: name_len = 100
   
   ! Precision of numerical types
   integer, parameter :: single = 4

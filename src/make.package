@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+version=2.8.0
+
+mkdir -v ANT.Gaussian-$version
+mkdir -v ANT.Gaussian-$version/BLDAT
+mkdir -v ANT.Gaussian-$version/doc
+mkdir -v ANT.Gaussian-$version/install
+mkdir -v ANT.Gaussian-$version/src
+mkdir -v ANT.Gaussian-$version/examples
+
+cp -v BLDAT/*.dat ANT.Gaussian-$version/BLDAT/
+cp -rv doc/* ANT.Gaussian-$version/doc/
+cp -rv examples/* ANT.Gaussian-$version/examples/
+cp -v install/install* ANT.Gaussian-$version/install/
+cp -v make.package ANT.Gaussian-$version
+
+sources="
+src/ANT.F90 
+src/BetheLattice.F90 
+src/cluster.F90 
+src/device.F90
+src/numeric.F90
+src/parameters.F90
+src/constants.F90
+src/g03Common.F90
+src/g09Common.F90
+src/OneDLead.F90
+src/util.F90
+src/ortho.F90
+src/correlation.F90
+src/MolMod.F90
+src/antcommon.F90
+src/filemaster.F90
+src/messages.F90
+src/Zeeman.F90
+src/SpinOrbit.F90
+src/SpinRotate.F90
+src/lapack_blas.f
+src/preproc.F
+src/system.c
+src/make.in
+src/make.in.intel
+src/Makefile.pgi.g09
+src/Makefile.intel.g09"
+
+cp -v $sources ANT.Gaussian-$version/src/
+
+tar -cvf ANT.Gaussian-$version.tar ANT.Gaussian-$version
+gzip ANT.Gaussian-$version.tar
+
+rm -rf ANT.Gaussian-$version
+
+echo "Done."

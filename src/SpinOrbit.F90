@@ -1,48 +1,25 @@
-!***************************************
-!*                                     *
-!*  ANT.G-2.7.2  - SpinOrbit.f90       *
-!*                                     *
-!*  Calculation of Spin-orbit coupling *
-!*                                     *
-!***************************************
-!*                                     *
-!*  Copyright (c) 2006-2018 by         *
-!*                                     *
-!*  Dr. David Jacob                    *
-!*                                     *
-!*  MPI fuer Mikrostrukturphysik       *
-!*  Weinberg 2                         *
-!*  06108 Halle                        *
-!*  Germany                            *
-!*				       *
-!*  Wynand Dednam and                  *
-!*  Prof. Andre E. Botha               *
-!*                                     *
-!*  University of South Africa         *
-!*  28 Pioneer Ave                     *
-!*  Florida Park                       *
-!*  Roodepoort                         *
-!*  1709                               *
-!*  South Africa                       *
-!*                                     *
-!*  Sahar Pakdel and                   *
-!*  Prof. Juan Jose Palacios Burgos    *
-!*                                     *
-!*  Departamento de Física             *
-!*  de la Materia Condensada,          *
-!*  Universidad Autónoma de Madrid     *
-!*  28049 Madrid                       *
-!*  Spain                              *
-!*                                     *
-!***************************************
-
-
-!*********************************************************
-!*                                                       *
-!*  Module for calculation of Spin-orbit coupling based  *
-!*  on subroutine by Joaquin Fernandez-Rossier           *
-!*                                                       *
-!*********************************************************
+!**********************************************************
+!*********************  ANT.G-2.8.0  **********************
+!**********************************************************
+!*                                                        *
+!*  Module for calculation of Spin-Orbit coupling         *
+!*                                                        *
+!**********************************************************
+!*                                                        *
+!*  Copyright (c) by                                      *
+!*                                                        *
+!*  Juan Jose Palacios (1)                                *
+!*  David Jacob (2)                                       *
+!*  Wynand Dednam (1)                                     *
+!*                                                        *
+!* (1) Departamento de Fisica de la Materia Condensada    *
+!*     Universidad Autonoma de Madrid                     *
+!*     28049 Madrid (SPAIN)                               *
+!* (2) Theory Department                                  *
+!*     Max-Planck-Institute for Microstructure Physics    *
+!*     Halle, 06120 (GERMANY)                             *
+!*                                                        *
+!**********************************************************
 MODULE SpinOrbit
   IMPLICIT NONE
 
@@ -427,12 +404,9 @@ CONTAINS
 
       result = 0.0d0
       DO 12 N = 1,NQ
-         IF (XP(N) < rcut) THEN 
-           Yuk = ((Z-1)*DEXP(-XP(N)*DLOG(DFLOAT(Z))/rcut)+1.0d0)/XP(N) ! Modified Yukawa potential below atomic radius approximately  
-           result = result + WP(N)*Yuk*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) 
-         ELSE
-           result = result + WP(N)*(1.0/XP(N))*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2) ! Eq. (5) Beilstein J. Nanotechnol. 2018, 9, 1015-1023
-         END IF  
+      ! Derivative of modified Yukawa potential below atomic radius approximately /r
+         Yuk = DEXP(-XP(N)*DLOG(DFLOAT(Z))/rcut)*(DEXP(XP(N)*DLOG(DFLOAT(Z))/rcut)+Z-1.0+(Z-1)*DLOG(dfloat(Z))*XP(N)/rcut)/XP(N)
+         result = result + WP(N)*Yuk*orb1(XP(N),ii,idx11,idx12)*orb2(XP(N),jj,idx21,idx22)/sqrt(NormOrb1*NormOrb2)
  12   CONTINUE
          
       RETURN
@@ -530,7 +504,8 @@ CONTAINS
   !*** Compute matrix of SO Hamiltonian for a given basis set ***
   !**************************************************************
   SUBROUTINE CompHSO(hamil_SO,NAOs,Nshell)
-    USE parameters, ONLY: soc_cff_p, soc_cff_d, soc_cff_f, socfac_p, socfac_d, socfac_f, rcut, NSOCFacAtom, SOCFacAtomP, SOCFacAtomD, SOCFacAtomF, RCutAtom, NSOCEdit, SOCEditP, SOCEditD, SOCEditF
+    USE parameters, ONLY: soc_val_p, soc_val_d, soc_val_f, soc_fac_p, soc_fac_d, soc_fac_f, rcut, NSOCFacAtom, SOCFacAtomP, & 
+                          SOCFacAtomD, SOCFacAtomF, RCutAtom, NSOCValAtom, SOCValAtomP, SOCValAtomD, SOCValAtomF
     USE G09common, ONLY : GetNAtoms, GetShellT, GetShellC, GetAtm4Sh, GetShellN, GetShellA, GetShlADF, GetEXX, GetC1, GetC2, GetC3, GetC4, GetAN, GetAtmCo
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -548,7 +523,7 @@ CONTAINS
     COMPLEX*16, DIMENSION(2*NAOs,2*NAOs), INTENT(OUT) :: hamil_SO
 
     INTEGER :: i, j, k, q, s1, s2, ish1, ish2, ispin , jspin, Z, acount
-    REAL*8 :: result, A, B, x, zz, socfac_atom_p, socfac_atom_d, socfac_atom_f, rcut_atom, soc_cff_p_atom, soc_cff_d_atom, soc_cff_f_atom
+    REAL*8 :: result, A, B, x, zz, socfac_p, socfac_d, socfac_f, rcut_atom, socval_p, socval_d, socval_f
 
     COMPLEX*16, DIMENSION(2,2) :: sigma_z, sigma_p, sigma_m
     COMPLEX*16, DIMENSION(3,3) :: L_z1, L_p1, L_m1
@@ -609,6 +584,13 @@ CONTAINS
        ShellAindex1 = GetShellA(i)
        ShlADFindex1 = GetShlADF(i)
        AtomID1 = GetAtm4Sh(i)
+      !print*,i,'AtomID1', AtomID1
+      !print*,i,'ShellT1', ShellT1
+      !print*,i,'ShellC1', ShellC1
+      !print*,i,'ShellNPrim1', ShellNPrim1
+      !print*,i,'ShellAindex1', ShellAindex1
+      !print*,i,'ShlADFindex1', ShlADFindex1
+
        !IF (i > 1 .and. AtomID1 > GetAtm4Sh(i-1)) THEN
        !   acount = acount + 1
        !END IF       
@@ -617,19 +599,19 @@ CONTAINS
           IF ( ShellT1 == 0) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)
               matrix(ShellAindex1+j-1,2)=GetC1(ShellAindex1+j-1)   
-              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
+             !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
           ELSE IF ( ShellT1 == 1 .and. (ShellC1 == 0 .or. ShellC1 == 1)) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)
               matrix(ShellAindex1+j-1,2)=GetC2(ShellAindex1+j-1)
-              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
+             !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)              
           ELSE IF (ShellT1 == 2 .and. ShellC1 == 2) THEN
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)                         
               matrix(ShellAindex1+j-1,2)=GetC3(ShlADFindex1+j-1)                          
-              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)
+             !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)
           ELSE IF (ShellT1 == 3 .and. ShellC1 == 2) THEN       
               matrix(ShellAindex1+j-1,1)=GetEXX(ShellAindex1+j-1)                         
               matrix(ShellAindex1+j-1,2)=GetC4(ShlADFindex1+j-1)                          
-              !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)          
+             !PRINT *,matrix(ShellAindex1+j-1,1),matrix(ShellAindex1+j-1,2)          
           END IF                 
        END DO                                                 
     END DO	 
@@ -639,8 +621,8 @@ CONTAINS
     
     zz = (1.0/a0**3)*(hbar**2)*(Ke/e)*((e**2)/(2.*(me*c)**2)) ! Divide by e to convert from Joules to eV     
                 
-    !PRINT *, "Spin-orbit constants within each atom:"
-    !PRINT '(a10,2(a15),a20)', 'Atom No.','Shell type 1','Shell type 2','Spin-orbit constant'   
+    PRINT *, "Spin-orbit constants within each atom:"
+    PRINT '(a10,2(a15),a20)', 'Atom No.','Shell type',' Shells involved','Spin-orbit value'   
     DO i=1,NShell
         ShellT1 = GetShellT(i)
         ShellC1 = GetShellC(i)    
@@ -655,58 +637,51 @@ CONTAINS
            ShlADFindex2 = GetShlADF(k)
            ShellNPrim2 = GetShellN(k)
            AtomID2 = GetAtm4Sh(k)
-           IF (AtomID1 == AtomID2) THEN
+           result = 0.0d0
+           Xi(i,k) = 0.0
+           IF (AtomID1 == AtomID2 .and. ShellT1 == ShellT2) THEN
               Z = GetAN(AtomID2)  ! Atomic number of atom AtomID2
+
+              socfac_p = soc_fac_p
+              socfac_d = soc_fac_d
+              socfac_f = soc_fac_f
+              rcut_atom = rcut
               IF( NSOCFacAtom > 0) THEN  ! User-defined multiplicative SOC factor of atom AtomID2
-                socfac_atom_p = SOCFacAtomP(AtomID2)
-                socfac_atom_d = SOCFacAtomD(AtomID2)
-                socfac_atom_f = SOCFacAtomF(AtomID2)
-                rcut_atom = RCutAtom(AtomID2)
-              ELSE
-                socfac_atom_p = socfac_p
-                socfac_atom_d = socfac_d
-                socfac_atom_f = socfac_f
-                rcut_atom = rcut
-              END IF              
-              IF( NSOCEdit > 0) THEN  ! User-defined SOC coefficients of atom AtomID2
-                soc_cff_p_atom = SOCEditP(AtomID2)
-                soc_cff_d_atom = SOCEditD(AtomID2)
-                soc_cff_f_atom = SOCEditF(AtomID2)
-              ELSE
-                soc_cff_p_atom = soc_cff_p
-                soc_cff_d_atom = soc_cff_d
-                soc_cff_f_atom = soc_cff_f
-              END IF	               
-              IF ((socfac_atom_p > 0.0d0 .or. socfac_atom_d > 0.0d0 .or. socfac_atom_f > 0.0d0) .or. (soc_cff_p_atom == 0.0d0 .and. soc_cff_d_atom == 0.0d0 .and. soc_cff_f_atom==0.0d0)) THEN                    
-                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1,rcut_atom,Z)                
-                  IF (ShellT1 == 1 .and. ShellT2 == 1) Xi(i,k) = socfac_atom_p*zz*result       
-                  IF (ShellT1 == 2 .and. ShellT2 == 2) Xi(i,k) = socfac_atom_d*zz*result       
-                  IF (ShellT1 == 3 .and. ShellT2 == 3) Xi(i,k) = socfac_atom_f*zz*result       
-              ELSE IF (ShellT1 == 1 .and. ShellT2 == 1) THEN
-                  Xi(i,k) = soc_cff_p_atom
-              ELSE IF (ShellT1 == 2 .and. ShellT2 == 2) THEN                
-                  Xi(i,k) = soc_cff_d_atom
-              ELSE IF (ShellT1 == 3 .and. ShellT2 == 3) THEN 
-                  Xi(i,k) = soc_cff_f_atom
-              ELSE 
-                  Xi(i,k) = 0.0 
+                 socfac_p = SOCFacAtomP(AtomID2)
+                 socfac_d = SOCFacAtomD(AtomID2)
+                 socfac_f = SOCFacAtomF(AtomID2)
+                 rcut_atom = RCutAtom(AtomID2)
               END IF
-              !PRINT '(3(i10),F25.10)',AtomID1,ShellT1,ShellT2,Xi(i,k)                                     
+
+              socval_p = soc_val_p
+              socval_d = soc_val_d
+              socval_f = soc_val_f
+              IF( NSOCValAtom > 0) THEN  ! User-defined SOC values of atom AtomID2
+                socval_p = SOCValAtomP(AtomID2)
+                socval_d = SOCValAtomD(AtomID2)
+                socval_f = SOCValAtomF(AtomID2)
+              END IF
+
+              IF (ShellT1 == 1 .and. socfac_p > 0.0) then
+                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1,rcut_atom,Z)
+                  Xi(i,k) = socfac_p*zz*result
+              END IF
+              IF (ShellT1 == 2 .and. socfac_d > 0.0) then
+                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1,rcut_atom,Z)
+                  Xi(i,k) = socfac_d*zz*result
+              END IF
+              IF (ShellT1 == 3 .and. socfac_f > 0.0) then
+                  CALL integrate1(ShellT1,ShellT2,A,B,result,ShellAindex1,ShellAindex1+ShellNPrim1-1,ShellAindex2,ShellAindex2+ShellNPrim2-1,rcut_atom,Z)
+                  Xi(i,k) = socfac_f*zz*result
+              END IF
+
+              IF (ShellT1 == 1 .and. socval_p > 0.0d0) Xi(i,k) = socval_p
+              IF (ShellT1 == 2 .and. socval_d > 0.0d0) Xi(i,k) = socval_d
+              IF (ShellT1 == 3 .and. socval_f > 0.0d0) Xi(i,k) = socval_f
+              PRINT '(4(i10),3F15.10)',AtomID1,ShellT1,i,k,Xi(i,k)
            END IF
-        END DO                                                          
-    END DO	               
-       
-!    PRINT *, "Spin-orbit couplings:"
-!    DO i=1,NAOs
-!      IF (AOT(i) == 0) THEN
-!      	lambda(i) = 0.0d0
-!      ELSE IF (AOT(i) == 1) THEN	
-!        lambda(i) = soc_cff_p
-!      ELSE IF (AOT(i) == 2) THEN
-!        lambda(i) = soc_cff_d 
-!      END IF  
-!      PRINT *, lambda(i)
-!    END DO
+        END DO
+    END DO
     
     CALL FLUSH(6)
        

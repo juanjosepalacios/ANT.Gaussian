@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.7.0  *******************!
+!*********************  ANT.G-2.8.0  *******************!
 !*********************************************************!
 !                                                         !
 !   Copyright (c) by                                      !
@@ -24,7 +24,6 @@
 !**********************************************************
 !  Common blocks for communication with Gaussian09        !
 !**********************************************************
-  USE parameters, ONLY: Nalpha, Nbeta
   USE preproc, ONLY: DEFMAXSHL => MaxShl, DEFMAXATM => MaxAtm
   IMPLICIT NONE
   
@@ -261,11 +260,7 @@
     ! *************************
     INTEGER FUNCTION GetNAE()
       IMPLICIT NONE
-      if (Nalpha  < 0) then
       GetNAE = NAE
-      else
-      GetNAE = Nalpha
-      end if
     END FUNCTION GetNAE
     
     ! ************************
@@ -273,11 +268,7 @@
     ! ************************
     INTEGER FUNCTION GetNBE()
       IMPLICIT NONE
-      if (Nbeta  < 0) then
       GetNBE = NBE
-      else
-      GetNBE = Nbeta
-      end if
     END FUNCTION GetNBE
 
     ! *******************
@@ -285,11 +276,7 @@
     ! *******************
     INTEGER FUNCTION GetNE()
       IMPLICIT NONE
-      if (Nbeta  >= 0 .and. Nalpha >= 0) then
-      GetNE = Nalpha+Nbeta
-      else
       GetNE = NE
-      end if
     END FUNCTION GetNE
 
     ! *************************
