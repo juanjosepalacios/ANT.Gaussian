@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-version=2.7.2
+version=2.8.0
 
 mkdir -v ANT.Gaussian-$version
 mkdir -v ANT.Gaussian-$version/BLDAT
@@ -33,6 +33,7 @@ src/MolMod.F90
 src/antcommon.F90
 src/filemaster.F90
 src/messages.F90
+src/Zeeman.F90
 src/SpinOrbit.F90
 src/SpinRotate.F90
 src/lapack_blas.f
