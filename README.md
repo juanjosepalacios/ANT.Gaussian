@@ -34,7 +34,6 @@ Main new Features:
 - Added the possibility of fixing the Fermi energy and let the charge be
 - whatever it may be
 ********************************************************************************
-********************************************************************************
                               Release 2.7.2                  
 Main new Features:
 
@@ -42,3 +41,9 @@ Main new Features:
 - Added feature to fully reverse the magnetization based on the Hamiltonian,
   not on the density matrix (not fully tested)
 ********************************************************************************
+
+                              Release 2.8.0 
+Main new Features:
+
+- SOC implementation has beed revised and fixed. Now Yukawa potential actually works
+- SOC keywords have been changed for clarity
