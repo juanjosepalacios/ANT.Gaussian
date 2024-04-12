@@ -385,7 +385,7 @@
   
   ! Number of atom whose Hamiltonian to print out
   INTEGER :: PrtHatom = 0     
-  CHARACTER(len=10), PARAMETER :: PrtHatom_keyw = "PRTHATOM"
+  CHARACTER(len=10), PARAMETER :: PrtHatom_keyw = "PRTATOM"
 
   PRIVATE :: read_line
 

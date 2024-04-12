@@ -897,7 +897,7 @@
        ! Print hamiltonian of atoms 
        ! with SpinEdit set
        !
-       if( NSpinEdit > 0 )then                         
+       if( NSpinEdit > 0 .and. PrtHAtom > 0)then                         
        
        Atom = PrtHatom
  
@@ -2338,23 +2338,16 @@
     write(ifu_log,*)'---  Mulliken population analysis ---'
     write(ifu_log,*)'-------------------------------------'
     
-    if (PrtHatom > 1) then
-       do iAtom=1,GetNAtoms()
-          do jAtom=1,GetNAtoms()
-             !if( SpinEdit(iAtom) == -1 .and. SpinEdit(jAtom) == -1 )then
-             if( iAtom == PrtHatom .and. jAtom == PrtHatom )then
-                PRINT *, " Density matrix atom ",iAtom," is: "
-                PRINT *, " Up-Up "  
-                do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                               
-                   PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )               
-                end do                                                                                                       
-                PRINT *, " Down-Down "                                                                              
-                do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
-                   PRINT '(1000(F11.5))', ( (PD(2,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
-                end do                                                                              
-             end if   
-          end do
-       end do
+    if (PrtHatom > 0 .and. PrtHAtom .le. GetNAtoms()) then
+       PRINT *, " Density matrix for atom ",PrtHAtom," is: "
+       PRINT *, " Up-Up "  
+       do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                               
+          PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )               
+       end do                                                                                                       
+       PRINT *, " Down-Down "                                                                              
+       do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
+          PRINT '(1000(F11.5))', ( (PD(2,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
+       end do                                                                              
     end if          
     
     if (NSpin.eq.2) sdeg=1.0d0
@@ -2501,7 +2494,7 @@
     use constants, only: Bohr, d_zero, c_zero
     implicit none
 
-    integer :: i,j, I1, is ,n, l, iAtom, jAtom
+    integer :: i,j, I1, is ,n, l, Atom
     real*8 :: sdeg, ro_a, ro_ba, ro_ba_I, ro_b, spindens, chargemol, chargelead1, chargelead2, spinlead1, spinlead2, spinmol,ro_ab, ro_ab_I
     real*8, dimension(NAOrbs,NAOrbs) :: rho_a, rho_ba, rho_ba_I, rho_b, tmp ,rho_ab, rho_ab_I  
     complex*16, dimension(DNAOrbs,DNAOrbs) :: rho
@@ -2510,6 +2503,45 @@
     write(ifu_log,*)'--- Mulliken population analysis (with SOC) ---'
     write(ifu_log,*)'-----------------------------------------------'
 
+    if (PrtHAtom > 0 .and. PrtHAtom .le. GetNAtoms()) then
+       Atom = PrtHAtom
+       PRINT *, "Real part of the density matrix for atom ",Atom," : "
+       PRINT *, "Up-Up"
+       do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
+          PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) )
+       end do
+       PRINT *, "Up-Down"
+       do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
+           PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom) )
+       end do
+       PRINT *, "Down-Up"
+       do i=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom)
+           PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) )
+       end do
+       PRINT *, "Down-Down"
+       do i=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom)
+           PRINT '(1000(F11.5))',  ( REAL(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom) )
+       end do
+   
+       PRINT *, "Imaginary part of the density matrix for atom ",Atom," : "
+       PRINT *, "Up-Up"
+       do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
+          PRINT '(1000(F11.5))',  ( IMAG(PD_SOC( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) )
+       end do
+       PRINT *, "Up-Down"
+       do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
+           PRINT '(1000(F11.5))',  ( IMAG(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom) )
+       end do
+       PRINT *, "Down-Up"
+       do i=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom)
+           PRINT '(1000(F11.5))',  ( IMAG(PD_SOC( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) )
+       end do
+       PRINT *, "Down-Down"
+       do i=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom)
+           PRINT '(1000(F11.5))',  ( IMAG(PD_SOC( i, j )), j=NAOrbs+LoAOrbNo(Atom),NAOrbs+HiAOrbNo(Atom) )
+       end do
+    end if
+ 
     rho = c_zero
     rho_a = d_zero
     rho_ab = d_zero
@@ -5019,24 +5051,6 @@ subroutine IntRealAxis_SOC(Er,El)
  If (SOC) CALL CompHSO(hamil_SO,NAOrbs,nshell)
  
  if (PrtHAtom > 0) then 
-
-   !PRINT *, "Hamil matrix for atom ",Atom," : "
-   !PRINT *, "Up-Up" 
-   !do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
-   !end do  
-   !PRINT *, "Up-Down" 
-   !do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
-   !end do  
-   !PRINT *, "Down-Up"
-   !do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                     
-   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
-   !end do                                   
-   !PRINT *, "Down-Down"
-   !do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                     
-   !    PRINT '(1000(F11.5))',  ( REAL(hamil( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
-   !end do                                                                                             
 
     PRINT *, "Real part of Hamil_SO matrix for atom ",Atom," : "
     PRINT *, "Up-Up" 
