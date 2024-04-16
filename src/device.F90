@@ -73,8 +73,9 @@
   real*8, dimension(:,:,:),allocatable :: HD
   real*8, dimension(:,:,:),allocatable :: PD
   complex*16, dimension(:,:,:),allocatable :: PDOUT
-  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC,PD_SOC_R,PD_SOC_A
+  complex*16, dimension(:,:),allocatable :: H_SOC, H_SOC_ONLY, PD_SOC, PD_SOC_R, PD_SOC_A
   complex*16, dimension(:,:),allocatable :: PDOUT_SOC
+  complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen
 
   ! *** Orthognalization matrix for device ***
   real*8, dimension(:,:),allocatable :: OD
@@ -251,7 +252,7 @@
   !* Initialize device for transport calculation *
   !***********************************************
   subroutine InitDevice( NBasis, UHF, S )
-    use constants, only: d_zero
+    use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
     use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed, NPC, SCFSOC
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
@@ -292,26 +293,30 @@
        print *, "DEVICE/Allocation error for PDOUT"
        stop
     end if
+
     ! Dynamic arrays 
     allocate( SD(NAOrbs,NAOrbs), InvSD(NAOrbs,NAOrbs),  HD(NSpin,NAOrbs,NAOrbs), PD(NSpin,NAOrbs,NAOrbs),  STAT=AllocErr )
     if( AllocErr /= 0 ) then
        print *, "DEVICE/Allocation error for SD, InvSD, HD, PD"
        stop
     end if
+
     ! Dynamic SOC arrays
-    if (SOC .or. ROT .or. ZM) then 
-    allocate( S_SOC(DNAOrbs,DNAOrbs), InvS_SOC(DNAOrbs,DNAOrbs), H_SOC(DNAOrbs,DNAOrbs), PD_SOC(DNAOrbs,DNAOrbs),  STAT=AllocErr )
-    if( AllocErr /= 0 ) then
-       print *, "DEVICE/Allocation error for S_SOC, InvS_SOC, H_SOC, PD_SOC"
-       stop
-    end if    
-    if (SCFSOC) then
-       allocate(H_SOC_ONLY(DNAOrbs,DNAOrbs),   STAT=AllocErr )
-       if( AllocErr /= 0 ) then
-          print *, "DEVICE/Allocation error for H_SOC_ONLY"
-          stop
-       end if
-    end if
+    if (SOC .or. ROT .or. ZM .or. SCFSOC) then 
+       allocate(S_SOC(DNAOrbs,DNAOrbs),  STAT=AllocErr );if( AllocErr /= 0 ) stop
+       allocate(InvS_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr );if( AllocErr /= 0 ) stop
+       allocate(H_SOC(DNAOrbs,DNAOrbs),  STAT=AllocErr );if( AllocErr /= 0 ) stop
+       allocate(PD_SOC(DNAOrbs,DNAOrbs),  STAT=AllocErr );if( AllocErr /= 0 ) stop
+       allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(H_SOC_ONLY(DNAOrbs,DNAOrbs), STAT=AllocErr );if( AllocErr /= 0 ) stop
+       DGammaR=c_zero !just paranoia
+       DGammaL=c_zero !just paranoia
+       DGreen=c_zero !just paranoia
     end if
 
     SD = S
@@ -351,7 +356,7 @@
     END IF
     
     ! Calculate SOC-only hamiltonian just once initially
-    if ((SOC .or. ROT .or. ZM) .and. SCFSOC) then
+    if (SCFSOC) then
        call spin_orbit                 
     end if        
 
@@ -688,19 +693,13 @@
        print *, "DEVICE/Deallocation error for SD, InvSD, HD, PD, PDOUT, SPH"
        stop
     end if
-    if (SOC .or. ROT .or. ZM) then 
-    deallocate( S_SOC, InvS_SOC, H_SOC, PD_SOC, STAT=AllocErr )
+
+    if (SOC .or. ROT .or. ZM .or. SCFSOC) then 
+    deallocate( S_SOC, InvS_SOC, H_SOC, PD_SOC, H_SOC_ONLY, STAT=AllocErr )
     if( AllocErr /= 0 ) then
-       print *, "DEVICE/Deallocation error for S_SOC, InvS_SOC, H_SOC, PD_SOC"
+       print *, "DEVICE/Deallocation error for S_SOC, InvS_SOC, H_SOC, PD_SOC, H_SOC_ONLY"
        stop
     end if   
-    if (SCFSOC) then
-    deallocate( H_SOC_ONLY, STAT=AllocErr )
-    if( AllocErr /= 0 ) then
-       print *, "DEVICE/Deallocation error for H_SOC_ONLY"
-       stop    
-    end if
-    end if
     end if     
     
     do LeadNo=1,2
@@ -758,6 +757,7 @@
                           NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
+    use constants, only: c_zero
     use correlation
     use orthogonalization
     use molmod, only: Mol_Sub
@@ -780,28 +780,33 @@
     real*8 :: diff, EminDev, EMaxDev
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
-    HD = F
+    HD = F          !Fock matrix coming from Gaussian goes into device Hamiltonian
     
-    if ((SOC .or. ROT .or. ZM) .and. SCFSOC) then
-       !call spin_orbit                               ! SOC Hamiltonian already initialized and assigned in InitDevice
+    if (SCFSOC) then
+       H_SOC= c_zero
+       print*,'Building the Hamiltonian + SOC'
        if (NSpin == 2) then
           do i=1,NAOrbs
           do j=1,NAOrbs
-             HD(1,i,j)=HD(1,i,j)+DREAL(H_SOC_ONLY(i,j))
-             HD(2,i,j)=HD(2,i,j)+DREAL(H_SOC_ONLY(i+NAOrbs,j+NAOrbs))
-             SD(i,j)=S_SOC(i,j)                
+             H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+             H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
           end do
           end do
-       else                      ! No need to add SOC in non-magnetic cases, at least provisionally
+       else 
           do i=1,NAOrbs
           do j=1,NAOrbs
-             HD(1,i,j)=HD(1,i,j)+DREAL(H_SOC_ONLY(i,j))
-             SD(i,j)=S_SOC(i,j)                             
+             H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+             H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
           end do
           end do
-       end if       
-    end if      
+       end if
     
+       do i=1, DNAOrbs 
+          do j=1, DNAOrbs 
+             H_SOC(i,j)=H_SOC(i,j)+ H_SOC_ONLY(i,j)     !Adding SOC term at each SCF step
+          end do
+       end do
+    end if
     !
     ! Estimate upper bound for maximal eigenvalue of HD and use it for upper and lower energy boundaries
     !
@@ -809,14 +814,7 @@
     !if( NSpin == 2 ) EMaxDev = max(maxval(sum(abs(HD(1,:,:)),1)),maxval(sum(abs(HD(2,:,:)),1))) + 10.0 
     !EMinDev = -EMaxDev
     
-    call RMatPow(SD(:,:),-0.5,X)
-    HDOrtho = matmul(X,HD(1,:,:))
-    HDOrtho = matmul(HDOrtho,X)
-    call RSDiag(HDOrtho,evals,info)
-    if (info /= 0) print*, 'Warning diagonalizing the device Hamiltonian while cheking energy bounds!!!'
-    EMinDev = evals(1) - 10.0d0 
-    EMaxDev = evals(NAOrbs) + 10.0d0 
-    
+   
     !Initializing 1D electrodes everytime we pass Charge Control
     IF (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD" .and. ChargeCntr)  then
         if (Electrodes) call CleanUp1DLead(1) 
@@ -825,10 +823,17 @@
         Electrodes = .true.
     end if 
 
-    if( .not. DMImag .and. ChargeCntr )then
+    if ( .not. DMImag .and. ChargeCntr )then
        print *, "-----------------------"
        print *, "Estimated Energy Bounds"
        print *, "-----------------------"
+       call RMatPow(SD(:,:),-0.5,X)
+       HDOrtho = matmul(X,HD(1,:,:))
+       HDOrtho = matmul(HDOrtho,X)
+       call RSDiag(HDOrtho,evals,info)
+       if (info /= 0) print*, 'Warning diagonalizing the device Hamiltonian while cheking energy bounds!!!'
+       EMinDev = evals(1) - 10.0d0 
+       EMaxDev = evals(NAOrbs) + 10.0d0 
        EMin=Min(EMin,EMinLead,EMinDev)
        EMax=Max(EMax,EMaxLead,EMaxDev)
        print *, "EMin=", EMin
@@ -841,10 +846,29 @@
        if (.not. Bounds) call FindEnergyBounds
     end if
 
-    if( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
+    if ( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
 
-    if(.not.DMImag) call CompDensMat(ADDP)
-    if(DMImag) call CompDensMat2(ADDP)
+    if (.not.DMImag) then
+       if (SCFSOC) then
+          call CompDensMat_SOC(ADDP)
+          if (NSpin == 2) then
+             do i=1,NAOrbs
+             do j=1,NAOrbs
+                PD(1,i,j) = dreal(PD_SOC(i,j))
+                PD(2,i,j) = dreal(PD_SOC(i+NAOrbs,j+NAOrbs))
+             end do
+             end do
+          else
+             do i=1,NAOrbs
+             do j=1,NAOrbs
+                PD(1,i,j) = dreal(PD_SOC(i,j))
+             end do
+             end do
+          end if
+       end if
+       if (.not.SCFSOC) call CompDensMat(ADDP)
+    end if
+    if(DMImag) call CompDensMat2(ADDP) !SCFSOC not implemented here !!!!
 
     if( Evaluation )then
        print *
@@ -919,7 +943,7 @@
           end do
        end if   
         
-       if (SOC .or. ROT .or. ZM) then 
+       if (SOC .or. ROT .or. ZM .or. SCFSOC) then 
           call MullPop_SOC
        else 
           call MullPop
@@ -1126,7 +1150,7 @@
        E1=shift
        E2=shift+Z  
        if (root_fail) then
-          print*,'MULLER method'
+          print*,'MULLER method with SOC'
           call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
           if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
              print *, 'Warning: MULLER method failed to find root. Using BISEC.'
@@ -1137,7 +1161,7 @@
           end if
        end if
        if (root_fail) then
-          print*,'SECANT method'
+          print*,'SECANT method with SOC'
           call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
           if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
              print *, 'Warning: SECANT method failed to find root. Using MULLER.'
@@ -1148,7 +1172,7 @@
           end if
        end if  
        if (root_fail) then
-          print *, 'BISEC method'
+          print *, 'BISEC method with SOC'
           shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
           DE=Delta
           if(k.lt.5*Max) root_fail = .false.
@@ -2757,15 +2781,15 @@
     print *, "-------------------------"
     print *
     
-    if (SOC .or. ROT .or. ZM) then
+    if (SOC .or. ROT .or. ZM .or. SCFSOC) then
        write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
 
-       allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop     
-       allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop     
+      !allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
        call spin_orbit
@@ -2784,7 +2808,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
     
-    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
+    if ((.not.SOC) .and. (.not.ROT) .and. (.not.ZM) .and. (.not.SCFSOC)) then
     
     do ispin=1,NSpin
 
@@ -2935,7 +2959,7 @@
 
   end if !End of SOC if
   
-      if (SOC .or. ROT .or. ZM) then
+      if (SOC .or. ROT .or. ZM .or. SCFSOC) then
          deallocate(PD_SOC_R)
          deallocate(PD_SOC_A)
          deallocate(PDOUT_SOC)      
@@ -2990,7 +3014,7 @@
     complex*16, dimension(:,:), allocatable :: GammaL, GammaR, Green, T, temp, SG
     complex*16, dimension(:,:), allocatable :: Green_UU, Green_DD, Green_UD, Green_DU, GammaL_UU, GammaR_UU, GammaL_DD, GammaR_DD
     complex*16, dimension(:,:), allocatable :: GreenTC_UU, GreenTC_DD, GreenTC_UD, GreenTC_DU
-    complex*16, dimension(:,:), allocatable :: DGammaL, DGammaR,  DGreen, DT, Dtemp, DSG, DGreenTC
+    complex*16, dimension(:,:), allocatable :: DT, Dtemp, DSG, DGreenTC
     complex*16, dimension(:,:),allocatable :: dummy
     complex*16, dimension(:), allocatable :: ctn,Dctn
     real*8, dimension(:), allocatable :: tn,Dtn
@@ -3047,16 +3071,15 @@
         call InitElectrodes
     end if 
 
-    if (SOC .or. ROT .or. ZM) then
+    if (SOC .or. ROT .or. ZM .or. SCFSOC) then
        !print *, 'In loop irev = ', irev
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
-       allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGreenTC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
-       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       write(ifu_log,*)' Finding final Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+      !allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DT(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(T(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dtemp(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -3066,6 +3089,7 @@
        allocate(Dctn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 ! matrices for polarization computation
        if (POL) then
+          allocate(DGreenTC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
           allocate(GammaL_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
           allocate(GammaL_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
           allocate(GammaR_UU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -3078,12 +3102,8 @@
           allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
           allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
           allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+          DGreenTC=c_zero      
        end if 
-
-       DGammaR=c_zero
-       DGammaL=c_zero
-       DGreen=c_zero
-       DGreenTC=c_zero      
 
        call spin_orbit
        
@@ -3108,7 +3128,7 @@
 
     allocate( AtomDOSEF(2,MaxAtm), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
-    if (SOC .or. ROT .or. ZM) then
+    if (SOC .or. ROT .or. ZM .or. SCFSOC) then
        if (DMIMAG) then
           call CompDensMat2_SOC(ADDP)
        else   
@@ -3124,7 +3144,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM)) then
+    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM) .and. (.not.SCFSOC)) then
 
     do ispin=1,NSpin
 
@@ -3584,12 +3604,11 @@
 
   end if !End of SOC if
 
-      if (SOC .or. ROT .or. ZM) then      
+      if (SOC .or. ROT .or. ZM .or. SCFSOC) then      
        deallocate(PD_SOC_R)
        deallocate(PD_SOC_A)
        deallocate(PDOUT_SOC)
        deallocate(DGreen)
-       deallocate(DGreenTC)       
        deallocate(DGammaR)
        deallocate(DGammaL)
        deallocate(DT)
@@ -3600,6 +3619,7 @@
        deallocate(Dtn)
        deallocate(Dctn)
        if (POL) then
+          deallocate(DGreenTC)       
           deallocate(GammaL_UU)      
           deallocate(GammaL_DD)      
           deallocate(GammaR_UU)      
@@ -4980,7 +5000,7 @@ subroutine IntRealAxis_SOC(Er,El)
     use g09Common, only: GetNShell
 #endif    
       
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_SO, hamil_ZM
+    complex*16, dimension(DNAOrbs,DNAOrbs) :: overlaprot, hamilrot, hamil_ZM, hamil_SO
     integer :: i,j,totdim,nshell,Atom
     real*8 :: uno
  
@@ -4999,51 +5019,47 @@ subroutine IntRealAxis_SOC(Er,El)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
  if (irev == 2) then
-  if (SOC .OR. ZM) then 
-   if (NSpin == 2) then
-      print*,'Building the spin-reversed SOC Hamiltonian'
-      do i=1,NAOrbs
-      do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(2,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-         S_SOC(i,j)=SD(i,j)              
-         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
-      end do
-      end do
-   else 
-      do i=1,NAOrbs
-      do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-         S_SOC(i,j)=SD(i,j)              
-         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
-      end do
-      end do
-   end if
- end if 
+    print*,'Building the spin-reversed SOC Hamiltonian'
+    if (NSpin == 2) then
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=dcmplx(HD(2,i,j),0.0d0)
+          H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+          S_SOC(i,j)=SD(i,j)              
+          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+       end do
+       end do
+    else 
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+          H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+          S_SOC(i,j)=SD(i,j)              
+          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+       end do
+       end do
+    end if
  else
- if (SOC .OR. ZM) then 
-   if (NSpin == 2) then
-      print*,'Building the first SOC Hamiltonian'
-      do i=1,NAOrbs
-      do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
-         S_SOC(i,j)=SD(i,j)              
-         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
-      end do
-      end do
-   else 
-      do i=1,NAOrbs
-      do j=1,NAOrbs
-         H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-         H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-         S_SOC(i,j)=SD(i,j)              
-         S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
-      end do
-      end do
-   end if
- end if
+    print*,'Building the SOC Hamiltonian'
+    if (NSpin == 2) then
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+          H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(2,i,j),0.0d0)
+          S_SOC(i,j)=SD(i,j)              
+          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+       end do
+       end do
+    else 
+       do i=1,NAOrbs
+       do j=1,NAOrbs
+          H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
+          H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
+          S_SOC(i,j)=SD(i,j)              
+          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
+       end do
+       end do
+    end if
  end if 
  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5056,7 +5072,21 @@ subroutine IntRealAxis_SOC(Er,El)
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
  If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,NAOrbs,nshell)
+
+ if (ROT) then
+    S_SOC=d_zero
+    do i=1, totdim*2
+       do j=1, totdim*2
+          S_SOC(i,j)=REAL(overlaprot(i,j))         
+          H_SOC(i,j)=hamilrot(i,j)
+       end do
+    end do 
+ end if   
  
+ H_SOC_ONLY = hamil_SO + hamil_ZM
+ 
+ H_SOC = H_SOC + H_SOC_ONLY
+
  if (PrtHAtom > 0) then 
 
     PRINT *, "Real part of Hamil_SO matrix for atom ",Atom," : "
@@ -5097,32 +5127,23 @@ subroutine IntRealAxis_SOC(Er,El)
 
 end if
 
- if (ROT) then
-    S_SOC=d_zero
-    do i=1, totdim*2
-       do j=1, totdim*2
-          S_SOC(i,j)=REAL(overlaprot(i,j))         
-          H_SOC(i,j)=hamilrot(i,j)
-       end do
-    end do 
- end if   
- 
- if (ZM) then
-    do i=1, totdim*2
-       do j=1, totdim*2
-          H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)
-       end do
-    end do 
- end if    
 
- if (SOC) then
-   do i=1, totdim*2
-      do j=1, totdim*2
-         if (SCFSOC) H_SOC_ONLY(i,j)=hamil_SO(i,j)       
-         H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
-      end do
-   end do
- end if
+!if (ZM) then
+!   do i=1, totdim*2
+!      do j=1, totdim*2
+!         H_SOC(i,j)=H_SOC(i,j)+hamil_ZM(i,j)
+!      end do
+!   end do 
+!end if    
+
+!if (SOC) then
+!  do i=1, totdim*2
+!     do j=1, totdim*2
+!        if (SCFSOC) H_SOC_ONLY(i,j)=hamil_SO(i,j)       
+!        H_SOC(i,j)=H_SOC(i,j) + hamil_SO(i,j)
+!     end do
+!  end do
+!end if
 
  return
  end subroutine spin_orbit
