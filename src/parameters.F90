@@ -756,6 +756,31 @@ CONTAINS
          RCutAtom( index ) = rvallll
       END DO       
                          
+    CASE ( SOCValAtom_keyw )
+      SOCValAtomP=soc_val_p
+      SOCValAtomD=soc_val_d
+      SOCValAtomF=soc_val_f
+      READ (unit=inpfile,fmt=*,iostat=ios) NSOCValAtom
+      IF( ios /= 0 ) RETURN
+      DO i=1,NSOCValAtom
+         READ (unit=inpfile,fmt=*,iostat=ios) index, rval, rvall, rvalll
+         IF( ios /= 0 ) RETURN
+         IF( rval < 0.0d0 .OR. rvall < 0.0d0 .OR. rvalll < 0.0d0)THEN
+            WRITE( unit=logfile, fmt=* ) "ERROR - Negative value not allowed in SOCVALATOM Field"
+            ios = 1
+            RETURN
+         END IF
+         IF( index > 10000 .OR. index < 1 )THEN
+            WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCVALATOM field"
+            WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
+            ios = 1
+            RETURN
+         END IF
+         SOCValAtomP( index ) = rval
+         SOCValAtomD( index ) = rvall
+         SOCValAtomF( index ) = rvalll
+      END DO
+
     CASE ( SPINROTATOM_keyw )
            READ (unit=inpfile,fmt=*,iostat=ios) NSpinRotAtom
            IF( ios /= 0 ) RETURN 
@@ -784,30 +809,6 @@ CONTAINS
               SpinRotAtomPhi( index ) = rvall
            END DO
 
-    CASE ( SOCValAtom_keyw )
-      SOCValAtomP=soc_val_p
-      SOCValAtomD=soc_val_d
-      SOCValAtomF=soc_val_f
-      READ (unit=inpfile,fmt=*,iostat=ios) NSOCValAtom
-      IF( ios /= 0 ) RETURN
-      DO i=1,NSOCValAtom
-         READ (unit=inpfile,fmt=*,iostat=ios) index, rval, rvall, rvalll
-         IF( ios /= 0 ) RETURN
-         IF( rval < 0.0d0 .OR. rvall < 0.0d0 .OR. rvalll < 0.0d0)THEN
-            WRITE( unit=logfile, fmt=* ) "ERROR - Negative value not allowed in SOCVALATOM Field"
-            ios = 1
-            RETURN
-         END IF
-         IF( index > 10000 .OR. index < 1 )THEN
-            WRITE( unit=logfile, fmt=* ) "ERROR - Illegal atom number in SOCVALATOM field"
-            WRITE( unit=logfile, fmt=* ) "Allowed values: 1 ... 10000"
-            ios = 1
-            RETURN
-         END IF
-         SOCValAtomP( index ) = rval
-         SOCValAtomD( index ) = rvall
-         SOCValAtomF( index ) = rvalll
-      END DO
 
     CASE ( ZMATOM_keyw )
       READ (unit=inpfile,fmt=*,iostat=ios), NZMAtom
@@ -977,7 +978,6 @@ CONTAINS
           WRITE(unit=logfile,fmt='(I4,F11.4,F11.4,F11.4,F11.4)') i, SOCValAtomP(i), SOCValAtomD(i), SOCValAtomF(i)
        END DO
     end if 
-
     WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol     
     WRITE(unit=logfile,fmt=*) TCOMP_keyw, " = ", tcomp         
     if (Trev < 1 .or. Trev > 2) then

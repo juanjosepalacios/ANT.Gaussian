@@ -253,7 +253,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed,NPC,SCFSOC
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed, NPC, SCFSOC
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -2339,15 +2339,22 @@
     write(ifu_log,*)'-------------------------------------'
     
     if (PrtHatom > 0 .and. PrtHAtom .le. GetNAtoms()) then
-       PRINT *, " Density matrix for atom ",PrtHAtom," is: "
-       PRINT *, " Up-Up "  
-       do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                               
-          PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )               
-       end do                                                                                                       
-       PRINT *, " Down-Down "                                                                              
-       do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
-          PRINT '(1000(F11.5))', ( (PD(2,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
-       end do                                                                              
+       if (NSpin == 1) then
+          PRINT *, " Density matrix for atom ",PrtHAtom," is: "
+          do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                               
+             PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )               
+          end do                                                                                                       
+       end if
+       if (NSpin == 2) then
+          PRINT *, " Up-Up "                                                                              
+          do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
+             PRINT '(1000(F11.5))', ( (PD(1,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
+          end do                                                                              
+          PRINT *, " Down-Down "                                                                              
+          do i=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom)                                                            
+             PRINT '(1000(F11.5))', ( (PD(2,i,j)), j=LoAOrbNo(PrtHatom),HiAOrbNo(PrtHatom) )             
+          end do                                                                              
+       end if
     end if          
     
     if (NSpin.eq.2) sdeg=1.0d0
@@ -4765,7 +4772,7 @@ subroutine IntRealAxis_SOC(Er,El)
     end if
     if (M == 1) then 
        if (sgn == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the retarded density matrix using up to',n,' points. Continue at your own risk ...'
-       if (sgn == -1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the retarded density matrix using up to',n,' points. Continue at your own risk ...'
+       if (sgn == -1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the advanced density matrix using up to',n,' points. Continue at your own risk ...'
     end if
 
     return
