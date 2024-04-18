@@ -311,11 +311,9 @@
        allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(H_SOC_ONLY(DNAOrbs,DNAOrbs), STAT=AllocErr );if( AllocErr /= 0 ) stop
-       DGammaR=c_zero !just paranoia
-       DGammaL=c_zero !just paranoia
        DGreen=c_zero !just paranoia
     end if
 
@@ -784,7 +782,7 @@
     
     if (SCFSOC) then
        H_SOC= c_zero
-       print*,'Building the Hamiltonian + SOC'
+       print*,'Building the Hamiltonian + SOC + Zeeman'
        if (NSpin == 2) then
           do i=1,NAOrbs
           do j=1,NAOrbs
@@ -803,7 +801,7 @@
     
        do i=1, DNAOrbs 
           do j=1, DNAOrbs 
-             H_SOC(i,j)=H_SOC(i,j)+ H_SOC_ONLY(i,j)     !Adding SOC term at each SCF step
+             H_SOC(i,j)=H_SOC(i,j)+ H_SOC_ONLY(i,j)     !Adding SOC + Zeeman terms at each SCF step
           end do
        end do
     end if
@@ -982,7 +980,7 @@
     logical :: root_fail
     
     DE = 0.0d0
-    Z=1.0d0
+    Z=0.5d0
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
@@ -1150,7 +1148,7 @@
        E1=shift
        E2=shift+Z  
        if (root_fail) then
-          print*,'MULLER method with SOC'
+          print*,'MULLER method with SOC + Zeeman'
           call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
           if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
              print *, 'Warning: MULLER method failed to find root. Using BISEC.'
@@ -1161,7 +1159,7 @@
           end if
        end if
        if (root_fail) then
-          print*,'SECANT method with SOC'
+          print*,'SECANT method with SOC + Zeeman'
           call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
           if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
              print *, 'Warning: SECANT method failed to find root. Using MULLER.'
@@ -1172,7 +1170,7 @@
           end if
        end if  
        if (root_fail) then
-          print *, 'BISEC method with SOC'
+          print *, 'BISEC method with SOC + Zeeman'
           shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
           DE=Delta
           if(k.lt.5*Max) root_fail = .false.
@@ -2581,7 +2579,8 @@
     rho_ba_I = d_zero
     rho_b = d_zero     
     
-    rho =matmul(PD_SOC,S_SOC)
+    rho =matmul(PD_SOC,S_SOC) !!issues of orthogonaliasdfa
+   !rho =PD_SOC
        
     do i=1,NAOrbs
     do j=1,NAOrbs
@@ -2622,7 +2621,7 @@
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
          spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' <Sx>:',(ro_ab+ro_ba),' <Sy>:',(ro_ba_I-ro_ab_I),' <Sz>:',(ro_a-ro_b),' mod(S):',spindens
       !END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
@@ -2671,7 +2670,7 @@
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
       !IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
             spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
-            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens
+            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' <Sx>:',(ro_ab+ro_ba),' <Sy>:',(ro_ba_I-ro_ab_I),' <Sz>:',(ro_a-ro_b),' mod(S):',spindens
       !   END IF
           IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
       !     if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
@@ -2721,7 +2720,7 @@
     !  if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
     !  IF(NSpin == 2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN     
          spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
-         write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' Sp.dens.x:',(ro_ab+ro_ba),' Sp.dens.y:',(ro_ba_I-ro_ab_I),' Sp.dens.z:',(ro_a-ro_b),' Coll. sp.dens:',spindens        
+            write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' <Sx>:',(ro_ab+ro_ba),' <Sy>:',(ro_ba_I-ro_ab_I),' <Sz>:',(ro_a-ro_b),' mod(S):',spindens
     !  END IF
        IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
     !    if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
@@ -2743,7 +2742,7 @@
    write(ifu_log,*)'---------------------------------------------------------'    
 
 2011 format(a6,i4,a10,f8.4)
-2012 format(a6,i4,a10,f8.4,3(a12,f9.6),a16,f9.6)
+2012 format(a6,i4,a10,f8.4,3(a10,f9.5),a12,f9.5)
 2013 format(10f9.4)
   end subroutine MullPop_SOC  
 
@@ -2796,8 +2795,8 @@
       
     else
 
-       allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-       allocate(GammaR(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(GammaL(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !allocate(GammaR(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Green(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(SG(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
 
@@ -2824,7 +2823,8 @@
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-          call gplus(cenergy,Green,GammaR,GammaL)
+         !call gplus(cenergy,Green,GammaR,GammaL)
+          call gplus0(cenergy,Green)
 
           ! Mulliken DOS 
 #ifdef PGI
@@ -2904,7 +2904,8 @@
           !*********************************************************************
           !* Evaluation of the retarded "Green" function and coupling matrices *
           !*********************************************************************
-             call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+            !call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
+             call gplus0_SOC(cenergy,DGreen,1)
 
 #ifdef PGI
 !$OMP CRITICAL
@@ -3078,8 +3079,8 @@
       !allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-      !allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-      !allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DT(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(T(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dtemp(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -3087,6 +3088,8 @@
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dtn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(Dctn(DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      !DGammaR=c_zero !just paranoia
+      !DGammaL=c_zero !just paranoia
 ! matrices for polarization computation
        if (POL) then
           allocate(DGreenTC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop       
@@ -3102,7 +3105,7 @@
           allocate(GreenTC_UD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
           allocate(GreenTC_DU(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
           allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
-          DGreenTC=c_zero      
+         !DGreenTC=c_zero      
        end if 
 
        call spin_orbit
@@ -3144,7 +3147,7 @@
 
     nsteps = (EW2-EW1)/EStep + 1
 
-    if ((.not. SOC) .and. (.not. ROT) .and. (.not. ZM) .and. (.not.SCFSOC)) then
+    if ((.not.SOC) .and. (.not.ROT) .and. (.not.ZM) .and. (.not.SCFSOC)) then
 
     do ispin=1,NSpin
 
@@ -5070,7 +5073,7 @@ subroutine IntRealAxis_SOC(Er,El)
  
 !print*, 'number of shells', nshell
  If (ROT) CALL CompHROT(HD,hamilrot,SD,overlaprot,NAOrbs,nshell)
- If (ZM) CALL CompHZM(hamil_ZM,NAOrbs,nshell) 
+ If (ZM) CALL CompHZM(hamil_ZM,SD,NAOrbs,nshell) 
  If (SOC) CALL CompHSO(hamil_SO,NAOrbs,nshell)
 
  if (ROT) then
@@ -5089,40 +5092,40 @@ subroutine IntRealAxis_SOC(Er,El)
 
  if (PrtHAtom > 0) then 
 
-    PRINT *, "Real part of Hamil_SO matrix for atom ",Atom," : "
+    PRINT *, "Real part of Hamiltonian perturbation (SOC+ZM) for atom ",Atom," : "
     PRINT *, "Up-Up" 
     do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-       PRINT '(1000(F11.5))',  ( REAL(hamil_SO( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
+       PRINT '(1000(F11.5))',  ( REAL(H_SOC_ONLY( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
     end do  
     PRINT *, "Up-Down" 
     do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-        PRINT '(1000(F11.5))',  ( REAL(hamil_SO( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
+        PRINT '(1000(F11.5))',  ( REAL(H_SOC_ONLY( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
     end do  
     PRINT *, "Down-Up"
     do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                   
-        PRINT '(1000(F11.5))',  ( REAL(hamil_SO( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
+        PRINT '(1000(F11.5))',  ( REAL(H_SOC_ONLY( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
     end do                                   
     PRINT *, "Down-Down"
     do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                   
-        PRINT '(1000(F11.5))',  ( REAL(hamil_SO( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
+        PRINT '(1000(F11.5))',  ( REAL(H_SOC_ONLY( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
     end do                                                                                             
 
-    PRINT *, "Imaginary part of Hamil_SO matrix for atom ",Atom," : "
+    PRINT *, "Imaginary part of Hamiltonian perturbation (SOC+ZM) for atom ",Atom," : "
     PRINT *, "Up-Up" 
     do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-       PRINT '(1000(F11.5))',  ( IMAG(hamil_SO( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
+       PRINT '(1000(F11.5))',  ( IMAG(H_SOC_ONLY( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
     end do  
     PRINT *, "Up-Down" 
     do i=LoAOrbNo(Atom),HiAOrbNo(Atom)
-        PRINT '(1000(F11.5))',  ( IMAG(hamil_SO( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
+        PRINT '(1000(F11.5))',  ( IMAG(H_SOC_ONLY( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
     end do  
     PRINT *, "Down-Up"
     do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                   
-        PRINT '(1000(F11.5))',  ( IMAG(hamil_SO( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
+        PRINT '(1000(F11.5))',  ( IMAG(H_SOC_ONLY( i, j )), j=LoAOrbNo(Atom),HiAOrbNo(Atom) ) 
     end do                                   
     PRINT *, "Down-Down"
     do i=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom)                                                   
-        PRINT '(1000(F11.5))',  ( IMAG(hamil_SO( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
+        PRINT '(1000(F11.5))',  ( IMAG(H_SOC_ONLY( i, j )), j=totdim+LoAOrbNo(Atom),totdim+HiAOrbNo(Atom) ) 
     end do            
 
 end if

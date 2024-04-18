@@ -328,10 +328,6 @@
   REAL*8, DIMENSION( MaxAtm ) :: ZMAtomBx = 0.0d0, ZMAtomBy = 0.0d0,  ZMAtomBz = 0.0d0
   CHARACTER(LEN=10), PARAMETER :: ZMAtom_keyw = "ZMATOM"  
   
-!  ! Weak-field spin-only Zeeman effect field value (in Tesla). Make positive for anti-parallel and negative for parallel spins. (Convention: mu_S=-1/2*g*mu_B*sigma)
-!  REAL*8 :: ZM = 0.0d0                           
-!  CHARACTER(len=10), PARAMETER :: ZM_keyw = "ZM"        
-
   ! *********************
   ! Output parameters
   ! *********************
