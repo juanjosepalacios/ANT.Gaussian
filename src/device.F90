@@ -980,7 +980,7 @@
     logical :: root_fail
     
     DE = 0.0d0
-    Z=0.5d0
+    Z=1.0d0
     Delta=FermiAcc
     Epsilon=ChargeAcc*(NCDEl+QExcess)
 
@@ -2612,10 +2612,10 @@
          !print*,rho_a(i,i)
           ro_b=ro_b+rho_b(i,i)
        !  IF(NSpin==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0)) THEN 
-            ro_ab=ro_ab+rho_ab(i,i)
-            ro_ab_I=ro_ab_I+rho_ab_I(i,i)
-            ro_ba=ro_ba+rho_ba(i,i)  
-            ro_ba_I=ro_ba_I+rho_ba_I(i,i)
+          ro_ab=ro_ab+rho_ab(i,i)
+          ro_ab_I=ro_ab_I+rho_ab_I(i,i)
+          ro_ba=ro_ba+rho_ba(i,i)  
+          ro_ba_I=ro_ba_I+rho_ba_I(i,i)
        !  END IF 
        end do
       !if(NSpin == 1 .and. biasvoltage == 0.0) write(ifu_log,2011)'Atom:',j,' El.dens:',ro_a+ro_b
@@ -2841,7 +2841,10 @@
           end do
           end do
 
-          if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
+          if (dabs(energy-DOSEnergy) < EStep/2) then 
+             if (NSpin .eq. 1) AtomDOSEF(ispin,:)=AtomDOS
+             if (NSpin .eq. 2) AtomDOSEF(ispin,:)=AtomDOS/2.0
+          end if
 
           ! print out DOS and atomic orbital resolved DOS ***
           imin = LoAOrbNo(LDOS_Beg)
@@ -2849,7 +2852,8 @@
           imax = HiAOrbNo(LDOS_End)
           if( imax > NAOrbs ) imax = NAOrbs
           call flush(333)
-          write(333,3333) energy,DOS*(-1)**(ispin+1),(AtomDOS(j)*(-1)**(ispin+1),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/d_pi,i=imin,imax)
+          if (NSpin .eq. 1) write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))/d_pi,i=imin,imax)
+          if (NSpin .eq. 2) write(333,3333) energy,(DOS*(-1)**(ispin+1))/2,((AtomDOS(j)*(-1)**(ispin+1))/2,j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/(2*d_pi),i=imin,imax)
 
 #ifdef PGI
 !$OMP END CRITICAL
@@ -3194,26 +3198,30 @@
 #endif
           ! Mulliken DOS 
           if (LDOS_Beg <= LDOS_End ) then
-            SG = matmul( SD, green )
-            ! computing total DOS
-            DOS=d_zero
-            AtomDOS=d_zero
-            do j=1,GetNAtoms()
-            do i=LoAOrbNo(j),HiAOrbNo(j)
-               AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
-               DOS=DOS-dimag(SG(i,i))/d_pi
-            end do
-            end do
-
-            if (dabs(energy-DOSEnergy) < EStep/2) AtomDOSEF(ispin,:)=AtomDOS
-
-            ! print out DOS and atomic orbital resolved DOS ***
-            imin = LoAOrbNo(LDOS_Beg)
-            if( imin < 1 ) imin = 1
-            imax = HiAOrbNo(LDOS_End)
-            if( imax > NAOrbs ) imax = NAOrbs
-            call flush(333)
-            write(333,3333) energy,DOS*(-1)**(ispin+1),(AtomDOS(j)*(-1)**(ispin+1),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/d_pi,i=imin,imax)
+             SG = matmul( SD, green )
+             ! computing total DOS
+             DOS=d_zero
+             AtomDOS=d_zero
+             do j=1,GetNAtoms()
+             do i=LoAOrbNo(j),HiAOrbNo(j)
+                AtomDOS(j)=AtomDOS(j)-dimag(SG(i,i))/d_pi
+                DOS=DOS-dimag(SG(i,i))/d_pi
+             end do
+             end do
+ 
+             if (dabs(energy-DOSEnergy) < EStep/2) then
+                if (NSpin .eq. 1) AtomDOSEF(ispin,:)=AtomDOS
+                if (NSpin .eq. 2) AtomDOSEF(ispin,:)=AtomDOS/2.0
+             end if 
+ 
+             ! print out DOS and atomic orbital resolved DOS ***
+             imin = LoAOrbNo(LDOS_Beg)
+             if( imin < 1 ) imin = 1
+             imax = HiAOrbNo(LDOS_End)
+             if( imax > NAOrbs ) imax = NAOrbs
+             call flush(333)
+             if (NSpin .eq. 1) write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))/d_pi,i=imin,imax)
+             if (NSpin .eq. 2) write(333,3333) energy,(DOS*(-1)**(ispin+1))/2,((AtomDOS(j)*(-1)**(ispin+1))/2,j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/(2*d_pi),i=imin,imax)
           end if
 
           ! computing transmission T
