@@ -2,14 +2,14 @@
 
 ********************************************************************************
 Versions notation: The main module ANT.F90 must contains in its header the label
-with the latest version (now 2.7.2). This should coincide with the latest version 
+with the latest version (now 2.8.0). This should coincide with the latest version 
 of the  modules recently changed even though the module ANT itself may have not 
-changed.  This way, a quick look tells you that some module has been changed. 
-Most modules should retain old headers if they have not been changed.
+changed.  This way, a quick look at thois file tells you the version you are in. 
+Other modules should retain old headers if they have not been changed.
 ********************************************************************************
 
-It works both with intel and NVIDIA (PG) compilers. No need to maintain two versions. 
-Just set your enviroment variables.
+It works both with intel (ifx) and NVIDIA (PG) compilers. No need to maintain 
+two versions.  Just set your enviroment variables.
 
 ********************************************************************************
                            For Intel installations:
@@ -47,3 +47,5 @@ Main new Features:
 
 - SOC implementation has beed revised and fixed. Now Yukawa potential actually works
 - SOC keywords have been changed for clarity
+- SCFSOC seems to work, at least if the magentization points in the z direction since
+  the magnetic density matrix is real in this case.
