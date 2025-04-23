@@ -1,5 +1,5 @@
 !**********************************************************
-!*********************  ANT.G-2.8.0  **********************
+!*********************  ANT.G-2.8.1  **********************
 !**********************************************************
 !*                                                        *
 !*  Copyright (c) by                                      *
@@ -92,16 +92,16 @@
   CHARACTER(len=10), PARAMETER :: gamma_keyw = "GAMMA"
   
   ! -Infty = Lower integration limit for charge integration 
-  REAL*8 :: Infty = 1000.0
+  REAL*8 :: Infty = 10000.0
   CHARACTER(len=10), PARAMETER :: Infty_keyw = "INFTY"
   !
   ! Convergence criterion for iterative solution of Dyson equation for 1D self-energy
   !
-  integer :: L1DMaxCyc = 10000
+  integer :: L1DMaxCyc = 50000
   !
   ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation in 1D leads
   !
-  REAL*8 :: L1DAlpha = 0.5d0  
+  REAL*8 :: L1DAlpha = 0.25d0  
   !
   ! Switch on Bethe lattice electrodes
   logical :: Bethe= .false.

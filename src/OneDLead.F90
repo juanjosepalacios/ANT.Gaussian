@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.7.2  *********************!
+!*********************  ANT.G-2.8.1  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -81,7 +81,7 @@
      integer :: NElectrons
 
      !Lower and upper bound for non-zero DOS
-     real(double) :: EMin = -10.0, EMax = 10.0
+     real(double) :: EMin = -100.0, EMax = 1000.0
      real(double) :: EFermi = -5.0
 
      !Number of primitive unit cells
@@ -545,7 +545,7 @@ contains
 
     NAO   = Lead1D(ilead)%NAOrbs
     NSpin = Lead1D(ilead)%NSpin
-    if(proc_id == 0)then
+   !if(proc_id == 0)then
        print *
        print *, "*** Supercell on-site and coupling matrices ***"
        print *
@@ -572,7 +572,7 @@ contains
           print '(1000(E14.4))', (DREAL(L1D_S1( Lead1D(ilead), i,j)), j=1,NAO )
        end do
        call FlUSH(6)
-    end if
+   !end if
   end subroutine PrintMatrices
 
   !***************************
@@ -689,13 +689,15 @@ contains
     
     print '(A,I1,A,A)', "Printing DOS of Lead ", ilead, "to file ", file(ilead)
     
-    EMin = Lead1D(ilead)%EMin
-    EMax = Lead1D(ilead)%EMax
+   !EMin = Lead1D(ilead)%EMin
+   !EMax = Lead1D(ilead)%EMax
+    EMin = -10.0
+    EMax = 10.0
 
     iunit=fopen(file(ilead),'unknown', ios)
     do energy=EMin, EMax, DE 
-      !zenergy=energy-Lead1D(ilead)%EFermi+gamma*ui
-       zenergy=energy+gamma*ui
+       zenergy=energy-Lead1D(ilead)%EFermi+gamma*ui
+      !zenergy=energy+gamma*ui
       !zenergy=energy
        write(UNIT=iunit,FMT='(F10.5,(1000(ES14.6)))'), energy,&
             ( BulkSDOS( Lead1D(ilead), ispin, zenergy ), ispin=1,NXSpin )
@@ -817,7 +819,7 @@ contains
   !*** Spin-resolved Bulk DOS ***
   !******************************
   real(double) function BulkSDOS( L1D, spin, energy )
-    use parameters, only: SOC
+   !use parameters, only: SOC
     use numeric, only: CInv
     use constants, only: d_pi
 
@@ -840,7 +842,7 @@ contains
     BulkSDOS = d_zero
     do i=NAO+1,NAO+NPCAO
        BulkSDOS = BulkSDOS + DIMAG(GXSX(i,i)) 
-       if( SOC ) BulkSDOS = BulkSDOS + DIMAG(GXSX(i+NXAO,i+NXAO)) 
+      !if( SOC ) BulkSDOS = BulkSDOS + DIMAG(GXSX(i+NXAO,i+NXAO)) 
     end do
     BulkSDOS = -BulkSDOS/d_pi
   end function BulkSDOS
@@ -851,7 +853,7 @@ contains
   !*** up to Energy E, lower bound is EMin ***
   !*******************************************
   real(double) function TotCharge( E )
-    use parameters, only: ChargeAcc, Infty, SOC
+    use parameters, only: ChargeAcc, Infty
     use numeric, only: gauleg 
     use constants, only: ui, d_pi
     implicit none
@@ -912,7 +914,7 @@ contains
                   !q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
                    qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
                   !if( SOC ) q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
-                   if( SOC ) qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
+                  !if( SOC ) qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
                 end do
              end do
             !if (j == 1) print*,'z= ',z,'phi=',x(1),GX(1,1),'DOS=',qj*2.0
@@ -920,20 +922,21 @@ contains
           end do
             !print*,'----------------'
        end do
-       if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
+      !if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
+       if( NXSpin == 1 ) q = q*2.0d0
       !print *, n, q
       !if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*100 ) ) exit  
        if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.1 ) ) exit  
        n = 2*n+1
        if( n > nmax )then
           print '(A,I5,A)', "WARNING: TotCharge/gaussian quadrature has not converged after", nmax , " steps."
-         !print *, "E = ", E
-         !print *, "deltaq = ", abs(q-qq)
+          print *, "E = ", E
+          print *, "Error = ", abs(q-qq)
           exit
        end if
        qq = q
     end do
-    print '(A,I5,A)', "GauLeg quadrature converged after", n, " steps."
+    if (n < nmax) print '(A,I5,A)', "GauLeg quadrature converged after", n, " steps."
     call flush(6)
     TotCharge = q-ChargeOffset
 
@@ -950,7 +953,7 @@ contains
 
     type(T1DLead), intent(inout) :: L1D
 
-    real(double)    :: EStep, Q, qmax
+    real(double)    :: Q, qmax
     
     qmax = 2.0d0*L1D%NPCAO
    !qmax = 2.0d0*(NXAO-(L1D%NPCAO*2))
@@ -960,24 +963,20 @@ contains
     
     ! 1. Decrease EMin until charge integration becomes zero
     !
-    EStep = 10.0d0
     print '(A)', "Searching optimum Emin such that DOS integrates to zero ..."
     do
        Q = TotCharge( L1D%EMin )
        print *, "EMin = ", L1D%EMin, Q
        call FLUSH(6)
        if( abs(Q) <  0.1 ) exit
-       L1D%EMin = L1D%EMin - EStep
+       L1D%EMin = L1D%EMin + L1D%EMin
        if (L1D%EMin < -Infty) then
            print*,'Warning: Emin < -Infty. Decrease this value'
            stop
        end if
     end do
-    L1D%EMin = L1D%EMin - 10.0    ! for safety
-    L1D%EMax = -L1D%EMin
-
     !
-    ! 1. Increase EMax until charge integration becomes number of spin orbitals
+    ! 1. Increase EMax from default until charge integration becomes number of spin orbitals
     !
     print '(A)', "Searching optimum EMax such that the DOS integrates to the total spectral weight in the unit cell ..."
     do 
@@ -985,7 +984,7 @@ contains
        print *, "EMax = ", L1D%EMax, Q
        call FLUSH(6)
        if( abs(Q - qmax ) <  0.1 ) exit
-       L1D%EMax = L1D%EMax + EStep
+       L1D%EMax = L1D%EMax + L1D%EMax
     end do
     !
     ! 2. Try to decrease EMax if possible 

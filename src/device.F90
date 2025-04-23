@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.8.0  *********************!
+!*********************  ANT.G-2.8.1  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -254,7 +254,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed, NPC, SCFSOC
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed, NPC, SCFSOC, DFTU
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -300,6 +300,10 @@
        print *, "DEVICE/Allocation error for SD, InvSD, HD, PD"
        stop
     end if
+
+    if ( DFTU ) then
+       call initcorrelation(NAOrbs, NSpin)
+    end if 
 
     ! Dynamic SOC arrays
     if (SOC .or. ROT .or. ZM .or. SCFSOC) then 
@@ -843,8 +847,14 @@
        ! Find upper and lower energy bounds 
        if (.not. Bounds) call FindEnergyBounds
     end if
+ 
+    ! These lines modify the Gaussian Hamiltonian at will  
 
-    if ( DFTU ) call Add_DFT_plus_U_Pot( PD, HD )
+    if ( DFTU ) then
+       call Add_DFT_plus_U_Pot( PD, HD )
+    end if 
+
+    if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
 
     if (.not.DMImag) then
        if (SCFSOC) then
@@ -866,6 +876,7 @@
        end if
        if (.not.SCFSOC) call CompDensMat(ADDP)
     end if
+
     if(DMImag) call CompDensMat2(ADDP) !SCFSOC not implemented here !!!!
 
     if( Evaluation )then
@@ -883,7 +894,7 @@
        print *, "****************************************** "
        print *
 
-       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
+      !if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then
