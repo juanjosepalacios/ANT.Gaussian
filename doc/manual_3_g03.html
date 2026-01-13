@@ -397,15 +397,67 @@ Default: .false. (off) <br>
   </li>
 <br>
   <li><em>SOC</em> (logical)<br>
-    <div style="text-align: justify;"> Atomic spin-orbit coupling parameter. When
-different from zero, the transmission and DOS are computed adding the spin-orbit coupling to 
-the converged solution in the absence of spin-orbit coupling (this is obviously not justified for large
-values). As expected, in magnetic systems the spatial orientation determines the result.
+    <div style="text-align: justify;"> Spin-orbit coupling logical parameter. When set to .true. the transmission, polarization, and DOS are computed adding the spin-orbit coupling to 
+the converged solution in the absence of spin-orbit coupling.
 <br>
     </div>
-Default: <em>SOC</em> = 0.0<br>
+Default: <em>SOC</em> = .false.<br>
   </li>
   <br>
+  <li><em>SCFSOC</em> (logical)<br>
+    <div style="text-align: justify;"> Spin-orbit coupling logical parameter. When set to .true. the SCF procedure itself includes spin-orbit coupling.
+<br>
+    </div>
+Default: <em>SCFSOC</em> = .false.<br>
+  </li>
+  <br>
+   </li>
+  <br>
+  <li><em>SOC_FAC_P</em> (real)<br>
+    <div style="text-align: justify;"> Global SOC multiplicative factor for p orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.
+<br>
+    </div>
+Default: 1.0 <br>
+  </li>
+  <br>
+   </li>
+  <br>
+  <li><em>SOC_FAC_D</em> (real)<br>
+    <div style="text-align: justify;"> Global SOC multiplicative factor for d orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.
+<br>
+    </div>
+Default: 1.0 <br>
+  </li>
+  <br>
+   </li>
+  <br>
+  <li><em>SOC_FAC_F</em> (real)<br>
+    <div style="text-align: justify;"> Global SOC multiplicative factor for f orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.
+<br>
+    </div>
+Default:  1.0 <br>
+  </li>
+  <br>
+   </li>
+  <br>
+  <li><em>RCUT</em> (real)<br>
+    <div style="text-align: justify;"> Global cutoff for Yukawa nuclear screening potential in the intra-atomic SOC implementation.
+<br>
+    </div>
+Default:  2.0 <br>
+  </li>
+  <br>
+   </li>
+  <br>
+  <li><em>SOCFACATOM</em>  <br><div style="text-align: justify;"> Atom-by-atom SOC multiplicative factor due to lack of nodal structure in basis set and cutoff radius.
+<br>
+    </div>
+    Syntax:  <br>
+    SOCFACATOM <br>
+    #atoms <br>
+    atom, soc_fac_p, soc_fac_d, soc_fac_f, rcut
+     </li>
+   <br>
 
 </ol>
 <strong>Evaluation parameters</strong>
