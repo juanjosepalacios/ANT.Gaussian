@@ -3032,8 +3032,11 @@
     real*8, dimension(:),allocatable   :: tchan1,tchan2
     complex*16   :: T_uu,T_dd,T_ud,T_du
     real*8   :: polar,trans2
+    real*8 :: transport_start
     logical :: ADDP
     
+    transport_start = omp_get_wtime()
+    write(ifu_log,'(A,I6)') ' ANT OpenMP maximum threads: ', omp_get_max_threads()
     if (TREV < 1 .or. TREV > 2) TREV = 1
     
     do irev=1,TREV    
@@ -3667,6 +3670,8 @@
     end if
     
     end do    
+
+    write(ifu_log,'(A,F12.4)') ' ANT transport analysis wall seconds: ', omp_get_wtime()-transport_start
 
 1002 format(f10.5,10000E14.5)
 3333 format(f10.5,10000E14.5)
@@ -4362,7 +4367,7 @@ subroutine IntRealAxis(Er,El)
        xcc(l+2)=xcc(l)*C1-xs(l)*S1
     end do
 ! ... computing F() at the new points
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp,chunk)
       PDP=d_zero
       chunk=max(((n+1)/2)/omp_get_num_threads(),1)
      !chunk=1
@@ -4385,7 +4390,7 @@ subroutine IntRealAxis(Er,El)
             enddo
          enddo
       enddo
-!$OMP END DO
+!$OMP END DO NOWAIT
 !$OMP CRITICAL
        do i = 1,NAOrbs
           do j = 1,NAOrbs
@@ -4502,7 +4507,7 @@ subroutine IntRealAxis_SOC(Er,El)
        xcc(l+2)=xcc(l)*C1-xs(l)*S1
     end do
 ! ... computing F() at the new points
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp,chunk)
       PDP=d_zero
       chunk=max(((n+1)/2)/omp_get_num_threads(),1)
      !chunk=1
@@ -4525,7 +4530,7 @@ subroutine IntRealAxis_SOC(Er,El)
             enddo
          enddo
       enddo
-!$OMP END DO
+!$OMP END DO NOWAIT
 !$OMP CRITICAL
       do i = 1,DNAOrbs
          do j = 1,DNAOrbs
@@ -4643,7 +4648,7 @@ subroutine IntRealAxis_SOC(Er,El)
        xs(l+2)=xs(l)*C1+xcc(l)*S1
        xcc(l+2)=xcc(l)*C1-xs(l)*S1
     end do
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp,chunk,k)
     PDP=d_zero
      chunk=max(((n+1)/2)/omp_get_num_threads(),1)
     !chunk=1
@@ -4666,7 +4671,7 @@ subroutine IntRealAxis_SOC(Er,El)
           end do
        end do
     end do
-!$OMP END DO
+!$OMP END DO NOWAIT
 !$OMP CRITICAL
        do i = 1,NAOrbs
           do j = 1,NAOrbs
@@ -4779,7 +4784,7 @@ subroutine IntRealAxis_SOC(Er,El)
        xs(l+2)=xs(l)*C1+xcc(l)*S1
        xcc(l+2)=xcc(l)*C1-xs(l)*S1
     end do
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,PDP)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,PDP,chunk,k)
      PDP=c_zero
      chunk=max(((n+1)/2)/omp_get_num_threads(),1)
     !chunk=1
@@ -4802,7 +4807,7 @@ subroutine IntRealAxis_SOC(Er,El)
           end do
        end do
     end do
-!$OMP END DO
+!$OMP END DO NOWAIT
 !$OMP CRITICAL
        do i = 1,DNAOrbs
           do j = 1,DNAOrbs
