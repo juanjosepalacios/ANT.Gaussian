@@ -1,4 +1,4 @@
-# ANT.Gaussian (2.8.3 development)
+# ANT.Gaussian (2.8.3)
 
 ********************************************************************************
 Release versions are recorded in VERSION. See CHANGELOG.md for release notes.

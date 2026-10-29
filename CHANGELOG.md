@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.8.3 - Unreleased
+## 2.8.3 - 2026-10-29
 
 - Parallelize TotCharge quadrature with explicit per-call spin and ordered
   accumulation; keep the 1D-lead path serial because of saved scratch state.

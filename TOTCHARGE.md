@@ -1,4 +1,4 @@
-# TotCharge parallelization (2.8.3 development)
+# TotCharge parallelization (2.8.3)
 
 ## Why the previous parallel loop failed
 
@@ -69,4 +69,4 @@ eight-thread Pt result byte for byte.
 Logs, binaries and JSON: /home/palacios/ANT-runs/totcharge/.
 Serial build: /home/palacios/ANT-runs/totcharge-serial/.
 Main checkout, installed executables and v2.8.2 tag remain unchanged.
-This is an unreleased branch; no release tag was created.
+Release v2.8.3 identifies this implementation and its recorded validation.
