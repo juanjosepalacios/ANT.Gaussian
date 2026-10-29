@@ -1494,7 +1494,7 @@ CONTAINS
        ndi=ndi+ndirr
        end do 
        ndir(i)=ndi
-       print *, i, ndir(i)
+      !print *, i, ndir(i)
        if (ndi /= 0) ifrpl(i)=1
 
        do j=1,ndir(i)

@@ -678,7 +678,7 @@ CONTAINS
               IF (ShellT1 == 1 .and. socval_p > 0.0d0) Xi(i,k) = socval_p
               IF (ShellT1 == 2 .and. socval_d > 0.0d0) Xi(i,k) = socval_d
               IF (ShellT1 == 3 .and. socval_f > 0.0d0) Xi(i,k) = socval_f
-              PRINT '(4(i10),3F15.10)',AtomID1,ShellT1,i,k,Xi(i,k)
+             !PRINT '(4(i10),3F15.10)',AtomID1,ShellT1,i,k,Xi(i,k)
            END IF
         END DO
     END DO

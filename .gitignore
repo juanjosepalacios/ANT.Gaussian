@@ -1,0 +1,9 @@
+
+# Local build products and desktop metadata
+.DS_Store
+/src/*.mod
+/src/*.smod
+/src/*.f90
+/obj/
+/lib/
+/bin/

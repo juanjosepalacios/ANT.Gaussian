@@ -847,14 +847,10 @@
        ! Find upper and lower energy bounds 
        if (.not. Bounds) call FindEnergyBounds
     end if
- 
-    ! These lines modify the Gaussian Hamiltonian at will  
 
     if ( DFTU ) then
        call Add_DFT_plus_U_Pot( PD, HD )
     end if 
-
-    if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
 
     if (.not.DMImag) then
        if (SCFSOC) then
@@ -876,7 +872,6 @@
        end if
        if (.not.SCFSOC) call CompDensMat(ADDP)
     end if
-
     if(DMImag) call CompDensMat2(ADDP) !SCFSOC not implemented here !!!!
 
     if( Evaluation )then
@@ -894,7 +889,7 @@
        print *, "****************************************** "
        print *
 
-      !if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
+       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then
@@ -1072,7 +1067,7 @@
           if (root_fail) then
              print*,'MULLER method'
              call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-            !call MULLER(TotCharge2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
+            !call MULLER(QTot2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
              if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
                 print *, 'Warning: MULLER method failed to find root. Using SECANT.'
                 root_fail = .true.
@@ -1084,7 +1079,7 @@
           if (root_fail) then
              print*,'SECANT method'
              call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-            !call SECANT(TotCharge2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
+            !call SECANT(QTot2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
              if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
                 print *, 'Warning: SECANT method failed to find root. Using BISEC.'
                 root_fail = .true.
@@ -1097,7 +1092,7 @@
              print *, 'BISEC method'
              Delta=0.1
              shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
-            !shift = BISEC(TotCharge2,EMin,Emax,Delta,5*Max,K)
+            !shift = BISEC(QTot2,EMin,Emax,Delta,5*Max,K)
              DE=Delta
              if(k.lt.5*Max) root_fail = .false.
              if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
@@ -4013,7 +4008,7 @@
     complex*16, dimension(:,:),intent(out) :: Sigma1
     complex*16, dimension(:,:),intent(out) :: Sigma2
     complex*16, dimension(NAOrbs,NAOrbs) :: temp
-    integer :: is,omp_get_thread_num
+    integer :: is, omp_get_thread_num
     
     !Sigma1=(0.0,0.0)
     !Sigma2=(0.0,0.0)
@@ -4100,6 +4095,7 @@
     use constants, only: d_zero, d_pi, ui
     use parameters, only: ChargeAcc
     use numeric, only: gauleg 
+    use omp_lib
     implicit none
     
     integer, parameter :: nmax = 2047
@@ -4107,7 +4103,9 @@
     real*8, intent(in) :: E
     real*8 :: q,qq, E0, R, w_j, phi_j, phi
     real*8, dimension(nmax) :: x, w
-    complex*16 :: z
+    integer :: tid
+    real*8, allocatable :: q_private(:)
+   !complex*16 :: z
     
     ! Integration contour parameters:
     E0 = 0.5*(E + EMin)
@@ -4115,38 +4113,64 @@
     ! Computing integral of DOS over 
     ! complex contour using Gauss-Legendre 
     ! quadrature
-    n=1
+    n=31
     do  
        q = d_zero
+       call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
+
+!#ifdef PGI
+!! Initialize
+!       allocate(q_private(omp_get_max_threads()))
+!       q_private = 0.0
+!
+!! Parallel region without reduction clause
+!!$omp parallel private(j, tid) default(shared)
+!       tid = omp_get_thread_num()
+!!$omp do
+!       do j = 1, n
+!          q_private(tid + 1) = q_private(tid + 1) + w(j) * DDOS(E0, R, x(j))
+!       end do
+!!$omp end do
+!!$omp end parallel
+!! Combine partial sums
+!       do j = 1, omp_get_max_threads()
+!          q = q + q_private(j)
+!       end do
+!       deallocate(q_private)
+!#endif
+
+#ifdef INTEL
+!$omp parallel do private(j) reduction(+:q) default(shared)
+#endif
        do j=1,n
-          call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
           q = q + w(j)*DDOS( E0, R, x(j) )
-          phi=x(j)
-          z = E0 - R*(cos(phi) - ui*sin(phi)) 
-          !if (j ==1) print*,'z= ',z,'phi=',x(1),'DOS=',DDOS(E0,R,x(1))
        end do
-      !print*,'-------------------'
-       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.01 ) ) exit  
-       n=2*n+1
+#ifdef INTEL
+!$omp end parallel do
+#endif
+       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.1 ) ) exit  
        if( n > nmax )then
           print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
           return
        end if
        qq = q
        print '(A,I4,F13.5)', "TotCharge/Gaussian quadrature gives  ", n, q
+       n=2*n+1
     end do
     print '(A,I4,A,F13.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
     print '(A,F13.5)', "TotCharge/Gaussian quadrature gives  ", q
 
     TotCharge = q
   end function TotCharge
-  ! 
-  ! *** Total charge up to energy 0, lower bound is EMin ***
-  ! 
-  real*8 function TotCharge2( mu )
+! 
+! *** Total charge up to energy 0, lower bound is EMin and the argument is the Fermi level ***
+!  possible alternative to QTot but not as good  and not working yet!!!
+! 
+  real*8 function QTot2( mu )
     use constants, only: d_zero, d_pi, ui
     use parameters, only: ChargeAcc, QExcess
     use numeric, only: gauleg 
+    use omp_lib
     implicit none
     
     integer, parameter :: nmax = 2047
@@ -4156,6 +4180,8 @@
     real*8, dimension(nmax) :: x, w
     complex*16 :: z
     complex*16,dimension(NAOrbs,NAOrbs) :: green
+    real, allocatable :: PD_private(:,:,:,:)
+    integer :: tid
     
     shift = mu
     E=0.0
@@ -4169,35 +4195,28 @@
        n=1
        qq=0.0d0
        do  
-          PD = 0.0d0
+          q = d_zero
+          call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
+
+#ifdef INTEL
+!$omp parallel do private(j) reduction(+:q) default(shared)
+#endif
           do j=1,n
-             call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
-             phi=x(j)
-             z = E0 - R*(cos(phi) - ui*sin(phi)) 
-             call gplus0(z,green)
-             do k=1,NAOrbs
-             do l=1,NAOrbs
-                PD(ispin,k,l)=PD(ispin,k,l)-w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*green(k,l))/d_pi
-             end do
-             end do
+             q = q + w(j)*DDOS( E0, R, x(j) )
           end do
-   
-          Q=0.0d0
-          do k=NCDAO1,NCDAO2
-          do l=1,NAOrbs
-             Q = Q + PD(ispin,k,l)*SD(l,k)
-          end do
-          end do
+#ifdef INTEL
+!$omp end parallel do
+#endif
    
           if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.01 ) ) exit  
-          n=2*n+1
           if( n > nmax )then
-             print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
+             print '(A,I4,A)' , "QTot2/Gaussian quadrature has not converged after", nmax, " steps."
              return
           end if
           qq = q
+          n=2*n+1
        end do
-      !print '(A,I4,F10.5)', "TotCharge/Gaussian quadrature gives  ", n, q
+       print '(A,I4,F10.5)', "QTot2/Gaussian quadrature gives  ", n, q
 
     ! Account for spin degeneracy
 
@@ -4206,12 +4225,12 @@
        if( NSpin == 1 ) QBeta = QAlpha
 
     end do
-    print '(A,I4,A,F10.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
-    print '(A,F10.5)', "TotCharge/Gaussian quadrature gives  ", q - dble(NCDEl)
+    print '(A,I4,A,F10.5)', "QTot2/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
+    print '(A,F10.5)', "QTot2/Gaussian quadrature gives  ", q - dble(NCDEl)
 
-    TotCharge2 = QAlpha + QBeta - dble(NCDEl) - QExcess
-    print*,shift,TotCharge2
-  end function TotCharge2
+    QTot2 = QAlpha + QBeta - dble(NCDEl) - QExcess
+   !print*,shift,QTot2
+  end function QTot2
 
 
   ! *************************************

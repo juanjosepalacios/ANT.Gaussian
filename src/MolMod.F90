@@ -67,7 +67,7 @@ print *
 
 NHyb = (CEnd-CBeg) + 1
 
-print *, " Correlated Sub-Shell dimension = ", nhyb,"Beg_basis function = ",CBeg &
+print *, " Correlated block dimension = ", nhyb,"Beg_basis function = ",CBeg &
 ,"End_basis function = ", CEnd
 print *, "----------------------------------------------"
 
@@ -75,7 +75,7 @@ allocate(HD_M(NHyb,NHyb),SPP_M(NHyb,NHyb),ICh(Nspin,NHyb))
 allocate(XD_M(nhyb,nhyb),SPN_M(NHyb,NHyb))
 allocate(e_PD(NHyb,NHyb),XD_Mu(nhyb,nhyb),eu_PD(NHyb,NHyb),HD_Mu(NHyb,NHyb))
 
-  print*, "Orthogonalization of correlated sub-shell"
+print*, "Orthogonalization of correlated block"
   print *, "----------------------------------------------"
   call RMatPow( SD(CBeg:CEnd,CBeg:CEnd), -0.5d0, SPN_M )
   call RMatPow( SD(CBeg:CEnd,CBeg:CEnd), 0.5d0, SPP_M )
@@ -110,17 +110,17 @@ print*, "Spin =", ispin
 
    XD_M = HD_M
 
-  do i=1,nhyb
-    do j=1,nhyb
-      XD_M(i,j) = XD_M(i,j)*XD_M(i,j)
-    end do
-  end do
+ !do i=1,nhyb
+ !  do j=1,nhyb
+ !    XD_M(i,j) = XD_M(i,j)*XD_M(i,j)
+ !  end do
+ !end do
 
   print *, "--------------------------------------------------------------------"
   print *, "--------- Print Norm. Atomic Composition near the Fermi Level   ----"
   do i = 1, NHyb
-    if (eigenval(i)+shift <= 0.0) ICh(ispin,i)=d_one
-    if (eigenval(i)+shift > 0.0) ICh(ispin,i)=d_zero
+   !if (eigenval(i)+shift <= 0.0) ICh(ispin,i)=d_one
+   !if (eigenval(i)+shift > 0.0) ICh(ispin,i)=d_zero
     if (i < NHyb) then
       if (eigenval(i)+shift <= 0.0 .and. eigenval(i+1)+shift > 0.0) then
         E_H = eigenval(i)
@@ -131,20 +131,21 @@ print*, "Spin =", ispin
         end if
         print *, "--------------------- HOMO and LUMO Located ---------------------"
         write(6,'(A20,F20.10,A20,F20.10)'), "E(HOMO) - \mu = ", E_H+shift, "E(LUMO) - \mu= ", E_L+shift
+        print *, "-----------------------------------------------------------------"
       end if
     end if
     if (eigenval(i)+shift > EW1 .and. eigenval(i)+shift < EW2) then
-      print *, "----------------------------------------------"
+     !print *, "----------------------------------------------"
       write(6, '(A20,I6,A20,F20.10,A20,F20.10,A20,F20.10)') "Mol. Orb. = ",i,"Eigenvalue - \mu = ",eigenval(i)+shift, "ne = ", &
        &(2.0d0/NSpin)*e_PD(i,i), "nh = ", (2.0d0/NSpin)*(1.0d0-e_PD(i,i))
-      print *, "----------------------------------------------"
+     !print *, "----------------------------------------------"
       do j=1,nhyb
-        write(6, '(I6,10F20.10)') j, XD_M(j,i)*100
+       !write(6, '(I6,10F20.10)') j, XD_M(j,i)*100
       end do
     end if
   end do
 
-  XD_M = HD_M 
+ !XD_M = HD_M 
   
   HD_M = HD_A(cBeg:CEnd,cBeg:CEnd) 
 
@@ -163,19 +164,19 @@ print*, "Spin =", ispin
   do i=1,Nhyb
    suma = suma + ((2.0d0/NSpin)*(1.0d0-e_Pd(i,i)))
   end do
-  print*, "Total Hole Charge in Molecule =  = ", suma
+  print*, "Total hole Charge in Molecule =  = ", suma
 
   ! Print Molecular Orbital
-  if (ispin == 1)  open (7,file=trim(jobname)//'.MOA.dat')
-  if (ispin == 2)  open (7,file=trim(jobname)//'.MOB.dat')
-  Do J=0,nhyb
-    if (J == 0) then
-      write (7,*) (eigenval(i), i=1,nhyb)
-    else
-      call flush(7)
-      write (7,*) (XD_M(j,i), i=1,nhyb)
-    end if
-  END DO
+ !if (ispin == 1)  open (7,file=trim(jobname)//'.MOA.dat')
+ !if (ispin == 2)  open (7,file=trim(jobname)//'.MOB.dat')
+ !Do J=0,nhyb
+ !  if (J == 0) then
+ !    write (7,*) (eigenval(i), i=1,nhyb)
+ !  else
+ !    call flush(7)
+ !    write (7,*) (XD_M(j,i), i=1,nhyb)
+ !  end if
+ !END DO
   deallocate(eigenval)
   close(7)
 
