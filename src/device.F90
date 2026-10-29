@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.8.2  *********************!
+!*********************  ANT.G-2.8.3  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -1719,7 +1719,7 @@
   !*************************************
   !* Compute retarded Green's function *
   !*************************************
-  subroutine gplus0(z,green)
+  recursive subroutine gplus0(z,green,spin_index)
     use numeric, only: CInv
     use parameters, only: eta, glue
     use constants, only: c_zero, ui
@@ -1729,13 +1729,18 @@
     implicit none
     external zgetrf, zgetri    
 
-    integer :: i, j, info, omp_get_thread_num
+    integer, intent(in), optional :: spin_index
+    integer :: i, j, info, selected_spin
     integer, dimension(NAOrbs) :: ipiv
     complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr
     complex*16 :: work(4*NAOrbs) 
     complex*16, intent(in) :: z 
     complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: green
     
+    ! Explicit spin avoids changing module state in parallel charge integration.
+    selected_spin = ispin
+    if (present(spin_index)) selected_spin = spin_index
+
     ! Initialization 
     green=c_zero
     sigr=c_zero
@@ -1743,7 +1748,7 @@
     sigr=-ui*eta*SD 
     sigl=-ui*eta*SD 
 
-    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
+    call CompSelfEnergies( selected_spin, z, sigl, sigr, 1 )
     sigr=glue*sigr
     sigl=glue*sigl
     
@@ -1752,7 +1757,7 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          green(i,j)=(z-shift)*SD(i,j)-HD(selected_spin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
    
@@ -4067,11 +4072,11 @@
   !
   ! *** Integrand for charge integration on complex contour ***
   !
-  real*8 function DDOS( E0, R, phi )
+  recursive real*8 function DDOS( E0, R, phi )
     use constants, only: c_zero, ui, d_pi
     implicit none
 
-    integer :: i, j !!, ispin 
+    integer :: i, j, spin_index
     real*8, intent(in) :: phi, E0, R
     complex*16,dimension(NAOrbs,NAOrbs) :: green
     complex*16 :: TrGS, z
@@ -4079,8 +4084,8 @@
     z = E0 - R*(cos(phi) - ui*sin(phi)) 
 
     TrGS=c_zero
-    do ispin=1,NSpin
-       call gplus0(z,green)
+    do spin_index=1,NSpin
+       call gplus0(z,green,spin_index)
        do i=NCDAO1,NCDAO2
           do j=1,NAOrbs
              TrGS = TrGS + green(i,j)*SD(j,i)
@@ -4098,20 +4103,23 @@
   ! 
   real*8 function TotCharge( E )
     use constants, only: d_zero, d_pi, ui
-    use parameters, only: ChargeAcc
+    use parameters, only: ElType
     use numeric, only: gauleg 
     use omp_lib
     implicit none
     
     integer, parameter :: nmax = 2047
-    integer :: n, n1, n2, j, i
+    integer :: n, j
     real*8, intent(in) :: E
-    real*8 :: q,qq, E0, R, w_j, phi_j, phi
+    real*8 :: q, qq, E0, R, charge_start
+    real*8, dimension(nmax) :: contribution
     real*8, dimension(nmax) :: x, w
-    integer :: tid
-    real*8, allocatable :: q_private(:)
-   !complex*16 :: z
-    
+    logical :: parallel_charge
+
+    ! 1D leads retain saved scratch state: keep their quadrature serial.
+    parallel_charge = all(ElType /= '1DLEAD') .and. .not. omp_in_parallel()
+    charge_start = omp_get_wtime()
+
     ! Integration contour parameters:
     E0 = 0.5*(E + EMin)
     R  = 0.5*(E - EMin)
@@ -4124,36 +4132,17 @@
        q = d_zero
        call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
 
-!#ifdef PGI
-!! Initialize
-!       allocate(q_private(omp_get_max_threads()))
-!       q_private = 0.0
-!
-!! Parallel region without reduction clause
-!!$omp parallel private(j, tid) default(shared)
-!       tid = omp_get_thread_num()
-!!$omp do
-!       do j = 1, n
-!          q_private(tid + 1) = q_private(tid + 1) + w(j) * DDOS(E0, R, x(j))
-!       end do
-!!$omp end do
-!!$omp end parallel
-!! Combine partial sums
-!       do j = 1, omp_get_max_threads()
-!          q = q + q_private(j)
-!       end do
-!       deallocate(q_private)
-!#endif
-
-#ifdef INTEL
-!$omp parallel do private(j) reduction(+:q) default(shared)
-#endif
+       ! Each point writes its own slot; sum in quadrature order afterward.
+       ! This preserves the serial accumulation order across thread counts.
+!$omp parallel do default(none) shared(n,x,w,contribution,E0,R) private(j) &
+!$omp& if(parallel_charge) schedule(static)
        do j=1,n
-          q = q + w(j)*DDOS( E0, R, x(j) )
+          contribution(j) = w(j)*DDOS( E0, R, x(j) )
        end do
-#ifdef INTEL
 !$omp end parallel do
-#endif
+       do j=1,n
+          q = q + contribution(j)
+       end do
        ! Compare successive estimates only after a refinement.
        if (q == d_zero) exit
        if (n > 31) then
@@ -4170,6 +4159,7 @@
     print '(A,I4,A,F13.5)', "TotCharge/Gaussian quadrature has converged after", n, " steps. Error:", abs(q-qq)
     print '(A,F13.5)', "TotCharge/Gaussian quadrature gives  ", q
 
+    write(ifu_log,'(A,F12.6)') ' TotCharge wall seconds: ', omp_get_wtime()-charge_start
     TotCharge = q
   end function TotCharge
 ! 

@@ -1,0 +1,120 @@
+module constants
+ implicit none
+ real*8, parameter :: d_one=1d0,d_zero=0d0,d_pi=3.14159265358979323846d0
+ complex*16, parameter :: c_zero=(0d0,0d0),ui=(0d0,1d0)
+end module
+module parameters
+ implicit none
+ real*8 :: eta=0.1d0,glue=1d0
+ character(len=10) :: ElType(2) = ['BETHE     ','BETHE     ']
+end module
+module numeric
+ implicit none
+ contains
+ integer function CInv(z)
+ complex*16,intent(inout)::z(:,:)
+ complex*16 :: a,b,c,d,det
+ a=z(1,1);b=z(1,2);c=z(2,1);d=z(2,2);det=a*d-b*c
+ z(1,1)=d/det;z(1,2)=-b/det;z(2,1)=-c/det;z(2,2)=a/det
+ CInv=0
+ end function
+  SUBROUTINE gauleg(x1,x2,x,w,n)
+    USE constants, ONLY: d_one, d_zero 
+    IMPLICIT NONE
+
+    REAL*8, INTENT(in) :: x1, x2
+    REAL*8, DIMENSION(n), INTENT(out) :: x, w
+    INTEGER, INTENT(in) :: n
+    
+    REAL*8, PARAMETER :: EPS = 3.0d-14, Pi=4.0d0*ATAN(1.0)!Pi=3.141592654d0
+    INTEGER :: i,j,m,ncycle
+    REAL*8 :: p1,p2,p3,pp,xl,xm,z,z1
+    
+    ! number of roots to find (symmetric in interval)
+    m=(n+1)/2        
+    xm=0.5d0*(x2+x1) 
+    xl=0.5d0*(x2-x1)
+    ! loop over roots to find
+    DO i=1,m 
+       z=DCOS(Pi*(i-0.25d0)/(n+0.5d0)) ! starting value for i-th root
+       DO ! loop to find i-th root
+          p1 = d_one  
+          p2 = d_zero 
+          ! p1 will contain n-th Legendre polynomial evaluated at z, 
+          ! p2 the polynomial of one lower order after the next loop 
+          ! down the recurrence relation for generating Legendre polynomials 
+          DO j=1,n    
+             p3=p2
+             p2=p1
+             p1=((2.0d0*j-1.0d0)*z*p2-(j-1.0d0)*p3)/j
+          END DO
+          ! derivative of polynomial n at z
+          pp=n*(z*p1-p2)/(z*z-1.0d0)
+          z1=z
+          z=z1-p1/pp
+          ! convergence criterion
+          IF(ABS(z-z1)<EPS)EXIT
+       END DO 
+       ! scale to interval (x1,x2)
+       x(i)=xm-xl*z
+       x(n+1-i)=xm+xl*z
+       w(i)=2.0d0*xl/((1.0d0-z*z)*pp*pp)
+       w(n+1-i)=w(i)
+    END DO
+  END SUBROUTINE gauleg
+end module
+module test_device
+ use omp_lib
+ use constants
+ implicit none
+ integer :: NAOrbs=2, NSpin=1,NCDAO1=1,NCDAO2=2,ispin=1,ifu_log=6,max_team=1
+ real*8 :: SD(2,2),HD(2,2,2),shift=0d0,EMin=-5d0
+ contains
+ subroutine CompSelfEnergies(spin,z,left,right,sgn)
+ integer,intent(in)::spin,sgn
+ complex*16,intent(in)::z
+ complex*16,intent(out)::left(:,:),right(:,:)
+ left=c_zero;right=c_zero
+ !$omp critical
+ max_team=max(max_team,omp_get_num_threads())
+ !$omp end critical
+ end subroutine
+@GPLUS0@
+@DDOS@
+@TOTCHARGE@
+end module
+program regression
+ use test_device
+ use parameters
+ implicit none
+ integer :: spin_count,threads,trial
+ real*8 :: ref,q
+ complex*16 :: g1(2,2),g2(2,2)
+ SD=0d0;SD(1,1)=1d0;SD(2,2)=1d0
+ HD=0d0;HD(1,1,1)=-1.5d0;HD(1,2,2)=0.3d0
+ HD(2,1,1)=-0.4d0;HD(2,2,2)=1.1d0
+ call gplus0((0.2d0,0.4d0),g1)
+ call gplus0((0.2d0,0.4d0),g2,1)
+ if(any(g1/=g2)) stop 10
+ do spin_count=1,2
+ NSpin=spin_count
+ call omp_set_num_threads(1)
+ ref=TotCharge(0d0)
+ do threads=1,8
+ call omp_set_num_threads(threads)
+ do trial=1,3
+ max_team=1
+ q=TotCharge(0d0)
+ if(q/=ref) stop 11
+ if(ispin/=1) stop 12
+ if(max_team/=threads) stop 13
+ end do
+ end do
+ end do
+ ElType='1DLEAD'
+ max_team=1
+ q=TotCharge(0d0)
+ if(q/=ref .or. max_team/=1) stop 14
+ print *, 'PASS: optional spin compatibility; 1/2-spin exact charge agreement;'
+ print *, '1..8 actual threads, 3 repeats; unchanged module spin; serial 1D fallback.'
+end program

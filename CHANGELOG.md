@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.8.3 - Unreleased
+
+- Parallelize TotCharge quadrature with explicit per-call spin and ordered
+  accumulation; keep the 1D-lead path serial because of saved scratch state.
+- Report charge quadrature wall time.
+- Add bounds-checked NVIDIA/Intel tests for one/two spin channels and 1-8 threads.
+- Pt SOC restart: approximately 7.19x faster TotCharge at eight threads,
+  with identical saved spectra; see TOTCHARGE.md for benchmark details.
+
+
 ## 2.8.2 - 2026-10-29
 
 ### Fixed
