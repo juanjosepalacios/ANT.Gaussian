@@ -4114,6 +4114,7 @@
     ! complex contour using Gauss-Legendre 
     ! quadrature
     n=31
+    qq = d_zero
     do  
        q = d_zero
        call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
@@ -4148,10 +4149,14 @@
 #ifdef INTEL
 !$omp end parallel do
 #endif
-       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.1 ) ) exit  
-       if( n > nmax )then
+       ! Compare successive estimates only after a refinement.
+       if (q == d_zero) exit
+       if (n > 31) then
+          if (abs(q-qq) < 0.1) exit
+       end if
+       if( n >= nmax )then
           print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
-          return
+          stop 1
        end if
        qq = q
        print '(A,I4,F13.5)', "TotCharge/Gaussian quadrature gives  ", n, q
@@ -4209,9 +4214,9 @@
 #endif
    
           if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.01 ) ) exit  
-          if( n > nmax )then
+          if( n >= nmax )then
              print '(A,I4,A)' , "QTot2/Gaussian quadrature has not converged after", nmax, " steps."
-             return
+             stop 1
           end if
           qq = q
           n=2*n+1

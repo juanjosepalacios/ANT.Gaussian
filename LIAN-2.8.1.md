@@ -60,3 +60,19 @@ Changing the clone's directory name changes the generated archive name.
 
 Continue development on a separate branch from this snapshot, fixing
 and validating numerical changes before treating it as a production build.
+
+## Quadrature safety fix (fix/quadrature-bounds)
+
+The archival import branch retains the installed snapshot. On this
+development branch, TotCharge initializes its previous estimate and
+only compares successive estimates after the first refinement. The
+existing zero-integral exit is retained.
+
+Both TotCharge and QTot2 stop with status 1 if they fail to converge
+at nmax=2047, before increasing n and forming invalid array sections.
+This also avoids returning an undefined function result on exhaustion.
+The existing 0.1 and 0.01 tolerances and integration formulas are retained.
+
+Validation is limited to source inspection and a standalone model of
+the refinement bounds and convergence decisions. No Fortran compilation,
+Gaussian calculation, or cluster job was performed.
