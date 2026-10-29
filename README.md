@@ -1,11 +1,12 @@
-# ANT.Gaussian (2.8.1)
+# ANT.Gaussian (2.8.2)
 
 ********************************************************************************
-Versions notation: The main module ANT.F90 must contains in its header the label
-with the latest version (now 2.8.1). This should coincide with the latest version 
-of the  modules recently changed even though the module ANT itself may have not 
-changed.  This way, a quick look at this file tells you the version you are in. 
-Other modules should retain old headers if they have not been changed.
+Release versions are recorded in VERSION. See CHANGELOG.md for release notes.
+For exact source history use Git commits; release tags identify snapshots.
+The master header in src/ANT.F90 records the current release. Changed source
+files carry the release in which they last changed; unchanged modules retain
+their existing headers. Record the commit and any uncommitted changes with
+calculation results. Build-time Git metadata is not yet embedded in the binary.
 ********************************************************************************
 
 It works both with intel (ifx) and NVIDIA (PG) compilers. No need to maintain 

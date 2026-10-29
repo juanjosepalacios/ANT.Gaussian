@@ -1,6 +1,12 @@
 #!/bin/bash
 #
-version=2.8.0
+# ANT.G-2.8.2 - release packaging
+# Run from the repository root, as required by the paths below.
+read -r version < VERSION || exit 1
+if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Invalid release version in VERSION" >&2
+  exit 1
+fi
 
 mkdir -v ANT.Gaussian-$version
 mkdir -v ANT.Gaussian-$version/BLDAT
@@ -13,7 +19,7 @@ cp -v BLDAT/*.dat ANT.Gaussian-$version/BLDAT/
 cp -rv doc/* ANT.Gaussian-$version/doc/
 cp -rv examples/* ANT.Gaussian-$version/examples/
 cp -v install/install* ANT.Gaussian-$version/install/
-cp -v make.package ANT.Gaussian-$version
+cp -v make.package README.md LICENSE VERSION CHANGELOG.md OPENMP.md LIAN-2.8.1.md ANT.Gaussian-$version
 
 sources="
 src/ANT.F90 
@@ -42,7 +48,9 @@ src/system.c
 src/make.in
 src/make.in.intel
 src/Makefile.pgi.g09
-src/Makefile.intel.g09"
+src/Makefile.intel.g09
+src/Makefile.nvidia.g09
+src/make.nvidia.in"
 
 cp -v $sources ANT.Gaussian-$version/src/
 
