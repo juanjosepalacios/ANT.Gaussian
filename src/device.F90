@@ -370,8 +370,9 @@
        NEmbed1=NEmbedBL(1)
        NEmbed2=NEmbedBL(2)
     ELSE IF  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) THEN 
-       NEmbed1=NEmbed(1)
-       NEmbed2=NEmbed(2)
+       ! Exclude the full 1D lead supercell from reduced-device charge counting.
+       NEmbed1=NPC*NEmbed(1)
+       NEmbed2=NPC*NEmbed(2)
     END IF
 
     print *, "---------------------------------------------------"
@@ -4116,7 +4117,7 @@
     real*8, dimension(nmax) :: x, w
     logical :: parallel_charge
 
-    ! 1D leads retain saved scratch state: keep their quadrature serial.
+    ! Keep device-charge quadrature serial for 1D leads pending separate validation.
     parallel_charge = all(ElType /= '1DLEAD') .and. .not. omp_in_parallel()
     charge_start = omp_get_wtime()
 

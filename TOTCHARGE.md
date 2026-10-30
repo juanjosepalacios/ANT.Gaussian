@@ -23,7 +23,8 @@ Nodes, tolerances, refinement and bounds checks remain unchanged.
 
 Bethe-lattice and ghost lead paths are enabled. CompSelfEnergyBL and its
 Dyson solver use call-local scratch and read electrode data in this path.
-1D leads retain explicit saved scratch, so TotCharge falls back to serial.
+Device TotCharge still falls back to serial for 1D electrodes; the separate
+OneDLead bulk-charge integration is now parallel (see below).
 Calls from an existing OpenMP region avoid creating a nested team.
 
 ## Regression tests
@@ -70,3 +71,93 @@ Logs, binaries and JSON: /home/palacios/ANT-runs/totcharge/.
 Serial build: /home/palacios/ANT-runs/totcharge-serial/.
 Main checkout, installed executables and v2.8.2 tag remain unchanged.
 Release v2.8.3 identifies this implementation and its recorded validation.
+
+
+## OneDLead bulk charge: OpenMP fix
+
+`OneDLead::TotCharge` now distributes contour points across an OpenMP team.
+Each point calls `ChargePoint1D` with its own Green matrix; the new
+`CompGreensFuncWorkspace` uses call-local self-energy matrices. The existing
+`CompGreensFunc` wrapper preserves the module `GX` output for serial DOS calls.
+Removed the explicit blanket SAVE from `CompSelfEnergy1D` and marked the
+point-evaluation call chain recursive so local scratch is automatic.
+`numeric::CInv` must also be built with automatic locals, as in the existing
+NVIDIA `-Mrecursive/-Mreentrant/-Mnosave` and Intel recursive configurations.
+
+Weighted contributions are saved per point and summed in original order.
+Thread counts therefore produce identical results in the regression tests.
+Compared with the original expression, storing a contribution can introduce
+last-bit rounding differences (for example, by separating a fused multiply-add).
+Contour, spin factor, 0.1 stopping tolerance and maximum order remain unchanged.
+The previous estimate is initialized explicitly because Fortran need not
+short-circuit the first convergence test. Calls inside an existing OpenMP
+region use an inactive inner team. Lead initialization/selection must remain
+serial: WhichLead, HX, SX and dimensions are shared read-only during integration.
+This does not enable concurrent initialization of different electrodes.
+
+Run `python3 tests/test_onedlead_charge.py` or
+`FC=ifx python3 tests/test_onedlead_charge.py`. The test extracts actual charge,
+Green-function, Dyson, hopping/overlap accessor, inversion and quadrature routines,
+and links real LAPACK/BLAS. It checks one/two spin channels, nonzero hopping,
+nonorthogonal overlaps, complex Hamiltonians, both contour branches, 127-point
+concurrent evaluation, and threads 1 through 8 with three repeats. It verifies
+agreement within 1e-12 with the archived original serial integration, exact
+agreement across thread counts, analytic isolated-orbital Green functions,
+unchanged legacy module scratch, actual team size, and nested-team fallback.
+Both NVIDIA and Intel pass with bounds checking. The existing device-charge
+regression also passes. ANT_TEST_LIBS can override the test link flags; libraries
+must use the same 8-byte integer ABI as the compiler flags.
+
+The full NVIDIA executable builds in `/home/palacios/ANT-runs/onedlead-openmp`.
+The Au-Au-Au-Au 1D example was compared using the prior build at one thread and
+the candidate at one/four threads. Both leads initialize with the same printed
+Fermi energy (-1.58691 eV), identical quadrature refinement counts and byte-identical
+Lead1DOS/Lead2DOS files. The observed lower-bound charge difference from the old
+build is about 1.4e-16. All three calculations subsequently fail in the existing
+device Fermi search (root not bracketed), so final transmission and full-run
+speedup are not validated. H6-chain likewise develops nonfinite values after
+lead initialization with the original build and was stopped. These downstream
+issues were not changed as part of the parallelization fix.
+
+Logs, baseline and candidate runs, and the separate executable are preserved
+under `/home/palacios/ANT-runs/onedlead-openmp/`. Installed binaries are unchanged.
+
+
+## Full-supercell charge region and DOS output follow-up
+
+For two 1D electrodes, InitDevice now excludes NPC*NEmbed atoms at each end
+from the reduced-device population region, matching the supercell on which
+self-energies act. NCDEl and NCDAO1/NCDAO2 are computed from the same region.
+The input NEmbed still specifies atoms per primitive cell; it is not changed.
+A meaningful reduced-device region must remain between the excluded buffers.
+
+Au10/lanl2dz at four threads and NPC=3 previously aborted with integrated
+spectral weight 352.40420 versus expected 352. Excluding complete supercells
+changes the reduced orbital range from 23..198 to 67..154: the check reports
+176.00000 versus expected 176 and passes. Both initial lead Fermi energies
+remain -7.37305 eV. The separate no-LEADDOS test then terminated normally.
+Build and calculation: /home/palacios/ANT-runs/onedlead-buffer-check/.
+
+The earlier NPC=2 unlimited baseline/parallel runs were stopped at the user's
+request. Both failed 2047-point quadrature at -12.5 eV with a successive-estimate
+difference about 2954.4. The baseline reported -8.98438 eV after another failed
+integration; this is not a validated Fermi level. NPC=3 avoided those failures
+in the tested initial lead searches. These runs do not establish speedup.
+
+DOS output previously mixed the unshifted temporary HX with already shifted
+lead hopping matrices and an additional -EFermi energy offset. When LEADDOS
+is requested, shift temporary HX by -EFermi*SX for each spin and evaluate at
+energy+i*gamma, consistently referencing all matrices to the lead Fermi level.
+The temporary matrices are deallocated after lead initialization; this output
+correction does not change the transport Hamiltonian.
+
+The matching DOS snapshots from Au10 SCF cycle 26 are finite and identical
+between leads at saved precision, with Fermi energies -6.66504 eV. They cover
+-10..10 eV at 0.01 eV spacing. Raw nonmagnetic files contain one spin channel;
+total DOS includes a factor of two. GAMMA=0.03 plus ETA=0.01 gives an effective
+imaginary shift of 0.04 eV. The snapshot does not establish final SCF convergence
+of the DOS-enabled run. Separate build/run: /home/palacios/ANT-runs/onedlead-dos-check/.
+
+These tests do not resolve ignored LAPACK status codes, the Dyson error
+accumulator, or propagation of failed lead quadrature to the Fermi search.
+Those pre-existing issues remain separate work.

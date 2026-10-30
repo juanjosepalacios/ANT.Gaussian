@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Parallelize OneDLead bulk-charge quadrature with call-local Green-function
+  and self-energy scratch and ordered accumulation; retain the separate
+  device-charge fallback for 1D electrodes.
+- Exclude complete 1D lead supercells from reduced-device charge counting.
+- Use a consistent Fermi energy reference for bulk lead DOS output.
+- Add NVIDIA/Intel 1D-charge regression tests and record Au10 validation
+  and its remaining limitations in TOTCHARGE.md.
+
 ## 2.8.3 - 2026-10-29
 
 - Parallelize TotCharge quadrature with explicit per-call spin and ordered

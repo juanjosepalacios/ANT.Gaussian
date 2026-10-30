@@ -137,7 +137,7 @@ contains
     integer, intent(in) :: ilead,NSpin,NAOrbs
     real(double), dimension(:,:,:), intent(in) :: HD
     real(double), dimension(:,:), intent(in) :: SD
-    integer :: ixyzf
+    integer :: ixyzf, spin_index
 
     print *, "*******************************"
     print *, "*    Initializing Lead No. ", ilead
@@ -172,7 +172,12 @@ contains
    !
    ! Print out DOS of bulk Lead if requested
    !
-     if( LeadDOS ) then 
+     if( LeadDOS ) then
+       ! The self-energies already use the Fermi-shifted lead Hamiltonian.
+       ! Shift the temporary bulk Hamiltonian to the same energy reference.
+       do spin_index=1,NXSpin
+          HX(:,:,spin_index) = HX(:,:,spin_index) - Lead1D(ilead)%EFermi*SX
+       end do
       !call CreateXSC( Lead1D(ilead) )
       !call PrintMatrices (ilead)
        call PrintDOS( ilead )
@@ -199,7 +204,7 @@ contains
   !**********************************************************
   !*** Compute self-energy matrices projected into device ***
   !**********************************************************
-  subroutine CompSelfEnergy1D( L1D, spin, z, Sigma, NBasis, idir )
+  recursive subroutine CompSelfEnergy1D( L1D, spin, z, Sigma, NBasis, idir )
     use parameters, only: eta
     use constants, only: ui, c_zero
     implicit none
@@ -217,7 +222,6 @@ contains
     complex(double), dimension(L1D%NAOrbs,L1D%NAOrbs) :: Veff1, Heff, Veff2
     complex(double), dimension(L1D%NAOrbs,L1D%NAOrbs) :: sig
 
-    save 
 
     NAO = L1D%NAOrbs
    !allocate( Veff1(NAO,NAO), Heff(NAO,NAO), Veff2(NAO,NAO),  STAT=ierr )
@@ -339,7 +343,7 @@ contains
   !**********************************
   !*** Lead Supercell Hamiltonian ***
   !**********************************
-  complex(double) function L1D_H0( L1D, ispin, i, jspin, j )
+  recursive complex(double) function L1D_H0( L1D, ispin, i, jspin, j )
     type(T1DLead),intent(IN) :: L1D
     integer, intent(IN) ::  ispin, i, j
     integer :: ipc, jpc, iao, jao, jspin
@@ -359,7 +363,7 @@ contains
   !********************************************
   !*** Lead Supercell Hopping (to the left) ***
   !********************************************
-  complex(double) function L1D_V1( L1D, ispin, i, jspin, j )
+  recursive complex(double) function L1D_V1( L1D, ispin, i, jspin, j )
     type(T1DLead),intent(IN) :: L1D
     integer, intent(IN) ::  ispin, i, j, jspin
     L1D_V1 = conjg( L1D_V2( L1D, jspin, j, ispin, i ) )
@@ -368,7 +372,7 @@ contains
   !*********************************************
   !*** Lead Supercell Hopping (to the right) ***
   !*********************************************
-  complex(double) function L1D_V2( L1D, ispin, i, jspin, j )
+  recursive complex(double) function L1D_V2( L1D, ispin, i, jspin, j )
     type(T1DLead),intent(IN) :: L1D
     integer, intent(IN) ::  ispin, i, j, jspin
     integer :: ipc, jpc, iao, jao
@@ -386,7 +390,7 @@ contains
   !******************************
   !*** Lead supercell overlap ***
   !******************************
-  complex(double) function L1D_S0( L1D, i, j )
+  recursive complex(double) function L1D_S0( L1D, i, j )
     type(T1DLead),intent(IN) :: L1D
     integer, intent(IN) :: i, j
     integer :: ipc, jpc, iao, jao
@@ -406,7 +410,7 @@ contains
   !********************************
   ! Lead supercell overlap to left 
   !********************************
-  complex(double) function L1D_S1( L1D, i, j )
+  recursive complex(double) function L1D_S1( L1D, i, j )
     type(T1DLead),intent(IN) :: L1D
     integer, intent(IN) :: i, j
     L1D_S1 = conjg( L1D_S2( L1D, j, i ) )
@@ -415,7 +419,7 @@ contains
   !*********************************
   ! Lead supercell overlap to right 
   !*********************************
-  complex(double) function L1D_S2( L1D, i, j )
+  recursive complex(double) function L1D_S2( L1D, i, j )
     type(T1DLead),intent(IN) :: L1D
     integer, intent(IN) :: i, j
     integer :: ipc, jpc, iao, jao
@@ -696,7 +700,7 @@ contains
 
     iunit=fopen(file(ilead),'unknown', ios)
     do energy=EMin, EMax, DE 
-       zenergy=energy-Lead1D(ilead)%EFermi+gamma*ui
+       zenergy=energy+gamma*ui
       !zenergy=energy+gamma*ui
       !zenergy=energy
        write(UNIT=iunit,FMT='(F10.5,(1000(ES14.6)))'), energy,&
@@ -713,7 +717,7 @@ contains
   !*       Sigma = Veff1 ------------ Veff2              *
   !*                     Heff - Sigma                    *
   !*******************************************************
-  subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim )
+  recursive subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim )
     use parameters, only: conv => selfacc, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
     use constants, only: c_zero, ui
    !use device, only: OnSigma
@@ -786,7 +790,16 @@ contains
   !****************************************
   !*** Compute Bulk Green's function G0 *** 
   !**************************************** 
-  subroutine CompGreensFunc( L1D, spin, z ) 
+  subroutine CompGreensFunc( L1D, spin, z )
+    type(T1DLead), intent(in) :: L1D
+    integer, intent(in) :: spin
+    complex(double), intent(in) :: z
+
+    ! Serial DOS callers retain the module output; quadrature uses explicit scratch.
+    call CompGreensFuncWorkspace(L1D, spin, z, GX)
+  end subroutine CompGreensFunc
+
+  recursive subroutine CompGreensFuncWorkspace( L1D, spin, z, green )
     use parameters, only: eta
     use numeric, only: CInv
     use constants, only: ui
@@ -795,7 +808,9 @@ contains
     type(T1DLead), intent(in) :: L1D
     integer,intent(in) :: spin
     complex(double), intent(in) :: z
-    integer :: i, j, ispin, jspin, NPCAO, NAO, leadno, iinv
+    integer :: i, j, ispin, iinv
+    complex(double), intent(out) :: green(NXDim,NXDim)
+    complex(double) :: Sigma1(NXDim,NXDim), Sigma2(NXDim,NXDim)
 
     ispin = spin
     if( spin == 2 .and. L1D%NSpin == 1 ) ispin = spin
@@ -807,13 +822,12 @@ contains
     !
     do i=1,NXDim
        do j=1,NXDim
-          GX( i, j ) = (z+ui*eta)*SX(i,j) - HX(i,j,ispin) - Sigma1(i,j) - Sigma2(i,j)
+          green( i, j ) = (z+ui*eta)*SX(i,j) - HX(i,j,ispin) - Sigma1(i,j) - Sigma2(i,j)
        end do
     end do
 
-    iinv = CInv( GX )       
-   !print*,'z=',z,'SigmaL=',Sigma1(1,1),'SigmaR=',Sigma2(NXDim-10,NXDim-10),'Green=', GX(1,1)
-  end subroutine CompGreensFunc
+    iinv = CInv( green )
+  end subroutine CompGreensFuncWorkspace
 
   !****************************** 
   !*** Spin-resolved Bulk DOS ***
@@ -852,8 +866,29 @@ contains
   !*** Total charge up to energy E         ***
   !*** up to Energy E, lower bound is EMin ***
   !*******************************************
-  real(double) function TotCharge( E )
+  recursive real(double) function ChargePoint1D(spin, phi, E0, R) result(qj)
+    use constants, only: ui, d_pi
+    implicit none
+    integer, intent(in) :: spin
+    real(double), intent(in) :: phi, E0, R
+    complex(double) :: z, green(NXDim,NXDim)
+    integer :: k, l, NAO, NPCAO
+
+    NAO = Lead1D(WhichLead)%NAOrbs
+    NPCAO = Lead1D(WhichLead)%NPCAO
+    z = E0 - R*(cos(phi) - ui*sin(phi))
+    call CompGreensFuncWorkspace(Lead1D(WhichLead), spin, z, green)
+    qj = d_zero
+    do k=NAO+1,NAO+NPCAO
+       do l=1,NXAO
+          qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*green(k,l))/d_pi)*SX(l,k)
+       end do
+    end do
+  end function ChargePoint1D
+
+  recursive real(double) function TotCharge( E )
     use parameters, only: ChargeAcc, Infty
+!$  use omp_lib, only: omp_in_parallel
     use numeric, only: gauleg 
     use constants, only: ui, d_pi
     implicit none
@@ -868,15 +903,13 @@ contains
    !integer, parameter :: nmax = 127
    !integer, parameter :: nmax = 63
     
-    real(double) :: q,qq, E0, R, phi, qj
-    integer :: n, j, ispin, k, l, NAO, NPCAO
-    real(double), dimension(nmax) :: x, w
+    real(double) :: q,qq, E0, R
+    integer :: n, j, ispin
+    real(double), dimension(nmax) :: x, w, contribution
+    logical :: parallel_charge
 
-    complex(double) :: z
 
 
-    NAO = Lead1D(WhichLead)%NAOrbs
-    NPCAO = Lead1D(WhichLead)%NPCAO
     EMin = Lead1D(WhichLead)%EMin
     !
     ! Integration contour parameters:
@@ -894,33 +927,24 @@ contains
     ! quadrature
     !
     n = 1
+    qq = d_zero
 
     do 
        call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
        q = d_zero
-       do ispin=1, NXSpin
-          do j = 1,n
-             phi = x(j)
-             z = E0 - R*(cos(phi) - ui*sin(phi))
-             
-             call CompGreensFunc( Lead1D(WhichLead), ispin, z ) 
-
-             qj= 0.0d0
-             do k=NAO+1, NAO+NPCAO
-                do l=1,NXAO
-                   !
-                   ! Charge = Tr[ P S ]
-                   !
-                  !q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
-                   qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
-                  !if( SOC ) q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
-                  !if( SOC ) qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
-                end do
-             end do
-            !if (j == 1) print*,'z= ',z,'phi=',x(1),GX(1,1),'DOS=',qj*2.0
-             q = q + w(j)*qj
+       parallel_charge = .true.
+!$     parallel_charge = .not. omp_in_parallel()
+       do ispin=1,NXSpin
+          ! Each point owns its Green function and self-energy scratch. Preserve
+          ! serial summation order to keep adaptive refinement reproducible.
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(j) IF(parallel_charge) SCHEDULE(STATIC)
+          do j=1,n
+             contribution(j) = w(j)*ChargePoint1D(ispin, x(j), E0, R)
           end do
-            !print*,'----------------'
+!$OMP END PARALLEL DO
+          do j=1,n
+             q = q + contribution(j)
+          end do
        end do
       !if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
        if( NXSpin == 1 ) q = q*2.0d0

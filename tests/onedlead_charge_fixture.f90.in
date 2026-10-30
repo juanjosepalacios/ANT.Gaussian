@@ -1,0 +1,211 @@
+module constants
+ implicit none
+ integer, parameter :: double=kind(1d0)
+ real*8, parameter :: d_zero=0d0,d_one=1d0,d_pi=3.14159265358979323846d0
+ complex*16, parameter :: c_zero=(0d0,0d0),c_one=(1d0,0d0),ui=(0d0,1d0)
+end module
+module parameters
+ implicit none
+ integer, parameter :: MaxLAO=32
+ integer :: NPC=1,L1DMaxCyc=10000
+ real*8 :: eta=0.03d0,selfacc=1d-10,L1DALPHA=0.5d0,ChargeAcc=1d-4,Infty=20d0
+end module
+module numeric
+ contains
+@CINV@
+@GAULEG@
+end module
+module test_lead
+ use constants
+ use parameters
+ use omp_lib
+ implicit none
+@LEADTYPE@
+ type(T1DLead) :: Lead1D(2)
+ integer :: WhichLead=1,NXAO,NXDim,NXSpin,max_team=1,max_nested=1
+ real*8 :: ChargeOffset=0d0
+ complex*16,allocatable :: HX(:,:,:),SX(:,:),GX(:,:),Sigma1(:,:),Sigma2(:,:)
+ contains
+@ROUTINES@
+  real(double) function SerialCharge( E )
+    use parameters, only: ChargeAcc, Infty
+    use numeric, only: gauleg
+    use constants, only: ui, d_pi
+    implicit none
+
+    real(double), intent(in) :: E
+    real(double) :: EMin
+
+    integer, parameter :: nmax = 2047
+   !integer, parameter :: nmax = 1023
+   !integer, parameter :: nmax = 511
+   !integer, parameter :: nmax = 255
+   !integer, parameter :: nmax = 127
+   !integer, parameter :: nmax = 63
+
+    real(double) :: q,qq, E0, R, phi, qj
+    integer :: n, j, ispin, k, l, NAO, NPCAO
+    real(double), dimension(nmax) :: x, w
+
+    complex(double) :: z
+
+
+    NAO = Lead1D(WhichLead)%NAOrbs
+    NPCAO = Lead1D(WhichLead)%NPCAO
+    EMin = Lead1D(WhichLead)%EMin
+    !
+    ! Integration contour parameters:
+    !
+    If (ChargeOffSet == 0.0d0) then
+       E0 = 0.5*(E - Infty)
+       R  = 0.5*(E + Infty)
+    else
+       E0 = 0.5*(E + EMin)
+       R  = 0.5*(E - EMin)
+    end if
+    !
+    ! Computing integral of Green's function
+    ! over complex contour using Gauss-Legendre
+    ! quadrature
+    !
+    qq = 0d0
+    n = 1
+
+    do
+       call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
+       q = d_zero
+       do ispin=1, NXSpin
+          do j = 1,n
+             phi = x(j)
+             z = E0 - R*(cos(phi) - ui*sin(phi))
+
+             call CompGreensFunc( Lead1D(WhichLead), ispin, z )
+
+             qj= 0.0d0
+             do k=NAO+1, NAO+NPCAO
+                do l=1,NXAO
+                   !
+                   ! Charge = Tr[ P S ]
+                   !
+                  !q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
+                   qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k,l))/d_pi)*SX(l,k)
+                  !if( SOC ) q = q -(w(j)*DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
+                  !if( SOC ) qj = qj -(DIMAG(R*(sin(phi)+ui*cos(phi))*GX(k+NXAO,l+NXAO))/d_pi)*SX(l+NXAO,k+NXAO)
+                end do
+             end do
+            !if (j == 1) print*,'z= ',z,'phi=',x(1),GX(1,1),'DOS=',qj*2.0
+             q = q + w(j)*qj
+          end do
+            !print*,'----------------'
+       end do
+      !if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
+       if( NXSpin == 1 ) q = q*2.0d0
+      !print *, n, q
+      !if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*100 ) ) exit
+       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.1 ) ) exit
+       n = 2*n+1
+       if( n > nmax )then
+          print '(A,I5,A)', "WARNING: SerialCharge/gaussian quadrature has not converged after", nmax , " steps."
+          print *, "E = ", E
+          print *, "Error = ", abs(q-qq)
+          exit
+       end if
+       qq = q
+    end do
+    if (n < nmax) print '(A,I5,A)', "GauLeg quadrature converged after", n, " steps."
+    call flush(6)
+    SerialCharge = q-ChargeOffset
+
+  end function SerialCharge
+end module
+program regression
+ use numeric, only: gauleg
+ use test_lead
+ implicit none
+ integer :: spins,threads,trial,case_no,i,j,spin_index
+ real*8 :: ref,q,e,start,elapsed,nested_q,original_ref
+ complex*16,target :: vn(2,2,0:1,2,2),sn(0:1,2,2)
+ real*8 :: nodes(127),weights(127),points(127),reference_points(127)
+ complex*16 :: actual(6,6),expected(6,6)
+ call omp_set_dynamic(.false.)
+ do spins=1,2
+ do case_no=1,3
+ vn=c_zero;sn=c_zero
+ sn(0,1,1)=1d0;sn(0,2,2)=1d0
+ vn(1,1,0,1,1)=-0.8d0;vn(1,1,0,2,2)=0.5d0
+ vn(2,2,0,1,1)=-0.3d0;vn(2,2,0,2,2)=0.9d0
+ if(case_no>1) then
+   vn(1,1,1,1,1)=-0.4d0;vn(1,1,1,2,2)=-0.2d0
+   vn(2,2,1,1,1)=-0.25d0;vn(2,2,1,2,2)=-0.35d0
+   sn(1,1,1)=0.03d0;sn(1,2,2)=0.02d0
+ endif
+ if(case_no==3) then
+   vn(1,1,0,1,2)=(0.1d0,0.07d0);vn(1,1,0,2,1)=conjg(vn(1,1,0,1,2))
+   vn(2,2,0,1,2)=(0.04d0,-0.09d0);vn(2,2,0,2,1)=conjg(vn(2,2,0,1,2))
+   sn(0,1,2)=0.05d0;sn(0,2,1)=0.05d0
+ endif
+ Lead1D(1)%vn=>vn;Lead1D(1)%sn=>sn
+ Lead1D(1)%NSpin=spins;Lead1D(1)%NPC=1;Lead1D(1)%NPCAO=2
+ Lead1D(1)%NAOrbs=2;Lead1D(1)%EMin=-5d0
+ call CreateXSC(Lead1D(1))
+ call CompGreensFunc(Lead1D(1),1,(0.2d0,0.4d0))
+ expected=GX
+ call CompGreensFuncWorkspace(Lead1D(1),1,(0.2d0,0.4d0),actual)
+ if(any(actual/=expected)) stop 10
+ ! Exercise a larger quadrature order regardless of the adaptive stopping rule.
+ call gauleg(0d0,d_pi,nodes,weights,127)
+ do spin_index=1,spins
+ do j=1,127
+ reference_points(j)=ChargePoint1D(spin_index,nodes(j),-1d0,3d0)
+ enddo
+ call omp_set_num_threads(8)
+ !$omp parallel do private(j) schedule(static)
+ do j=1,127
+ points(j)=ChargePoint1D(spin_index,nodes(j),-1d0,3d0)
+ enddo
+ !$omp end parallel do
+ if(any(points/=reference_points)) stop 18
+ enddo
+ do i=1,3
+ e=-0.7d0+0.4d0*i
+ ChargeOffset=0d0
+ if(i==3) ChargeOffset=0.15d0
+ original_ref=SerialCharge(e)
+ call omp_set_num_threads(1)
+ ref=TotCharge(e)
+ if(abs(ref-original_ref)>1d-12) stop 17
+ ! Analytic Green function for isolated orthogonal orbitals.
+ if(case_no==1) then
+   call CompGreensFuncWorkspace(Lead1D(1),1,(0.2d0,0.4d0),actual)
+   if(abs(actual(3,3)-1d0/((0.2d0,0.4d0)+ui*eta-vn(1,1,0,1,1)))>1d-12) stop 11
+   if(abs(actual(4,4)-1d0/((0.2d0,0.4d0)+ui*eta-vn(1,1,0,2,2)))>1d-12) stop 11
+ endif
+ do threads=1,8
+ call omp_set_num_threads(threads)
+ do trial=1,3
+ GX=(123d0,456d0);Sigma1=GX;Sigma2=GX
+ max_team=1
+ q=TotCharge(e)
+ if(q/=ref) then
+    print *, 'charge mismatch',spins,case_no,threads,e,ref,q
+    stop 12
+ endif
+ if(max_team/=threads) stop 13
+ if(any(GX/=(123d0,456d0)).or.any(Sigma1/=GX).or.any(Sigma2/=GX)) stop 14
+ enddo
+ enddo
+ call omp_set_num_threads(4)
+ call omp_set_max_active_levels(2)
+ max_nested=1
+ !$omp parallel num_threads(2) private(nested_q)
+ nested_q=TotCharge(e)
+ if(nested_q/=ref) stop 15
+ !$omp end parallel
+ if(max_nested/=1) stop 16
+ enddo
+ deallocate(HX,SX,GX,Sigma1,Sigma2)
+ enddo
+ enddo
+ print *, 'PASS: 1D charge matches original serial, spins 1/2, threads 1..8, 3 repeats'
+ print *, 'PASS: analytic isolated levels, hopping, nonorthogonality, complex matrices, offset, nested fallback'
+end program
