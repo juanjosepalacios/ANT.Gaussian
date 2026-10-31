@@ -198,7 +198,9 @@ Default: <em>FERMISTART</em> = -5.0D0</li>
   </li>
 </ol>
 <div style="margin-left: 40px;"><em>NATPC1 and NATPC2</em> (integer)<br>
-Number of atoms in one primitive cell of each 1DLEAD electrode.
+Number of atoms in the chosen repeated unit of each 1DLEAD electrode.
+With NPC = 1, choose a unit large enough that hopping and overlap to
+second-neighbor units are negligible; it may contain several primitive cells.
 Specify a positive value for each 1D lead. NPC defaults to 1.<br>
 For compatibility, NEMBED1/2 are accepted for 1D leads with a warning.
 If both names are supplied for a lead, their values must agree.
@@ -214,21 +216,32 @@ input cluster. Select the parameter set for each electrode with BLPAR1
 and BLPAR2 (see the BLxxx.dat files).</p>
 <p><em>1DLEAD</em>: Construct a periodic one-dimensional electrode from Hamiltonian
 and overlap blocks of the input cluster. Include several identical translated
-primitive cells at each end, with a consistent atom order within every cell.
+repeated units at each end, with a consistent atom order within every unit.
 List the atoms cell by cell along the wire: electrode 1 is taken from the
 beginning of the atom list and electrode 2 from the end. Set NATPC1 and
-NATPC2 to the number of atoms in one primitive cell of each electrode.
+NATPC2 to the number of atoms in the chosen repeated unit of each electrode;
+this unit need not be the smallest crystallographic primitive cell.
 The two electrodes are extracted independently and need not be identical.
 </p>
-<p>Keep NPC = 1 (the default). With this setting, include at least two
-identical translated primitive cells at each end so that the cell Hamiltonian,
-overlap and coupling to the neighboring cell can be extracted. The outermost
-NATPC1 and NATPC2 atoms form the lead buffers excluded from reduced-device
-charge counting. Leave a central device region between these buffers.</p>
-<p>For example, a wire with three atoms per primitive cell can use
-TYPE1 = 1DLEAD, TYPE2 = 1DLEAD, NATPC1 = 3, NATPC2 = 3 and NPC = 1.
-Include at least two repeated three-atom cells at each end for parameter
-extraction.
+<p>With NPC = 1 (the default), only couplings within a repeated unit and
+between adjacent units are retained. NATPC1 and NATPC2 must therefore define
+repeated units large enough that hopping and overlap to second-neighbor
+units (and beyond) are negligible. Choosing the smallest crystallographic
+primitive cell will not give a converged lead model if these neglected
+couplings remain appreciable, even if the Dyson iteration converges
+numerically. Enlarge the repeated unit by grouping primitive cells and
+increase NATPC accordingly; check that the lead DOS and transmission no
+longer change significantly with further enlargement.</p>
+<p>Include at least two identical translated copies of the chosen repeated
+unit at each end so that its Hamiltonian, overlap and coupling to the
+neighboring unit can be extracted. The outermost NATPC1 and NATPC2 atoms
+form the lead buffers excluded from reduced-device charge counting. Leave
+a central device region between these buffers.</p>
+<p>For example, NATPC1 = 3, NATPC2 = 3 and NPC = 1 can be used with
+TYPE1 = 1DLEAD and TYPE2 = 1DLEAD only if a three-atom repeated unit is
+large enough to make second-neighbor-unit couplings negligible. Otherwise,
+use a larger repeated unit and increase NATPC1/2. Include at least two copies
+of that larger unit at each end for parameter extraction.
 Use the same geometry and atom ordering for corresponding cells. L1DALPHA
 and SELFACC control the Dyson solution; ETA may need to exceed its default.</p>
 <p><em>GHOST</em>: Attach no electrode self-energy on the selected side. When both

@@ -15,8 +15,12 @@ Fermi searches use safeguarded Brent iteration, independent warm brackets
 for each lead, and a lower-bound seed from repeated-supercell generalized
 eigenvalues. Parallel charge integration rejects unconverged results.
 
-For 1D leads, NATPC1 and NATPC2 specify atoms per primitive cell; keep
-NPC=1 unless deliberately testing a different grouping. NEMBED1/2 retain
+For 1D leads, NATPC1 and NATPC2 specify atoms in the chosen repeated unit.
+With NPC=1, this unit must be large enough that hopping and overlap to
+second-neighbor units are negligible. The smallest primitive cell is not
+sufficient when these couplings remain appreciable, even if the Dyson
+solver converges. Increase NATPC to group primitive cells and verify
+convergence of lead DOS and transmission with the repeated-unit size. NEMBED1/2 retain
 their Bethe-lattice meaning. Older 1D inputs using NEMBED1/2 remain accepted
 with a warning; conflicting old and new values are rejected.
 
