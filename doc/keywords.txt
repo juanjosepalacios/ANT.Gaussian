@@ -20,15 +20,28 @@ Default: PACC = 1.0D-5
 
 * CHARGEACC (real)
 Total charge maximum accuracy.
-Default: CHARGEACC = 1.0D-3
+Default: CHARGEACC = 1.0D-5
 
 * FERMIACC (real)
 Fermi level maximum accuracy (in eV).
-Default: FERMIACC = 1.0D-3
+Default: FERMIACC = 1.0D-5
 
 * SELFACC (real)
-Selfenergy accuracy.
+Self-energy accuracy. For 1D leads: mean absolute unmixed Dyson residual,
+independent of L1DALPHA and not adapted during SCF.
 Default: SELFACC = 1.0D-6
+
+* L1DALPHA (real)
+1D-lead Dyson self-energy mixing:
+Sigma_new = L1DALPHA * F(Sigma_old) + (1-L1DALPHA) * Sigma_old.
+Allowed range: 0 < L1DALPHA <= 1. Default: L1DALPHA = 0.75.
+Separate from density mixing ALPHA.
+
+FERMIACC and CHARGEACC are input targets. SCF adaptation can loosen them,
+including a factor of ten in the first two lead-enabled cycles.
+FULLACC retains input accuracy throughout. For 1D leads, CHARGEACC controls
+successive quadrature estimates and spectral-bound checks; FERMIACC controls
+the Brent energy bracket. Integration error also affects Fermi accuracy.
 
 * FULLACC (logical)
 Turns on full accuracy from the first cycle.

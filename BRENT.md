@@ -1,6 +1,6 @@
-# Experimental Brent lead Fermi search
+# Brent lead Fermi search (2.8.4)
 
-Branch: codex/onedlead-brent, based on f712e43. Not committed or merged.
+Included in master for 2.8.4 (implementation commit 55f3fe2).
 
 ## Implementation
 
@@ -74,7 +74,7 @@ Brent's final charge residuals are about 0.00510 (initial leads) and 0.00217
 still uses its historical 0.1 absolute successive-estimate threshold.
 
 These results establish that Brent works and is faster in this case, not
-scientific equivalence at stringent accuracy. Before adoption, tighten and
+scientific equivalence at stringent accuracy. For a stringent accuracy comparison, tighten and
 validate the charge-integration and Fermi-energy tolerances together, then
 repeat the identical-density comparison and check spectral convergence.
 
@@ -120,8 +120,8 @@ Brent reports charge residuals 1.56e-8 and -2.49e-9 for its approximate charge
 function; these do not bound the underlying integration error. Tighter CHARGEACC
 would be the next step if closer agreement at narrow spectral features is needed.
 
-These changes remain experimental, uncommitted and unmerged on
-codex/onedlead-brent. Installed executables and master are unchanged.
+Merged into master for 2.8.4. Measurements above describe comparison builds;
+rebuild to update installed executables.
 
 
 ## Accuracy-policy correction and warm-start follow-up

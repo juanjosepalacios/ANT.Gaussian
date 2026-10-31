@@ -127,12 +127,18 @@ Pulay extrapolation kicks in.<br>
   </li>
   <li><em>CHARGEACC</em> (real) <br>
 Total charge maximum accuracy. <br>
-Default: <em>CHARGEACC</em> = 1.0D-3</li>
+Default: <em>CHARGEACC</em> = 1.0D-5</li>
   <br>
   <li> <em>FERMIACC</em> (real)<br>
 Fermi level maximum accuracy (in eV). <br>
-Default: <em>FERMIACC</em> = 1.0D-3</li>
+Default: <em>FERMIACC</em> = 1.0D-5</li>
 </ol>
+<p>Periodic 1D leads in 2.8.4: L1DALPHA controls Dyson self-energy mixing
+(default 0.75; 0 &lt; L1DALPHA &lt;= 1), separately from density mixing ALPHA.
+SELFACC controls the mean absolute unmixed Dyson residual (default 1.0D-6).
+FERMIACC and CHARGEACC are input targets subject to SCF accuracy adaptation.
+FULLACC retains input accuracy from the first cycle.
+See the <a href="keywords.txt">keyword reference</a>.</p>
 <div style="margin-left: 40px;"><span style="font-style: italic;">SMALL,
 SMALLD
 </span>(real)<br>

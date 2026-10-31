@@ -1,6 +1,6 @@
 # Per-electrode warm-start Fermi brackets
 
-Experimental branch: codex/onedlead-brent. Changes are uncommitted/unmerged.
+Included in master for 2.8.4 (implementation commit 55f3fe2).
 
 ## Behavior
 
