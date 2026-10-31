@@ -101,7 +101,8 @@
   !
   ! Mixing of consecutive self-energy matrices in iterative solution of Dyson equation in 1D leads
   !
-  REAL*8 :: L1DAlpha = 0.25d0  
+  REAL*8 :: L1DAlpha = 0.75d0
+  CHARACTER(len=10), PARAMETER :: L1DAlpha_keyw = "L1DALPHA"
   !
   ! Switch on Bethe lattice electrodes
   logical :: Bethe= .false.
@@ -419,6 +420,7 @@ CONTAINS
          & PAcc_keyw ,&
          & FermiAcc_keyw  ,&
          & SelfAcc_keyw   ,&
+         & L1DAlpha_keyw ,&
          & Small_keyw   ,&
          & SmallD_keyw   ,&
          & Bias_keyw      ,&
@@ -468,6 +470,8 @@ CONTAINS
           PA = rval
        CASE ( SelfAcc_keyw )
           SelfAcc = rval
+       CASE ( L1DAlpha_keyw )
+          L1DAlpha = rval
        CASE ( Small_keyw )
           Small = rval
        CASE ( SmallD_keyw )
@@ -888,6 +892,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) Max_keyw, " = ", Max
     WRITE(unit=logfile,fmt=*) Nip_keyw, " = ", NIP
     WRITE(unit=logfile,fmt=*) SelfAcc_keyw, " = ", SelfAcc
+    WRITE(unit=logfile,fmt=*) L1DAlpha_keyw, " = ", L1DAlpha
     WRITE(unit=logfile,fmt=*) Small_keyw, " = ", Small
     WRITE(unit=logfile,fmt=*) SmallD_keyw, " = ", SmallD, " A"
     WRITE(unit=logfile,fmt=*) Bias_keyw, " = ", BiasVoltage, " V"

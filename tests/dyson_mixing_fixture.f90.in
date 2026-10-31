@@ -1,0 +1,46 @@
+module constants
+ integer,parameter :: double=kind(1d0)
+ complex*16,parameter :: c_zero=(0d0,0d0),c_one=(1d0,0d0),ui=(0d0,1d0)
+end module
+module parameters
+ real*8 :: SelfAcc=1d-9,L1DAlpha=0.25d0
+ integer :: L1DMaxCyc=3000
+end module
+module kernel
+ use constants
+ contains
+@SOLVER@
+end module
+program test
+ use kernel
+ use parameters
+ implicit none
+ complex*16 :: sigma(1,1),v(1,1),h(1,1),expected,z
+ real*8 :: alphas(8)=(/0.1d0,0.25d0,0.4d0,0.5d0,0.6d0,0.75d0,0.9d0,1d0/),err,actual
+ integer :: i,it,status
+ v=c_one;z=(0.5d0,0.2d0);h=z
+ expected=(z-sqrt(z*z-4d0))/2d0
+ do i=1,size(alphas)
+ L1DAlpha=alphas(i)
+ call SolveDyson1D(sigma,v,h,v,1,it,err,status)
+ actual=abs(1d0/(z-sigma(1,1))-sigma(1,1))
+ if(status/=0.or.actual>SelfAcc.or.abs(actual-err)>1d-12) stop 10
+ if(abs(sigma(1,1)-expected)>1d-8) stop 11
+ enddo
+ ! alpha=1 must not pass merely because new Sigma equals the unmixed update.
+ L1DAlpha=1d0;L1DMaxCyc=1
+ call SolveDyson1D(sigma,v,h,v,1,it,err,status)
+ if(status/=1.or.it/=1.or.err<=SelfAcc) stop 12
+ L1DAlpha=0d0
+ call SolveDyson1D(sigma,v,h,v,1,it,err,status)
+ if(status/=4) stop 13
+ L1DAlpha=1.1d0
+ call SolveDyson1D(sigma,v,h,v,1,it,err,status)
+ if(status/=4) stop 14
+ L1DAlpha=0.5d0;L1DMaxCyc=100
+ h=-ui
+ call SolveDyson1D(sigma,v,h,v,1,it,err,status)
+ if(status/=2) stop 15
+ print *, 'PASS: mixing-independent true residual and analytic surface self-energy'
+ print *, 'PASS: alpha=1 false-convergence regression, iteration limits, invalid mixing and singular inversion'
+end program

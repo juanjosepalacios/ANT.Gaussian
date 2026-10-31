@@ -553,6 +553,201 @@
   ! *********************************
   ! Bisection method for root finding 
   ! *********************************
+  ! Expand a local bracket around center until a sign change or the full
+  ! allowed interval is reached. Endpoint values are reused within this call
+  ! only; they must never survive a change to the function/Hamiltonian.
+  ! info: 0 success, 1 full interval does not bracket, 3 invalid input,
+  !       4 nonfinite function value.
+  subroutine BracketRoot(func,center,lower,upper,halfwidth,a,b,fa,fb,nexpand,nfev,info)
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    real*8, external :: func
+    real*8, intent(in) :: center,lower,upper,halfwidth
+    real*8, intent(out) :: a,b,fa,fb
+    integer, intent(out) :: nexpand,nfev,info
+    real*8 :: c,radius,span,newa,newb
+    logical :: first
+
+    a=lower; b=upper; fa=0d0; fb=0d0
+    nexpand=0; nfev=0; info=3
+    if (.not.ieee_is_finite(center)) return
+    if (.not.ieee_is_finite(lower) .or. .not.ieee_is_finite(upper)) return
+    if (.not.ieee_is_finite(halfwidth) .or. halfwidth<=0d0) return
+    if (lower>=upper .or. .not.ieee_is_finite(upper-lower)) return
+    c=min(max(center,lower),upper)
+    span=max(c-lower,upper-c)
+    radius=min(max(halfwidth,spacing(c)),span)
+    first=.true.
+    do
+       ! Explicit endpoints at saturation avoid rounding out of the domain.
+       if (radius>=span) then
+          newa=lower
+          newb=upper
+       else
+          newa=max(lower,c-radius)
+          newb=min(upper,c+radius)
+       end if
+       if (first .or. newa/=a) then
+          a=newa
+          fa=func(a)
+          nfev=nfev+1
+       end if
+       info=4
+       if (.not.ieee_is_finite(fa)) return
+       if (first .or. newb/=b) then
+          b=newb
+          fb=func(b)
+          nfev=nfev+1
+       end if
+       if (.not.ieee_is_finite(fb)) return
+       if (fa==0d0 .or. fb==0d0 .or. sign(1d0,fa)/=sign(1d0,fb)) then
+          info=0
+          return
+       end if
+       if (a==lower .and. b==upper) then
+          info=1
+          return
+       end if
+       radius=min(2d0*radius,span)
+       nexpand=nexpand+1
+       first=.false.
+    end do
+  end subroutine BracketRoot
+
+  ! Bracket-preserving Brent-Dekker root search. No derivative is required.
+  ! info: 0 success, 1 no sign-changing bracket, 2 iteration limit,
+  !       3 invalid arguments, 4 nonfinite function value.
+  real*8 function BrentRoot(func,x1,x2,xacc,maxiter,niter,nfev,info,froot,width, &
+                           fleft,fright) result(root)
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    real*8, external :: func
+    real*8, intent(in) :: x1,x2,xacc
+    integer, intent(in) :: maxiter
+    integer, intent(out) :: niter,nfev,info
+    real*8, intent(out) :: froot,width
+    ! Optional endpoint values must be from this exact current function.
+    ! nfev counts only calls made here; caller counts bracketing separately.
+    real*8, intent(in), optional :: fleft,fright
+    real*8 :: a,b,c,d,fa,fb,fc,s,fs,temp,tol,edge
+    logical :: bisected,reject
+
+    root=x1
+    froot=0d0
+    width=abs(x2-x1)
+    niter=0
+    nfev=0
+    info=3
+    if (.not.ieee_is_finite(x1) .or. .not.ieee_is_finite(x2)) return
+    if (.not.ieee_is_finite(xacc) .or. xacc<=0d0 .or. maxiter<1) return
+    a=x1
+    b=x2
+    if (present(fleft)) then
+       fa=fleft
+    else
+       fa=func(a)
+       nfev=nfev+1
+    end if
+    info=4
+    if (.not.ieee_is_finite(fa)) return
+    froot=fa
+    if (fa==0d0) then
+       info=0
+       width=0d0
+       return
+    end if
+    if (present(fright)) then
+       fb=fright
+    else
+       fb=func(b)
+       nfev=nfev+1
+    end if
+    if (.not.ieee_is_finite(fb)) return
+    root=b
+    froot=fb
+    if (fb==0d0) then
+       info=0
+       width=0d0
+       return
+    end if
+    info=1
+    if (sign(1d0,fa)==sign(1d0,fb)) return
+
+    ! b is always the endpoint with the smaller absolute residual.
+    if (abs(fa)<abs(fb)) then
+       temp=a; a=b; b=temp
+       temp=fa; fa=fb; fb=temp
+    end if
+    c=a
+    fc=fa
+    d=c
+    bisected=.true.
+    do niter=1,maxiter
+       tol=max(xacc,4d0*epsilon(1d0)*max(abs(a),abs(b)))
+       if (abs(b-a)<=tol .or. fb==0d0) then
+          info=0
+          exit
+       end if
+       if (fa/=fc .and. fb/=fc) then
+          s=a*fb*fc/((fa-fb)*(fa-fc)) + &
+            b*fa*fc/((fb-fa)*(fb-fc)) + &
+            c*fa*fb/((fc-fa)*(fc-fb))
+       else
+          s=b-fb*(b-a)/(fb-fa)
+       end if
+       edge=0.75d0*a+0.25d0*b
+       reject=.not.ieee_is_finite(s)
+       reject=reject .or. s<=min(edge,b) .or. s>=max(edge,b)
+       if (bisected) then
+          reject=reject .or. abs(s-b)>=0.5d0*abs(b-c) .or. abs(b-c)<tol
+       else
+          reject=reject .or. abs(s-b)>=0.5d0*abs(c-d) .or. abs(c-d)<tol
+       end if
+       if (reject) then
+          s=a+0.5d0*(b-a)
+          bisected=.true.
+       else
+          bisected=.false.
+       end if
+       fs=func(s)
+       nfev=nfev+1
+       if (.not.ieee_is_finite(fs)) then
+          info=4
+          exit
+       end if
+       d=c
+       c=b
+       fc=fb
+       if (fs==0d0) then
+          b=s
+          fb=fs
+          a=s
+          info=0
+          exit
+       end if
+       if (sign(1d0,fa)/=sign(1d0,fs)) then
+          b=s
+          fb=fs
+       else
+          a=s
+          fa=fs
+       end if
+       if (abs(fa)<abs(fb)) then
+          temp=a; a=b; b=temp
+          temp=fa; fa=fb; fb=temp
+       end if
+       info=2
+       if (abs(b-a)<=tol) then
+          info=0
+          exit
+       end if
+    end do
+    niter=min(niter,maxiter)
+    root=b
+    froot=fb
+    width=abs(b-a)
+  end function BrentRoot
+
   REAL *8 FUNCTION Bisec(func,x1,x2,xacc,jmax,j)
     IMPLICIT NONE
     ! func  : real function to find root for

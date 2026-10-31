@@ -1,0 +1,77 @@
+module constants
+ integer,parameter :: double=kind(1d0)
+ complex*16,parameter :: c_zero=(0d0,0d0)
+ real*8,parameter :: d_zero=0d0
+end module
+module parameters
+ integer,parameter :: MaxLAO=32
+ real*8 :: ChargeAcc=1d-2,FermiAcc=1d-2,Infty=10000d0
+end module
+module numeric
+ contains
+@CHDIAG@
+end module
+module test_leads
+ use constants
+ use parameters
+ implicit none
+@LEADTYPE@
+ integer :: WhichLead=1,charge_calls=0
+ real*8 :: ChargeOffset=0d0
+ contains
+@ROUTINES@
+ real*8 function TotCharge(E)
+ real*8,intent(in)::E
+ charge_calls=charge_calls+1
+ if(charge_calls>20) stop 91
+ TotCharge=0d0
+ if(E>=-1d0) TotCharge=2d0
+ end function
+end module
+program test_seed
+ use test_leads
+ implicit none
+ type(T1DLead) :: left,right
+ complex*16,target :: vn(2,2,0:2,2,2),sn(0:2,2,2)
+ character(len=32) :: arg
+ call get_command_argument(1,arg)
+ vn=c_zero;sn=c_zero
+ left%LeadNo=1;left%NSpin=1;left%NPC=1;left%NPCAO=2;left%NAOrbs=2
+ left%vn=>vn;left%sn=>sn
+ sn(0,1,1)=4d0;sn(0,2,2)=1d0
+ vn(1,1,0,1,1)=-8d0;vn(1,1,0,2,2)=3d0
+ if(trim(arg)=='invalid-overlap') then
+   sn(0,1,1)=0d0
+   call SetInitialLeadLowerBound(left)
+   stop 90
+ endif
+ call SetInitialLeadLowerBound(left)
+ if(abs(left%EMin+2d0)>1d-10) stop 10
+ ! Both spin channels must contribute to the minimum.
+ left%NSpin=2
+ vn(2,2,0,1,1)=-20d0;vn(2,2,0,2,2)=7d0
+ call SetInitialLeadLowerBound(left)
+ if(abs(left%EMin+5d0)>1d-10) stop 11
+ ! A different lead uses its own two-cell supercell, not one primitive cell.
+ right%LeadNo=2;right%NSpin=1;right%NPC=2;right%NPCAO=1;right%NAOrbs=2
+ right%vn=>vn;right%sn=>sn
+ vn=c_zero;sn=c_zero
+ sn(0,1,1)=1d0
+ vn(1,1,0,1,1)=5d0;vn(1,1,1,1,1)=2d0
+ call SetInitialLeadLowerBound(right)
+ if(abs(right%EMin-3d0)>1d-10) stop 12
+ if(abs(left%EMin+5d0)>1d-10) stop 13
+ ! Positive starting energies must move downward rather than double upward.
+ charge_calls=0
+ call FindEBounds(right)
+ if(right%EMin/=-6d0.or.charge_calls/=4) stop 14
+ ! Complex Hermitian input must retain its imaginary off-diagonal elements.
+ vn=c_zero;sn=c_zero
+ left%NSpin=1;sn(0,1,1)=1d0;sn(0,2,2)=1d0
+ vn(1,1,0,1,2)=(0d0,1d0);vn(1,1,0,2,1)=(0d0,-1d0)
+ call SetInitialLeadLowerBound(left)
+ if(abs(left%EMin+1d0)>1d-10) stop 15
+ print *, 'PASS: overlap-aware generalized eigenvalues and both spin channels'
+ print *, 'PASS: independent leads, repeated supercell, complex Hermitian matrices'
+ print *, 'PASS: positive starting bound expands monotonically downward'
+end program

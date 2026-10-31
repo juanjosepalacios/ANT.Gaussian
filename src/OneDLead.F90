@@ -113,6 +113,13 @@
  
   real(double)    :: ChargeOffset 
   integer :: WhichLead
+  integer :: FermiEvaluations=0
+  ! Independent guesses in the unshifted Hamiltonian reference, per electrode.
+  ! Preserve across CleanUp1DLead during SCF; never retain old charge values.
+  real(double) :: WarmLeadFermi(2)=0d0
+  logical :: WarmLeadFermiValid(2)=.false.
+  ! Initial search half-width (eV), a heuristic rather than a convergence tolerance.
+  real(double), parameter :: WarmFermiHalfWidth=0.25d0
  
   !eXtended supercell matrices 
   integer :: NXAO, NXDim, NXSpin
@@ -156,6 +163,8 @@ contains
    ! in order to compute charge and DOS in the case of 
    ! non-orthogonal basis set
    !
+    ! Seed the search independently from this lead's repeated supercell.
+    call SetInitialLeadLowerBound(Lead1D(ilead))
     call CreateXSC( Lead1D(ilead) )
    !
    ! If no Energy boundaries have been defined in input find them
@@ -216,7 +225,7 @@ contains
     complex(double), dimension(:,:), intent(out) :: Sigma
     integer , intent(in) :: idir, NBasis !! AO1, 
 
-    integer :: i,j,AOrb1,AOrb2, ispin, jspin, NAO, ierr
+    integer :: i,j,AOrb1,AOrb2, ispin, jspin, NAO, ierr,solver_status
 
    !complex(double), dimension(:,:), allocatable :: Veff1, Heff, Veff2
     complex(double), dimension(L1D%NAOrbs,L1D%NAOrbs) :: Veff1, Heff, Veff2
@@ -246,15 +255,20 @@ contains
        end do
     end do
     if( idir == 1 )then
-       call SolveDyson1D( sig, Veff1, Heff, Veff2, NAO )
+       call SolveDyson1D(sig,Veff1,Heff,Veff2,NAO,status=solver_status)
        AOrb1 = 1
        AOrb2 = NAO
     else
-       call SolveDyson1D( sig, Veff2, Heff, Veff1, NAO )
+       call SolveDyson1D(sig,Veff2,Heff,Veff1,NAO,status=solver_status)
        AOrb1=NBasis-NAO+1
        AOrb2=NBasis
     end if
 
+    if (solver_status/=0) then
+       print *, 'ERROR: 1D Dyson failed, lead/spin/direction/status=',L1D%LeadNo,spin,idir,solver_status
+       print *, 'Energy (eV)=',z,' mixing=',L1DAlpha
+       stop 1
+    end if
     do i=AOrb1,AOrb2
        do j=AOrb1,AOrb2
           Sigma( i, j ) = sig( i-AOrb1+1, j-AOrb1+1 )
@@ -717,73 +731,77 @@ contains
   !*       Sigma = Veff1 ------------ Veff2              *
   !*                     Heff - Sigma                    *
   !*******************************************************
-  recursive subroutine SolveDyson1D( Sigma, Veff1, Heff, Veff2, NDim )
-    use parameters, only: conv => selfacc, alpha => L1DALPHA, MaxCycle => L1DMaxCyc
-    use constants, only: c_zero, ui
-   !use device, only: OnSigma
-#ifdef PGI    
-   use lapack_blas
+  recursive subroutine SolveDyson1D(Sigma,Veff1,Heff,Veff2,NDim,iterations,residual,status)
+    use parameters, only: conv=>SelfAcc,alpha=>L1DAlpha,MaxCycle=>L1DMaxCyc
+    use constants, only: c_zero,c_one,ui
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+#ifdef PGI
+    use lapack_blas, only: zgetrf,zgetri,zgemm
 #endif
     implicit none
-
     integer, intent(in) :: NDim
-
-    complex(double), dimension(NDim,NDim),intent(out) :: Sigma 
-    complex(double), dimension(NDim,NDim),intent(in) :: Veff1, Heff, Veff2
-
-    integer, dimension(NDim) :: ipiv
-    integer :: ispin, i, j, info, ierr
+    complex(double), intent(out) :: Sigma(NDim,NDim)
+    complex(double), intent(in) :: Veff1(NDim,NDim),Heff(NDim,NDim),Veff2(NDim,NDim)
+    integer, intent(out), optional :: iterations,status
+    real(double), intent(out), optional :: residual
+    integer :: ipiv(NDim),i,j,info,ncycle,solve_status
     real(double) :: error
-    integer :: ncycle
-    
-    !auxiliary self energy for self-consistent calculation, temporary matrix
-    complex(double), dimension(NDim,NDim) :: Sigma_aux, temp 
-    !work array for inversion
-    complex(double), dimension( 4*NDim ) :: work
+    complex(double) :: Sigma_aux(NDim,NDim),temp(NDim,NDim),work(4*NDim)
 
-    !
-    ! Initializing Sigma
-    !
-    Sigma = c_zero
+    Sigma=c_zero
+    ncycle=0
+    error=huge(0d0)
+    solve_status=4
+    if (NDim<1 .or. MaxCycle<1) goto 900
+    if (.not.ieee_is_finite(alpha) .or. alpha<=0d0 .or. alpha>1d0) goto 900
+    if (.not.ieee_is_finite(conv) .or. conv<=0d0) goto 900
     do i=1,NDim
        Sigma(i,i)=-ui
     end do
-    !
-    ! Iterative solution of Dyson equation
-    !
-    error = 1.0d0
-    ncycle = 0
-    do while ( error.gt.conv .AND. ncycle < MaxCycle )
-       ncycle = ncycle+1
+    solve_status=1
+    do ncycle=1,MaxCycle
+       Sigma_aux=Heff-Sigma
+       call zgetrf(NDim,NDim,Sigma_aux,NDim,ipiv,info)
+       if (info/=0) then
+          solve_status=2
+          exit
+       end if
+       call zgetri(NDim,Sigma_aux,NDim,ipiv,work,4*NDim,info)
+       if (info/=0) then
+          solve_status=2
+          exit
+       end if
+       call zgemm('N','N',NDim,NDim,NDim,c_one,Sigma_aux,NDim,Veff2,NDim,c_zero,temp,NDim)
+       call zgemm('N','N',NDim,NDim,NDim,c_one,Veff1,NDim,temp,NDim,c_zero,Sigma_aux,NDim)
+       ! True fixed-point residual, before mixing and reset every iteration.
+       ! It must not be scaled by (1-alpha), which falsely favors large alpha.
+       error=0d0
        do i=1,NDim
           do j=1,NDim
-             Sigma_aux(i,j) = Heff(i,j) - Sigma(i,j)
+             error=error+abs(Sigma_aux(i,j)-Sigma(i,j))
           end do
        end do
-       !
-       ! Inverting
-       !
-       call zgetrf(NDIM,NDIM,Sigma_aux,NDIM,ipiv,info)
-       call zgetri(NDIM,Sigma_aux,NDIM,ipiv,work,4*NDIM,info)
-       !
-       ! Matrix multiplication: Veff1 ( Heff - Sigma )^-1 Veff2
-       !
-       call zgemm('N','N',NDIM,NDIM,NDIM, c_one,Sigma_aux,NDIM,Veff2,NDIM, c_zero,temp,NDIM )
-       call zgemm('N','N',NDIM,NDIM,NDIM, c_one,Veff1,NDIM,temp,NDIM,c_zero, Sigma_aux,NDIM )
-       !
-       ! Mixing with old self-energy matrix
-       !
-       do i=1,NDIM
-          do j=1,NDIM
-             Sigma(i,j) = alpha*Sigma_aux(i,j)+(1.0d0-alpha)*Sigma(i,j)
-             error = error+2.0d0*abs(Sigma_aux(i,j)-Sigma(i,j))
-          end do
-       end do     
-       error=error/(2.0*NDIM*NDIM)
-    enddo 
-   !print*,'ncycle Dyson',ncycle
-    if (ncycle == MaxCycle) print*, 'Warning in Dyson selfconsistency'
-
+       error=error/dble(NDim*NDim)
+       if (.not.ieee_is_finite(error)) then
+          solve_status=3
+          exit
+       end if
+       if (error<=conv) then
+          solve_status=0
+          exit
+       end if
+       ! Leave Sigma at the iterate whose residual is reported on exhaustion.
+       if (ncycle==MaxCycle) exit
+       Sigma=alpha*Sigma_aux+(1d0-alpha)*Sigma
+    end do
+900 continue
+    if (present(iterations)) iterations=ncycle
+    if (present(residual)) residual=error
+    if (present(status)) then
+       status=solve_status
+    else if (solve_status/=0) then
+       print *, 'Warning in Dyson selfconsistency, status=',solve_status,' residual=',error
+    end if
   end subroutine SolveDyson1D
 
 
@@ -888,6 +906,7 @@ contains
 
   recursive real(double) function TotCharge( E )
     use parameters, only: ChargeAcc, Infty
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 !$  use omp_lib, only: omp_in_parallel
     use numeric, only: gauleg 
     use constants, only: ui, d_pi
@@ -910,6 +929,10 @@ contains
 
 
 
+    if (.not.ieee_is_finite(ChargeAcc) .or. ChargeAcc<=0d0) then
+       print *, "ERROR: CHARGEACC must be finite and positive for 1D charge integration"
+       stop 1
+    end if
     EMin = Lead1D(WhichLead)%EMin
     !
     ! Integration contour parameters:
@@ -949,14 +972,13 @@ contains
       !if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
        if( NXSpin == 1 ) q = q*2.0d0
       !print *, n, q
-      !if( n > 1 .and. (q == d_zero .or. abs(q-qq) < ChargeAcc*100 ) ) exit  
-       if( n > 1 .and. (q == d_zero .or. abs(q-qq) < 0.1 ) ) exit  
+       if( n > 1 .and. abs(q-qq) < ChargeAcc ) exit
        n = 2*n+1
        if( n > nmax )then
           print '(A,I5,A)', "WARNING: TotCharge/gaussian quadrature has not converged after", nmax , " steps."
           print *, "E = ", E
           print *, "Error = ", abs(q-qq)
-          exit
+          stop 1
        end if
        qq = q
     end do
@@ -971,13 +993,79 @@ contains
   !*** Find upper and lower energy bounds for a lead ***
   !*** such that non-zero DOS lies completely inside ***
   !*****************************************************
+  ! Generalized isolated-supercell spectrum H0*c = e*S0*c. This provides
+  ! a starting estimate, not a guaranteed lower edge of the periodic spectrum.
+  ! FindEBounds must still verify the integrated spectral weight below it.
+  subroutine SetInitialLeadLowerBound(L1D)
+    use numeric, only: CHDiag
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    type(T1DLead), intent(inout) :: L1D
+    complex(double) :: overlap(L1D%NAOrbs,L1D%NAOrbs)
+    complex(double) :: transform(L1D%NAOrbs,L1D%NAOrbs)
+    complex(double) :: hcell(L1D%NAOrbs,L1D%NAOrbs)
+    complex(double) :: horth(L1D%NAOrbs,L1D%NAOrbs)
+    real(double) :: seval(L1D%NAOrbs),eval(L1D%NAOrbs),lowest
+    integer :: n,i,j,spin,info
+
+    n=L1D%NAOrbs
+    if (n<1 .or. L1D%NSpin<1) then
+       print *, 'ERROR: invalid lead supercell dimensions',L1D%LeadNo
+       stop 1
+    end if
+    do j=1,n
+       do i=1,n
+          overlap(i,j)=L1D_S0(L1D,i,j)
+       end do
+    end do
+    call CHDiag(overlap,seval,info)
+    if (info/=0) then
+       print *, 'ERROR: lead overlap diagonalization failed',L1D%LeadNo,info
+       stop 1
+    end if
+    if (.not.all(ieee_is_finite(seval))) then
+       print *, 'ERROR: nonfinite lead overlap eigenvalues',L1D%LeadNo
+       stop 1
+    end if
+    if (any(seval<=0d0)) then
+       print *, 'ERROR: lead supercell overlap is not positive definite',L1D%LeadNo,minval(seval)
+       stop 1
+    end if
+    do j=1,n
+       transform(:,j)=overlap(:,j)/sqrt(seval(j))
+    end do
+    lowest=huge(0d0)
+    do spin=1,L1D%NSpin
+       do j=1,n
+          do i=1,n
+             hcell(i,j)=L1D_H0(L1D,spin,i,spin,j)
+          end do
+       end do
+       horth=matmul(conjg(transpose(transform)),matmul(hcell,transform))
+       call CHDiag(horth,eval,info)
+       if (info/=0) then
+          print *, 'ERROR: lead supercell diagonalization failed',L1D%LeadNo,spin,info
+          stop 1
+       end if
+       if (.not.all(ieee_is_finite(eval))) then
+          print *, 'ERROR: nonfinite lead supercell eigenvalues',L1D%LeadNo,spin
+          stop 1
+       end if
+       if (eval(1)<lowest) lowest=eval(1)
+    end do
+    L1D%EMin=lowest
+    print '(A,I2,A,I6,A,F16.8)', 'Initial lower bound, lead ',L1D%LeadNo, &
+          ' supercell orbitals ',n,' lowest eigenvalue (eV): ',lowest
+    call flush(6)
+  end subroutine SetInitialLeadLowerBound
+
   subroutine FindEBounds( L1D )
     use parameters, only: ChargeAcc, FermiAcc, Infty
     implicit none
 
     type(T1DLead), intent(inout) :: L1D
 
-    real(double)    :: Q, qmax
+    real(double)    :: Q, qmax,lower_step
     
     qmax = 2.0d0*L1D%NPCAO
    !qmax = 2.0d0*(NXAO-(L1D%NPCAO*2))
@@ -987,16 +1075,24 @@ contains
     
     ! 1. Decrease EMin until charge integration becomes zero
     !
+    ! Retain geometric downward expansion, including zero/positive seeds.
+    lower_step=abs(L1D%EMin)
+    if (lower_step<1d0) lower_step=1d0
+    if (L1D%EMin < -Infty) then
+       print *, 'ERROR: initial lower bound is below -INFTY',L1D%EMin
+       stop 1
+    end if
     print '(A)', "Searching optimum Emin such that DOS integrates to zero ..."
     do
        Q = TotCharge( L1D%EMin )
        print *, "EMin = ", L1D%EMin, Q
        call FLUSH(6)
-       if( abs(Q) <  0.1 ) exit
-       L1D%EMin = L1D%EMin + L1D%EMin
+       if( abs(Q) < ChargeAcc ) exit
+       L1D%EMin = L1D%EMin - lower_step
+       lower_step=2d0*lower_step
        if (L1D%EMin < -Infty) then
            print*,'Warning: Emin < -Infty. Decrease this value'
-           stop
+           stop 1
        end if
     end do
     !
@@ -1007,7 +1103,7 @@ contains
        Q = TotCharge( L1D%EMax )
        print *, "EMax = ", L1D%EMax, Q
        call FLUSH(6)
-       if( abs(Q - qmax ) <  0.1 ) exit
+       if( abs(Q - qmax ) < ChargeAcc ) exit
        L1D%EMax = L1D%EMax + L1D%EMax
     end do
     !
@@ -1037,52 +1133,77 @@ contains
   !*** Subroutine to find Fermi level of Bulk lead ***
   !***                                             ***
   !***************************************************
+  real(double) function CountedLeadCharge(E) result(q)
+    real(double), intent(in) :: E
+    FermiEvaluations=FermiEvaluations+1
+    q=TotCharge(E)
+  end function CountedLeadCharge
+
   subroutine FindFermi( L1D )
-    use parameters, only: ChargeAcc, FermiAcc, Infty, Max
-    use numeric, only: bisec, Muller
+    use parameters, only: Max, FermiAcc
+    use numeric, only: BrentRoot, BracketRoot
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    use omp_lib, only: omp_get_wtime
     implicit none
-
     type(T1DLead), intent(inout) :: L1D
-
-    integer :: cond, nsteps ,k
-    real(double) :: EStep, Q, EFermi
-    real(double) :: EF0,EF1,EF2,Z, Delta, Epsilon
+    integer :: iterations,evaluations,info,expansions,bracket_evaluations
+    real(double) :: EFermi,Delta,residual,width,started,left,right,fleft,fright,halfwidth
 
     print *, "Searching Fermi energy..."
-    
-    WhichLead = L1D%LeadNo
-   !EFermi = L1D%EFermi
-    ChargeOffset = L1D%NPCEl
-    print*, 'ChargeOffset', ChargeOffset
-    
-   !if( L1D%EFermi == 0.0d0 )then
-       print *, "Bisec Method"
-       call FLUSH(6)
-       Delta=0.1
-       EFermi = bisec(TotCharge,L1D%EMin,L1D%EMax,Delta,5*Max,K) 
-       L1D%EFermi = EFermi
-   !end if
-
-   !print '(A,F10.5)' , "Initial EFermi = ", L1D%EFermi
-
-   !EF0 = EFermi-1.0
-   !EF1 = EFermi
-   !EF2 = EFermi+1.0
-
-   !nsteps = 25
-   !Delta=FermiAcc
-   !Epsilon=ChargeAcc
-    
-   !print *, "Muller Method"
-   !call FLUSH(6)
-    
-   !call MULLER(TotCharge,EF0,EF1,EF2,Delta,Epsilon,nsteps,EFermi,Z,K,Cond)
-   !L1D%EFermi = EFermi
-
-    print '(A,I3,A,F10.5)', 'EFermi in bulk electrode ', WhichLead,' = ', L1D%EFermi 
-    call FLUSH(6)
-   !init = .true.
-
+    WhichLead=L1D%LeadNo
+    if (WhichLead<1 .or. WhichLead>size(WarmLeadFermi)) then
+       print *, 'ERROR: invalid lead number in Fermi search',WhichLead
+       stop 1
+    end if
+    ChargeOffset=L1D%NPCEl
+    FermiEvaluations=0
+    print *, 'ChargeOffset',ChargeOffset
+    print *, 'Brent Method'
+    call flush(6)
+    ! Absolute energy accuracy (eV), configured by FERMIACC.
+    Delta=FermiAcc
+    if (.not.ieee_is_finite(Delta) .or. Delta<=0d0) then
+       print *, 'ERROR: FERMIACC must be finite and positive'
+       stop 1
+    end if
+    halfwidth=WarmFermiHalfWidth
+    if (2d0*Delta>halfwidth) halfwidth=2d0*Delta
+    started=omp_get_wtime()
+    if (WarmLeadFermiValid(WhichLead)) then
+       print '(A,I2,A,F14.7)', 'Warm Fermi bracket, lead ',WhichLead, &
+                              ' previous energy (eV): ',WarmLeadFermi(WhichLead)
+       call BracketRoot(CountedLeadCharge,WarmLeadFermi(WhichLead), &
+                        L1D%EMin,L1D%EMax,halfwidth, &
+                        left,right,fleft,fright,expansions,bracket_evaluations,info)
+       print '(A,I5,A,2F16.7)', 'Lead Fermi bracket expansions: ',expansions, &
+                              ' interval (eV): ',left,right
+       if (info/=0) then
+          print *, 'ERROR: lead Fermi bracket failed, status = ',info
+          stop 1
+       end if
+       ! Endpoint values are current-Hamiltonian evaluations, not stored history.
+       EFermi=BrentRoot(CountedLeadCharge,left,right,Delta, &
+                       5*Max,iterations,evaluations,info,residual,width,fleft,fright)
+    else
+       print '(A,I2)', 'Full Fermi bracket, no previous solution for lead ',WhichLead
+       EFermi=BrentRoot(CountedLeadCharge,L1D%EMin,L1D%EMax,Delta, &
+                       5*Max,iterations,evaluations,info,residual,width)
+    end if
+    print '(A,I5,A,I5)', 'Lead Fermi iterations: ',iterations, &
+                        ' charge evaluations: ',FermiEvaluations
+    print '(A,ES16.7,A,ES16.7)', 'Lead Fermi residual: ',residual, &
+                                ' bracket width (eV): ',width
+    print '(A,F12.6)', 'Lead Fermi wall seconds: ',omp_get_wtime()-started
+    if (info/=0) then
+       print *, 'ERROR: lead Fermi search failed, Brent status = ',info
+       stop 1
+    end if
+    L1D%EFermi=EFermi
+    ! Store only the energy, before AdjustFermi shifts this lead's matrices.
+    WarmLeadFermi(WhichLead)=EFermi
+    WarmLeadFermiValid(WhichLead)=.true.
+    print '(A,I3,A,F10.5)', 'EFermi in bulk electrode ',WhichLead,' = ',L1D%EFermi
+    call flush(6)
   end subroutine FindFermi
 
 

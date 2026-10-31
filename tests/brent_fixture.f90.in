@@ -1,0 +1,96 @@
+module problem_data
+ use, intrinsic :: ieee_arithmetic, only: ieee_value,ieee_quiet_nan
+ implicit none
+ integer :: problem=0,calls=0
+ contains
+ real*8 function f(x)
+ real*8,intent(in)::x
+ calls=calls+1
+ select case(problem)
+ case(1)
+ f=x*x-2d0
+ case(2)
+ f=2d0-x*x
+ case(3)
+ f=(x-0.3141592653589793d0)**3
+ case(4)
+ f=tanh(1000d0*(x-0.999d0))
+ case(5)
+ f=exp(x)-3d0
+ case(6)
+ f=sin(x)
+ case(7)
+ f=x-0.2d0
+ case(8)
+ f=x*x+1d0
+ case(9)
+ f=x-1d0
+ if(x>0d0) f=ieee_value(0d0,ieee_quiet_nan)
+ case(10)
+ f=x
+ if(x==0d0) f=ieee_value(0d0,ieee_quiet_nan)
+ end select
+ end function
+end module
+program test_brent
+ use roots
+ use problem_data
+ use, intrinsic :: ieee_arithmetic, only: ieee_value,ieee_quiet_nan
+ implicit none
+ integer :: it,nev,status,j,brent_calls,bisect_calls,direction
+ real*8 :: x,r,w,expected,a,b,reference
+ do problem=1,6
+ do direction=1,2
+ select case(problem)
+ case(1,2)
+ a=0d0;b=2d0;expected=sqrt(2d0)
+ case(3)
+ a=-1d0;b=2d0;expected=0.3141592653589793d0
+ case(4)
+ a=-1d0;b=1d0;expected=0.999d0
+ case(5)
+ a=-10d0;b=10d0;expected=log(3d0)
+ case(6)
+ a=3d0;b=4d0;expected=acos(-1d0)
+ end select
+ if(direction==2) then
+ x=a;a=b;b=x
+ endif
+ calls=0
+ x=BrentRoot(f,a,b,1d-10,200,it,nev,status,r,w)
+ if(status/=0.or.abs(x-expected)>1.1d-10.or.nev/=calls.or.w>1.1d-10) then
+   print *, 'FAIL',problem,direction,x,expected,status,w,nev,calls
+   stop 10
+ endif
+ enddo
+ enddo
+ problem=7;calls=0
+ x=BrentRoot(f,0.2d0,1d0,1d-10,200,it,nev,status,r,w)
+ if(status/=0.or.x/=0.2d0.or.nev/=1) stop 11
+ problem=8
+ x=BrentRoot(f,-1d0,1d0,1d-10,200,it,nev,status,r,w)
+ if(status/=1) stop 12
+ problem=9
+ x=BrentRoot(f,-1d0,1d0,1d-10,200,it,nev,status,r,w)
+ if(status/=4) stop 13
+ problem=10
+ x=BrentRoot(f,-1d0,1d0,1d-10,200,it,nev,status,r,w)
+ if(status/=4) stop 14
+ problem=1
+ x=BrentRoot(f,0d0,2d0,1d-14,1,it,nev,status,r,w)
+ if(status/=2) stop 15
+ calls=0
+ x=BrentRoot(f,0d0,2d0,0d0,200,it,nev,status,r,w)
+ if(status/=3.or.calls/=0) stop 16
+ ! Compare actual function calls on a smooth nonlinear root.
+ problem=5;calls=0
+ x=BrentRoot(f,0d0,2d0,1d-10,200,it,nev,status,r,w)
+ brent_calls=calls
+ calls=0
+ reference=Bisec(f,0d0,2d0,1d-10,200,j)
+ bisect_calls=calls
+ if(abs(x-reference)>2d-10.or.brent_calls>=bisect_calls) stop 17
+ print *, 'PASS: increasing/decreasing, reversed brackets, flat and steep roots'
+ print *, 'PASS: endpoints, invalid bracket/tolerance, nonfinite values, iteration limit'
+ print *, 'Function calls, exponential example: Brent=',brent_calls,' bisection=',bisect_calls
+end program
