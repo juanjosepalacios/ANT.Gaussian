@@ -34,8 +34,8 @@ Default: SELFACC = 1.0D-6
 * L1DALPHA (real)
 1D-lead Dyson self-energy mixing:
 Sigma_new = L1DALPHA * F(Sigma_old) + (1-L1DALPHA) * Sigma_old.
-Allowed range: 0 < L1DALPHA <= 1. Default: L1DALPHA = 0.75.
-Separate from density mixing ALPHA.
+Allowed range: 0 < L1DALPHA <= 1. Separate from density mixing ALPHA.
+Default: L1DALPHA = 0.75
 
 FERMIACC and CHARGEACC are input targets. SCF adaptation can loosen them,
 including a factor of ten in the first two lead-enabled cycles.
@@ -52,8 +52,9 @@ Default: SMALL = 0.1
 Default: SMALLD = 0.1 (Angstrom)
 
 * ETA (real)
-Small imaginary part of the Green's function. When both electrodes are
-set to GHOST it might be necessary to increase this number considerably.
+Small imaginary part of the Green's function. A value larger than the
+default may be needed when both electrodes are set to GHOST or when
+using periodic 1D leads (TYPE1 or TYPE2 = 1DLEAD).
 Default: ETA = 1.0D-10
 
 * SL (real)
@@ -72,13 +73,38 @@ Convergence criterion for switching on the faster Secant method (superceding the
 Default: SSM = 1.0D-3
 
 * TYPE1 and TYPE2 (string)
-Type of model for the semiinfinite electrode: BETHE, 1DLEAD or GHOST.
-When set to 1DLEAD, a periodic one-dimensional electrode is constructed from
-the repeated lead cell and coupled through its self-energy.
-When set to BETHE the effective selfenergy is connected to the electrode.
-When set to GHOST, nothing is connected. When both electrodes
-are set to GHOST the calculation is similar to the one performed by the original GAUSSIAN03/09
-code on the input  cluster, but with all the convergence advantages of ANT.G.
+Type of model for the semiinfinite electrode. TYPE1 selects electrode 1
+and TYPE2 selects electrode 2. Available values are BETHE, 1DLEAD and GHOST.
+
+BETHE: Attach a Bethe-lattice self-energy to the electrode atoms of the
+input cluster. Select the parameter set for each electrode with BLPAR1
+and BLPAR2 (see the BLxxx.dat files).
+
+1DLEAD: Construct a periodic one-dimensional electrode from Hamiltonian
+and overlap blocks of the input cluster. Include several identical translated
+primitive cells at each end, with a consistent atom order within every cell.
+List the atoms cell by cell along the wire: electrode 1 is taken from the
+beginning of the atom list and electrode 2 from the end. Set NATPC1 and
+NATPC2 to the number of atoms in one primitive cell of each electrode.
+The two electrodes are extracted independently and need not be identical.
+
+Keep NPC = 1 (the default). With this setting, include at least two
+identical translated primitive cells at each end so that the cell Hamiltonian,
+overlap and coupling to the neighboring cell can be extracted. The outermost
+NATPC1 and NATPC2 atoms form the lead buffers excluded from reduced-device
+charge counting. Leave a central device region between these buffers.
+
+For example, a wire with three atoms per primitive cell can use
+TYPE1 = 1DLEAD, TYPE2 = 1DLEAD, NATPC1 = 3, NATPC2 = 3 and NPC = 1.
+Include at least two repeated three-atom cells at each end for parameter
+extraction.
+Use the same geometry and atom ordering for corresponding cells. L1DALPHA
+and SELFACC control the Dyson solution; ETA may need to exceed its default.
+
+GHOST: Attach no electrode self-energy on the selected side. When both
+electrodes are GHOST, the input cluster is treated as an isolated system,
+similarly to the original GAUSSIAN03/09 calculation, with ANT.G convergence
+controls.
 Default: TYPE1 = BETHE and TYPE2 = BETHE
 
 * BLPAR1 and BLPAR2 (string)
@@ -99,6 +125,13 @@ Default: OVERLAP = -1.0
 Factor by which to multiply the selfenergy. Useful to detach in a controled way the system from 
 the Bethe lattice.
 Default: GLUE = 1.0
+
+* NATPC1 and NATPC2 (integer)
+Number of atoms in one primitive cell of each 1DLEAD electrode.
+Specify a positive value for each 1D lead. NPC defaults to 1.
+For compatibility, NEMBED1/2 are accepted for 1D leads with a warning.
+If both names are supplied for a lead, their values must agree.
+Use NEMBED1/2 for Bethe-lattice embedding.
 
 * NEMBED1 and NEMBED2 (integer)
 Number of atoms of the electrodes to be connected to a Bethe lattice branch. (These atoms are not taken into account 

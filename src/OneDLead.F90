@@ -459,7 +459,7 @@ contains
   !********************************
   subroutine ReadHamiltonian(ilead,NSpin,HD,SD,NAOrbs )
 !   use device, only: DevNSpin, DevFockMat, DevOverlapMat, DevNAOrbs, LeadsOn  
-    use parameters, only: NEmbed, NPC
+    use parameters, only: NatPC, NPC
     use cluster, only: LoAOrbNo,  HiAOrbNo, LeadAtmNo, LeadNAOrbs, NALead,  NAOAtom
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg, GetAN, GetAtmCo
@@ -494,14 +494,14 @@ contains
     Lead1D(ilead)%LeadNo   = ilead
     Lead1D(ilead)%NSpin    = NSpin
     Lead1D(ilead)%NPC      = NPC
-    Lead1D(ilead)%NPCAtoms  = NEmbed(ilead)
+    Lead1D(ilead)%NPCAtoms  = NatPC(ilead)
     NPCAtoms = Lead1D(ilead)%NPCAtoms
     if (ilead ==1 ) then
-      Lead1D(ilead)%NPCEl    = NEmbed(ilead)*GetAtmChg(1)
-      Lead1D(ilead)%NPCAO    = NEmbed(ilead)*NAOAtom(1)
+      Lead1D(ilead)%NPCEl    = NatPC(ilead)*GetAtmChg(1)
+      Lead1D(ilead)%NPCAO    = NatPC(ilead)*NAOAtom(1)
     else 
-      Lead1D(ilead)%NPCEl    = NEmbed(ilead)*GetAtmChg(GetNAtoms())  
-      Lead1D(ilead)%NPCAO    = NEmbed(ilead)*NAOAtom(GetNatoms())
+      Lead1D(ilead)%NPCEl    = NatPC(ilead)*GetAtmChg(GetNAtoms())
+      Lead1D(ilead)%NPCAO    = NatPC(ilead)*NAOAtom(GetNatoms())
     end if      
     NPCEl = Lead1D(ilead)%NPCEl
     NPCAO = Lead1D(ilead)%NPCAO

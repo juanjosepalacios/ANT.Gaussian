@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Introduce NATPC1/2 for 1D-lead primitive-cell atom counts, retaining
+  NEMBED1/2 for Bethe embedding and as warned legacy aliases for 1D inputs.
+- Reject conflicting cell counts and document the new input names.
+
 ## 2.8.4 - 2026-10-31
 
 - Parallelize OneDLead bulk-charge quadrature with call-local Green-function

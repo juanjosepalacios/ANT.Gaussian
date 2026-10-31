@@ -167,6 +167,12 @@
   ! Number of atoms to be connected to Bethe lattice
   CHARACTER(LEN=10), DIMENSION(2), PARAMETER :: NEmbed_keyw = (/"NEMBED1","NEMBED2"/)
   INTEGER, DIMENSION(2) :: NEmbed = (/0,0/)
+  ! Atoms per primitive cell for periodic 1D leads; -1 means unspecified.
+  CHARACTER(LEN=10), DIMENSION(2), PARAMETER :: NatPC_keyw = (/"NATPC1","NATPC2"/)
+  INTEGER, DIMENSION(2) :: NatPC = (/-1,-1/)
+  LOGICAL, DIMENSION(2) :: NatPCSpecified = (/.false.,.false./)
+  LOGICAL, DIMENSION(2) :: NEmbedSpecified = (/.false.,.false./)
+
 
   ! Manual selection of number of atoms in electrodes for single element systems
   CHARACTER(LEN=10), DIMENSION(2), PARAMETER :: NAtomEl_keyw = (/"NATOMEL1","NATOMEL2"/)
@@ -533,7 +539,7 @@ CONTAINS
        END SELECT
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
-         MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NPC_keyw, NAtomEl_keyw(1), NAtomEl_keyw(2), &
+         MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NatPC_keyw(1), NatPC_keyw(2), NPC_keyw, NAtomEl_keyw(1), NAtomEl_keyw(2), &
          NPulay_keyw, Max_keyw, Nip_keyw, PrtHatom_keyw, TREV_keyw   )
        !
        ! 2. looking for integer variables
@@ -561,8 +567,16 @@ CONTAINS
           NSpinLock = ival
        CASE( NEmbed_keyw(1) )
           NEmbed(1) = ival
+          NEmbedSpecified(1) = .true.
        CASE( NEmbed_keyw(2) )
           NEmbed(2) = ival
+          NEmbedSpecified(2) = .true.
+       CASE( NatPC_keyw(1) )
+          NatPC(1) = ival
+          NatPCSpecified(1) = .true.
+       CASE( NatPC_keyw(2) )
+          NatPC(2) = ival
+          NatPCSpecified(2) = .true.
        CASE( NPC_keyw )
           NPC = ival
        CASE( NAtomEl_keyw(1) )
@@ -865,9 +879,42 @@ CONTAINS
        WRITE ( unit=logfile, fmt=* ) "Error reading ANT input file"
        STOP
     END IF
+    CALL resolve_lead_cells(logfile)
     IF( ios < 0 ) WRITE ( unit=logfile, fmt=* ) "Done."    
   END SUBROUTINE read_parameters
   
+
+  SUBROUTINE resolve_lead_cells(logfile)
+    INTEGER, INTENT(in) :: logfile
+    INTEGER :: lead
+    DO lead=1,2
+       IF (ElType(lead) == '1DLEAD') THEN
+          IF (NatPCSpecified(lead) .and. NatPC(lead) <= 0) THEN
+             WRITE(logfile,*) 'ERROR: specify positive ',trim(NatPC_keyw(lead)), ' for 1DLEAD'
+             STOP 1
+          END IF
+          IF (NEmbedSpecified(lead)) THEN
+             IF (NatPCSpecified(lead) .and. NatPC(lead) /= NEmbed(lead)) THEN
+                WRITE(logfile,*) 'ERROR: conflicting ',trim(NatPC_keyw(lead)), &
+                     ' and ',trim(NEmbed_keyw(lead))
+                STOP 1
+             END IF
+             IF (.not. NatPCSpecified(lead)) NatPC(lead) = NEmbed(lead)
+             WRITE(logfile,*) 'WARNING: ',trim(NEmbed_keyw(lead)), &
+                  ' is deprecated for 1DLEAD; use ',trim(NatPC_keyw(lead))
+          END IF
+          IF (NatPC(lead) <= 0) THEN
+             WRITE(logfile,*) 'ERROR: specify positive ',trim(NatPC_keyw(lead)), ' for 1DLEAD'
+             STOP 1
+          END IF
+          ! Cluster analysis still uses NEmbed as its internal boundary count.
+          NEmbed(lead) = NatPC(lead)
+       ELSE IF (NatPCSpecified(lead)) THEN
+          WRITE(logfile,*) 'ERROR: ',trim(NatPC_keyw(lead)), ' requires TYPE = 1DLEAD'
+          STOP 1
+       END IF
+    END DO
+  END SUBROUTINE resolve_lead_cells
 
   ! **************************************
   ! write actual parameters to output file
@@ -911,16 +958,15 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) ElType_keyw(2), " = ", ElType(2)
     WRITE(unit=logfile,fmt=*) BLPar_keyw(1), " = ", BLPar(1)
     WRITE(unit=logfile,fmt=*) BLPar_keyw(2), " = ", BLPar(2)
-    if (NEmbed(1) == 0) then
-    WRITE(unit=logfile,fmt=*) NEmbed_keyw(1), " = ? "
-    else
-    WRITE(unit=logfile,fmt=*) NEmbed_keyw(1), " = ", NEmbed(1)
-    end if
-    if (NEmbed(2) == 0) then
-    WRITE(unit=logfile,fmt=*) NEmbed_keyw(2), " = ? "
-    else
-    WRITE(unit=logfile,fmt=*) NEmbed_keyw(2), " = ", NEmbed(2)
-    end if
+    DO i=1,2
+       IF (ElType(i) == '1DLEAD') THEN
+          WRITE(logfile,*) NatPC_keyw(i), ' = ', NatPC(i)
+       ELSE IF (NEmbed(i) == 0) THEN
+          WRITE(logfile,*) NEmbed_keyw(i), ' = ? '
+       ELSE
+          WRITE(logfile,*) NEmbed_keyw(i), ' = ', NEmbed(i)
+       END IF
+    END DO
     WRITE(unit=logfile,fmt=*) NPC_keyw, " = ", NPC
     if (NAtomEl(1) == 0) then
     WRITE(unit=logfile,fmt=*) NAtomEl_keyw(1), " = ? "

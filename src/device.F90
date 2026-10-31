@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.8.3  *********************!
+!*********************  ANT.G-2.8.4  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -254,7 +254,7 @@
   subroutine InitDevice( NBasis, UHF, S )
     use constants, only: d_zero, c_zero
     use numeric, only: RMatPow
-    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NEmbed, NPC, SCFSOC, DFTU
+    use parameters, only: ElType, FermiStart, Overlap, HybFunc, SOC, ROT, ZM, biasvoltage, NatPC, NPC, SCFSOC, DFTU
     use cluster, only: AnalyseCluster, AnalyseClusterElectrodeOne, AnalyseClusterElectrodeTwo, NAOAtom, NEmbedBL
 #ifdef G03ROOT
     use g03Common, only: GetNAtoms, GetAtmChg
@@ -371,8 +371,8 @@
        NEmbed2=NEmbedBL(2)
     ELSE IF  (ElType(1) == "1DLEAD" .and. ElType(2) == "1DLEAD" ) THEN 
        ! Exclude the full 1D lead supercell from reduced-device charge counting.
-       NEmbed1=NPC*NEmbed(1)
-       NEmbed2=NPC*NEmbed(2)
+       NEmbed1=NPC*NatPC(1)
+       NEmbed2=NPC*NatPC(2)
     END IF
 
     print *, "---------------------------------------------------"

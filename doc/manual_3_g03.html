@@ -130,15 +130,23 @@ Total charge maximum accuracy. <br>
 Default: <em>CHARGEACC</em> = 1.0D-5</li>
   <br>
   <li> <em>FERMIACC</em> (real)<br>
-Fermi level maximum accuracy (in eV). <br>
+Fermi level maximum accuracy (in eV). FERMIACC and CHARGEACC are input
+targets subject to SCF accuracy adaptation; FULLACC retains input accuracy
+from the first cycle.<br>
 Default: <em>FERMIACC</em> = 1.0D-5</li>
+  <br>
+  <li><em>SELFACC</em> (real)<br>
+Self-energy accuracy. For 1D leads, tolerance on the mean absolute unmixed
+Dyson residual, independent of L1DALPHA and not adapted during SCF.<br>
+Default: <em>SELFACC</em> = 1.0D-6</li>
+  <br>
+  <li><em>L1DALPHA</em> (real)<br>
+Mixing parameter for consecutive self-energy matrices in the iterative
+Dyson solution for 1D leads (0 &lt; L1DALPHA &lt;= 1).
+Weights the newly calculated self-energy; separate from density mixing
+ALPHA.<br>
+Default: <em>L1DALPHA</em> = 0.75</li>
 </ol>
-<p>Periodic 1D leads in 2.8.4: L1DALPHA controls Dyson self-energy mixing
-(default 0.75; 0 &lt; L1DALPHA &lt;= 1), separately from density mixing ALPHA.
-SELFACC controls the mean absolute unmixed Dyson residual (default 1.0D-6).
-FERMIACC and CHARGEACC are input targets subject to SCF accuracy adaptation.
-FULLACC retains input accuracy from the first cycle.
-See the <a href="keywords.txt">keyword reference</a>.</p>
 <div style="margin-left: 40px;"><span style="font-style: italic;">SMALL,
 SMALLD
 </span>(real)<br>
@@ -159,8 +167,9 @@ Default: <span style="font-style: italic;">SMALLD </span>= 0.1
   </li>
   <li><em>ETA</em> (real)<br>
     <div style="text-align: justify;"> Small imaginary part of the
-Green's function. When both electrodes are set to GHOST this number
-might need to be no so small.<br>
+Green's function. A value larger than the default may be needed when
+both electrodes are set to GHOST or when using periodic 1D leads
+(TYPE1 or TYPE2 = 1DLEAD).<br>
     </div>
   </li>
   <li> Default: <em>ETA</em> = 1.0D-10</li>
@@ -188,17 +197,44 @@ Default: <em>FERMISTART</em> = -5.0D0</li>
   <li><br>
   </li>
 </ol>
+<div style="margin-left: 40px;"><em>NATPC1 and NATPC2</em> (integer)<br>
+Number of atoms in one primitive cell of each 1DLEAD electrode.
+Specify a positive value for each 1D lead. NPC defaults to 1.<br>
+For compatibility, NEMBED1/2 are accepted for 1D leads with a warning.
+If both names are supplied for a lead, their values must agree.
+Use NEMBED1/2 for Bethe-lattice embedding.<br>
+</div>
 <div style="margin-left: 40px;"><span style="font-style: italic;">TYPE1
 and TYPE2 </span>(string)<br>
-<div style="text-align: justify;"> Type of model for the semiinfinite
-electrode: BETHE, 1DLEAD or GHOST. When set to 1DLEAD, a periodic
-one-dimensional electrode is constructed from the repeated lead cell and
-coupled through its self-energy. When set to BETHE the effective selfenergy
-is connected to the electrode. When set to GHOST, nothing is connected. When both
-electrodes are set to GHOST the calculation is similar to the one
-performed by the original GAUSSIAN03/09 code on the input&nbsp;
-cluster, but with all the convergence advantages of <span
- style="font-weight: bold;">ANT.G</span>.<br>
+<div style="text-align: justify;">
+<p>Type of model for the semiinfinite electrode. TYPE1 selects electrode 1
+and TYPE2 selects electrode 2. Available values are BETHE, 1DLEAD and GHOST.</p>
+<p><em>BETHE</em>: Attach a Bethe-lattice self-energy to the electrode atoms of the
+input cluster. Select the parameter set for each electrode with BLPAR1
+and BLPAR2 (see the BLxxx.dat files).</p>
+<p><em>1DLEAD</em>: Construct a periodic one-dimensional electrode from Hamiltonian
+and overlap blocks of the input cluster. Include several identical translated
+primitive cells at each end, with a consistent atom order within every cell.
+List the atoms cell by cell along the wire: electrode 1 is taken from the
+beginning of the atom list and electrode 2 from the end. Set NATPC1 and
+NATPC2 to the number of atoms in one primitive cell of each electrode.
+The two electrodes are extracted independently and need not be identical.
+</p>
+<p>Keep NPC = 1 (the default). With this setting, include at least two
+identical translated primitive cells at each end so that the cell Hamiltonian,
+overlap and coupling to the neighboring cell can be extracted. The outermost
+NATPC1 and NATPC2 atoms form the lead buffers excluded from reduced-device
+charge counting. Leave a central device region between these buffers.</p>
+<p>For example, a wire with three atoms per primitive cell can use
+TYPE1 = 1DLEAD, TYPE2 = 1DLEAD, NATPC1 = 3, NATPC2 = 3 and NPC = 1.
+Include at least two repeated three-atom cells at each end for parameter
+extraction.
+Use the same geometry and atom ordering for corresponding cells. L1DALPHA
+and SELFACC control the Dyson solution; ETA may need to exceed its default.</p>
+<p><em>GHOST</em>: Attach no electrode self-energy on the selected side. When both
+electrodes are GHOST, the input cluster is treated as an isolated system,
+similarly to the original GAUSSIAN03/09 calculation, with ANT.G convergence
+controls.</p>
 </div>
 Default: <span style="font-style: italic;">TYPE1 </span>= BETHE and <span
  style="font-style: italic;">TYPE2 = </span>BETHE<br>

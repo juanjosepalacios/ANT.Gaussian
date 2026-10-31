@@ -15,6 +15,11 @@ Fermi searches use safeguarded Brent iteration, independent warm brackets
 for each lead, and a lower-bound seed from repeated-supercell generalized
 eigenvalues. Parallel charge integration rejects unconverged results.
 
+For 1D leads, NATPC1 and NATPC2 specify atoms per primitive cell; keep
+NPC=1 unless deliberately testing a different grouping. NEMBED1/2 retain
+their Bethe-lattice meaning. Older 1D inputs using NEMBED1/2 remain accepted
+with a warning; conflicting old and new values are rejected.
+
 The default Dyson mixing is L1DALPHA=0.75; override it in the .ant input.
 SELFACC=1.0d-6 controls the mean absolute unmixed Dyson residual.
 L1DALPHA is separate from density mixing ALPHA.
