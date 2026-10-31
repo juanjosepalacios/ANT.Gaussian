@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.8.4 - 2026-10-31
 
 - Parallelize OneDLead bulk-charge quadrature with call-local Green-function
   and self-energy scratch and ordered accumulation; retain the separate
@@ -9,6 +9,13 @@
 - Use a consistent Fermi energy reference for bulk lead DOS output.
 - Add NVIDIA/Intel 1D-charge regression tests and record Au10 validation
   and its remaining limitations in TOTCHARGE.md.
+
+- Use safeguarded Brent Fermi searches with independent warm-start brackets for each lead.
+- Seed lead integration lower bounds from repeated-cell generalized eigenvalues.
+- Honor configured Fermi/charge tolerances and reject unconverged lead integrations.
+- Correct the Dyson convergence residual and detect inversion and convergence failures.
+- Expose L1DALPHA and set its default to 0.75; retain SELFACC as the Dyson tolerance.
+- Add regression tests for root finding, warm starts, eigenvalue bounds and Dyson mixing.
 
 ## 2.8.3 - 2026-10-29
 
