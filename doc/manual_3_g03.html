@@ -191,8 +191,10 @@ Default: <em>FERMISTART</em> = -5.0D0</li>
 <div style="margin-left: 40px;"><span style="font-style: italic;">TYPE1
 and TYPE2 </span>(string)<br>
 <div style="text-align: justify;"> Type of model for the semiinfinite
-electrode. When set to BETHE the effective selfenergy is connected to
-the electrode. When set to GHOST, nothing is connected. When both
+electrode: BETHE, 1DLEAD or GHOST. When set to 1DLEAD, a periodic
+one-dimensional electrode is constructed from the repeated lead cell and
+coupled through its self-energy. When set to BETHE the effective selfenergy
+is connected to the electrode. When set to GHOST, nothing is connected. When both
 electrodes are set to GHOST the calculation is similar to the one
 performed by the original GAUSSIAN03/09 code on the input&nbsp;
 cluster, but with all the convergence advantages of <span

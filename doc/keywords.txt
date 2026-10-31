@@ -72,8 +72,11 @@ Convergence criterion for switching on the faster Secant method (superceding the
 Default: SSM = 1.0D-3
 
 * TYPE1 and TYPE2 (string)
-Type of model for the semiinfinite electrode. When set to BETHE the effective selfenergy 
-is connected to the electrode. When set to GHOST, nothing is connected. When both electrodes 
+Type of model for the semiinfinite electrode: BETHE, 1DLEAD or GHOST.
+When set to 1DLEAD, a periodic one-dimensional electrode is constructed from
+the repeated lead cell and coupled through its self-energy.
+When set to BETHE the effective selfenergy is connected to the electrode.
+When set to GHOST, nothing is connected. When both electrodes
 are set to GHOST the calculation is similar to the one performed by the original GAUSSIAN03/09
 code on the input  cluster, but with all the convergence advantages of ANT.G.
 Default: TYPE1 = BETHE and TYPE2 = BETHE
