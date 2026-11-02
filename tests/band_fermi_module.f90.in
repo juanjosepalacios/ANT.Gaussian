@@ -1,0 +1,30 @@
+module constants
+ integer,parameter :: double=kind(1d0)
+ complex*16,parameter :: c_zero=(0d0,0d0)
+ real*8,parameter :: d_zero=0d0
+end module
+module parameters
+ integer,parameter :: MaxLAO=32
+ real*8 :: ChargeAcc=1d-2,FermiAcc=1d-2,Infty=10000d0
+end module
+module numeric
+ contains
+@CHDIAG@
+end module
+module test_leads
+ use constants
+ use parameters
+ implicit none
+@LEADTYPE@
+ integer :: WhichLead=1,charge_calls=0
+ real*8 :: ChargeOffset=0d0
+ contains
+@ROUTINES@
+ real*8 function TotCharge(E)
+ real*8,intent(in)::E
+ charge_calls=charge_calls+1
+ if(charge_calls>20) stop 91
+ TotCharge=0d0
+ if(E>=-1d0) TotCharge=2d0
+ end function
+end module

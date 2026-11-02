@@ -1,4 +1,85 @@
-# Brent lead Fermi search (2.8.4)
+# Device Fermi-level search
+
+The device uses safeguarded Brent iteration for collinear, spin-locked and
+SOC charge searches, both on the semicircular contour and imaginary axis.
+Periodic lead Fermi levels use band filling separately; see
+[BAND_FERMI.md](BAND_FERMI.md).
+
+`device::SolveDeviceFermi` expands a bracket around the current device
+shift, within the existing device bounds, and calls `numeric::BrentRoot`.
+The initial half-width is max(0.25 eV, 2*FERMIACC); this is a bracketing
+heuristic, not an accuracy target. The root uses FERMIACC and at most 5*MAX
+iterations. The accepted point is evaluated again so the returned density
+and populations correspond to the reported Fermi energy, even when Brent
+returns a previously evaluated endpoint. Search variables are device
+shifts; printed Fermi energies have the opposite sign.
+
+The final charge residual must satisfy the existing device tolerance
+CHARGEACC*(NCDEl+QEXCESS). This preserves the previous device convention;
+1D lead band filling instead uses CHARGEACC as an absolute electron count
+per chosen repeated cell. Missing brackets, nonfinite values, iteration
+exhaustion and unacceptable final charge residuals stop explicitly.
+Brent controls root-search error; it cannot fix unconverged density
+quadrature or a failing device spectral-weight check.
+
+FIXEFERMI bypasses the contour root search and now sets its success flag
+explicitly. The fixed point is evaluated to obtain its density. No
+hard-coded 0.1 eV fallback tolerance is used.
+
+The extracted production wrappers and helper pass NVIDIA and Intel model
+tests for nonlinear charge roots, both spin branches, SOC, imaginary-axis
+dispatch, final density state, fixed Fermi, missing brackets, nonfinite
+charge and residual failure.
+
+## Device spectral-weight windows
+
+The preliminary spectral-weight check first integrates from -1000 to
++1000 eV on the existing complex contour. A failed quadrature, nonfinite
+result or mismatch of at least 0.1 electrons from the expected spectral
+weight triggers one retry from -10000 to +10000 eV. If the second check
+fails, stop explicitly. The 0.1-electron spectral-weight acceptance and
+successive-quadrature criteria are unchanged. These temporary check windows
+do not alter the density-contour bounds or device root bracket. The old
+incremental energy-bound expansion is removed.
+
+## Au10 production comparison (2026-11-01)
+
+Both eight-thread runs used the same saved starting density, ETA=0.01,
+NATPC1/2=1, NPC=3, FULLACC, CHARGEACC=FERMIACC=1e-4 and PACC=1e-7.
+Both used the mandatory band-based lead solver; only the device root
+implementation differed. Both terminated normally after six SCF cycles.
+
+| Device root | Wall time (s) | Final device EF (eV) | Integration warnings | T(EF) |
+|---|---:|---:|---:|---:|
+| Original Muller/secant/bisection | 68.23 | -6.63166 | 1 | 1.9983 |
+| Safeguarded Brent | 76.11 | -6.630973 | 0 | 1.9983 |
+
+The final Brent charge residual was -7.35e-11 electrons, against the
+preserved device tolerance of 0.0076 electrons. Its final shift bracket was
+3.91e-6 eV, below FERMIACC. Typical searches used five Brent iterations,
+eight charge evaluations including bracketing and the final density
+refresh. These concurrent runs do not establish a controlled speed benefit.
+
+The energies differ by 2.80e-4 Ha; finite transmission spectra have a
+maximum difference of 0.5345 and RMS difference 0.02447 on the relative
+energy grid. Matching T(EF) does not prove the full spectra converged.
+The final density refresh changes the old stateful callback behavior,
+and the old run also had an integration warning.
+
+Au30 (NATPC1/2=3, NPC=4, ETA=0.01) found both lead Fermi levels promptly
+but remained in the preliminary device spectral-weight check for 301 s.
+The last completed 31-point quadrature estimate was 263.72075, target 264,
+with device bounds [-128.84, 14217.65] eV. The diagnostic run was stopped
+before any device Fermi search. Thus the Au30 device root is not yet
+validated: this spectral-weight integration is a separate prerequisite
+bottleneck, unaffected by replacing the root finder with Brent.
+
+## Historical lead-search implementation
+
+The following notes describe the superseded lead method, not current lead
+behavior.
+
+
 
 Included in master for 2.8.4 (implementation commit 55f3fe2).
 

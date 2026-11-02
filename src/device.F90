@@ -756,7 +756,7 @@
   !* Solve transport problem *
   !***************************
   subroutine Transport(F,ADDP) 
-    use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOS_End, &
+    use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOSOutput, LDOS_End, &
                           NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
@@ -845,8 +845,6 @@
        print *, " Total DOS Point Check "
        print *, "-----------------------"
        call CheckEnergyBounds(Bounds)
-       ! Find upper and lower energy bounds 
-       if (.not. Bounds) call FindEnergyBounds
     end if
 
     if ( DFTU ) then
@@ -916,7 +914,7 @@
 
        IF ( HybFunc ) call CompHybFunc
 
-       IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOS_Beg <= LDOS_End) CALL LDOS
+       IF ((ElType(1) == "GHOST" .or. ElType(2) == "GHOST") .and. LDOSOutput) CALL LDOS
        IF (ElType(1) /= "GHOST" .and. ElType(2) /= "GHOST") THEN            
           IF( RedTransmE >= RedTransmB  ) call EigenChannelAnalysis
           call transmission
@@ -968,149 +966,93 @@
   !*   PC: Density-matrix                                       *
   !*   shiftup,shiftdown: Fermi-energies                        *
   !**************************************************************
-  subroutine CompDensMat(ADDP)
-    use numeric, only: SECANT, MULLER, BISEC
-#ifdef G03ROOT
-    use g03Common, only: GetNAE, GetNBE
-#endif
-#ifdef G09ROOT
-    use g09Common, only: GetNAE, GetNBE
-#endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,FixEFermi,FermiStart
-    !use ieee_arithmetic
+  ! A charge callback also builds PD; always evaluate the accepted root last.
+  subroutine SolveDeviceFermi(charge,guess,qtol,root,width)
+    use numeric, only: BracketRoot,BrentRoot
+    use parameters, only: FermiAcc,MaxIterations => Max
+    use omp_lib, only: omp_get_wtime
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
-
-    logical,intent(out) :: ADDP
-    integer :: i,j, k,cond
-    real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
-    
-    logical :: root_fail
-    
-    DE = 0.0d0
-    Z=1.0d0
-    Delta=FermiAcc
-    Epsilon=ChargeAcc*(NCDEl+QExcess)
-
-    if( NSpin == 2 .and. SPINLOCK )then
-       print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
-
-       do ispin=1,NSpin
-
-          if (FixEFermi) then
-             Q_Tot=QTot_SPINLOCK(-FermiStart)
-          else
-             if (ispin == 1) print*,'Spin alpha'
-             if (ispin == 2) print*,'Spin beta'
-             root_fail = .true.
-             if (ispin.eq.1) E1=shiftup
-             if (ispin.eq.2) E1=shiftdown
-             E0=E1-Z
-             E2=E1+Z
-             if( root_fail )then
-                print*,'MULLER method'
-                call MULLER(QTot_SPINLOCK,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-                if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
-                   print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-                   root_fail = .true.
-                else
-                   if (ispin.eq.1)shiftup=E3
-                   if (ispin.eq.2)shiftdown=E3
-                   root_fail = .false.
-                end if
-             end if
-             if( root_fail )then
-                print*,'SECANT method'
-                call SECANT(QTot_SPINLOCK,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-                if(k.eq.Max .or. E3<EMin .or. E3>EMax) then
-                   print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-                   root_fail = .true.
-                else
-                   if (ispin.eq.1)shiftup=E3
-                   if (ispin.eq.2)shiftdown=E3
-                   root_fail = .false.
-                end if
-             end if
-             if (root_fail) then
-                print *, 'BISEC method'
-                if (ispin.eq.1) shiftup = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-                if (ispin.eq.2) shiftdown = BISEC(QTot_SPINLOCK,EMin,EMax,Delta,5*Max,K)
-                DE=Delta
-                if(k.lt.5*Max) root_fail = .false.
-                if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
-             end if
-          end if
-
-          write(ifu_log,*)'--------------------------------------------------------'
-          if (ispin.eq.1) then
-             write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for alpha electrons= ', -shiftup,'  +/-',dabs(DE)
-             write(ifu_log,*)
-             write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', QAlpha
-          end if
-          if (ispin.eq.2) then
-             write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for beta electrons=  ', -shiftdown,'  +/-',dabs(DE)
-             write(ifu_log,*)
-             write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
-             write(ifu_log,*)
-             write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', QAlpha+QBeta
-          end if
-          write(ifu_log,*)'--------------------------------------------------------'
-       end do
-
-    else
-
-       if (FixEFermi) then
-          Q_Tot=QTot(-FermiStart)
-       else
-          root_fail = .true.
-          E0=shift-Z 
-          E1=shift
-          E2=shift+Z
-          if (root_fail) then
-             print*,'MULLER method'
-             call MULLER(QTot,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-            !call MULLER(QTot2,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-             if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-                print *, 'Warning: MULLER method failed to find root. Using SECANT.'
-                root_fail = .true.
-             else
-                shift = E3
-                root_fail = .false.
-             end if
-          end if
-          if (root_fail) then
-             print*,'SECANT method'
-             call SECANT(QTot,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-            !call SECANT(QTot2,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-             if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-                print *, 'Warning: SECANT method failed to find root. Using BISEC.'
-                root_fail = .true.
-             else
-                shift = E3
-                root_fail = .false.
-             end if
-          end if
-          if (root_fail) then
-             print *, 'BISEC method'
-             Delta=0.1
-             shift = BISEC(QTot,EMin,EMax,Delta,5*Max,K)
-            !shift = BISEC(QTot2,EMin,Emax,Delta,5*Max,K)
-             DE=Delta
-             if(k.lt.5*Max) root_fail = .false.
-             if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Continue at your own risk.'
-          end if
-       end if
-
-       write(ifu_log,*)'-----------------------------------------------'
-       write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy= ',-shift,'  +/-',dabs(DE)
-       write(ifu_log,*)
-       write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', QAlpha
-       write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
-       write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', QAlpha+QBeta
-       write(ifu_log,*)'-----------------------------------------------'
-
+    intrinsic :: max
+    real*8,external :: charge
+    real*8,intent(in) :: guess,qtol
+    real*8,intent(out) :: root,width
+    real*8 :: center,left,right,fl,fr,residual,started,halfwidth
+    integer :: expansions,bracket_calls,iterations,calls,status
+    center=guess
+    started=omp_get_wtime()
+    if(.not.ieee_is_finite(qtol).or.qtol<=0d0) then
+       print *, 'ERROR: invalid device charge tolerance',qtol
+       stop 1
     end if
-    ADDP = .not. root_fail
-    return
+    halfwidth=max(0.25d0,2d0*FermiAcc)
+    call BracketRoot(charge,center,EMin,EMax,halfwidth,left,right,fl,fr,expansions,bracket_calls,status)
+    if(status/=0) then
+       print *, 'ERROR: device Fermi bracket failed, status=',status
+       print *, 'Device shift bracket/residuals: ',left,right,fl,fr
+       call flush(6)
+       stop 1
+    end if
+    root=BrentRoot(charge,left,right,FermiAcc,5*MaxIterations,iterations,calls,status,residual,width,fl,fr)
+    if(status/=0) then
+       print *, 'ERROR: device Brent search failed, status=',status
+       call flush(6)
+       stop 1
+    end if
+    ! Brent may return a cached endpoint rather than its last callback point.
+    residual=charge(root)
+    write(ifu_log,'(A,I5,A,I5,A,I5)') 'Device Brent iterations: ',iterations, &
+         ' bracket expansions: ',expansions,' charge evaluations: ',bracket_calls+calls+1
+    write(ifu_log,'(A,ES16.7,A,ES16.7,A,ES16.7)') 'Device Brent charge residual: ', &
+         residual,' charge tolerance: ',qtol,' shift bracket width (eV): ',width
+    write(ifu_log,'(A,F12.6)') 'Device Brent wall seconds: ',omp_get_wtime()-started
+    call flush(ifu_log)
+    if(.not.ieee_is_finite(residual).or.abs(residual)>qtol) then
+       print *, 'ERROR: device charge residual exceeds tolerance at Brent root'
+       stop 1
+    end if
+  end subroutine SolveDeviceFermi
+
+  subroutine CompDensMat(ADDP)
+    use parameters, only: ChargeAcc,QExcess,FixEFermi,FermiStart
+    implicit none
+    logical,intent(out) :: ADDP
+    real*8 :: guess,solved,width,qtol,residual
+    integer :: spin_index
+    qtol=ChargeAcc*(NCDEl+QExcess)
+    ADDP=.false.
+    if(NSpin==2.and.SPINLOCK) then
+       do spin_index=1,NSpin
+          ispin=spin_index
+          if(ispin==1) guess=shiftup
+          if(ispin==2) guess=shiftdown
+          if(FixEFermi) then
+             solved=-FermiStart;width=0d0
+             residual=QTot_SPINLOCK(solved)
+          else
+             call SolveDeviceFermi(QTot_SPINLOCK,guess,qtol,solved,width)
+          end if
+          if(ispin==1) shiftup=solved
+          if(ispin==2) shiftdown=solved
+          write(ifu_log,'(A,I2,A,F12.6,A,ES12.4)') ' Device spin ',ispin, &
+               ' Fermi energy= ',-solved,' bracket width (eV)= ',width
+       end do
+    else
+       guess=shift
+       if(FixEFermi) then
+          solved=-FermiStart;width=0d0
+          residual=QTot(solved)
+       else
+          call SolveDeviceFermi(QTot,guess,qtol,solved,width)
+       end if
+       shift=solved
+       write(ifu_log,'(A,F12.6,A,ES12.4)') ' Fermi energy= ',-shift, &
+            ' bracket width (eV)= ',width
+    end if
+    write(ifu_log,'(A,F14.7)') ' Number of alpha electrons: ',QAlpha
+    write(ifu_log,'(A,F14.7)') ' Number of beta electrons: ',QBeta
+    write(ifu_log,'(A,F14.7)') ' Total number of electrons: ',QAlpha+QBeta
+    ADDP=.true.
   end subroutine CompDensMat
 
 !**************************************************************
@@ -1125,74 +1067,25 @@
 !*   shiftup,shiftdown: Fermi-energies                        *
 !**************************************************************
   subroutine CompDensMat_SOC(ADDP)
-    use numeric, only: SECANT, MULLER, BISEC
-#ifdef G03ROOT
-    use g03Common, only: GetNAE, GetNBE
-#endif
-#ifdef G09ROOT
-    use g09Common, only: GetNAE, GetNBE
-#endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess,FixEFermi,FermiStart
-    !use ieee_arithmetic
+    use parameters, only: ChargeAcc,QExcess,FixEFermi,FermiStart
     implicit none
-
     logical,intent(out) :: ADDP
-    integer :: i,j, k,cond
-    real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
-    
-    logical :: root_fail
-    
-    DE = 0.0d0
-    Z=1.0d0               
-    Delta=FermiAcc
-    Epsilon=ChargeAcc*(NCDEl+QExcess)
-
-    if (FixEFermi) then
-       Q_Tot=QTot_SOC(-FermiStart)
-    else
-       root_fail = .true.
-       E0=shift-Z 
-       E1=shift
-       E2=shift+Z  
-       if (root_fail) then
-          print*,'MULLER method with SOC + Zeeman'
-          call MULLER(QTot_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k .eq. Max .or. E2<EMin .or. E2>EMax) then
-             print *, 'Warning: MULLER method failed to find root. Using BISEC.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
+    real*8 :: guess,solved,width,qtol,residual
+    integer :: spin_index
+    qtol=ChargeAcc*(NCDEl+QExcess)
+    ADDP=.false.
+       guess=shift
+       if(FixEFermi) then
+          solved=-FermiStart;width=0d0
+          residual=QTot_SOC(solved)
+       else
+          call SolveDeviceFermi(QTot_SOC,guess,qtol,solved,width)
        end if
-       if (root_fail) then
-          print*,'SECANT method with SOC + Zeeman'
-          call SECANT(QTot_SOC,E0,E2,Delta,Epsilon,Max,E3,DE,Cond,K)
-          if(k .eq. Max .or. E3<EMin .or. E3>EMax) then
-             print *, 'Warning: SECANT method failed to find root. Using MULLER.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
-       end if  
-       if (root_fail) then
-          print *, 'BISEC method with SOC + Zeeman'
-          shift = BISEC(QTot_SOC,EMin,EMax,Delta,5*Max,K)
-          DE=Delta
-          if(k.lt.5*Max) root_fail = .false.
-          if(k.ge.5*Max) print *, 'Warning: BISECT method failed to find root. Skipping this cycle.'
-       end if
-    end if
-
-    write(ifu_log,*)'-----------------------------------------------'
-    write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy= ',-shift,'  +/-',dabs(DE)
-    write(ifu_log,*)
-    write(ifu_log,'(A,F10.5)') ' Total number of electrons:  ', Q_SOC
-    write(ifu_log,*)'-----------------------------------------------'
-    ADDP = .not. root_fail
-
-    return
+       shift=solved
+       write(ifu_log,'(A,F12.6,A,ES12.4)') ' Fermi energy= ',-shift, &
+            ' bracket width (eV)= ',width
+    write(ifu_log,'(A,F14.7)') ' Total number of electrons: ',Q_SOC
+    ADDP=.true.
   end subroutine CompDensMat_SOC
 
 
@@ -1208,191 +1101,53 @@
   !*   shiftup,shiftdown: Fermi-energies                        *
   !**************************************************************
   subroutine CompDensMat2(ADDP)
-    use numeric, only: SECANT, MULLER, BISEC
-#ifdef G03ROOT
-    use g03Common, only: GetNAE, GetNBE
-#endif
-#ifdef G09ROOT
-    use g09Common, only: GetNAE, GetNBE
-#endif
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
-    !use ieee_arithmetic
+    use parameters, only: ChargeAcc,QExcess,FixEFermi,FermiStart
     implicit none
-
     logical,intent(out) :: ADDP
-    integer :: i,j, k,cond
-    real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
-    
-    logical :: root_fail
-    
-    Z=1.0d0           
-    Delta=FermiAcc
-    Epsilon=ChargeAcc*(NCDEl+QExcess)
-
-    root_fail = .true.
-    if( NSpin == 2 .and. SPINLOCK )then
-       print'(A,f10.1)',' SPINLOCK: NAlpha-NBeta = ',dble((GetNAE()-GetNBE())*(NCDEl+QExcess))/dble(GetNAE()+GetNBE())
-       do ispin=1,NSpin
-          if (ispin.eq.1) E0=shiftup
-          if (ispin.eq.2) E0=shiftdown
-          E1=E0-Z
-          E2=E0+Z 
-          if( root_fail ) then
-             print*,'MULLER method'
-             call MULLER(CompSpinPD,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-             if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
-                print *, 'Warning: Muller method failed to find root. Using BISEC.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E3
-                if (ispin.eq.2)shiftdown=E3
-                root_fail = .false.
-             end if
-          if( root_fail ) then
-             print*,'SECANT method'
-             call SECANT(CompSpinPD,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
-             if(k.eq.Max .or. E2<EMin .or. E2>EMax)then
-                print *, 'Warning: Secant method failed to find root. Using BISEC.'
-                root_fail = .true.
-             else
-                if (ispin.eq.1)shiftup=E2
-                if (ispin.eq.2)shiftdown=E2
-                root_fail = .false.
-             end if
-          end if
-          end if
-          if( root_fail )then
-             print *, 'BISEC method'
-             if( ispin.eq.1) shiftup = BISEC(CompSpinPD,EMin,EMax,Delta,Max,K)
-             if( ispin.eq.2) shiftdown = BISEC(CompSpinPD,EMin,EMax,Delta,Max,K)
-             DE=Delta
-             if(k.lt.Max) root_fail = .false.
-          end if
-          write(ifu_log,*)'--------------------------------------------------------'
-          if (ispin.eq.1) then
-             write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for alpha electrons= ', -shiftup,'  +/-',dabs(DE)
-             write(ifu_log,*)
-             write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', QAlpha
-          end if
-          if (ispin.eq.2) then
-             write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy for beta electrons=  ', -shiftdown,'  +/-',dabs(DE)
-             write(ifu_log,*)
-             write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
-          end if
-          write(ifu_log,*)'--------------------------------------------------------'
+    real*8 :: guess,solved,width,qtol,residual
+    integer :: spin_index
+    qtol=ChargeAcc*(NCDEl+QExcess)
+    ADDP=.false.
+    if(NSpin==2.and.SPINLOCK) then
+       do spin_index=1,NSpin
+          ispin=spin_index
+          if(ispin==1) guess=shiftup
+          if(ispin==2) guess=shiftdown
+          call SolveDeviceFermi(CompSpinPD,guess,qtol,solved,width)
+          if(ispin==1) shiftup=solved
+          if(ispin==2) shiftdown=solved
+          write(ifu_log,'(A,I2,A,F12.6,A,ES12.4)') ' Device spin ',ispin, &
+               ' Fermi energy= ',-solved,' bracket width (eV)= ',width
        end do
     else
-       E0=shift
-       E1=E0-Z 
-       E2=E0+Z 
-       if( root_fail )then
-          print*,'MULLER method in CompDensMat2'
-          call MULLER(CompPD,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-          if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
-             print *, 'Warning: Muller method failed to find root. Using BISEC.'
-             root_fail = .true.
-          else
-             shift = E3
-             root_fail = .false.
-          end if
-       end if
-       if( root_fail )then
-          print*,'SECANT method'
-          call SECANT(CompPD,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
-          if(k.eq.Max .or. E2<EMin .or. E2>EMax)then
-             print *, 'Warning: Secant method failed to find root. Using BISEC.'
-             root_fail = .true.
-          else
-             shift = E2
-             root_fail = .false.
-          end if
-       end if
-       if( root_fail )then
-          print *, 'BISEC method'
-          print *, EMin, EMax
-          shift = BISEC(CompPD,EMin,EMax,Delta,Max,K)
-          DE=Delta
-          if(k.lt.Max) root_fail = .false.
-       end if
-       write(ifu_log,*)'-----------------------------------------------'
-       write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy= ',-shift,'  +/-',dabs(DE)
-       write(ifu_log,*)
-       write(ifu_log,'(A,F10.5)') ' Number of alpha electrons: ', QAlpha
-       write(ifu_log,'(A,F10.5)') ' Number of beta electrons:  ', QBeta
-       write(ifu_log,*)'-----------------------------------------------'
+       guess=shift
+       call SolveDeviceFermi(CompPD,guess,qtol,solved,width)
+       shift=solved
+       write(ifu_log,'(A,F12.6,A,ES12.4)') ' Fermi energy= ',-shift, &
+            ' bracket width (eV)= ',width
     end if
-    ADDP = .not. root_fail
+    write(ifu_log,'(A,F14.7)') ' Number of alpha electrons: ',QAlpha
+    write(ifu_log,'(A,F14.7)') ' Number of beta electrons: ',QBeta
+    write(ifu_log,'(A,F14.7)') ' Total number of electrons: ',QAlpha+QBeta
+    ADDP=.true.
   end subroutine CompDensMat2
 
 !-----------------------------------------------------------------------------
-    subroutine CompDensMat2_SOC(ADDP)
-!**************************************************************
-!* Subroutine for determining Fermi energy and density matrix *
-!* for some total charge with SOC along the imaginary axis    *
-!**************************************************************
-!* Pre-condition:                                             *
-!*   HC: Fock-matrix                                          *
-!*   shift: starting values for Fermi-energies                *
-!* Results:                                                   *
-!*   PC: Density-matrix                                       *
-!*   shift: Fermi-energies                                    *
-!**************************************************************
-
-    use numeric, only: SECANT, MULLER, BISEC
-    use parameters, only: FermiAcc,ChargeAcc,Max,QExcess
-    !use ieee_arithmetic
+  subroutine CompDensMat2_SOC(ADDP)
+    use parameters, only: ChargeAcc,QExcess,FixEFermi,FermiStart
     implicit none
-
     logical,intent(out) :: ADDP
-    integer :: i,j, k,cond
-    real*8 :: E0,E1,E2,E3,DE,Z, Delta, Epsilon
-    
-    logical :: root_fail
-    
-    Z=0.1d0              
-    Delta=FermiAcc
-    Epsilon=ChargeAcc*(NCDEl+QExcess)
-
-    root_fail = .true.
-    E0=shift
-    E1=E0-Z 
-    E2=E0+Z 
-    if( root_fail )then
-       print*,'SECANT method used by CompDensMat2'
-       call SECANT(CompPD_SOC,E0,E1,Delta,Epsilon,Max,E2,DE,Cond,K)
-       if(k.eq.Max .or. E2<EMin .or. E2>EMax)then
-          print *, 'Warning: Secant method failed to find root. Using BISEC.'
-          root_fail = .true.
-       else
-          shift = E2
-          root_fail = .false.
-       end if
-    end if
-    if( root_fail )then
-       print*,'MULLER method used by CompDensMat2'
-       call MULLER(CompPD_SOC,E0,E1,E2,Delta,Epsilon,Max,E3,DE,K,Cond)
-       if(k.eq.Max .or. E3<EMin .or. E3>EMax)then
-          print *, 'Warning: Muller method failed to find root. Using BISEC.'
-          root_fail = .true.
-       else
-          shift = E3
-          root_fail = .false.
-       end if
-    end if
-    if( root_fail )then
-       print *, 'BISEC method used by CompDensMat2'
-       print *, EMin, EMax
-       shift = BISEC(CompPD_SOC,EMin,EMax,Delta,Max,K)
-       DE=Delta
-       if(k.lt.Max) root_fail = .false.
-    end if
-    write(ifu_log,*)'-----------------------------------------------'
-    write(ifu_log,'(A,F9.5,A,f9.5)') ' Fermi energy= ',-shift,'  +/-',dabs(DE)
-    write(ifu_log,*)
-    write(ifu_log,'(A,F10.5)') ' Number of electrons:  ', Q_SOC
-    write(ifu_log,*)'-----------------------------------------------'
-    ADDP = .not. root_fail
-
+    real*8 :: guess,solved,width,qtol,residual
+    integer :: spin_index
+    qtol=ChargeAcc*(NCDEl+QExcess)
+    ADDP=.false.
+       guess=shift
+       call SolveDeviceFermi(CompPD_SOC,guess,qtol,solved,width)
+       shift=solved
+       write(ifu_log,'(A,F12.6,A,ES12.4)') ' Fermi energy= ',-shift, &
+            ' bracket width (eV)= ',width
+    write(ifu_log,'(A,F14.7)') ' Total number of electrons: ',Q_SOC
+    ADDP=.true.
   end subroutine CompDensMat2_SOC
   
   ! 
@@ -1720,7 +1475,7 @@
   !*************************************
   !* Compute retarded Green's function *
   !*************************************
-  recursive subroutine gplus0(z,green,spin_index)
+  recursive subroutine gplus0(z,green,spin_index,inversion_status)
     use numeric, only: CInv
     use parameters, only: eta, glue
     use constants, only: c_zero, ui
@@ -1731,6 +1486,7 @@
     external zgetrf, zgetri    
 
     integer, intent(in), optional :: spin_index
+    integer, intent(out), optional :: inversion_status
     integer :: i, j, info, selected_spin
     integer, dimension(NAOrbs) :: ipiv
     complex*16, dimension(NAOrbs,NAOrbs) :: sigl,sigr
@@ -1763,6 +1519,7 @@
     enddo
    
     info= CInv(green)
+    if(present(inversion_status)) inversion_status=info
    !call zgetrf(NAOrbs,NAOrbs,green,NAOrbs,ipiv,info)
    !call zgetri(NAOrbs,green,NAOrbs,ipiv,work,4*NAOrbs,info)
     if (info /= 0) print*,'Warning inverting Greens function'
@@ -2353,7 +2110,7 @@
   !******************************!
   subroutine MullPop
     use cluster, only: NALead, NAMol, NAOAtom, NAOMol, LoAOrbNo, HiAOrbNo
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, PrtHatom
+    USE parameters, only: Mulliken, LDOS_Beg, LDOSOutput, LDOS_End, PrtHatom
 #ifdef G03ROOT
     use g03Common, only: GetAtmCo, GetNAtoms
 #endif
@@ -2431,11 +2188,11 @@
        end do
        if(NSpin ==1 ) write(ifu_log,1011)'Atom:',j,' El.dens:',ro_a*sdeg
        if(NSpin ==2 ) write(ifu_log,1012)'Atom:',j,' El.dens:', (ro_a+ro_b),' Sp.dens:', (ro_a-ro_b)
-       IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+       IF(Mulliken .and. LDOSOutput) THEN
          if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg,AtomDOSEF(1,j)
          if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
-       IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+       IF(Mulliken .and. .not.LDOSOutput) THEN
          if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg
          if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b)
        END IF
@@ -2464,11 +2221,11 @@
           end do
           if(NSpin==1) write(ifu_log,1011)'Atom:',j,' El.dens:',sdeg*ro_a
           if(NSpin==2) write(ifu_log,1012)'Atom:',j,' El.dens:', (ro_a+ro_b),' Sp.dens:', (ro_a-ro_b)
-          IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+          IF(Mulliken .and. LDOSOutput) THEN
             if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg,AtomDOSEF(1,j)
             if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
           END IF
-          IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+          IF(Mulliken .and. .not.LDOSOutput) THEN
             if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg
             if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b)
           END IF
@@ -2498,11 +2255,11 @@
        I1 = I1 + NAOAtom(j)
        if(NSpin==1) write(ifu_log,1011)'Atom:',j,' El.dens:',ro_a*sdeg
        if(NSpin==2) write(ifu_log,1012)'Atom:',j,' El.dens:', (ro_a+ro_b),' Sp.dens:', (ro_a-ro_b)
-       IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+       IF(Mulliken .and. LDOSOutput) THEN
          if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg,AtomDOSEF(1,j)
          if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
-       IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+       IF(Mulliken .and. .not.LDOSOutput) THEN
          if(NSpin ==1 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a*sdeg
          if(NSpin ==2 ) write(ifu_mul,1013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_a-ro_b)
        END IF
@@ -2525,7 +2282,7 @@
   !*******************************************************************!
   subroutine MullPop_SOC
     use cluster, only: NALead, NAMol, NAOAtom, NAOMol, LoAOrbNo, HiAOrbNo
-    USE parameters, only: Mulliken, LDOS_Beg, LDOS_End, biasvoltage, PrtHatom
+    USE parameters, only: Mulliken, LDOS_Beg, LDOSOutput, LDOS_End, biasvoltage, PrtHatom
 #ifdef G03ROOT
     use g03Common, only: GetAtmCo, GetNAtoms
 #endif
@@ -2635,12 +2392,12 @@
          spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
          write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' <Sx>:',(ro_ab+ro_ba),' <Sy>:',(ro_ba_I-ro_ab_I),' <Sz>:',(ro_a-ro_b),' mod(S):',spindens
       !END IF
-       IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+       IF(Mulliken .and. LDOSOutput) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
       !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
          write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)      
        END IF
-       IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+       IF(Mulliken .and. .not.LDOSOutput) THEN
        ! if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
        ! if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
          write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)         
@@ -2684,12 +2441,12 @@
             spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
             write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' <Sx>:',(ro_ab+ro_ba),' <Sy>:',(ro_ba_I-ro_ab_I),' <Sz>:',(ro_a-ro_b),' mod(S):',spindens
       !   END IF
-          IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+          IF(Mulliken .and. LDOSOutput) THEN
       !     if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
       !     if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
             write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)   
           END IF
-          IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+          IF(Mulliken .and. .not.LDOSOutput) THEN
          !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
          !  if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
             write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
@@ -2734,12 +2491,12 @@
          spindens = sqrt((ro_ab+ro_ba)**2+(ro_ba_I-ro_ab_I)**2+(ro_a-ro_b)**2)
             write(ifu_log,2012)'Atom:',j,' El.dens:',(ro_a+ro_b),' <Sx>:',(ro_ab+ro_ba),' <Sy>:',(ro_ba_I-ro_ab_I),' <Sz>:',(ro_a-ro_b),' mod(S):',spindens
     !  END IF
-       IF(Mulliken .and. LDOS_Beg <= LDOS_End) THEN
+       IF(Mulliken .and. LDOSOutput) THEN
     !    if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b,AtomDOSEF(1,j)
     !    if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
          write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b),(AtomDOSEF(l,j)*(-1)**(l+1),l=1,2)
        END IF
-       IF(Mulliken .and. LDOS_Beg > LDOS_End) THEN
+       IF(Mulliken .and. .not.LDOSOutput) THEN
       !  if(NSpin ==1 ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),ro_a+ro_b
      !   if(NSpin ==2 .or. (NSpin == 1 .and. biasvoltage /= 0.0) ) write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ab_I-ro_ba_I),(ro_a-ro_b)
          write(ifu_mul,2013)(GetAtmCo(n,j)*Bohr,n=1,3),(ro_a+ro_b),(ro_ab+ro_ba),(ro_ba_I-ro_ab_I),(ro_a-ro_b)
@@ -2764,7 +2521,7 @@
   SUBROUTINE LDOS
     use Cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: LDOS_Beg, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM, SCFSOC
+    use parameters, only: LDOS_Beg, LDOSOutput, LDOS_End, EW1, EW2, EStep, DOSEnergy, SOC, ROT, DMIMAG, ZM, SCFSOC
     use numeric, only: RMatPow    
     use preproc, only: MaxAtm
 !   USE IFLPORT
@@ -2798,7 +2555,7 @@
       !allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop     
-      !allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+      allocate(DGreen(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(DGammaR(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(DGammaL(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
        allocate(DSG(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2977,18 +2734,18 @@
   end if !End of SOC if
   
       if (SOC .or. ROT .or. ZM .or. SCFSOC) then
-         deallocate(PD_SOC_R)
-         deallocate(PD_SOC_A)
-         deallocate(PDOUT_SOC)      
-         deallocate(DGammaL)
-         deallocate(DGammaR)
-         deallocate(DGreen)
-         deallocate(DSG)         
+         if (allocated(PD_SOC_R)) deallocate(PD_SOC_R)
+         if (allocated(PD_SOC_A)) deallocate(PD_SOC_A)
+         if (allocated(PDOUT_SOC)) deallocate(PDOUT_SOC)
+         if (allocated(DGammaL)) deallocate(DGammaL)
+         if (allocated(DGammaR)) deallocate(DGammaR)
+         if (allocated(DGreen)) deallocate(DGreen)
+         if (allocated(DSG)) deallocate(DSG)
       else 
-         deallocate(GammaL)
-         deallocate(GammaR)
-         deallocate(Green)
-         deallocate(SG)
+         if (allocated(GammaL)) deallocate(GammaL)
+         if (allocated(GammaR)) deallocate(GammaR)
+         if (allocated(Green)) deallocate(Green)
+         if (allocated(SG)) deallocate(SG)
       end if  
 
 
@@ -3002,7 +2759,7 @@
   subroutine transmission
     use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
-    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, & 
+    use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg, LDOSOutput,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, &
                           ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, TREV, UD, DU, DD, SCFSOC
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
@@ -3171,7 +2928,7 @@
     do ispin=1,NSpin
 
       open(334,file='tempT',status='unknown')
-      if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+      if (LDOSOutput ) open(333,file='tempDOS',status='unknown')
 
 #ifdef PGI
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal,T,temp) FIRSTPRIVATE(nsteps)
@@ -3212,7 +2969,7 @@
 !$OMP CRITICAL
 #endif
           ! Mulliken DOS 
-          if (LDOS_Beg <= LDOS_End ) then
+          if (LDOSOutput ) then
              SG = matmul( SD, green )
              ! computing total DOS
              DOS=d_zero
@@ -3285,7 +3042,7 @@
 #endif
 
   ! Reordering in energy for nice DOS output
-       if (LDOS_Beg <= LDOS_End ) then
+       if (LDOSOutput ) then
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(333)
@@ -3326,7 +3083,7 @@
     else !SOC or Rot or ZM case here
       
        open(334,file='tempT',status='unknown')
-       if (LDOS_Beg <= LDOS_End ) open(333,file='tempDOS',status='unknown')
+       if (LDOSOutput ) open(333,file='tempDOS',status='unknown')
       
        wcount = 0  ! Issue warning of failure in transmission just once
 
@@ -3353,7 +3110,7 @@
 #endif
 
       ! Mulliken DOS 
-          if (LDOS_Beg <= LDOS_End ) then
+          if (LDOSOutput ) then
              DSG = matmul( S_SOC, DGreen )
              DOS=d_zero
              AtomDOS=d_zero
@@ -3549,7 +3306,7 @@
 #endif
 
   ! Reordering in energy for nice DOS output
-       if (LDOS_Beg <= LDOS_End ) then
+       if (LDOSOutput ) then
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(333)
@@ -4102,17 +3859,20 @@
   ! 
   ! *** Total charge up to energy E, lower bound is EMin ***
   ! 
-  real*8 function TotCharge( E )
+  real*8 function TotCharge( E, lower_bound, integration_status )
     use constants, only: d_zero, d_pi, ui
     use parameters, only: ElType
     use numeric, only: gauleg 
     use omp_lib
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
     
     integer, parameter :: nmax = 2047
     integer :: n, j
     real*8, intent(in) :: E
-    real*8 :: q, qq, E0, R, charge_start
+    real*8, optional, intent(in) :: lower_bound
+    integer, optional, intent(out) :: integration_status
+    real*8 :: q, qq, E0, R, charge_start, lower
     real*8, dimension(nmax) :: contribution
     real*8, dimension(nmax) :: x, w
     logical :: parallel_charge
@@ -4121,9 +3881,12 @@
     parallel_charge = all(ElType /= '1DLEAD') .and. .not. omp_in_parallel()
     charge_start = omp_get_wtime()
 
-    ! Integration contour parameters:
-    E0 = 0.5*(E + EMin)
-    R  = 0.5*(E - EMin)
+    if(present(integration_status)) integration_status=0
+    lower=EMin
+    if(present(lower_bound)) lower=lower_bound
+    ! Local bounds do not modify the density contour or device root bracket.
+    E0 = 0.5*(E + lower)
+    R  = 0.5*(E - lower)
     ! Computing integral of DOS over 
     ! complex contour using Gauss-Legendre 
     ! quadrature
@@ -4145,12 +3908,21 @@
           q = q + contribution(j)
        end do
        ! Compare successive estimates only after a refinement.
-       if (q == d_zero) exit
+       if(.not.ieee_is_finite(q)) then
+          if(present(integration_status)) then
+             integration_status=2;TotCharge=q;return
+          end if
+          print *, 'ERROR: nonfinite spectral-weight quadrature'
+          stop 1
+       end if
        if (n > 31) then
           if (abs(q-qq) < 0.1) exit
        end if
        if( n >= nmax )then
           print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
+          if(present(integration_status)) then
+             integration_status=1;TotCharge=q;return
+          end if
           stop 1
        end if
        qq = q
@@ -4240,60 +4012,36 @@
   !  above/below which DOS is gauranteed 
   !  to be zero
   ! *************************************
+  ! Fixed spectral-weight windows, independent of the density contour bounds.
   subroutine CheckEnergyBounds(Bounds)
-    use parameters, only: ChargeAcc
-
-    real*8 :: Q
-    logical :: Bounds
-    
-    print *, "Checking energy bounds [EMin, EMax] such that ..."
-    print '(A,I4)', " ...Total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
-
-    Bounds = .false.
-    Q = TotCharge( EMax )
-    if (Q - 2*(NCDAO2-NCDAO1+1) > 0.1 ) then
-        print *,' Possible problem with unit cell size ..., please check'
-        stop
-    end if
-    if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) then
-        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' OK'
-        Bounds = .true.
-    else
-        print '(A,F15.3,A,F15.3,A,F12.5,A)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q, ' not OK, finding new ones ...'
-    end if
-
-    print *, "--------------------------------------------------"
-
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    logical,intent(out) :: Bounds
+    real*8,parameter :: windows(2)=(/1000d0,10000d0/)
+    real*8 :: q,target
+    integer :: attempt,status
+    target=2d0*(NCDAO2-NCDAO1+1)
+    Bounds=.false.
+    print '(A,F12.5)', ' Total Integrated Spectral Weight target: ',target
+    do attempt=1,size(windows)
+       print '(A,F12.1,A,F12.1,A)', ' Spectral-weight window: [', &
+            -windows(attempt),', ',windows(attempt),'] eV'
+       call flush(6)
+       q=TotCharge(windows(attempt),lower_bound=-windows(attempt),integration_status=status)
+       if(status==0.and.ieee_is_finite(q)) then
+          Bounds=abs(q-target)<0.1d0
+       end if
+       print '(A,ES16.8,A,I3)', ' Spectral weight: ',q,' quadrature status: ',status
+       if(Bounds) then
+          print *, ' Spectral-weight check OK'
+          return
+       end if
+       if(attempt<size(windows)) print *, ' Retrying spectral-weight check with wider window.'
+    end do
+    print *, 'ERROR: spectral-weight check failed for both fixed windows; target=',target
+    call flush(6)
+    stop 1
   end subroutine CheckEnergyBounds
-
-
-  ! *************************************
-  !  Estimates upper/lower energy 
-  !  boundary EMin/EMax,
-  !  above/below which DOS is gauranteed 
-  !  to be zero
-  ! *************************************
-  subroutine FindEnergyBounds
-    use parameters, only: ChargeAcc,eta
-
-    integer :: i, cond,k 
-    real*8 :: EStep, Q
-    
-    print *, "Searching new energy boundaries [EMin, EMax] such that ..."
-    print '(A,I4)', " ...total Integrated Spectral Weight (TISW)=", 2*(NCDAO2-NCDAO1+1)
-
-    EStep = 10.0
-
-    do i = 1,100
-       Q = TotCharge( EMax )
-       print '(A,F15.3,A,F15.3,A,F12.5)', " EMin=", EMin, "  EMax=", EMax , "  TISW=", Q
-       if (abs(Q - 2*(NCDAO2-NCDAO1+1)) < 0.1 ) exit
-       EMin = EMin - EStep*i
-       EMax = EMax + EStep*i
-    end do    
-    print *, "--------------------------------------------------"
-
-  end subroutine FindEnergyBounds
 
 !ccccccccccccccccccccccccccccccc
 !    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
@@ -4581,9 +4329,71 @@ subroutine IntRealAxis_SOC(Er,El)
 !c        Eq:  On output, the value of the upper bound of the integral.         c
 !c        The rest of arguments are neeed by the subrtn. gplus                  c
 !ccccccccccccccccccccccccccccccc
+  recursive subroutine AdaptiveDensityContour(radius,lower,upper,eq,spin)
+    use numeric, only: AdaptiveGK15
+    use parameters, only: PAcc,ChargeAcc
+    use constants, only: ui,d_pi
+    use omp_lib
+    implicit none
+    intrinsic :: min
+    real*8,intent(in) :: radius,lower,upper,eq
+    integer,intent(in) :: spin
+    real*8 :: result(NAOrbs*NAOrbs+1),tolerances(NAOrbs*NAOrbs+1),ratio
+    integer :: ncomp,panels,evaluations,status
+    ncomp=NAOrbs*NAOrbs+1
+    tolerances=PAcc
+    tolerances(ncomp)=0.5d0*min(PAcc,ChargeAcc)
+    call AdaptiveGK15(AdaptiveDensityBatch,ncomp,lower,upper,tolerances,result,ratio,evaluations,panels,status,(/radius,eq,dble(spin)/))
+    write(ifu_log,'(A,I6,A,I5,A,ES12.4)') ' Adaptive density quadrature evaluations: ', &
+         evaluations,' panels: ',panels,' normalized error: ',ratio
+    if(status/=0) then
+       print *, 'ERROR: adaptive density integration failed, status=',status
+       stop 1
+    end if
+    PD(spin,:,:)=reshape(result(1:ncomp-1),(/NAOrbs,NAOrbs/))
+  end subroutine AdaptiveDensityContour
+
+  recursive subroutine AdaptiveDensityBatch(ncomp,npoint,x,y,info,context)
+      use omp_lib
+      integer,intent(in) :: ncomp,npoint
+      real*8,intent(in) :: x(npoint),context(:)
+      real*8,intent(out) :: y(ncomp,npoint)
+      integer,intent(out) :: info
+      integer :: j,spin,point_status(npoint)
+      real*8 :: radius,eq
+      radius=context(1);eq=context(2);spin=int(context(3))
+      info=0
+!$omp parallel do default(shared) private(j) if(.not.omp_in_parallel()) schedule(static)
+      do j=1,npoint
+         call AdaptiveDensityPoint(x(j),radius,eq,spin,y(:,j),point_status(j))
+      end do
+!$omp end parallel do
+      if(any(point_status/=0)) info=1
+  end subroutine AdaptiveDensityBatch
+
+
+  recursive subroutine AdaptiveDensityPoint(phi,radius,eq,spin,values,point_status)
+    use constants, only: ui,d_pi
+    implicit none
+    real*8,intent(in) :: phi,radius,eq
+    integer,intent(in) :: spin
+    integer,intent(out) :: point_status
+    real*8,intent(out) :: values(NAOrbs*NAOrbs+1)
+    complex*16 :: z,green(NAOrbs,NAOrbs)
+    real*8 :: contribution(NAOrbs,NAOrbs)
+    z=radius*exp(ui*phi)-radius+eq
+    call gplus0(z,green,spin,point_status)
+    if(point_status/=0) then
+       values=0d0;return
+    end if
+    contribution=dimag(ui*radius*exp(ui*phi)*green)/d_pi
+    values(1:NAOrbs*NAOrbs)=reshape(contribution,(/NAOrbs*NAOrbs/))
+    values(NAOrbs*NAOrbs+1)=sum(contribution*transpose(SD))
+  end subroutine AdaptiveDensityPoint
+
   subroutine IntCompPlane(rrr,bi,Emi,Eq)
 
-    use parameters, only: PAcc, NIP
+    use parameters, only: PAcc, NIP, AdaptiveQuad
     use constants, only: d_pi, d_zero, ui
 !   USE IFLPORT
     use omp_lib
@@ -4604,6 +4414,11 @@ subroutine IntRealAxis_SOC(Er,El)
 
    !M on entry: number of integration points. On exit: error flag
  
+    if(AdaptiveQuad) then
+       call AdaptiveDensityContour(rrr,bi,Emi,Eq,ispin)
+       return
+    end if
+
     a = 1.d0/d_pi
     b = bi
     Em = Emi

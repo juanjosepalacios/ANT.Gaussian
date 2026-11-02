@@ -24,7 +24,7 @@ def routine(text, name):
     return re.sub(r'#ifdef PGI[^\n]*\n.*?#endif[^\n]*\n', '', match[0], flags=re.S)
 
 names = ['CompSelfEnergy1D', 'SolveDyson1D', 'CompGreensFunc',
-         'CompGreensFuncWorkspace', 'ChargePoint1D', 'TotCharge', 'CreateXSC',
+         'CompGreensFuncWorkspace', 'ChargePoint1D', 'AdaptiveLeadCharge', 'AdaptiveLeadBatch', 'TotCharge', 'CreateXSC',
          'L1D_H0', 'L1D_V1', 'L1D_V2', 'L1D_S0', 'L1D_S1', 'L1D_S2']
 code = '\n'.join(routine(source, name) for name in names)
 # Test-only observation inside the real Green-function path, not an extra team.
@@ -35,7 +35,7 @@ code = code.replace('    ispin = spin', '''!$omp critical(test_team)
     ispin = spin''')
 fixture = fixture.replace('@ROUTINES@', code)
 fixture = fixture.replace('@LEADTYPE@', re.search(r'  type T1DLead\n.*?  end type T1DLead', source, re.S)[0])
-fixture = fixture.replace('@CINV@', routine(numeric, 'CInv'))
+fixture = fixture.replace('@CINV@', routine(numeric, 'CInv')+'\n'+routine(numeric, 'AdaptiveGK15'))
 a = numeric.index('  SUBROUTINE gauleg(')
 b = numeric.index('  END SUBROUTINE gauleg', a) + len('  END SUBROUTINE gauleg')
 fixture = fixture.replace('@GAULEG@', numeric[a:b])

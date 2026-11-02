@@ -7,10 +7,10 @@
     <meta name="Description" content="Misty Grey template">
     <meta name="robots" content="index, follow">
     <link rel="stylesheet" type="text/css" href="layout.css">
-    <!-- 
+    <!--
       Design: Daniel Kocherscheidt, Jens Wolters
       Open Source: This template is free to use for personal and commercial projects.
-          It is not allowed to remove the footer link though !                                          
+          It is not allowed to remove the footer link though !
 -->
     <title>ANT</title>
   </head>
@@ -65,6 +65,7 @@ Especifications</a></li>
   <br>
 </ul>
 <hr>
+<h3 id="common-input-setup">Common Gaussian input setup</h3>
 1) The GAUSSIAN03/09 standard links <span style="font-style: italic;">L101</span>
 and <span style="font-style: italic;">L502 </span>(<span
  style="font-style: italic;">l101.exe</span> and <span
@@ -88,67 +89,201 @@ also be the name of the parameters file (<em>job_name.ant</em>)
 if you want to modify default calculation parameters (and you probably
 want to). <br>
 <br>
-3) In order to perform standard
-transport calculations, part of the two metal electrodes has to be
-included in the atomic description of the cluster.
-To this end, a special convention for the coordinates specification
-section in the <em>job_name.com</em> input file is used so
-that <strong> ANT.G </strong>
-can identify
-the atoms to which the infinite electrodes (Bethe lattices) are
-attached.<br>
-<br>
-Now follow these rules:<br>
-<ol type="disc">
-  <li><b>1) 3D electrodes</b>: The first and last set of atoms in the input
-file should correspond to the outermost regions of the electrodes,
-i.e., to the ones farthest from the scattering region and should have
-perfect crystalline order. These
-should be composed of at least 2 planes each, keeping the outermost
-planes first and last in the input file. By
-default all the atoms in the outermost planes are connected to the
-Bethe lattice (see Figure). </li>
-  <br>
-  <img src="scheme.jpg" width="440" height="412" alt="">
- <br>
- The order and atomic structure of the remaining atoms in the
-metallic electrodes and the
-molecule or rest of the system connected to the crystalline regions
-is not important although a standard metal-molecule-metal structure is
-recommended for a better analysis of the results.<br><br>
-
-  <li><b>2) 2D electrodes</b>: As in the 3D case, the first and last set of
-atoms should have perfect crystalline order. In this case, it is
-recommended to specify the number of atoms to be connected to the Bethe
-lattice in the <em>job_name.ant</em> file since, by default,
-it considers all the atoms in the electrodes (see below).</li>
-  <li>&nbsp;<br>
-  </li>
-
+<h3 id="bethe-lattice-leads">Building the Gaussian input for Bethe-lattice leads</h3>
+<p>Include the contact or molecule and a finite crystalline portion of each
+metallic electrode in the Gaussian geometry. Select <em>TYPE1 = BETHE</em>
+and <em>TYPE2 = BETHE</em> in the matching <em>job_name.ant</em> file.
+ANT.G identifies the electrode boundary atoms and attaches Bethe-lattice
+self-energies along the missing lattice directions to represent the
+semi-infinite surroundings.</p>
+<ol>
+  <li><p><strong>Choose the electrode material and parameter sets.</strong>
+The explicit electrode atoms provide the interface to the contact; the
+Bethe-lattice model supplies the continuation beyond them. Use
+<em>BLPAR1</em> and <em>BLPAR2</em> to select suitable parameter sets for
+the two electrodes from the corresponding <em>BLxxx.dat</em> files.
+Check their suitability for the electrode material and orbital basis.
+See the <a href="manual_4_g03.html">Bethe lattice input-file section</a>
+for the model parameters.</p></li>
+  <li><p><strong>Arrange the electrode boundary regions.</strong>
+Put the outermost region of electrode 1 first in the coordinate list and
+the outermost region of electrode 2 last, with the contact between them.
+The outer regions must have crystalline order so ANT.G can identify the
+lattice directions. The interior contact can have a different structure;
+a left-electrode/contact/right-electrode ordering makes the geometry and
+output easier to inspect.</p></li>
+  <li><p><strong>For 3D electrodes, include at least two crystalline planes
+at each end.</strong> List the outermost plane of electrode 1 first and
+the outermost plane of electrode 2 last. By default, all atoms of these
+outermost planes are selected for Bethe-lattice attachment. Crystalline
+regions along different directions of fcc, hcp or bcc structures can be used.</p></li>
+  <li><p><strong>For 2D electrodes, specify the attachment region explicitly.</strong>
+Keep the same ordering and crystalline boundary regions, but set
+<em>NEMBED1</em> and <em>NEMBED2</em> to the numbers of atoms to be connected
+at the two ends. Otherwise the default can include all atoms assigned to
+each electrode. Supported geometries include graphene and fourfold- or
+sixfold-coordinated two-dimensional lattices.</p></li>
+  <li><p><strong>Check the selected boundary atoms.</strong>
+<em>NEMBED1/2</em> control the Bethe-lattice attachment counts; they are
+separate from the <em>NATPC1/2</em> repeated-unit sizes used for periodic
+1D leads. Inspect the log and the generated <em>job_name.xyz</em> file:
+it contains the original cluster and added atoms representing the first
+sites of the attached Bethe-lattice branches. Confirm that branches are
+attached at the intended electrode boundaries.</p></li>
 </ol>
-With this convention <strong> ANT.G </strong>
-is able to identify
-the lattice
-directions and the atoms to which attach the Bethe lattice describing
-the semi-infinite electrodes. The number of atoms in the crystalline
-regions to be considered for connection to the Bethe lattice can be
-especified
-using the keyword <em>NEMBED</em>.
-You can check whether the contact to the Bethe lattice has been
-successful
-by looking at the generated <i>job_name<big><big>.</big></big>xyz</i>
-file which
-contains the
-coordinates of the original
-atoms and
-those of the ones representing the first atom of an added Bethe
-lattice branch.
-Any crystallographic directions of an fcc, hcp, or bcc structure can be
-used
-for the crystalline part of the electrodes. 2D electrodes such as
-graphene and 6-fold or 4-fold coordinated crystals are also accepted.<br>
+<p><img src="scheme.jpg" width="440" height="412"
+alt="Finite contact between crystalline electrode regions with Bethe-lattice branches attached at the outer boundaries."></p>
+<h4>Example from the figure: Al-benzene-Al</h4>
+<p>The figure above shows the geometry supplied in
+<em>examples/Al-nanocontacts/Al-benzene-Al.gjf</em>: a benzene molecule
+between two pyramidal Al electrodes. Each tip contains 20 Al atoms arranged
+in planes of 10, 6, 3 and 1 atoms, with the single apex atom closest to
+benzene. The boxed regions contain the outer two planes (10 + 6 atoms)
+of each electrode. The Bethe-lattice attachment counts refer to the
+<strong>outermost 10-atom planes</strong>, not all 16 atoms in each box.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+  <caption>Coordinate ordering in the illustrated 52-atom cluster</caption>
+  <thead><tr><th>Atom numbers</th><th>Region</th><th>z (Angstrom)</th></tr></thead>
+  <tbody>
+    <tr><td>1-10</td><td>Electrode 1: outermost Al plane; Bethe attachment</td><td>31.62968</td></tr>
+    <tr><td>11-16</td><td>Electrode 1: second Al plane</td><td>29.59169</td></tr>
+    <tr><td>17-19</td><td>Electrode 1: inner Al plane</td><td>27.55372</td></tr>
+    <tr><td>20</td><td>Electrode 1: Al apex</td><td>25.66820</td></tr>
+    <tr><td>21-32</td><td>Benzene: 6 C and 6 H atoms</td><td>Near 24</td></tr>
+    <tr><td>33</td><td>Electrode 2: Al apex</td><td>22.33112</td></tr>
+    <tr><td>34-36</td><td>Electrode 2: inner Al plane</td><td>20.44626</td></tr>
+    <tr><td>37-42</td><td>Electrode 2: second Al plane</td><td>18.40829</td></tr>
+    <tr><td>43-52</td><td>Electrode 2: outermost Al plane; Bethe attachment</td><td>16.37032</td></tr>
+  </tbody>
+</table>
+<p>Electrode 1 is the upper tip in the figure and comes first in the input;
+electrode 2 is the lower tip and comes last. The coordinates run from high
+to low z. It is the atom ordering and boundary geometry, rather than the
+sign of the coordinate axis, that identify the electrode ends.</p>
+<p>Download the complete
+<a href="../examples/Al-nanocontacts/Al-benzene-Al-bethe.gjf">Gaussian input,
+Al-benzene-Al-bethe.gjf</a>. It preserves all coordinates, the BLYP functional,
+the explicit Al valence basis/ECP and the C/H STO-3G basis from the existing
+example. Replace <em>/path/to/ANT.Gaussian/bin</em> in the two %Subst lines
+with your installation path. The title line is <em>Al-benzene-Al-bethe</em>,
+so use the matching
+<a href="../examples/Al-nanocontacts/Al-benzene-Al-bethe.ant">Al-benzene-Al-bethe.ant</a>:</p>
+<pre>TYPE1 = BETHE
+TYPE2 = BETHE
+BLPAR1 = Papacon
+BLPAR2 = Papacon
+NEMBED1 = 10
+NEMBED2 = 10
+NATOMEL1 = 20
+NATOMEL2 = 20
+ALPHA = 0.02
+</pre>
+<p><em>NATOMEL1/2 = 20</em> identify the complete explicit tips, while
+<em>NEMBED1/2 = 10</em> select only their outermost planes for attachment.
+The Papacon Al parameter set is present in <em>BLDAT/BL013.dat</em>.
+</p>
+<p>Inspect the generated <em>Al-benzene-Al-bethe.xyz</em> and log to confirm
+attachment at atoms 1-10 and 43-52. See
+<a href="manual_3_g03.html#type1-and-type2">TYPE1/TYPE2</a>,
+<a href="manual_3_g03.html#blpar1-and-blpar2">BLPAR1/BLPAR2</a> and
+<a href="manual_3_g03.html#nembed1-and-nembed2">NEMBED1/NEMBED2</a>
+for parameter details.</p>
+<h3 id="periodic-1d-leads">Building the Gaussian input for periodic 1D leads</h3>
+<p>To use periodic wire electrodes, include finite sections of both wires in
+ the Gaussian geometry and select <em>TYPE1 = 1DLEAD</em> and
+<em>TYPE2 = 1DLEAD</em> in the matching <em>job_name.ant</em> file.
+ANT.G extracts the lead Hamiltonian and overlap from this finite-cluster
+calculation and repeats the selected units to form semi-infinite electrodes.
+The lead unit can contain several atoms across the wire and several layers
+along it; it need not be the smallest crystallographic primitive cell.</p>
+<ol>
+  <li><p>Choose a repeated unit for each electrode. With <em>NPC = 1</em>,
+its length along the wire must be large enough that hopping and overlap to
+second-neighbor units are negligible. If the smallest primitive cell is too
+short, group several primitive cells into the repeated unit and increase
+<em>NATPC1</em> or <em>NATPC2</em> accordingly. Numerical convergence of the
+Dyson iteration alone does not establish convergence with unit size; check
+lead DOS and transmission as the unit is enlarged.</p></li>
+  <li><p>Include at least two identical translated copies of the chosen
+unit at each end of the input cluster. Keep corresponding atomic positions,
+species, basis assignments and atom ordering consistent from unit to unit.
+Additional electrode material may be needed to reduce finite-cluster end
+effects. The two leads are extracted independently and can differ.</p></li>
+  <li><p>Order the coordinate list cell by cell along the wire:
+<strong>outer left unit, next left unit, central contact region, next right
+unit, outer right unit</strong>. Electrode 1 is extracted from the beginning
+of the atom list and electrode 2 from its end. Keep all atoms of a unit
+consecutive, with the same internal order in successive translated units.
+Do not interleave atoms from different units.</p></li>
+  <li><p>Set <em>NATPC1</em> and <em>NATPC2</em> to the numbers of atoms
+in these repeated units, and keep <em>NPC = 1</em>. The outermost NATPC1
+and NATPC2 atoms are the buffers excluded from reduced-device charge counting;
+the remaining atoms form the reduced device. <em>NEMBED1/2</em> are the
+Bethe-lattice embedding keywords; their use for 1D leads is retained only as
+a legacy alias with a warning.</p></li>
+  <li><p>Use the modified L101 and L502 links as described above. Put the
+job name on the Gaussian title line, and place the matching <em>.ant</em>
+file in the working directory. Using <em>nosymm</em> avoids Gaussian symmetry
+reorientation, which is especially important when restarting from a saved
+density. Preserve the geometry, basis and atom order for such a restart.</p></li>
+</ol>
+<h4>Example: a straight Au wire</h4>
+<p>The following illustrative Au14 geometry contains two three-atom units at
+each end and two central atoms. With NATPC1 = NATPC2 = 3, atoms 1-3 and
+12-14 are the outer buffers. Atoms 4-6 and 9-11 provide the neighboring
+units, and atoms 7-8 are the central contact. All atoms are spaced by 3 Angstrom.
+A three-atom unit is an example, not a guarantee that neglected couplings are
+small enough; check convergence with a larger unit and a longer cluster.</p>
+<p>Gaussian input, <em>Au14-1D.gjf</em> (replace the executable paths with
+those of your installation):</p>
+<pre style="overflow-x: auto;">%mem=1gb
+%NProcShared=8
+%Subst L101 /path/to/ANT.Gaussian/bin
+%Subst L502 /path/to/ANT.Gaussian/bin
+#p lsda/lanl2dz nosymm pop=min scf=(conver=6,maxcycle=100,nodamp)
+
+Au14-1D
+
+0,1
+Au  0.0  0.0   0.0
+Au  0.0  0.0   3.0
+Au  0.0  0.0   6.0
+Au  0.0  0.0   9.0
+Au  0.0  0.0  12.0
+Au  0.0  0.0  15.0
+Au  0.0  0.0  18.0
+Au  0.0  0.0  21.0
+Au  0.0  0.0  24.0
+Au  0.0  0.0  27.0
+Au  0.0  0.0  30.0
+Au  0.0  0.0  33.0
+Au  0.0  0.0  36.0
+Au  0.0  0.0  39.0
+
+</pre>
+<p>Matching <em>Au14-1D.ant</em>:</p>
+<pre>TYPE1 = 1DLEAD
+TYPE2 = 1DLEAD
+NATPC1 = 3
+NATPC2 = 3
+NPC = 1
+L1DALPHA = 0.75
+SELFACC = 1.0d-6
+CHARGEACC = 1.0d-4
+FERMIACC = 1.0d-4
+ETA = 0.01
+</pre>
+<p>The numerical values above are starting settings, not a validated accuracy
+prescription. ETA may need to exceed its default for 1D leads, but broadens
+spectral features; verify results with respect to ETA and integration accuracy.
+FERMIACC and CHARGEACC are subject to SCF accuracy adaptation unless FULLACC
+is requested. Check the log for lead initialization, both Fermi levels and
+integration warnings before interpreting transmission. See the
+<a href="manual_3_g03.html#type1-and-type2">TYPE1/TYPE2 description</a> and
+<a href="manual_3_g03.html#natpc1-and-natpc2">NATPC1/NATPC2 description</a>
+for the corresponding ANT.G parameters.</p>
 <br>
-Note:<br>
+Note for missing electrodes:<br>
 If one of the electrodes is missing you need to state this in the <em>job_name.ant
 </em> file using the electrode type GHOST (see <strong> ANT.G</strong>
 input file). The transmission is not evaluated, but the calculation is

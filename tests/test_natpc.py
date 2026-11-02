@@ -36,6 +36,8 @@ driver='''program test
 end program
 '''
 cases=[
+ ('bands','LEADBANDS\n',True,'LEADBANDS'),
+ ('adaptive','ADAPTQUAD\n',True,'ADAPTQUAD'),
  ('new', 'TYPE1 = 1DLEAD\nTYPE2 = 1DLEAD\nNATPC1 = 1\nNATPC2 = 3\n',True,'COUNTS'),
  ('old','NEMBED1 = 1\nNEMBED2 = 3\nTYPE1 = 1DLEAD\nTYPE2 = 1DLEAD\n',True,'deprecated'),
  ('equal','NATPC1 = 3\nNEMBED1 = 3\nTYPE1 = 1DLEAD\n',True,'deprecated'),

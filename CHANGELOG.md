@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+- Check device spectral weight on [-1000,1000] eV; retry once on
+  [-10000,10000] eV after a quadrature or weight-check failure. Preserve
+  the density-contour bounds and stop if both windows fail.
+
+- Use safeguarded Brent for device Fermi searches, including spin and SOC
+  paths; verify final charge and rebuild density at the accepted root.
+  Fix uninitialized FIXEFERMI success and remove the 0.1 eV fallback.
+
+- Use periodic band filling exclusively for 1D lead Fermi levels, with
+  parallel generalized Bloch spectra, ETA-broadened occupations and independent
+  k-mesh convergence for each lead. Remove the contour-based Brent/warm-start
+  lead searches and lower-bound searches. LEADBANDS remains a no-op alias.
+
+- Add opt-in ADAPTQUAD: deterministic parallel adaptive Gauss-Kronrod
+  integration for collinear device density matrices.
+
+- Add an explicit LDOS switch requiring both valid atom-range endpoints;
+  LDOS_BEG/LDOS_END alone no longer enable local-DOS output.
+
 - Introduce NATPC1/2 for 1D-lead primitive-cell atom counts, retaining
   NEMBED1/2 for Bethe embedding and as warned legacy aliases for 1D inputs.
 - Reject conflicting cell counts and document the new input names.

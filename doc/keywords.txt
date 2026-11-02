@@ -6,20 +6,53 @@ for controlling the ANT.G calculation.
 ---------------------------------
 
 * ALPHA (real)
-Mixing parameter for density matrix (typically 0.01 < ALPHA < 0.1).
-Default: ALPHA = 5.0D-2
+Mixing parameter for the density matrix during self-consistency:
+P(next) = ALPHA * P(calculated) + (1 - ALPHA) * P(previous).
+Smaller values provide stronger damping and can reduce oscillations, but
+usually require more SCF cycles. Larger values can accelerate convergence
+but may cause oscillations or instability. Typical starting values are
+between 0.01 and 0.1. ALPHA = 0.02 mixes 2% new and 98% previous density.
+With FMIXING, ALPHA instead controls Fock (Kohn-Sham) matrix mixing.
+NPULAY controls separate Pulay extrapolation steps. ALPHA is distinct from
+L1DALPHA, which controls the 1D-lead Dyson self-energy iteration.
+Default: ALPHA = 2.0D-2
    
 * NPULAY (integer)
 DIIS convergence parameter (typically 1 < NPULAY < 10). 
 Every NPULAY normal convergence steps a Pulay extrapolation kicks in.
 Default: NPULAY = 4
 
+* LEADBANDS (compatibility keyword)
+Periodic 1D leads always find their Fermi levels by band filling; no switch
+is required. LEADBANDS is accepted for compatibility and has no effect.
+For each lead independently, solve H(k)c = epsilon S(k)c with all stored
+couplings through NPC, then fill to NPCEl electrons per chosen repeated cell.
+ETA gives occupations 1/2 + atan((EF-epsilon)/ETA)/pi, including the full
+tail from minus infinity. No lower-bound search or Dyson charge integration
+is performed. The uniform midpoint k mesh doubles from 256 to at most 65536
+points. Root charge residual and energy bracket width must meet CHARGEACC
+and FERMIACC; consecutive meshes must also agree in Fermi energy and in the
+charge evaluated at the previous mesh's Fermi energy. Failure to converge,
+or a nonpositive Bloch overlap, stops the calculation. These mesh checks
+are empirical error estimates. Device density, transmission and optional
+LEADDOS still use Green-function solvers; ADAPTQUAD affects device contour
+integration, not the lead band search.
+
+* ADAPTQUAD (logical)
+Experimental adaptive Gauss-Kronrod integration of collinear device density
+contours. Uses PACC
+for matrix elements, plus a charge-trace check. Other contour paths retain
+legacy integration. Maximum 128 panels; failure to converge stops the run.
+Default: .false. (off).
+
 * PACC (real)
 Numerical integration maximum accuracy for density matrix.
-Default: PACC = 1.0D-5
+Default: PACC = 1.0D-7
 
 * CHARGEACC (real)
-Total charge maximum accuracy.
+Total charge maximum accuracy. Device roots require a final residual below
+CHARGEACC*(NCDEl+QEXCESS); lead band filling uses an absolute electron-count
+tolerance per chosen repeated cell. Device root failure stops explicitly.
 Default: CHARGEACC = 1.0D-5
 
 * FERMIACC (real)
@@ -40,8 +73,8 @@ Default: L1DALPHA = 0.75
 FERMIACC and CHARGEACC are input targets. SCF adaptation can loosen them,
 including a factor of ten in the first two lead-enabled cycles.
 FULLACC retains input accuracy throughout. For 1D leads, CHARGEACC controls
-successive quadrature estimates and spectral-bound checks; FERMIACC controls
-the Brent energy bracket. Integration error also affects Fermi accuracy.
+the band-filling charge residual and k-mesh charge check; FERMIACC controls
+the filling energy bracket and agreement between successive k meshes.
 
 * FULLACC (logical)
 Turns on full accuracy from the first cycle.
@@ -69,7 +102,8 @@ overruled by the existing value in P.<job_name>.dat.
 Default: FERMISTART = -5.0D0
 
 * SSM (real)
-Convergence criterion for switching on the faster Secant method (superceding the standard Muller method) for Fermi level search. The Secant method is activated when RMSDP < SSM.
+Historical secant-switch threshold. Device Fermi searches now always use
+safeguarded Brent, so SSM no longer selects the device root algorithm.
 Default: SSM = 1.0D-3
 
 * TYPE1 and TYPE2 (string)
@@ -289,8 +323,19 @@ Default: EW1 = -3.0D0 and EW2 = 3.0D0.
 Energy at which the DOS projected on atoms is evaluated when MULLIKEN present.
 Default = 0.0 (Fermi energy)
 
+* LDOS (logical)
+Enable local density of states over the inclusive atom range specified by
+LDOS_BEG and LDOS_END. Both endpoints must be explicitly supplied and satisfy
+1 <= LDOS_BEG <= LDOS_END <= number of atoms. Bounds alone do not enable LDOS.
+Example:
+LDOS
+LDOS_BEG = 1
+LDOS_END = 3
+The energy grid uses EW1, EW2 and ESTEP; output is DOS.job_name.dat.
+Default: .false. (off).
+
 * LDOS_BEG and LDOS_END (integer)
-Atoms numbers onto which the local density of states is evaluated.
+Inclusive atom range for LDOS; both bounds are required with the LDOS switch.
 Default: LDOS_BEG = 1 and LDOS_END = 0 (LDOS evaluation off).
 
 * NCHANNELS (integer)

@@ -1,0 +1,70 @@
+module constants
+ real*8,parameter::d_pi=acos(-1d0)
+ complex*16,parameter::ui=(0d0,1d0),c_zero=(0d0,0d0)
+end module
+module parameters
+ real*8::PAcc=1d-9,ChargeAcc=1d-7,eta=0.01d0,glue=1d0
+end module
+module numeric
+contains
+@GK@
+ integer function CInv(z)
+ complex*16,intent(inout)::z(:,:)
+ complex*16::a,b,c,d,det
+ a=z(1,1);b=z(1,2);c=z(2,1);d=z(2,2);det=a*d-b*c
+ if(abs(det)==0d0) then
+ CInv=1;return
+ endif
+ z(1,1)=d/det;z(1,2)=-b/det;z(2,1)=-c/det;z(2,2)=a/det
+ CInv=0
+ end function
+end module
+module model
+ use constants
+ use parameters
+ implicit none
+ integer::NAOrbs=2,ispin=1,ifu_log=6
+ real*8::SD(2,2),HD(2,2,2),PD(2,2,2),shift=0d0
+ contains
+ subroutine CompSelfEnergies(spin,z,left,right,sgn)
+ integer,intent(in)::spin,sgn
+ complex*16,intent(in)::z
+ complex*16,intent(out)::left(:,:),right(:,:)
+ left=-ui*eta*SD/2d0;right=left
+ end subroutine
+@ROUTINES@
+end module
+program test
+ use model
+ use omp_lib
+ implicit none
+ complex*16::badgreen(2,2)
+ real*8::u(2,2),h(2,2),eig(2),occ(2),point_values(5),expected(2,2),ref(2,2),angle
+ integer::spin,j,threads,inversion_status
+ SD=0d0;SD(1,1)=1d0;SD(2,2)=1d0
+ angle=0.37d0;u=reshape((/cos(angle),sin(angle),-sin(angle),cos(angle)/),(/2,2/))
+ do spin=1,2
+ eig=(/-1.5d0,0.3d0/)+0.4d0*(spin-1)
+ h=0d0;h(1,1)=eig(1);h(2,2)=eig(2)
+ HD(spin,:,:)=matmul(u,matmul(h,transpose(u)))
+ do j=1,2
+ occ(j)=(atan(-eig(j)/eta)-atan((-5d0-eig(j))/eta))/d_pi
+ enddo
+ h=0d0;h(1,1)=occ(1);h(2,2)=occ(2)
+ expected=matmul(u,matmul(h,transpose(u)))
+ do threads=1,8
+ call omp_set_num_threads(threads)
+ call AdaptiveDensityContour(2.5d0,0d0,d_pi,0d0,spin)
+ if(maxval(abs(PD(spin,:,:)-expected))>1d-8) stop 10
+ if(threads==1)ref=PD(spin,:,:)
+ if(any(PD(spin,:,:)/=ref))stop 11
+ enddo
+ enddo
+ eta=0d0;HD=0d0
+ call gplus0((0d0,0d0),badgreen,1,inversion_status)
+ if(inversion_status/=1) stop 12
+ call AdaptiveDensityPoint(0d0,2.5d0,0d0,1,point_values,inversion_status)
+ if(inversion_status/=1) stop 13
+ print *, 'PASS: singular inversion status is propagated'
+ print *, 'PASS: production contour density, rotated off-diagonal matrix elements, both spins, 1..8 threads'
+end program

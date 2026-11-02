@@ -22,6 +22,287 @@
   IMPLICIT NONE
   CONTAINS
 
+  subroutine AdaptiveGK15(F,ncomp,a,b,atol,result,error_ratio,neval,npanels,status,context)
+    ! Vector-valued adaptive Gauss-Kronrod 7/15. The sum of normalized panel
+    ! errors bounds every requested component estimate; no charge cancellation
+    ! is allowed to hide an unresolved density-matrix contribution.
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    interface
+       subroutine F(ncomp,npoint,x,y,info,context)
+         integer,intent(in) :: ncomp,npoint
+         real*8,intent(in) :: x(npoint),context(:)
+         real*8,intent(out) :: y(ncomp,npoint)
+         integer,intent(out) :: info
+       end subroutine F
+    end interface
+    integer,intent(in) :: ncomp
+    real*8,intent(in) :: a,b,atol(ncomp)
+    real*8,intent(in),optional :: context(:)
+    real*8 :: empty_context(0)
+    real*8,intent(out) :: result(ncomp),error_ratio
+    integer,intent(out) :: neval,npanels,status
+    integer,parameter :: capacity=128,initial=8
+    real*8,parameter :: fractions(0:initial)=(/0d0,0.005d0,0.03d0,0.15d0, &
+         0.5d0,0.85d0,0.97d0,0.995d0,1d0/)
+    real*8 :: left(capacity),right(capacity),errors(capacity),mid,el,er
+    real*8,allocatable :: integrals(:,:),vl(:),vr(:)
+    integer :: i,worst,info,allocation_status
+    result=0d0;error_ratio=huge(0d0);neval=0;npanels=0;status=1
+    if(ncomp<1) return
+    if(.not.all(ieee_is_finite((/a,b/)))) return
+    if(.not.all(ieee_is_finite(atol)).or.any(atol<=0d0)) return
+    if(a>b) return
+    if(a==b) then
+       error_ratio=0d0;status=0;return
+    end if
+    allocate(integrals(ncomp,capacity),vl(ncomp),vr(ncomp),stat=allocation_status)
+    if(allocation_status/=0) then
+       status=2;return
+    end if
+    do i=1,initial
+       left(i)=a+(b-a)*fractions(i-1);right(i)=a+(b-a)*fractions(i)
+       call panel(left(i),right(i),integrals(:,i),errors(i),info)
+       if(info/=0) then
+          status=3;return
+       end if
+       npanels=i
+    end do
+    do
+       error_ratio=sum(errors(1:npanels))
+       if(error_ratio<=1d0) then
+          result=0d0
+          ! Fixed panel order gives identical accumulation across thread counts.
+          do i=1,npanels
+             result=result+integrals(:,i)
+          end do
+          status=0;return
+       end if
+       if(npanels>=capacity) then
+          status=2;return
+       end if
+       worst=maxloc(errors(1:npanels),dim=1)
+       mid=left(worst)+0.5d0*(right(worst)-left(worst))
+       if(mid<=left(worst).or.mid>=right(worst)) then
+          status=4;return
+       end if
+       call panel(left(worst),mid,vl,el,info)
+       if(info/=0) then
+          status=3;return
+       end if
+       call panel(mid,right(worst),vr,er,info)
+       if(info/=0) then
+          status=3;return
+       end if
+       npanels=npanels+1
+       left(npanels)=mid;right(npanels)=right(worst)
+       integrals(:,npanels)=vr;errors(npanels)=er
+       right(worst)=mid;integrals(:,worst)=vl;errors(worst)=el
+    end do
+  contains
+    subroutine panel(l,r,value,normalized_error,info)
+      real*8,intent(in) :: l,r
+      real*8,intent(out) :: value(ncomp),normalized_error
+      integer,intent(out) :: info
+      real*8,parameter :: nodes(8)=(/ &
+           0.991455371120812639206854697526329d0, &
+           0.949107912342758524526189684047851d0, &
+           0.864864423359769072789712788640926d0, &
+           0.741531185599394439863864773280788d0, &
+           0.586087235467691130294144838258730d0, &
+           0.405845151377397166906606412076961d0, &
+           0.207784955007898467600689403773245d0,0d0/)
+      real*8,parameter :: wk(8)=(/ &
+           0.022935322010529224963732008058970d0, &
+           0.063092092629978553290700663189204d0, &
+           0.104790010322250183839876322541518d0, &
+           0.140653259715525918745189590510238d0, &
+           0.169004726639267902826583426598550d0, &
+           0.190350578064785409913256402421014d0, &
+           0.204432940075298892414161999234649d0, &
+           0.209482141084727828012999174891714d0/)
+      real*8,parameter :: wg(4)=(/ &
+           0.129484966168869693270611432679082d0, &
+           0.279705391489276667901467771423780d0, &
+           0.381830050505118944950369775488975d0, &
+           0.417959183673469387755102040816327d0/)
+      real*8 :: x(15),y(ncomp,15),g(ncomp),k(ncomp),resabs(ncomp),resasc(ncomp)
+      real*8 :: err(ncomp),half,center,mean(ncomp),pair(ncomp)
+      integer :: j,c
+      half=0.5d0*(r-l);center=l+half
+      do j=1,7
+         x(2*j-1)=center-half*nodes(j);x(2*j)=center+half*nodes(j)
+      end do
+      x(15)=center
+      if(present(context)) then
+         call F(ncomp,15,x,y,info,context)
+      else
+         call F(ncomp,15,x,y,info,empty_context)
+      end if
+      neval=neval+15
+      if(info/=0) return
+      if(.not.all(ieee_is_finite(y))) then
+         info=1;return
+      end if
+      k=wk(8)*y(:,15);g=wg(4)*y(:,15);resabs=wk(8)*abs(y(:,15))
+      do j=1,7
+         pair=y(:,2*j-1)+y(:,2*j)
+         k=k+wk(j)*pair
+         resabs=resabs+wk(j)*(abs(y(:,2*j-1))+abs(y(:,2*j)))
+         if(mod(j,2)==0) g=g+wg(j/2)*pair
+      end do
+      mean=0.5d0*k;resasc=wk(8)*abs(y(:,15)-mean)
+      do j=1,7
+         resasc=resasc+wk(j)*(abs(y(:,2*j-1)-mean)+abs(y(:,2*j)-mean))
+      end do
+      value=k*half;err=abs((k-g)*half);resabs=resabs*half;resasc=resasc*half
+      do c=1,ncomp
+         if(resasc(c)>0d0.and.err(c)>0d0) then
+            err(c)=resasc(c)*min(1d0,(200d0*err(c)/resasc(c))**1.5d0)
+         end if
+         err(c)=max(err(c),50d0*epsilon(1d0)*resabs(c))
+      end do
+      normalized_error=maxval(err/atol)
+      if(.not.ieee_is_finite(normalized_error).or..not.all(ieee_is_finite(value))) info=1
+    end subroutine panel
+  end subroutine AdaptiveGK15
+
+
+  subroutine FindChargeOnset(F,seed,lower,upper,qtol,etol,lo,hi,qlo,errlo,calls,status,guess_hi)
+    ! Locate the highest verified low-charge endpoint. Charge estimates and
+    ! their quadrature error estimates are always evaluated afresh.
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    interface
+       subroutine F(e,accuracy,q,error,info)
+         real*8,intent(in) :: e,accuracy
+         real*8,intent(out) :: q,error
+         integer,intent(out) :: info
+       end subroutine F
+    end interface
+    real*8,intent(in) :: seed,lower,upper,qtol,etol
+    real*8,intent(in),optional :: guess_hi
+    real*8,intent(out) :: lo,hi,qlo,errlo
+    integer,intent(out) :: calls,status
+    real*8 :: x,q,error,vl,vh,v,step,trial,budget
+    integer :: info,k,retry
+    calls=0;status=1;lo=seed;hi=seed;qlo=0d0;errlo=huge(0d0)
+    if (.not.all(ieee_is_finite((/seed,lower,upper,qtol,etol/)))) return
+    if (lower>=upper.or.seed<lower.or.seed>upper.or.qtol<=0d0.or.etol<=0d0) return
+    budget=qtol
+    x=seed;step=max(1d0,2d0*etol)
+    call sample(x,q,error,info)
+    ! An unresolved starting integral is never classified as zero charge.
+    do k=1,64
+       if (info==0) exit
+       trial=max(lower,x-step)
+       if (trial==x) then
+          status=2;return
+       end if
+       x=trial;step=2d0*step
+       call sample(x,q,error,info)
+    end do
+    if (info/=0) then
+       status=2;return
+    end if
+    v=abs(q)-qtol
+    step=max(1d0,2d0*etol)
+    if (v<0d0) then
+       lo=x;qlo=q;errlo=error;vl=v
+       do k=1,64
+          trial=min(upper,lo+step)
+          if (k==1.and.present(guess_hi)) then
+             if (ieee_is_finite(guess_hi)) then
+                if (guess_hi>lo.and.guess_hi<=upper) trial=guess_hi
+             end if
+          end if
+          if (trial<=lo) then
+             status=3;return
+          end if
+          call sample(trial,q,error,info)
+          if(info/=0) then
+             step=2d0*step
+             if(trial>=upper) then
+                status=2;return
+             end if
+             cycle
+          end if
+          vh=abs(q)-qtol
+          if(vh>=0d0) exit
+          lo=trial;qlo=q;errlo=error;vl=vh;step=2d0*step
+       end do
+       hi=trial
+    else
+       hi=x;vh=v
+       do k=1,64
+          trial=max(lower,hi-step)
+          if (trial>=hi) then
+             status=3;return
+          end if
+          call sample(trial,q,error,info)
+          if(info/=0) then
+             step=2d0*step
+             if(trial<=lower) then
+                status=2;return
+             end if
+             cycle
+          end if
+          vl=abs(q)-qtol
+          if(vl<0d0) exit
+          hi=trial;vh=vl;step=2d0*step
+       end do
+       lo=trial;qlo=q;errlo=error
+    end if
+    if (vl>=0d0.or.vh<0d0) then
+       status=3;return
+    end if
+    do k=1,100
+       if(hi-lo<=etol) then
+          status=0;return
+       end if
+       ! Secant proposal with a central safeguard; flat/noisy tails bisect.
+       trial=lo-vl*(hi-lo)/(vh-vl)
+       if(trial<=lo+0.1d0*(hi-lo).or.trial>=hi-0.1d0*(hi-lo)) trial=lo+0.5d0*(hi-lo)
+       if(trial<=lo.or.trial>=hi) then
+          status=4;return
+       end if
+       call sample(trial,q,error,info)
+       if(info/=0) then
+          ! Preserve both verified endpoints. Probe successively closer to the
+          ! low-charge endpoint; no failed integral can replace either endpoint.
+          do retry=1,8
+             trial=lo+(hi-lo)/(2d0**(retry+1))
+             if(trial<=lo.or.trial>=hi) exit
+             call sample(trial,q,error,info)
+             if(info==0) exit
+          end do
+          if(info/=0) then
+             status=2;return
+          end if
+       end if
+       v=abs(q)-qtol
+       if(v<0d0) then
+          lo=trial;qlo=q;errlo=error;vl=v
+       else
+          hi=trial;vh=v
+       end if
+    end do
+    status=4
+  contains
+    subroutine sample(e,q,error,info)
+      real*8,intent(in) :: e
+      real*8,intent(out) :: q,error
+      integer,intent(out) :: info
+      calls=calls+1
+      call F(e,budget,q,error,info)
+      if(info==0) then
+         if(.not.all(ieee_is_finite((/q,error/)))) info=1
+         if(error<0d0.or.error>budget) info=1
+      end if
+    end subroutine sample
+  end subroutine FindChargeOnset
+
+
 ! *************************************************************
 ! Very simple sorting algorithm (not adequate for large arrays)
 ! *************************************************************

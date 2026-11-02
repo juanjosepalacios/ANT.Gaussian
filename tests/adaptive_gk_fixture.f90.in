@@ -1,0 +1,58 @@
+module test_settings
+ integer :: mode=0
+end module
+module numeric
+contains
+@GK@
+end module
+program regression
+ use numeric
+ use test_settings
+ use omp_lib
+ use, intrinsic :: ieee_arithmetic
+ implicit none
+ real*8 :: value(3),reference(3),tol(3),ratio,pi,exact
+ integer :: info,neval,panels,threads
+ pi=acos(-1d0);tol=1d-9;mode=0
+ exact=atan((1d0-0.004d0)/0.00003d0)-atan(-0.004d0/0.00003d0)
+ do threads=1,8
+ call omp_set_num_threads(threads)
+ call AdaptiveGK15(batch,3,0d0,1d0,tol,value,ratio,neval,panels,info)
+ if(info/=0.or.ratio>1d0.or.panels<=8) stop 10
+ if(abs(value(1)-exact)>1d-8.or.abs(value(2)+exact)>1d-8.or.value(3)/=0d0) stop 11
+ if(threads==1)reference=value
+ if(any(value/=reference)) stop 12
+ enddo
+ print *, 'PASS: narrow endpoint resonance, cancelling matrix components and exact 1..8-thread agreement'
+ print *, 'adaptive evaluations/panels/error ratio:',neval,panels,ratio
+ mode=1
+ call AdaptiveGK15(batch,3,0d0,1d0,tol,value,ratio,neval,panels,info)
+ if(info/=3)stop 13
+ mode=0;tol=1d-30
+ call AdaptiveGK15(batch,3,0d0,1d0,tol,value,ratio,neval,panels,info)
+ if(info/=2)stop 14
+ tol=0d0
+ call AdaptiveGK15(batch,3,0d0,1d0,tol,value,ratio,neval,panels,info)
+ if(info/=1.or.neval/=0)stop 15
+ tol=1d-8
+ call AdaptiveGK15(batch,3,0d0,0d0,tol,value,ratio,neval,panels,info)
+ if(info/=0.or.neval/=0.or.any(value/=0d0))stop 16
+ print *, 'PASS: nonfinite data, panel exhaustion, invalid tolerances and zero-length intervals'
+ contains
+ subroutine batch(ncomp,npoint,x,y,info,context)
+ integer,intent(in)::ncomp,npoint
+ real*8,intent(in)::x(npoint),context(:)
+ real*8,intent(out)::y(ncomp,npoint)
+ integer,intent(out)::info
+ integer::j
+ real*8::v
+ info=0
+ !$omp parallel do private(j,v) schedule(static)
+ do j=1,npoint
+ v=0.00003d0/((x(j)-0.004d0)**2+0.00003d0**2)
+ y(1,j)=v;y(2,j)=-v;y(3,j)=y(1,j)+y(2,j)
+ if(mode==1)y(1,j)=ieee_value(0d0,ieee_quiet_nan)
+ enddo
+ !$omp end parallel do
+ end subroutine
+end program

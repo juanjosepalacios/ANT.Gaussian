@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html;
@@ -7,12 +7,18 @@
     <meta name="Description" content="Misty Grey template">
     <meta name="robots" content="index, follow">
     <link rel="stylesheet" type="text/css" href="layout.css">
-    <!-- 
+    <!--
       Design: Daniel Kocherscheidt, Jens Wolters
       Open Source: This template is free to use for personal and commercial projects.
-          It is not allowed to remove the footer link though !                                          
+          It is not allowed to remove the footer link though !
 -->
     <title>ANT</title>
+    <style>
+      #content details.keyword { margin: 0.65em 0; padding: 0.4em 0; border-bottom: 1px solid #ddd; }
+      #content details.keyword > summary { cursor: pointer; }
+      #content details.keyword > summary:focus-visible { outline: 2px solid #336666; outline-offset: 3px; }
+      #content details.keyword p { margin: 0.7em 0 0.7em 1.2em; text-align: justify; white-space: pre-line; }
+    </style>
   </head>
   <body>
     <div id="center">
@@ -102,128 +108,162 @@ dumps the Mulliken population analysis into a file.<span
  style="font-style: italic;"></span></div>
   </li>
 </ol>
-<strong> Calculation parameters:</strong>
-<ol>
-  <li><em>ALPHA</em> (real)<br>
-Mixing parameter for density matrix (typically 0.01 &lt; <em>ALPHA</em>
-&lt; 0.1).<br>
-Default: <em>ALPHA</em> = 5.0D-2</li>
-  <li><br>
-  </li>
-  <li><span style="font-style: italic;">NPULAY</span> (integer)</li>
-  <li style="text-align: justify;">DIIS convergence parameter (typically<span
- style="font-style: italic;"> 1 &lt; NPULAY</span> &gt; 10). Every <span
- style="font-style: italic;">NPULAY</span> normal convergence steps a
-Pulay extrapolation kicks in.<br>
-  </li>
-  <li>Default:<span style="font-style: italic;"> NPULAY = 4</span><br>
-  </li>
-</ol>
-<ol>
-  <li><span style="font-style: italic;">PACC </span>(real)</li>
-  <li>Numerical integration maximum accuracy for density matrix.</li>
-  <li>Default: <span style="font-style: italic;">PACC </span>= 1.0D-5</li>
-  <li><br>
-  </li>
-  <li><em>CHARGEACC</em> (real) <br>
-Total charge maximum accuracy. <br>
-Default: <em>CHARGEACC</em> = 1.0D-5</li>
-  <br>
-  <li> <em>FERMIACC</em> (real)<br>
-Fermi level maximum accuracy (in eV). FERMIACC and CHARGEACC are input
+<p>Click a keyword to show its explanation, syntax and default where specified.
+Click again to collapse it. You can also focus a keyword with Tab and press Enter or Space.</p>
+<h3>Calculation parameters:</h3>
+<details class="keyword" id="alpha">
+  <summary><em>ALPHA</em> (real)</summary>
+  <p>Mixing parameter for the density matrix during self-consistency.
+The next input density combines the newly calculated density with the
+previous input density:</p>
+  <p>P(next) = ALPHA * P(calculated) + (1 - ALPHA) * P(previous)</p>
+  <p>A smaller value retains more of the previous density and provides
+stronger damping, which can reduce oscillations but usually requires more
+SCF cycles. A larger value accepts more of the newly calculated density and
+may accelerate convergence, but can cause oscillations or instability.
+Typical starting values are between 0.01 and 0.1. For example,
+ALPHA = 0.02 mixes 2% of the new density with 98% of the
+previous density.</p>
+  <p>When FMIXING is enabled, ALPHA instead controls mixing of the
+Fock (Kohn-Sham) matrix. NPULAY controls the separate Pulay extrapolation
+steps. ALPHA is distinct from L1DALPHA, which controls the Dyson
+self-energy iteration in periodic 1D leads.</p>
+  <p>Default: ALPHA = 2.0D-2</p>
+</details>
+<details class="keyword" id="npulay">
+  <summary><em>NPULAY</em> (integer)</summary>
+  <p>DIIS convergence parameter (typically 1 &lt; NPULAY &lt; 10). Every NPULAY normal convergence steps a
+Pulay extrapolation kicks in.</p>
+  <p>Pulay extrapolation uses the history of preceding SCF steps to accelerate convergence, whereas ALPHA damps individual updates. If the density oscillates, review both settings rather than changing NPULAY alone. A smaller interval invokes extrapolation more frequently; it does not set an integration tolerance.</p>
+  <p>Default: NPULAY = 4</p>
+</details>
+<details class="keyword" id="leadbands">
+  <summary><em>LEADBANDS</em> (compatibility keyword)</summary>
+  <p>Periodic 1D leads always find their Fermi levels by band filling; no switch is required. LEADBANDS is accepted for compatibility and has no effect. For each lead independently, solve H(k)c = epsilon S(k)c with all stored couplings through NPC, then fill to NPCEl electrons per chosen repeated cell. ETA gives occupations 1/2 + atan((EF-epsilon)/ETA)/pi, including the full tail from minus infinity. No lower-bound search or Dyson charge integration is performed. The uniform midpoint k mesh doubles from 256 to at most 65536 points. Root charge residual and energy bracket width must meet CHARGEACC and FERMIACC; consecutive meshes must also agree in Fermi energy and in the charge evaluated at the previous mesh's Fermi energy. Failure to converge, or a nonpositive Bloch overlap, stops the calculation. These mesh checks are empirical error estimates. Device density, transmission and optional LEADDOS still use Green-function solvers; ADAPTQUAD affects device contour integration, not the lead band search. </p>
+</details>
+<details class="keyword" id="adaptquad">
+  <summary><em>ADAPTQUAD</em> (logical)</summary>
+  <p>Use experimental locally adaptive Gauss-Kronrod quadrature for collinear device density contours. Write ADAPTQUAD on its own line.
+Only panels with large estimated error are refined; point evaluations are
+parallel and summed in a fixed order.</p>
+  <p>PACC controls each device
+matrix element, with an additional charge-trace check. This can resolve
+local difficulties hidden by cancellation in total charge. SOC/spinor
+contours, imaginary-axis and real-axis integration, and device spectral-weight
+checks retain their existing methods.</p>
+  <p>The panel limit is 128. Failure to meet the error target stops the
+calculation. Matrix-panel storage increases memory use for large devices.</p>
+  <p>Default: .false. (off; legacy quadrature).</p>
+</details>
+<details class="keyword" id="pacc">
+  <summary><em>PACC</em> (real)</summary>
+  <p>Numerical integration maximum accuracy for density matrix.</p>
+  <p>This is the target accuracy for numerical density-matrix integration, distinct from the Gaussian SCF convergence threshold. Smaller values demand better agreement between quadrature estimates and can increase cost. The effective tolerance can be relaxed during early SCF cycles unless FULLACC is present. If the log reports integration failure at the maximum order, lowering PACC alone cannot add more points; the quadrature limit must also be reviewed.</p>
+  <p>Default: PACC = 1.0D-7</p>
+</details>
+<details class="keyword" id="chargeacc">
+  <summary><em>CHARGEACC</em> (real)</summary>
+  <p>Total charge maximum accuracy. For 1D leads, the absolute electron-count tolerance per chosen repeated cell applies both to the band-filling root residual and to the previous Fermi energy's charge residual on a finer k mesh. FERMIACC separately controls energy convergence. No lead charge-contour or integration-bound search is used. Effective tolerances may be relaxed during early SCF cycles unless FULLACC is present.</p>
+  <p>For the device, the final charge residual must be below CHARGEACC*(NCDEl+QEXCESS), preserving the device relative-charge convention. The safeguarded Brent search evaluates density again at the accepted root and stops if the final residual fails. Root convergence does not establish quadrature accuracy.</p>
+  <p>Default: CHARGEACC = 1.0D-5</p>
+</details>
+<details class="keyword" id="fermiacc">
+  <summary><em>FERMIACC</em> (real)</summary>
+  <p>Fermi level maximum accuracy (in eV). FERMIACC and CHARGEACC are input
 targets subject to SCF accuracy adaptation; FULLACC retains input accuracy
-from the first cycle.<br>
-Default: <em>FERMIACC</em> = 1.0D-5</li>
-  <br>
-  <li><em>SELFACC</em> (real)<br>
-Self-energy accuracy. For 1D leads, tolerance on the mean absolute unmixed
-Dyson residual, independent of L1DALPHA and not adapted during SCF.<br>
-Default: <em>SELFACC</em> = 1.0D-6</li>
-  <br>
-  <li><em>L1DALPHA</em> (real)<br>
-Mixing parameter for consecutive self-energy matrices in the iterative
+from the first cycle.</p>
+  <p>A smaller value requests finer resolution of the Fermi energy and may require more charge evaluations. For 1D leads, it controls the band-filling energy bracket width and agreement of Fermi energies on successive k meshes. CHARGEACC must also be satisfied. The device uses safeguarded Brent with FERMIACC as its shift-bracket tolerance; the printed Fermi energy is the negative shift.</p>
+  <p>Default: FERMIACC = 1.0D-5</p>
+</details>
+<details class="keyword" id="selfacc">
+  <summary><em>SELFACC</em> (real)</summary>
+  <p>Self-energy accuracy. For 1D leads, tolerance on the mean absolute unmixed
+Dyson residual, independent of L1DALPHA and not adapted during SCF.</p>
+  <p>Smaller values require a more accurately converged self-energy and generally more Dyson iterations. For periodic leads, adjust L1DALPHA if iteration is unstable, but use SELFACC to set the required residual accuracy. It is separate from the density-integration and Fermi-search tolerances.</p>
+  <p>Default: SELFACC = 1.0D-6</p>
+</details>
+<details class="keyword" id="l1dalpha">
+  <summary><em>L1DALPHA</em> (real)</summary>
+  <p>Mixing parameter for consecutive self-energy matrices in the iterative
 Dyson solution for 1D leads (0 &lt; L1DALPHA &lt;= 1).
 Weights the newly calculated self-energy; separate from density mixing
-ALPHA.<br>
-Default: <em>L1DALPHA</em> = 0.75</li>
-</ol>
-<div style="margin-left: 40px;"><span style="font-style: italic;">SMALL,
-SMALLD
-</span>(real)<br>
-Parameters used for the identification of the crystallographic
+ALPHA.</p>
+  <p>The update is Sigma(next) = L1DALPHA * F(Sigma(previous)) + (1 - L1DALPHA) * Sigma(previous). Smaller values damp updates more strongly, often stabilizing iteration at additional cost. Larger values can be faster but are not optimal for every energy or lead. SELFACC tests the residual before mixing, so changing the mixing weight does not relax that criterion.</p>
+  <p>Default: L1DALPHA = 0.75</p>
+</details>
+<details class="keyword" id="small-smalld">
+  <summary><em>SMALL, SMALLD</em> (real)</summary>
+  <p>Parameters used for the identification of the crystallographic
 structure of the electrodes and for determining the Bethe lattice
 directions. The smaller, the more stringent on the
-atomic structure.&nbsp; Increase their values if your electrodes are
-slightly disordered.<br>
-Default: <span style="font-style: italic;">SMALL </span>= 0.1<br>
-Default: <span style="font-style: italic;">SMALLD </span>= 0.1
-(Angstrom)<br>
-</div>
-<ol>
-  <li><em>FULLACC </em>(logical)</li>
-  <li>Turns on full accuracy from the first cycle.<br>
-  </li>
-  <li><br>
-  </li>
-  <li><em>ETA</em> (real)<br>
-    <div style="text-align: justify;"> Small imaginary part of the
-Green's function. A value larger than the default may be needed when
+atomic structure.  Increase their values if your electrodes are
+slightly disordered.</p>
+  <p>These parameters concern geometric recognition, not electronic self-consistency. If lattice directions are identified incorrectly, inspect coordinates and attached branches in the generated XYZ file before loosening the recognition parameters.</p>
+  <p>Default: SMALL = 0.1</p>
+  <p>Default: SMALLD = 0.1
+(Angstrom)</p>
+</details>
+<details class="keyword" id="fullacc">
+  <summary><em>FULLACC</em> (logical)</summary>
+  <p>Turns on full accuracy from the first cycle.</p>
+  <p>Write FULLACC on its own line to retain the requested PACC, CHARGEACC and FERMIACC targets from the first lead-enabled SCF cycle. Without it, the code uses looser tolerances at earlier stages to save work. FULLACC can make initial cycles more expensive and does not itself raise the quadrature-point limit.</p>
+</details>
+<details class="keyword" id="eta">
+  <summary><em>ETA</em> (real)</summary>
+  <p>Small imaginary part of the
+Green&#x27;s function. A value larger than the default may be needed when
 both electrodes are set to GHOST or when using periodic 1D leads
-(TYPE1 or TYPE2 = 1DLEAD).<br>
-    </div>
-  </li>
-  <li> Default: <em>ETA</em> = 1.0D-10</li>
-  <br>
-  <li> <em>SL</em> (real)<br>
-    <div style="text-align: justify;"> Convergence criterion for when
+(TYPE1 or TYPE2 = 1DLEAD).</p>
+  <p>ETA adds a positive imaginary component to the energy used in the device Green function. Increasing it smooths narrow spectral structure and can regularize nearly singular inversions, but also changes peak widths. Check transmission as ETA is reduced rather than treating smoother curves as proof of convergence.</p>
+  <p>Default: ETA = 1.0D-10</p>
+</details>
+<details class="keyword" id="sl">
+  <summary><em>SL</em> (real)</summary>
+  <p>Convergence criterion for when
 to switch the infinite electrodes (Bethe lattice) on. These are
 connected when the standard GAUSSIAN03/09 SCF convergence for the
-density matrix (RMSDP) reaches RMSDP &lt; <em>SL</em>, where the
+density matrix (RMSDP) reaches RMSDP &lt; SL, where the
 overall convergence criterion is set in the GAUSSIAN03/09 input file
-with the SCF option "scf(conver=n)".<br>
-    </div>
-Remark: If <em>SL</em> = 0, the leads are only connected after the
+with the SCF option &quot;scf(conver=n)&quot;.</p>
+  <p>Remark: If SL = 0, the leads are only connected after the
 GAUSSIAN03/09 SCF calculation has converged (cycle=1000). This is only
-recommended for quick and dirty calculations.<br>
-Default: <em>SL</em> = 1.0D-2</li>
-  <br>
-  <li> <em>FERMISTART</em> (real) <br>
-    <div style="text-align: justify;"> Starting value for Fermi level
+recommended for quick and dirty calculations.</p>
+  <p>Default: SL = 1.0D-2</p>
+</details>
+<details class="keyword" id="fermistart">
+  <summary><em>FERMISTART</em> (real)</summary>
+  <p>Starting value for Fermi level
 search (in eV). When reinitializing a calculation from a
 P.job_name.dat file it is overruled by the existing value in
-P.job_name;.dat.<br>
-    </div>
-Default: <em>FERMISTART</em> = -5.0D0</li>
-  <li><br>
-  </li>
-</ol>
-<div style="margin-left: 40px;"><em>NATPC1 and NATPC2</em> (integer)<br>
-Number of atoms in the chosen repeated unit of each 1DLEAD electrode.
+P.job_name;.dat.</p>
+  <p>Default: FERMISTART = -5.0D0</p>
+</details>
+<details class="keyword" id="natpc1-and-natpc2">
+  <summary><em>NATPC1 and NATPC2</em> (integer)</summary>
+  <p>Number of atoms in the chosen repeated unit of each 1DLEAD electrode.
 With NPC = 1, choose a unit large enough that hopping and overlap to
 second-neighbor units are negligible; it may contain several primitive cells.
-Specify a positive value for each 1D lead. NPC defaults to 1.<br>
-For compatibility, NEMBED1/2 are accepted for 1D leads with a warning.
+Specify a positive value for each 1D lead. NPC defaults to 1.</p>
+  <p>For compatibility, NEMBED1/2 are accepted for 1D leads with a warning.
 If both names are supplied for a lead, their values must agree.
-Use NEMBED1/2 for Bethe-lattice embedding.<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;">TYPE1
-and TYPE2 </span>(string)<br>
-<div style="text-align: justify;">
-<p>Type of model for the semiinfinite electrode. TYPE1 selects electrode 1
+Use NEMBED1/2 for Bethe-lattice embedding.</p>
+</details>
+<details class="keyword" id="type1-and-type2">
+  <summary><em>TYPE1 and TYPE2</em> (string)</summary>
+  <p>Type of model for the semiinfinite electrode. TYPE1 selects electrode 1
 and TYPE2 selects electrode 2. Available values are BETHE, 1DLEAD and GHOST.</p>
-<p><em>BETHE</em>: Attach a Bethe-lattice self-energy to the electrode atoms of the
+  <p>BETHE: Attach a Bethe-lattice self-energy to the electrode atoms of the
 input cluster. Select the parameter set for each electrode with BLPAR1
 and BLPAR2 (see the BLxxx.dat files).</p>
-<p><em>1DLEAD</em>: Construct a periodic one-dimensional electrode from Hamiltonian
+  <p>1DLEAD: Construct a periodic one-dimensional electrode from Hamiltonian
 and overlap blocks of the input cluster. Include several identical translated
 repeated units at each end, with a consistent atom order within every unit.
 List the atoms cell by cell along the wire: electrode 1 is taken from the
 beginning of the atom list and electrode 2 from the end. Set NATPC1 and
 NATPC2 to the number of atoms in the chosen repeated unit of each electrode;
 this unit need not be the smallest crystallographic primitive cell.
-The two electrodes are extracted independently and need not be identical.
-</p>
-<p>With NPC = 1 (the default), only couplings within a repeated unit and
+The two electrodes are extracted independently and need not be identical.</p>
+  <p>With NPC = 1 (the default), only couplings within a repeated unit and
 between adjacent units are retained. NATPC1 and NATPC2 must therefore define
 repeated units large enough that hopping and overlap to second-neighbor
 units (and beyond) are negligible. Choosing the smallest crystallographic
@@ -232,433 +272,409 @@ couplings remain appreciable, even if the Dyson iteration converges
 numerically. Enlarge the repeated unit by grouping primitive cells and
 increase NATPC accordingly; check that the lead DOS and transmission no
 longer change significantly with further enlargement.</p>
-<p>Include at least two identical translated copies of the chosen repeated
+  <p>Include at least two identical translated copies of the chosen repeated
 unit at each end so that its Hamiltonian, overlap and coupling to the
 neighboring unit can be extracted. The outermost NATPC1 and NATPC2 atoms
 form the lead buffers excluded from reduced-device charge counting. Leave
 a central device region between these buffers.</p>
-<p>For example, NATPC1 = 3, NATPC2 = 3 and NPC = 1 can be used with
+  <p>For example, NATPC1 = 3, NATPC2 = 3 and NPC = 1 can be used with
 TYPE1 = 1DLEAD and TYPE2 = 1DLEAD only if a three-atom repeated unit is
 large enough to make second-neighbor-unit couplings negligible. Otherwise,
 use a larger repeated unit and increase NATPC1/2. Include at least two copies
 of that larger unit at each end for parameter extraction.
 Use the same geometry and atom ordering for corresponding cells. L1DALPHA
 and SELFACC control the Dyson solution; ETA may need to exceed its default.</p>
-<p><em>GHOST</em>: Attach no electrode self-energy on the selected side. When both
+  <p>GHOST: Attach no electrode self-energy on the selected side. When both
 electrodes are GHOST, the input cluster is treated as an isolated system,
 similarly to the original GAUSSIAN03/09 calculation, with ANT.G convergence
 controls.</p>
-</div>
-Default: <span style="font-style: italic;">TYPE1 </span>= BETHE and <span
- style="font-style: italic;">TYPE2 = </span>BETHE<br>
-</div>
-<ol>
-  <li> <em>BLPAR1</em> and <em>BLPAR2</em> (string)<br>
-    <div style="text-align: justify;"> Parameters sets of the Bethe
+  <p>Default: TYPE1 = BETHE and TYPE2 = BETHE</p>
+</details>
+<details class="keyword" id="blpar1-and-blpar2">
+  <summary><em>BLPAR1 and BLPAR2</em> (string)</summary>
+  <p>Parameters sets of the Bethe
 lattice for the first and second electrode, respectively (see available
-options in files BLxxx.dat).<br>
-    </div>
-Default: <em>BLPAR1</em> = Papacon and <em>BLPAR2</em> = Papacon</li>
-  <br>
-  <li><em>OVERLAP</em> (real)<br>
-    <div style="text-align: justify;"> Factor by which the overlap
+options in files BLxxx.dat).</p>
+  <p>Default: BLPAR1 = Papacon and BLPAR2 = Papacon</p>
+</details>
+<details class="keyword" id="overlap">
+  <summary><em>OVERLAP</em> (real)</summary>
+  <p>Factor by which the overlap
 parameters of the Bethe lattice (when specified in the parameters set)
-are multiplied (0.0 =&lt; <em>OVERLAP</em> =&lt; 1.0).&nbsp; When set
+are multiplied (0.0 =&lt; OVERLAP =&lt; 1.0).  When set
 to a negative value, an automatic procedure to include the overlap
 (even if not specified in the parameters set) is used. This is the
-best option although it slows down the calculation with the PGI compiler. 
+best option although it slows down the calculation with the PGI compiler.
 Set it to 0.0 for faster calculations and compare. This
 parameter may need to be smaller than 1.0 to avoid unphysical density
 of states for the Bethe lattice when the overlap parameters are &gt;
-0.2.<br>
-    </div>
-Default: <span style="font-style: italic;">OVERLAP</span> = 0.0</li>
-  <br>
-  <li> <em>GLUE (real)</em></li>
-  <li style="text-align: justify;">Factor by which to multiply the
+0.2.</p>
+  <p>Default: OVERLAP = 0.0</p>
+</details>
+<details class="keyword" id="glue">
+  <summary><em>GLUE</em> (real)</summary>
+  <p>Factor by which to multiply the
 selfenergy. Useful to detach in a controled way the system from the
-Bethe lattice.<br>
-  </li>
-  <li>Default: <span style="font-style: italic;">GLUE</span> = 1.0</li>
-  <li><br>
-  </li>
-  <li><em>NEMBED1</em> and <em>NEMBED2</em> (integer)<br>
-    <div style="text-align: justify;"> Number of atoms to be connected
+Bethe lattice.</p>
+  <p>A value of 1 retains the model self-energy and 0 removes its contribution. Intermediate values are useful for exploring sensitivity to contact coupling. This changes the physical coupling; it is not an SCF damping parameter and should not be confused with ALPHA.</p>
+  <p>Default: GLUE = 1.0</p>
+</details>
+<details class="keyword" id="nembed1-and-nembed2">
+  <summary><em>NEMBED1 and NEMBED2</em> (integer)</summary>
+  <p>Number of atoms to be connected
 to a Bethe lattice branch. These atoms are not taken into account on
-computing the charge of the system when <span
- style="font-style: italic;">OVERLAP</span> &gt; 0.<br>
-    </div>
-    <div style="text-align: justify;"> 3D Default: <em>NEMBED1</em> =
-All atoms in the outermost plane of first electrode and <em>NEMBED2</em>
+computing the charge of the system when OVERLAP &gt; 0.</p>
+  <p>3D Default: NEMBED1 =
+All atoms in the outermost plane of first electrode and NEMBED2
 = All atoms in the outermost plane of second electrode (this is
-typically a good choice). 2D Default:&nbsp; <em>NEMBED1</em> = All
-atoms in the electrode 1 and <em>NEMBED2</em> = All atoms in electrode
+typically a good choice). 2D Default:  NEMBED1 = All
+atoms in the electrode 1 and NEMBED2 = All atoms in electrode
 2 (since you do probably not want this default, you should specify
-these).<br>
-    </div>
-  </li>
-</ol>
-<div style="margin-left: 40px;"><span style="font-style: italic;">NATOMEL1
-</span>and<span style="font-style: italic;"> NATOMEL2</span> (integer)<br>
-<div style="text-align: justify;"> Number of atoms in first and second
+these).</p>
+</details>
+<details class="keyword" id="natomel1-and-natomel2">
+  <summary><em>NATOMEL1 and NATOMEL2</em> (integer)</summary>
+  <p>Number of atoms in first and second
 electrode. Only useful when the system is composed of a single element
-or one wants to select especific regions for analysis.<br>
-</div>
-Default: <span style="font-style: italic;">NATOMEL1 = </span>Number
-of atoms in first metallic electrode and <br>
-<span style="font-style: italic;">NATOMEL2</span> = Number of atoms in
-second metallic electrode.<br>
-</div>
-<ol>
-</ol>
-<strong><br>
-Reinitialization options:</strong> <br>
-<ol>
-  <li style="text-align: justify;">When the file <span
- style="font-style: italic;">P.job_name.dat<big> </big></span><big>i<small>s
-presen</small></big><big><small>t</small></big>, the calculation is
-initialized from the density matrix stored in <em>P.job_name.dat</em>.
+or one wants to select especific regions for analysis.</p>
+  <p>These counts describe the complete explicit electrode regions, not just the boundary atoms attached to a Bethe lattice. For example, an explicit 20-atom tip can have NATOMEL = 20 but NEMBED = 10 when only its outermost ten-atom plane is attached. Keep the counts consistent with the coordinate ordering.</p>
+  <p>Default: NATOMEL1 = Number
+of atoms in first metallic electrode and</p>
+  <p>NATOMEL2 = Number of atoms in
+second metallic electrode.</p>
+</details>
+<h3>Reinitialization options:</h3>
+  <p>When the file P.job_name.dat is
+present, the calculation is
+initialized from the density matrix stored in P.job_name.dat.
 It
-is advisable to include the keyword <em>nodamp</em> in the SCF
-options of the GAUSSIAN03 input line "scf=(nodamp)" and <span
- style="font-weight: bold;">make sure</span> that the standard
+is advisable to include the keyword nodamp in the SCF
+options of the GAUSSIAN03 input line &quot;scf=(nodamp)&quot; and make sure that the standard
 orientation of the system is the same as the one of the density matrix
-stored in <i>P.job_name.dat</i>. You also need to add "nosymm"
-to the input file <i>job_name.com</i> as "scf(nodamp,nosymm)" if you
+stored in P.job_name.dat. You also need to add &quot;nosymm&quot;
+to the input file job_name.com as &quot;scf(nodamp,nosymm)&quot; if you
 want to start with an educated guess for magnetic systems with an
-unusual spin texture or apply a finite bias voltage. The "nosymm"
+unusual spin texture or apply a finite bias voltage. The &quot;nosymm&quot;
 keyword placed alone on the SCF
 especifications line (not in the scf brackets) is useful to prevent
 GAUSSIAN03/09 from rotating the system and is usually necessary for
 optimizations since GAUSSIAN03/09 likes to change the standard
-orientation from step to step.<br>
-  </li>
-  <li><em><br>
-    </em></li>
-  <em> </em>
-  <li><em>PFIX</em> (logical)</li>
-  <em> </em>
-  <li>When present, part of a previously computed density matrix can be
-used.</li>
-  <em> </em>
-  <li>Syntax:</li>
-  <em> </em>
-  <li style="font-style: italic;"><em>PFIX</em></li>
-  <em> </em>
-  <li style="font-style: italic;"><em>'P.old_job_name.dat'</em></li>
-  <em> </em>
-  <li style="text-align: justify;">where <span
- style="font-style: italic;">'<i>P.old_job_name.dat'</i></span> is the
+orientation from step to step.</p>
+<details class="keyword" id="pfix">
+  <summary><em>PFIX</em> (logical)</summary>
+  <p>When present, part of a previously computed density matrix can be
+used.</p>
+  <p>Syntax:</p>
+  <p>PFIX</p>
+  <p>&#x27;P.old_job_name.dat&#x27;</p>
+  <p>where &#x27;P.old_job_name.dat&#x27; is the
 file containing the density matrix you want to use. This is useful,
 .e.g., to change the basis set on a restricted set of atoms while
 preserving the convergency already achieved in the rest of the system
-(see <span style="font-style: italic;">NFIX</span>).</li>
-  <li>Default: .false. (no supplementary matrix provided).<br>
-  </li>
-  <li><br>
-  </li>
-  <span style="font-style: italic;">NFIX</span> (integer)<br>
-Number of atoms NOT to be touched when using PFIX. <br>
-Syntax:<br>
-  <span style="font-style: italic;">NFIX = N</span><br>
-#atom1, #atom2, ...<br>
-where the second line indicates the atoms to be preserved.<br>
-</ol>
-<strong>Bias and gate voltage related parameters:</strong>
-<ol>
-  <li><em>BIASVOLT</em> (real)<br>
-    <div style="text-align: justify;"> Bias voltage (in eV). It is
+(see NFIX).</p>
+  <p>Default: .false. (no supplementary matrix provided).</p>
+</details>
+<details class="keyword" id="nfix">
+  <summary><em>NFIX</em> (integer)</summary>
+  <p>Number of atoms NOT to be touched when using PFIX.</p>
+  <p>Syntax:</p>
+  <p>NFIX = N</p>
+  <p>#atom1, #atom2, ...</p>
+  <p>where the second line indicates the atoms to be preserved.</p>
+  <p>The atom numbers refer to the Gaussian input ordering. List exactly the stated number of atoms after NFIX = N. Check that the saved density uses compatible atom and basis ordering; preserving selected atoms does not make an incompatible density matrix transferable.</p>
+</details>
+<h3>Bias and gate voltage related parameters:</h3>
+<details class="keyword" id="biasvolt">
+  <summary><em>BIASVOLT</em> (real)</summary>
+  <p>Bias voltage (in eV). It is
 recommended to perfom first a calculation at zero bias and then
-reinitialize from <i>P.job_name.dat</i><em></em>. Succesive
+reinitialize from P.job_name.dat. Succesive
 calculations at different bias voltages can be perfomed starting from a
-previous calculation in the same way. You need to add "nosymm" to the
-SCF specifications line in&nbsp; the GAUSSIAN03 input file as
-"scf(nosymm)". The potential drop profile can be finally read from the
-file<i> V.job_name.dat</i> where the atom on-site energies (averaged
-to all orbitals in the atom) are stored. <br>
-    </div>
-Default: <em>BIASVOLT</em> = 0.0</li>
-  <br>
-  <li><em>QEXCESS</em> (real)<br>
-    <div style="text-align: justify;"> The effect of a gate voltage can be simulated
+previous calculation in the same way. You need to add &quot;nosymm&quot; to the
+SCF specifications line in  the GAUSSIAN03 input file as
+&quot;scf(nosymm)&quot;. The potential drop profile can be finally read from the
+file V.job_name.dat where the atom on-site energies (averaged
+to all orbitals in the atom) are stored.</p>
+  <p>Default: BIASVOLT = 0.0</p>
+</details>
+<details class="keyword" id="qexcess">
+  <summary><em>QEXCESS</em> (real)</summary>
+  <p>The effect of a gate voltage can be simulated
 through the addition of positive charges in the GAUSSIAN03/09 input file. To compensate
 and keep overall charge neutrality, an equal number of electrons should be added. This can be acomplished
 with this keyword. (Of course one is free to violate charge neutrality
 if physically required.) It overrules the initial charge given to GAUSSIAN03/09 through its input
-file, but it is recommended these two quantities to be equal for a more efficient calculation.<br>
-    </div>
-Default: <em>QEXCESS</em> = 0.0</li>
-</ol>
-<strong>Spin related parameters:</strong>
-<ol>
-  <li><em>SWOFFSPL</em> (real)<br>
-    <div style="text-align: justify;"> Convergence criterion for
+file, but it is recommended these two quantities to be equal for a more efficient calculation.</p>
+  <p>Default: QEXCESS = 0.0</p>
+</details>
+<h3>Spin related parameters:</h3>
+<details class="keyword" id="swoffspl">
+  <summary><em>SWOFFSPL</em> (real)</summary>
+  <p>Convergence criterion for
 switching off spin locking in a spin unrestricted calculation
 (default). Thus in a spin-unrestricted calculation the total spin of
 the device is kept fixed to the value $(M-1)/2$ given by the
 multiplicity $M$ in the GAUSSIAN03/09 input file until a certain
-convergence is reached: RMSDP &lt; <em>SWOFFSPL</em>. (See also
-NSPINLOCK below)<br>
-    </div>
-Advice: <em>SWOFFSPL</em> &lt; <em>SL</em> <br>
-Default: <em>SWOFFSPL</em> = 1.0D-3<br>
-  </li>
-  <em> <br>
-  </em>
-  <li><em>NSPINLOCK</em> (integer)<br>
-    <div style="text-align: justify;"> Number of steps with spin
-locking on. It supercedes the <em>SWOFFSPL</em> criterion&nbsp; when
-&gt;= 0 (see keyword <em>SWOFFSPL</em> above)<br>
-    </div>
-Default: <em>NSPINLOCK</em> = 0.</li>
-  <em> <br>
-  </em>
-  <li><em>UD, DU, DD </em>(logical)<br>
-    <div style="text-align: justify;"> Magnetization direction of the
-Bethe lattice electrodes when these are magnetic. U stands for&nbsp;
-"up" and and&nbsp; D for "down". Useful after editing the density
-matrix to create an educated guess for a new calculation.<br>
-    </div>
-Default: .false. (both electrodes "up").</li>
-  <em> <br>
-  </em>
-  <li> <em>MRSTART</em> (integer)<br>
-    <div style="text-align: justify;"> Useful to create an educated
+convergence is reached: RMSDP &lt; SWOFFSPL. (See also
+NSPINLOCK below)</p>
+  <p>Advice: SWOFFSPL &lt; SL</p>
+  <p>Default: SWOFFSPL = 1.0D-3</p>
+</details>
+<details class="keyword" id="nspinlock">
+  <summary><em>NSPINLOCK</em> (integer)</summary>
+  <p>Number of steps with spin
+locking on. It supercedes the SWOFFSPL criterion  when
+&gt;= 0 (see keyword SWOFFSPL above)</p>
+  <p>Default: NSPINLOCK = 0.</p>
+</details>
+<details class="keyword" id="ud-du-dd">
+  <summary><em>UD, DU, DD</em> (logical)</summary>
+  <p>Magnetization direction of the
+Bethe lattice electrodes when these are magnetic. U stands for
+&quot;up&quot; and and  D for &quot;down&quot;. Useful after editing the density
+matrix to create an educated guess for a new calculation.</p>
+  <p>Default: .false. (both electrodes &quot;up&quot;).</p>
+</details>
+<details class="keyword" id="mrstart">
+  <summary><em>MRSTART</em> (integer)</summary>
+  <p>Useful to create an educated
 guess for a new calculation with an unusual spin texture starting from
 a precomputed density matrix. In particular, it reverses the
-magnetization direction for all atoms with numbers &gt;= <em>MRSTART</em>.
+magnetization direction for all atoms with numbers &gt;= MRSTART.
 You
-need to add "nosymm" to the SCF specifications line in&nbsp; the
-GAUSSIAN03/09 input file as "scf(nosymm)".<br>
-    </div>
-Default: <em>MRSTART</em> = 0 (No effect).</li>
-  <em> <br>
-  </em>
-  <li><em>SPINEDIT</em> (logical) <br>
-    <div style="text-align: justify;"> Useful to create an educated
+need to add &quot;nosymm&quot; to the SCF specifications line in  the
+GAUSSIAN03/09 input file as &quot;scf(nosymm)&quot;.</p>
+  <p>Default: MRSTART = 0 (No effect).</p>
+</details>
+<details class="keyword" id="spinedit">
+  <summary><em>SPINEDIT</em> (logical)</summary>
+  <p>Useful to create an educated
 guess for a new calculation with an unusual spin texture starting from
 a precomputed density matrix. In particular, it manipulates the
 magnetization direction (spin) of individual atoms. You need to add
-"nosymm" to the SCF specifications line in&nbsp; the GAUSSIAN03/09
-input file as "scf(nosymm)".<br>
-    </div>
-Syntax: <br>
-    <em>SPINEDIT</em><br>
-#natoms<br>
-#atom1, #atomspin1, #atom2, #atomspin2, ...<br>
-    <div style="text-align: justify;"> where #natoms is the number of
+&quot;nosymm&quot; to the SCF specifications line in  the GAUSSIAN03/09
+input file as &quot;scf(nosymm)&quot;.</p>
+  <p>Syntax:</p>
+  <p>SPINEDIT</p>
+  <p>#natoms</p>
+  <p>#atom1, #atomspin1, #atom2, #atomspin2, ...</p>
+  <p>where #natoms is the number of
 atoms where the spin is altered. The list below gives the atom numbers
 and the atom spins for the atoms to be altered where the atom spin can
-either be maintained (1), reversed (-1), or erased (0). <br></div>
-Default: .false. (off) <br>
-  </li>
-<br>
-  <li><em>SOC</em> (logical)<br>
-    <div style="text-align: justify;"> Sets a post-SCF spin-orbit coupling calculation. The transmission, polarization, and DOS are computed adding SOC to 
-the solution converged in the absence of SOC.
-<br>
-    </div>
-Default: .false.<br>
-  </li>
-  <br>
-  <li><em>SCFSOC</em> (logical)<br>
-    <div style="text-align: justify;">  Sets a SCF spin-orbit coupling calculation. The SCF procedure itself includes SOC.
-<br>
-    </div>
-Default: .false.<br>
-  </li>
-  <br>
-  <li><em>SOC_FAC_P</em> (real)<br>
-    <div style="text-align: justify;"> Global SOC multiplicative factor for all p orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.
-<br>
-    </div>
-Default: 1.0 <br>
-  </li>
-  <br>
-  <li><em>SOC_FAC_D</em> (real)<br>
-    <div style="text-align: justify;"> Global SOC multiplicative factor for all d orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.
-<br>
-    </div>
-Default: 1.0 <br>
-  </li>
-  <br>
-  <li><em>SOC_FAC_F</em> (real)<br>
-    <div style="text-align: justify;"> Global SOC multiplicative factor for all f orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.
-<br>
-    </div>
-Default:  1.0 <br>
-  </li>
-  <br>
-  <li><em>RCUT</em> (real)<br>
-    <div style="text-align: justify;"> Global cutoff for Yukawa nuclear screened potential.
-<br>
-    </div>
-Default:  2.0 <br>
-  </li>
-  <br>
-  <li><em>SOCFACATOM</em>  <br><div style="text-align: justify;"> Atom-by-atom SOC multiplicative factor and cutoff radius.
-<br>
-    </div>
-    Syntax:  <br>
-    SOCFACATOM <br>
-    #atoms <br>
-    atom number, soc_fac_p, soc_fac_d, soc_fac_f, rcut
-     </li>
-   <br>
-  <li><em>SOC_VAL_P</em> (real)<br>
-    <div style="text-align: justify;"> Global SOC value for all p orbitals due to lack of nodal structure in the basis set. It uperseeds soc_fac_p if > 0.0.
-<br>
-    </div>
-Default: 0.0 <br>
-  </li>
-  <br>
-  <li><em>SOC_VAL_D</em> (real)<br>
-    <div style="text-align: justify;"> Global SOC value for all d orbitals due to lack of nodal structure in basis set. It uperseeds soc_fac_d if > 0.0.
-<br>
-    </div>
-Default: 1.0 <br>
-  </li>
-  <br>
-  <li><em>SOC_VAL_F</em> (real)<br>
-    <div style="text-align: justify;"> Global SOC value for all f orbitals due to lack of nodal structure in basis set. It uperseeds soc_fac_f if > 0.0.
-<br>
-    </div>
-Default:  0.0 <br>
-  </li>
-  <br>
-  <li><em>SOCVALATOM</em>  <br><div style="text-align: justify;"> Atom-by-atom SOC value and cutoff radius.
-<br>
-    </div>
-    Syntax:  <br>
-    SOCVALATOM <br>
-    #atoms <br>
-    atom number, soc_val_p, soc_val_d, soc_val_f, rcut
-     </li>
-   <br>
-
-</ol>
-<strong>Evaluation parameters</strong>
-<ol>
-  <em> </em>
-  <li> <em>ESTEP</em> (real)<br>
-Energy step (in eV) for printing out transmission and DOS.<br>
-Default: <em>ESTEP</em> = 1.0D-2</li>
-  <em> <br>
-  </em>
-  <li> <em>EW1</em> and <em>EW2</em> (real)<br>
-Define an energy window for printing out transmission and DOS.<br>
-Default: <em>EW1</em> = -3.0D0 and <em>EW2</em> = 3.0D0.</li>
-  <em> <br>
-DOSENERGY </em> (real)<br>
-Energy at which to evaluate the DOS projected on atoms when keyword MULLIKEN
-on.<br>
-Default: 0.0 (Fermi Energy).<br>
-  <br>
-  <li><em>LDOS_BEG</em> and <em>LDOS_END</em> (integer)<br>
-Atoms numbers onto which the local density of states is evaluated.<br>
-    <div style="text-align: justify;"> Default: <em>LDOS_BEG</em> = 1
-and <em>LDOS_END</em> = 0 (LDOS evaluation off).</div>
-  </li>
-  <em> <br>
-  </em>
-  <li> <em>NCHANNELS</em> (integer)<br>
-    <div style="text-align: justify;"> Number of eigenchannles to print
-out in <i>T.job_name.dat</i>. If <em>NCHANNELS</em> &gt; 0 then the
+either be maintained (1), reversed (-1), or erased (0).</p>
+  <p>Default: .false. (off)</p>
+</details>
+<details class="keyword" id="soc">
+  <summary><em>SOC</em> (logical)</summary>
+  <p>Sets a post-SCF spin-orbit coupling calculation. The transmission, polarization, and DOS are computed adding SOC to
+the solution converged in the absence of SOC.</p>
+  <p>This evaluates SOC effects using the density converged without SOC. It is useful for comparing transport with and without SOC on the same underlying scalar-relativistic SCF solution. Use SCFSOC when SOC must also feed back into the self-consistent density.</p>
+  <p>Default: .false.</p>
+</details>
+<details class="keyword" id="scfsoc">
+  <summary><em>SCFSOC</em> (logical)</summary>
+  <p>Sets a SCF spin-orbit coupling calculation. The SCF procedure itself includes SOC.</p>
+  <p>SOC participates in the SCF procedure rather than being added only when evaluating final spectra. This can change the converged density and magnetic state as well as transmission. Converge the SCF solution before comparing it with a post-SCF SOC calculation.</p>
+  <p>Default: .false.</p>
+</details>
+<details class="keyword" id="soc-fac-p">
+  <summary><em>SOC_FAC_P</em> (real)</summary>
+  <p>Global SOC multiplicative factor for all p orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
+  <p>This scales the calculated SOC integrals for the p shells globally. It does not change the basis functions or activate SOC by itself; request SOC or SCFSOC for the corresponding calculation. SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_P replaces the calculated shell coupling rather than scaling it.</p>
+  <p>Default: 1.0</p>
+</details>
+<details class="keyword" id="soc-fac-d">
+  <summary><em>SOC_FAC_D</em> (real)</summary>
+  <p>Global SOC multiplicative factor for all d orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
+  <p>This scales the calculated SOC integrals for the d shells globally. It does not change the basis functions or activate SOC by itself; request SOC or SCFSOC for the corresponding calculation. SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_D replaces the calculated shell coupling rather than scaling it.</p>
+  <p>Default: 1.0</p>
+</details>
+<details class="keyword" id="soc-fac-f">
+  <summary><em>SOC_FAC_F</em> (real)</summary>
+  <p>Global SOC multiplicative factor for all f orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
+  <p>This scales the calculated SOC integrals for the f shells globally. It does not change the basis functions or activate SOC by itself; request SOC or SCFSOC for the corresponding calculation. SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_F replaces the calculated shell coupling rather than scaling it.</p>
+  <p>Default: 1.0</p>
+</details>
+<details class="keyword" id="rcut">
+  <summary><em>RCUT</em> (real)</summary>
+  <p>Global cutoff for Yukawa nuclear screened potential.</p>
+  <p>This controls the screening model used when evaluating atomic SOC integrals. It changes the calculated SOC strength rather than setting a numerical quadrature accuracy. SOCFACATOM allows atom-specific cutoff values when different sites require different screening parameters.</p>
+  <p>Default: 2.0</p>
+</details>
+<details class="keyword" id="socfacatom">
+  <summary><em>SOCFACATOM</em></summary>
+  <p>Atom-by-atom SOC multiplicative factor and cutoff radius.</p>
+  <p>Syntax:</p>
+  <p>SOCFACATOM</p>
+  <p>#atoms</p>
+  <p>atom number, soc_fac_p, soc_fac_d, soc_fac_f, rcut</p>
+  <p>Place the number of selected atoms on the next line, followed by one record per atom: atom_index, p_factor, d_factor, f_factor, cutoff. Indices follow the Gaussian coordinate list. Unlisted atoms inherit the global factors and cutoff in effect when this block is read. Set global values before the atom-specific block.</p>
+</details>
+<details class="keyword" id="soc-val-p">
+  <summary><em>SOC_VAL_P</em> (real)</summary>
+  <p>Global SOC value for all p orbitals due to lack of nodal structure in the basis set. It uperseeds soc_fac_p if &gt; 0.0.</p>
+  <p>A positive value supplies the p-shell SOC coupling directly instead of using the screened integral and multiplicative factor. Leaving it at zero retains the integral-based treatment. SOCVALATOM supplies atom-specific shell values; use the same coupling convention when comparing calculations.</p>
+  <p>Default: 0.0</p>
+</details>
+<details class="keyword" id="soc-val-d">
+  <summary><em>SOC_VAL_D</em> (real)</summary>
+  <p>Global SOC value for all d orbitals due to lack of nodal structure in basis set. It uperseeds soc_fac_d if &gt; 0.0.</p>
+  <p>A positive value supplies the d-shell SOC coupling directly instead of using the screened integral and multiplicative factor. Leaving it at zero retains the integral-based treatment. SOCVALATOM supplies atom-specific shell values; use the same coupling convention when comparing calculations.</p>
+  <p>Default: 0.0</p>
+</details>
+<details class="keyword" id="soc-val-f">
+  <summary><em>SOC_VAL_F</em> (real)</summary>
+  <p>Global SOC value for all f orbitals due to lack of nodal structure in basis set. It uperseeds soc_fac_f if &gt; 0.0.</p>
+  <p>A positive value supplies the f-shell SOC coupling directly instead of using the screened integral and multiplicative factor. Leaving it at zero retains the integral-based treatment. SOCVALATOM supplies atom-specific shell values; use the same coupling convention when comparing calculations.</p>
+  <p>Default: 0.0</p>
+</details>
+<details class="keyword" id="socvalatom">
+  <summary><em>SOCVALATOM</em></summary>
+  <p>Atom-by-atom SOC value and cutoff radius.</p>
+  <p>Syntax:</p>
+  <p>SOCVALATOM</p>
+  <p>#atoms</p>
+  <p>atom number, soc_val_p, soc_val_d, soc_val_f</p>
+  <p>Place the atom count on the next line, followed by one record per selected atom: atom_index, p_value, d_value, f_value. Positive shell values replace the corresponding calculated SOC integrals. Unlisted atoms inherit the global SOC_VAL values in effect when the block is read. This input has no cutoff column; use SOCFACATOM for atom-specific cutoffs.</p>
+</details>
+<h3>Evaluation parameters</h3>
+<details class="keyword" id="estep">
+  <summary><em>ESTEP</em> (real)</summary>
+  <p>Energy step (in eV) for printing out transmission and DOS.</p>
+  <p>Choose an energy spacing fine enough to resolve the narrowest spectral features of interest. Reducing ESTEP increases the number of transmission/DOS evaluations and output size. It refines the output energy grid, not the contour integration used to obtain the SCF density.</p>
+  <p>Default: ESTEP = 1.0D-2</p>
+</details>
+<details class="keyword" id="ew1-and-ew2">
+  <summary><em>EW1 and EW2</em> (real)</summary>
+  <p>Define an energy window for printing out transmission and DOS.</p>
+  <p>The window endpoints are energies in eV relative to the calculation&#x27;s Fermi reference. Together with ESTEP they determine the sampled transmission/DOS grid. Changing the plotted window does not by itself improve SCF or charge-integration accuracy.</p>
+  <p>Default: EW1 = -3.0D0 and EW2 = 3.0D0.</p>
+</details>
+<details class="keyword" id="dosenergy">
+  <summary><em>DOSENERGY</em> (real)</summary>
+  <p>Energy at which to evaluate the DOS projected on atoms when keyword MULLIKEN
+on.</p>
+  <p>Select a single energy in eV relative to the Fermi reference for atom-projected DOS output associated with MULLIKEN. Use it to inspect which atoms contribute at a chosen spectral feature; ESTEP and EW1/EW2 instead control energy-resolved spectra.</p>
+  <p>Default: 0.0 (Fermi Energy).</p>
+</details>
+<details class="keyword" id="ldos">
+  <summary><em>LDOS</em> (logical)</summary>
+  <p>Enable energy-resolved local density of states for a selected range of
+atoms. Both LDOS_BEG and LDOS_END must be explicitly supplied. The endpoints
+are inclusive, refer to the Gaussian atom ordering, and must satisfy
+1 &lt;= LDOS_BEG &lt;= LDOS_END &lt;= number of atoms.</p>
+  <pre>LDOS
+LDOS_BEG = 1
+LDOS_END = 3</pre>
+  <p>The three lines can appear in any order. Bounds alone do not enable
+LDOS. With both electrodes present, local DOS is evaluated alongside
+transmission; with a GHOST electrode, it uses the standalone DOS path.
+The energy grid uses EW1, EW2 and ESTEP; output is DOS.job_name.dat.</p>
+  <p>Default: .false. (off).</p>
+</details>
+<details class="keyword" id="ldos-beg-and-ldos-end">
+  <summary><em>LDOS_BEG and LDOS_END</em> (integer)</summary>
+  <p>First and last atoms of the inclusive local-DOS range. Both must be
+explicitly specified when LDOS is enabled; neither bound enables output by itself.</p>
+  <p>The bounds select a range of atom indices in the Gaussian coordinate ordering. Use a small region to inspect the contact or molecule without output for the full cluster. Check atom numbering after changing the geometry; local DOS remains disabled unless LDOS is present.</p>
+  <p>Default: LDOS_BEG = 1
+and LDOS_END = 0 (LDOS evaluation off).</p>
+</details>
+<details class="keyword" id="nchannels">
+  <summary><em>NCHANNELS</em> (integer)</summary>
+  <p>Number of eigenchannles to print
+out in T.job_name.dat. If NCHANNELS &gt; 0 then the
 tranmission matrix (calculated in the non-hermitian or hermitian form,
-see keyword <em>HTRANSM</em>) is diagonalized and the <em>NCHANNELS</em>
-largest eigenvalues (i.e. the eigenchannel transmissions) are printed.<br>
-    </div>
-Default: <em>NCHANNELS</em> = 0 (eigenchannel calculation off).</li>
-  <em> <br>
-  </em>
-  <li><em>LEADDOS</em> (logical)<br>
-    <div style="text-align: justify;"> Prints out the DOS of the Bethe
-lattice. Output files: Lead1DOS.dat, Lead2DOS.dat<br>
-    </div>
-Default: .false. (off).</li>
-  <em> <br>
-  </em>
-  <li><em>HTRANSM</em> (logical)<br>
-    <div style="text-align: justify;"> Compute Transmision matrix in
+see keyword HTRANSM) is diagonalized and the NCHANNELS
+largest eigenvalues (i.e. the eigenchannel transmissions) are printed.</p>
+  <p>Default: NCHANNELS = 0 (eigenchannel calculation off).</p>
+</details>
+<details class="keyword" id="leaddos">
+  <summary><em>LEADDOS</em> (logical)</summary>
+  <p>Prints out the DOS of the Bethe
+lattice. Output files: Lead1DOS.dat, Lead2DOS.dat</p>
+  <p>The output also supports periodic 1D leads. It reports bulk-lead DOS, not the local DOS of atoms in the finite device. These files are useful for identifying lead bands and spectral features before interpreting transmission. Enabling the output adds Green-function evaluations and can noticeably increase runtime.</p>
+  <p>Default: .false. (off).</p>
+</details>
+<details class="keyword" id="htransm">
+  <summary><em>HTRANSM</em> (logical)</summary>
+  <p>Compute Transmision matrix in
 hermitian form T = \Gamma_L^{1/2} G^\dagger \Gamma_R G \Gamma_L^{1/2}.
 The default is the easier non-hermitian form \Gamma_L G^\dagger
 \Gamma_R G which is considerably faster for large clusters. The
-diagonalization of both forms yield the same eigenvalues.<br>
-    </div>
-Default: .false. (transmission matrix in non-hermitian form).</li>
-  <em> <br>
-  </em>
-  <li><em>RTM_BEG</em> and <em>RTM_END</em> (integer)<br>
-    <div style="text-align: justify;"> Perform eigenchannel analysis
-with reduced transmission matrix [see PRB <strong>73</strong>, 075429
-(2006)] on atoms from atom <em>RTM_BEG</em> to atom <em>RTM_END</em>
-Default: <em>RTM_BEG</em> = 1 and <em>RTM_END</em> = 0 (eigenchannel
-analysis off).</div>
-  </li><br>
-<li>
- <i>MULLIKEN</i> (logical)<br>
-<div style="text-align: justify;">Dumps the Mulliken population analysis
-in the file <span style="font-style: italic;">Q.job_name.dat</span>.
+diagonalization of both forms yield the same eigenvalues.</p>
+  <p>Default: .false. (transmission matrix in non-hermitian form).</p>
+</details>
+<details class="keyword" id="rtm-beg-and-rtm-end">
+  <summary><em>RTM_BEG and RTM_END</em> (integer)</summary>
+  <p>Perform eigenchannel analysis
+with reduced transmission matrix [see PRB
+73
+, 075429
+(2006)] on atoms from atom RTM_BEG to atom RTM_END
+Default: RTM_BEG = 1 and RTM_END = 0 (eigenchannel
+analysis off).</p>
+</details>
+<details class="keyword" id="mulliken">
+  <summary><em>MULLIKEN</em> (logical)</summary>
+  <p>Dumps the Mulliken population analysis
+in the file Q.job_name.dat.
 The
 DOS projected on atoms at the Fermi energy (or at the energy
-selected by DOSENERGY) is also dumped when<span
- style="font-style: italic;"> LDOS_BEG &lt; LDOS_END</span>.<br>
-</div>
-<div style="text-align: justify;">Default: .false. (not print).<br>
-<br></li>
-<li>
-<span style="font-style: italic;">ANT1D</span> (logical)<br>
-<div style="text-align: justify;"> Requests to write all the necessary input files to be used with the <a
- href="ant_1D.html">ANT1D transport program</a>. <br>
-</div>
-</li>
-</ol>
-<br>
-<b>Options for electronic correlations </b>
-<ol>
-<div style="text-align: justify;">
-<span style="font-style: italic;">CORRBLOCKS</span><br>
-<div style="text-align: justify;">This keyword specifies a block of
+selected by DOSENERGY) is also dumped when LDOS is enabled.</p>
+  <p>Default: .false. (not print).</p>
+</details>
+<details class="keyword" id="ant1d">
+  <summary><em>ANT1D</em> (logical)</summary>
+  <p>Requests to write all the necessary input files to be used with the <a href="ant_1D.html">ANT1D transport program</a>.</p>
+  <p>This exports data for a separate ANT1D workflow. It is not the switch that attaches periodic 1D electrodes during an ANT.G calculation: use TYPE1 = 1DLEAD and TYPE2 = 1DLEAD with NATPC1/2 for that purpose.</p>
+</details>
+<h3>Options for electronic correlations</h3>
+<details class="keyword" id="corrblocks">
+  <summary><em>CORRBLOCKS</em></summary>
+  <p>This keyword specifies a block of
 atomic orbitals (usually a d- or f-shell of an atom) for further
-treatment beyond DFT taking into account local electronic correlations.
-<br>
-</div>
-Syntax:<br>
-&lt;num_corrblocks&gt;<br>
-&lt;ao_beg&gt; &lt;ao_end&gt; &lt;U&gt; &lt;J&gt;<br>
-...<br>
-<div style="text-align: justify;">where &lt;num_corrblocks&gt; is the
+treatment beyond DFT taking into account local electronic correlations.</p>
+  <p>Syntax:</p>
+  <p>&lt;num_corrblocks&gt;</p>
+  <p>&lt;ao_beg&gt; &lt;ao_end&gt; &lt;U&gt; &lt;J&gt;</p>
+  <p>...</p>
+  <p>where &lt;num_corrblocks&gt; is the
 number of correlated blocks within the device region. For each
-correlated block a line "&lt;ao_beg&gt; &lt;ao_end&gt; &lt;U&gt;
-&lt;J&gt;" has to be specified where &lt;ao_beg&gt; ist the number of
+correlated block a line &quot;&lt;ao_beg&gt; &lt;ao_end&gt; &lt;U&gt;
+&lt;J&gt;&quot; has to be specified where &lt;ao_beg&gt; ist the number of
 the first atomic orbital and &lt;ao_end&gt; is the last atomic orbital
 of the correlated block. &lt;U&gt; is the direct Coulomb repulsion and
-&lt;J&gt; Hund's rule coupling for the correlated block.<br>
-</div>
-<br>
-<span style="font-style: italic;">DFT+U</span> (logical)<br>
-<div style="text-align: justify;">Requests a DFT+U calculation where a
+&lt;J&gt; Hund&#x27;s rule coupling for the correlated block.</p>
+</details>
+<details class="keyword" id="dft-u">
+  <summary><em>DFT+U</em> (logical)</summary>
+  <p>Requests a DFT+U calculation where a
 Hubbard interaction term (U and J) is put onto each correlated block
-which is treated within Hartree-Fock.<br>
-</div>
-<br>
-<span style="font-style: italic;">HYBFUNC</span> (logical)<br>
-<div style="text-align: justify;">Requests the calculation of the
+which is treated within Hartree-Fock.</p>
+  <p>Define the correlated orbital blocks and their U and J values with CORRBLOCKS. The correction acts on the selected subspaces, so verify the orbital indices and monitor their occupations during self-consistency. Different choices of correlated subspace can change the resulting solution.</p>
+</details>
+<details class="keyword" id="hybfunc">
+  <summary><em>HYBFUNC</em> (logical)</summary>
+  <p>Requests the calculation of the
 hybridization function for each correlated block which serves as an
-input for an impurity solver calculation. A mesh file "mesh.dat" needs
+input for an impurity solver calculation. A mesh file &quot;mesh.dat&quot; needs
 to be present specifiying the energy points for which to calculate the
-hybridization function.<br>
-</div>
-<br>
-<span style="font-style: italic;">PORTHO</span> (logical)<br>
-<div style="text-align: justify;">Requests to perform a "projective
-orthogonalization" prior to calculation of the hybridization function.
+hybridization function.</p>
+  <p>First define the correlated blocks with CORRBLOCKS and provide mesh.dat in the working directory. The hybridization describes coupling of each selected subspace to its environment and can be passed to an impurity solver; requesting this output does not itself run such a solver.</p>
+</details>
+<details class="keyword" id="portho">
+  <summary><em>PORTHO</em> (logical)</summary>
+  <p>Requests to perform a &quot;projective
+orthogonalization&quot; prior to calculation of the hybridization function.
 Thereby the device region is orthogonalized in a Gram-Schmidt like
 manner that preserves the original correlated subspace composed of all
-correlated blocks.<br>
-<br>
-<span style="font-style: italic;">DIAGCORRBL</span> (logical)<br>
-Prior to calculation of the hybridization function the Hamiltonian of
+correlated blocks.</p>
+  <p>This is useful when separating correlated orbitals from the rest of a nonorthogonal atomic basis for hybridization analysis. Apply the same subspace and orthogonalization convention when comparing impurity-model inputs across calculations.</p>
+</details>
+<details class="keyword" id="diagcorrbl">
+  <summary><em>DIAGCORRBL</em> (logical)</summary>
+  <p>Prior to calculation of the hybridization function the Hamiltonian of
 each correlated subspace is diagonalized. This is useful in case of
 strong crystal-field splitting leading to large off-diagonal elements
 in the hybridization function. Using this option the crystal-field
@@ -666,10 +682,8 @@ basis is found, and hence off-diagonal elements of the hybridization
 function are minimized. This option is also useful in case that the
 correlated subspace is described by more than one set of orbitals (e.g.
 double-zeta basis). In this case, the diagonalization yields the
-low-energy subspace of the correlated shell.<br>
-</div>
-<br>
-</div>
+low-energy subspace of the correlated shell.</p>
+</details>
 <div class="cleaner"><em> &nbsp;</em></div>
 </div>
 <!-- This template ist Open Source as long as the footer links to the authors are included ! -->

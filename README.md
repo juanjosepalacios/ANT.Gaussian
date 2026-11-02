@@ -11,9 +11,11 @@ calculation results. Build-time Git metadata is not yet embedded in the binary.
 
 ## Periodic 1D leads in 2.8.4
 
-Fermi searches use safeguarded Brent iteration, independent warm brackets
-for each lead, and a lower-bound seed from repeated-supercell generalized
-eigenvalues. Parallel charge integration rejects unconverged results.
+Fermi levels are found exclusively by periodic band filling, independently
+for each lead. Parallel generalized Bloch diagonalizations include every
+coupling through NPC. ETA-broadened occupations and k-mesh refinement must
+satisfy both CHARGEACC and FERMIACC. No lead charge-contour or lower-bound
+search is performed; no LEADBANDS switch is required.
 
 For 1D leads, NATPC1 and NATPC2 specify atoms in the chosen repeated unit.
 With NPC=1, this unit must be large enough that hopping and overlap to
@@ -31,7 +33,12 @@ FERMIACC (eV) and CHARGEACC (electrons per primitive cell for 1D leads)
 have input defaults of 1.0d-5. SCF accuracy adaptation can loosen these
 targets; FULLACC retains input accuracy from the first cycle.
 
-See [Brent search](BRENT.md), [warm brackets](WARM_START.md),
+The device Fermi search uses [safeguarded Brent iteration](BRENT.md),
+with a final charge check and density evaluation at the accepted root.
+
+For an opt-in integration alternative, see [adaptive contour quadrature](ADAPTIVE_QUADRATURE.md).
+
+See [band filling](BAND_FERMI.md),
 [Dyson mixing benchmarks](DYSON_MIXING.md) and
 [the keyword reference](doc/keywords.txt). Historical release notes follow.
 

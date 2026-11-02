@@ -1,3 +1,6 @@
+> Historical method: 1D lead Fermi searches now use mandatory band filling.
+> See [BAND_FERMI.md](BAND_FERMI.md).
+
 # Per-electrode warm-start Fermi brackets
 
 Included in master for 2.8.4 (implementation commit 55f3fe2).

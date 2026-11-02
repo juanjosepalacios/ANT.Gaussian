@@ -37,7 +37,7 @@
 !* Interface subroutine with Gaussian                                                                                 *
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
-  USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg,LDOS_End
+  USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg, LDOSOutput,LDOS_End
   USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
   USE constants, ONLY: Hart
   USE preproc
@@ -194,7 +194,7 @@
      IF (RedTransmB < RedTransmE) OPEN(ifu_red,file='t.'//trim(jobname)//'.dat',status='unknown')
      IF (Hamilton) OPEN(ifu_ham,file='V.'//trim(jobname)//'.dat',status='unknown')
      IF (Mulliken) OPEN(ifu_mul,file='Q.'//trim(jobname)//'.dat',status='unknown')
-     IF (LDOS_Beg <= LDOS_End) OPEN(ifu_dos,file='DOS.'//trim(jobname)//'.dat',status='unknown')
+     IF (LDOSOutput) OPEN(ifu_dos,file='DOS.'//trim(jobname)//'.dat',status='unknown')
 
      ! Creating density matrix file name
      densitymatrix='P.' // trim(jobname) // '.dat'

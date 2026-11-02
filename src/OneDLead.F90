@@ -113,14 +113,6 @@
  
   real(double)    :: ChargeOffset 
   integer :: WhichLead
-  integer :: FermiEvaluations=0
-  ! Independent guesses in the unshifted Hamiltonian reference, per electrode.
-  ! Preserve across CleanUp1DLead during SCF; never retain old charge values.
-  real(double) :: WarmLeadFermi(2)=0d0
-  logical :: WarmLeadFermiValid(2)=.false.
-  ! Initial search half-width (eV), a heuristic rather than a convergence tolerance.
-  real(double), parameter :: WarmFermiHalfWidth=0.25d0
- 
   !eXtended supercell matrices 
   integer :: NXAO, NXDim, NXSpin
   complex(double), dimension(:,:,:), allocatable :: HX
@@ -163,17 +155,9 @@ contains
    ! in order to compute charge and DOS in the case of 
    ! non-orthogonal basis set
    !
-    ! Seed the search independently from this lead's repeated supercell.
-    call SetInitialLeadLowerBound(Lead1D(ilead))
-    call CreateXSC( Lead1D(ilead) )
-   !
-   ! If no Energy boundaries have been defined in input find them
-   !
-    call FindEBounds( Lead1D(ilead) )
-   !
-   ! Find Fermi level of lead if requested
-   !
-    call FindFermi( Lead1D(ilead) )
+    ! Periodic band filling is the sole lead Fermi-level search.
+    call FindBandFermi(Lead1D(ilead))
+    call CreateXSC(Lead1D(ilead))
    !
    ! Shift Hamiltonian to adjust Fermi level to zero
    !
@@ -817,7 +801,7 @@ contains
     call CompGreensFuncWorkspace(L1D, spin, z, GX)
   end subroutine CompGreensFunc
 
-  recursive subroutine CompGreensFuncWorkspace( L1D, spin, z, green )
+  recursive subroutine CompGreensFuncWorkspace( L1D, spin, z, green, inversion_status )
     use parameters, only: eta
     use numeric, only: CInv
     use constants, only: ui
@@ -825,6 +809,7 @@ contains
 
     type(T1DLead), intent(in) :: L1D
     integer,intent(in) :: spin
+    integer,intent(out),optional :: inversion_status
     complex(double), intent(in) :: z
     integer :: i, j, ispin, iinv
     complex(double), intent(out) :: green(NXDim,NXDim)
@@ -845,6 +830,7 @@ contains
     end do
 
     iinv = CInv( green )
+    if(present(inversion_status)) inversion_status=iinv
   end subroutine CompGreensFuncWorkspace
 
   !****************************** 
@@ -884,18 +870,27 @@ contains
   !*** Total charge up to energy E         ***
   !*** up to Energy E, lower bound is EMin ***
   !*******************************************
-  recursive real(double) function ChargePoint1D(spin, phi, E0, R) result(qj)
+  recursive real(double) function ChargePoint1D(spin, phi, E0, R, point_status) result(qj)
     use constants, only: ui, d_pi
     implicit none
     integer, intent(in) :: spin
+    integer, intent(out),optional :: point_status
     real(double), intent(in) :: phi, E0, R
     complex(double) :: z, green(NXDim,NXDim)
-    integer :: k, l, NAO, NPCAO
+    integer :: k, l, NAO, NPCAO,info
 
     NAO = Lead1D(WhichLead)%NAOrbs
     NPCAO = Lead1D(WhichLead)%NPCAO
     z = E0 - R*(cos(phi) - ui*sin(phi))
-    call CompGreensFuncWorkspace(Lead1D(WhichLead), spin, z, green)
+    call CompGreensFuncWorkspace(Lead1D(WhichLead), spin, z, green,info)
+    if(present(point_status)) point_status=info
+    if(info/=0) then
+       if(.not.present(point_status)) then
+          print *, 'ERROR: lead Green-function inversion failed',info
+          stop 1
+       end if
+       qj=0d0;return
+    end if
     qj = d_zero
     do k=NAO+1,NAO+NPCAO
        do l=1,NXAO
@@ -904,8 +899,48 @@ contains
     end do
   end function ChargePoint1D
 
-  recursive real(double) function TotCharge( E )
-    use parameters, only: ChargeAcc, Infty
+  recursive subroutine AdaptiveLeadCharge(E0,R,accuracy,q,error,status,evaluations)
+    use numeric, only: AdaptiveGK15
+    use constants, only: d_pi
+    use omp_lib
+    implicit none
+    real*8,intent(in) :: E0,R,accuracy
+    real*8,intent(out) :: q,error
+    integer,intent(out) :: status,evaluations
+    real*8 :: result(1),tolerances(1),ratio
+    integer :: panels
+    tolerances=accuracy
+    call AdaptiveGK15(AdaptiveLeadBatch,1,0d0,d_pi,tolerances,result,ratio,evaluations,panels,status,(/E0,R/))
+    q=result(1);error=ratio*accuracy
+  end subroutine AdaptiveLeadCharge
+
+  recursive subroutine AdaptiveLeadBatch(ncomp,npoint,x,y,info,context)
+      use omp_lib
+      integer,intent(in) :: ncomp,npoint
+      real*8,intent(in) :: x(npoint),context(:)
+      real*8,intent(out) :: y(ncomp,npoint)
+      integer,intent(out) :: info
+      integer :: j,spin,node_info,point_status(npoint)
+      real*8 :: E0,R,value
+      E0=context(1);R=context(2)
+      info=0
+!$omp parallel do default(shared) private(j,spin,node_info,value) if(.not.omp_in_parallel()) schedule(static)
+      do j=1,npoint
+         y(1,j)=0d0;point_status(j)=0
+         do spin=1,NXSpin
+            value=ChargePoint1D(spin,x(j),E0,R,node_info)
+            if(node_info/=0) point_status(j)=node_info
+            y(1,j)=y(1,j)+value
+         end do
+         if(NXSpin==1) y(1,j)=2d0*y(1,j)
+      end do
+!$omp end parallel do
+      if(any(point_status/=0)) info=1
+  end subroutine AdaptiveLeadBatch
+
+
+  recursive real(double) function TotCharge( E, accuracy, error_estimate, status )
+    use parameters, only: ChargeAcc, Infty, AdaptiveQuad
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 !$  use omp_lib, only: omp_in_parallel
     use numeric, only: gauleg 
@@ -913,6 +948,10 @@ contains
     implicit none
     
     real(double), intent(in) :: E
+    real(double), intent(in), optional :: accuracy
+    real(double), intent(out), optional :: error_estimate
+    integer, intent(out), optional :: status
+    real(double) :: tolerance,quadrature_error
     real(double) :: EMin
 
     integer, parameter :: nmax = 2047
@@ -923,14 +962,22 @@ contains
    !integer, parameter :: nmax = 63
     
     real(double) :: q,qq, E0, R
-    integer :: n, j, ispin
+    integer :: n, j, ispin, adaptive_status, evaluations
     real(double), dimension(nmax) :: x, w, contribution
     logical :: parallel_charge
 
 
 
-    if (.not.ieee_is_finite(ChargeAcc) .or. ChargeAcc<=0d0) then
+    tolerance=ChargeAcc
+    if(present(accuracy)) tolerance=accuracy
+    if(present(status)) status=0
+    if(present(error_estimate)) error_estimate=huge(0d0)
+    TotCharge=0d0
+    if (.not.ieee_is_finite(tolerance) .or. tolerance<=0d0) then
        print *, "ERROR: CHARGEACC must be finite and positive for 1D charge integration"
+       if(present(status)) then
+          status=1;return
+       end if
        stop 1
     end if
     EMin = Lead1D(WhichLead)%EMin
@@ -944,6 +991,21 @@ contains
        E0 = 0.5*(E + EMin)
        R  = 0.5*(E - EMin)
     end if 
+    if(AdaptiveQuad) then
+       call AdaptiveLeadCharge(E0,R,tolerance,q,quadrature_error,adaptive_status,evaluations)
+       if(present(error_estimate)) error_estimate=quadrature_error
+       if(adaptive_status/=0) then
+          if(present(status)) then
+             status=2;return
+          end if
+          print *, 'ERROR: adaptive lead quadrature failed, status/evaluations=',adaptive_status,evaluations
+          stop 1
+       end if
+       TotCharge=q-ChargeOffset
+       print '(A,I6,A,ES12.4)', 'Adaptive lead quadrature evaluations: ',evaluations, &
+            ' estimated charge error: ',quadrature_error
+       return
+    end if
     !
     ! Computing integral of Green's function
     ! over complex contour using Gauss-Legendre 
@@ -972,12 +1034,24 @@ contains
       !if( NXSpin == 1 .and. .not. SOC ) q = q*2.0d0
        if( NXSpin == 1 ) q = q*2.0d0
       !print *, n, q
-       if( n > 1 .and. abs(q-qq) < ChargeAcc ) exit
+       quadrature_error=abs(q-qq)
+       if (.not.ieee_is_finite(q).or..not.ieee_is_finite(quadrature_error)) then
+          if(present(status)) then
+             status=3;return
+          end if
+          print *, 'ERROR: nonfinite lead charge integral'
+          stop 1
+       end if
+       if(present(error_estimate)) error_estimate=quadrature_error
+       if( n > 1 .and. quadrature_error < tolerance ) exit
        n = 2*n+1
        if( n > nmax )then
           print '(A,I5,A)', "WARNING: TotCharge/gaussian quadrature has not converged after", nmax , " steps."
           print *, "E = ", E
           print *, "Error = ", abs(q-qq)
+          if(present(status)) then
+             status=2;return
+          end if
           stop 1
        end if
        qq = q
@@ -989,222 +1063,147 @@ contains
   end function TotCharge
 
 
-  !*****************************************************
-  !*** Find upper and lower energy bounds for a lead ***
-  !*** such that non-zero DOS lies completely inside ***
-  !*****************************************************
-  ! Generalized isolated-supercell spectrum H0*c = e*S0*c. This provides
-  ! a starting estimate, not a guaranteed lower edge of the periodic spectrum.
-  ! FindEBounds must still verify the integrated spectral weight below it.
-  subroutine SetInitialLeadLowerBound(L1D)
+  ! Bloch matrices use every stored neighbour block of the chosen unit cell.
+  subroutine LeadBandPoint(L1D,k,energies,info,min_overlap)
     use numeric, only: CHDiag
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
-    type(T1DLead), intent(inout) :: L1D
-    complex(double) :: overlap(L1D%NAOrbs,L1D%NAOrbs)
-    complex(double) :: transform(L1D%NAOrbs,L1D%NAOrbs)
-    complex(double) :: hcell(L1D%NAOrbs,L1D%NAOrbs)
-    complex(double) :: horth(L1D%NAOrbs,L1D%NAOrbs)
-    real(double) :: seval(L1D%NAOrbs),eval(L1D%NAOrbs),lowest
-    integer :: n,i,j,spin,info
-
-    n=L1D%NAOrbs
-    if (n<1 .or. L1D%NSpin<1) then
-       print *, 'ERROR: invalid lead supercell dimensions',L1D%LeadNo
-       stop 1
-    end if
-    do j=1,n
-       do i=1,n
-          overlap(i,j)=L1D_S0(L1D,i,j)
-       end do
+    type(T1DLead),intent(in) :: L1D
+    real(double),intent(in) :: k
+    real(double),intent(out) :: energies(L1D%NPCAO,L1D%NSpin)
+    integer,intent(out) :: info
+    real(double),optional,intent(out) :: min_overlap
+    complex(double) :: sk(L1D%NPCAO,L1D%NPCAO),hk(L1D%NPCAO,L1D%NPCAO)
+    complex(double) :: t(L1D%NPCAO,L1D%NPCAO),phase
+    real(double) :: se(L1D%NPCAO)
+    integer :: r,j,spin
+    sk=L1D%sn(0,:,:)
+    do r=1,L1D%NPC
+       phase=cmplx(cos(r*k),sin(r*k),kind=double)
+       sk=sk+phase*L1D%sn(r,:,:)+conjg(phase)*conjg(transpose(L1D%sn(r,:,:)))
     end do
-    call CHDiag(overlap,seval,info)
-    if (info/=0) then
-       print *, 'ERROR: lead overlap diagonalization failed',L1D%LeadNo,info
-       stop 1
+    call CHDiag(sk,se,info)
+    if(info/=0) return
+    if(.not.all(ieee_is_finite(se))) then
+       info=-1;return
     end if
-    if (.not.all(ieee_is_finite(seval))) then
-       print *, 'ERROR: nonfinite lead overlap eigenvalues',L1D%LeadNo
-       stop 1
+    if(present(min_overlap)) min_overlap=minval(se)
+    if(any(se<=0d0)) then
+       info=-2;return
     end if
-    if (any(seval<=0d0)) then
-       print *, 'ERROR: lead supercell overlap is not positive definite',L1D%LeadNo,minval(seval)
-       stop 1
-    end if
-    do j=1,n
-       transform(:,j)=overlap(:,j)/sqrt(seval(j))
+    do j=1,L1D%NPCAO
+       t(:,j)=sk(:,j)/sqrt(se(j))
     end do
-    lowest=huge(0d0)
     do spin=1,L1D%NSpin
-       do j=1,n
-          do i=1,n
-             hcell(i,j)=L1D_H0(L1D,spin,i,spin,j)
-          end do
+       hk=L1D%vn(spin,spin,0,:,:)
+       do r=1,L1D%NPC
+          phase=cmplx(cos(r*k),sin(r*k),kind=double)
+          hk=hk+phase*L1D%vn(spin,spin,r,:,:)+ &
+               conjg(phase)*conjg(transpose(L1D%vn(spin,spin,r,:,:)))
        end do
-       horth=matmul(conjg(transpose(transform)),matmul(hcell,transform))
-       call CHDiag(horth,eval,info)
-       if (info/=0) then
-          print *, 'ERROR: lead supercell diagonalization failed',L1D%LeadNo,spin,info
-          stop 1
-       end if
-       if (.not.all(ieee_is_finite(eval))) then
-          print *, 'ERROR: nonfinite lead supercell eigenvalues',L1D%LeadNo,spin
-          stop 1
-       end if
-       if (eval(1)<lowest) lowest=eval(1)
+       hk=matmul(conjg(transpose(t)),matmul(hk,t))
+       call CHDiag(hk,energies(:,spin),info)
+       if(info/=0) return
     end do
-    L1D%EMin=lowest
-    print '(A,I2,A,I6,A,F16.8)', 'Initial lower bound, lead ',L1D%LeadNo, &
-          ' supercell orbitals ',n,' lowest eigenvalue (eV): ',lowest
-    call flush(6)
-  end subroutine SetInitialLeadLowerBound
+    if(.not.all(ieee_is_finite(energies))) info=-3
+  end subroutine LeadBandPoint
 
-  subroutine FindEBounds( L1D )
-    use parameters, only: ChargeAcc, FermiAcc, Infty
+  real(double) function BandPopulation(energies,mu,width,degeneracy) result(q)
     implicit none
+    real(double),intent(in) :: energies(:,:,:),mu,width,degeneracy
+    real(double) :: pi
+    pi=acos(-1d0)
+    ! Exact integral of each ETA-broadened pole from minus infinity to mu.
+    q=degeneracy*sum(0.5d0+atan((mu-energies)/width)/pi)/size(energies,2)
+  end function BandPopulation
 
-    type(T1DLead), intent(inout) :: L1D
+  subroutine BandSearchFailure(message)
+    character(*),intent(in) :: message
+    print *, 'ERROR: ',message
+    call flush(6)
+    stop 1
+  end subroutine BandSearchFailure
 
-    real(double)    :: Q, qmax,lower_step
-    
-    qmax = 2.0d0*L1D%NPCAO
-   !qmax = 2.0d0*(NXAO-(L1D%NPCAO*2))
-
-    ChargeOffSet = d_zero
-    WhichLead = L1D%LeadNo
-    
-    ! 1. Decrease EMin until charge integration becomes zero
-    !
-    ! Retain geometric downward expansion, including zero/positive seeds.
-    lower_step=abs(L1D%EMin)
-    if (lower_step<1d0) lower_step=1d0
-    if (L1D%EMin < -Infty) then
-       print *, 'ERROR: initial lower bound is below -INFTY',L1D%EMin
-       stop 1
-    end if
-    print '(A)', "Searching optimum Emin such that DOS integrates to zero ..."
-    do
-       Q = TotCharge( L1D%EMin )
-       print *, "EMin = ", L1D%EMin, Q
-       call FLUSH(6)
-       if( abs(Q) < ChargeAcc ) exit
-       L1D%EMin = L1D%EMin - lower_step
-       lower_step=2d0*lower_step
-       if (L1D%EMin < -Infty) then
-           print*,'Warning: Emin < -Infty. Decrease this value'
-           stop 1
-       end if
-    end do
-    !
-    ! 1. Increase EMax from default until charge integration becomes number of spin orbitals
-    !
-    print '(A)', "Searching optimum EMax such that the DOS integrates to the total spectral weight in the unit cell ..."
-    do 
-       Q = TotCharge( L1D%EMax )
-       print *, "EMax = ", L1D%EMax, Q
-       call FLUSH(6)
-       if( abs(Q - qmax ) < ChargeAcc ) exit
-       L1D%EMax = L1D%EMax + L1D%EMax
-    end do
-    !
-    ! 2. Try to decrease EMax if possible 
-    !
-!   if( L1D%EMax == 0.0d0 )then
-!      EStep = 1.0d0
-!      do 
-!         L1D%EMax = L1D%EMax - EStep
-!         if( L1D%EMax < -Infty )exit
-!         Q = TotCharge( L1D%EMax )
-!         print *, "EMax = ", L1D%EMax, Q
-!         call FLUSH(6)
-!         if( abs(Q - qmax) >  ChargeAcc ) exit
-!         EStep = 2.0d0*EStep +1.0d0
-!      end do
-!      L1D%EMax = L1D%EMax + EStep
-!   end if
-    !
-    print *, "EMin=", L1D%EMin, "  EMax=", L1D%EMax
-    call FLUSH(6)
-  end subroutine FindEBounds
-
-
-  !***************************************************
-  !***                                             ***
-  !*** Subroutine to find Fermi level of Bulk lead ***
-  !***                                             ***
-  !***************************************************
-  real(double) function CountedLeadCharge(E) result(q)
-    real(double), intent(in) :: E
-    FermiEvaluations=FermiEvaluations+1
-    q=TotCharge(E)
-  end function CountedLeadCharge
-
-  subroutine FindFermi( L1D )
-    use parameters, only: Max, FermiAcc
-    use numeric, only: BrentRoot, BracketRoot
-    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+  subroutine FindBandFermi(L1D)
+    use parameters, only: eta,ChargeAcc,FermiAcc
     use omp_lib, only: omp_get_wtime
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
-    type(T1DLead), intent(inout) :: L1D
-    integer :: iterations,evaluations,info,expansions,bracket_evaluations
-    real(double) :: EFermi,Delta,residual,width,started,left,right,fleft,fright,halfwidth
-
-    print *, "Searching Fermi energy..."
-    WhichLead=L1D%LeadNo
-    if (WhichLead<1 .or. WhichLead>size(WarmLeadFermi)) then
-       print *, 'ERROR: invalid lead number in Fermi search',WhichLead
-       stop 1
-    end if
-    ChargeOffset=L1D%NPCEl
-    FermiEvaluations=0
-    print *, 'ChargeOffset',ChargeOffset
-    print *, 'Brent Method'
-    call flush(6)
-    ! Absolute energy accuracy (eV), configured by FERMIACC.
-    Delta=FermiAcc
-    if (.not.ieee_is_finite(Delta) .or. Delta<=0d0) then
-       print *, 'ERROR: FERMIACC must be finite and positive'
-       stop 1
-    end if
-    halfwidth=WarmFermiHalfWidth
-    if (2d0*Delta>halfwidth) halfwidth=2d0*Delta
-    started=omp_get_wtime()
-    if (WarmLeadFermiValid(WhichLead)) then
-       print '(A,I2,A,F14.7)', 'Warm Fermi bracket, lead ',WhichLead, &
-                              ' previous energy (eV): ',WarmLeadFermi(WhichLead)
-       call BracketRoot(CountedLeadCharge,WarmLeadFermi(WhichLead), &
-                        L1D%EMin,L1D%EMax,halfwidth, &
-                        left,right,fleft,fright,expansions,bracket_evaluations,info)
-       print '(A,I5,A,2F16.7)', 'Lead Fermi bracket expansions: ',expansions, &
-                              ' interval (eV): ',left,right
-       if (info/=0) then
-          print *, 'ERROR: lead Fermi bracket failed, status = ',info
+    type(T1DLead),intent(inout) :: L1D
+    real(double),allocatable :: bands(:,:,:),overlap_min(:)
+    integer,allocatable :: status(:)
+    integer :: nk,j,it,level,worst
+    real(double) :: pi,k,lo,hi,mu,q,oldmu,oldq,deg,step,started
+    logical :: converged
+    if(eta<=0d0.or.ChargeAcc<=0d0.or.FermiAcc<=0d0.or. &
+       .not.ieee_is_finite(eta+ChargeAcc+FermiAcc)) call BandSearchFailure('Invalid band-search tolerances/ETA')
+    if(L1D%NSpin<1.or.L1D%NSpin>2.or.L1D%NPCEl<=0.or. &
+       L1D%NPCEl>=2*L1D%NPCAO) call BandSearchFailure('Invalid band-search filling')
+    pi=acos(-1d0);deg=1d0
+    if(L1D%NSpin==1) deg=2d0
+    nk=256;oldmu=huge(0d0);started=omp_get_wtime();converged=.false.
+    do level=1,9
+       allocate(bands(L1D%NPCAO,nk,L1D%NSpin),status(nk),overlap_min(nk))
+       overlap_min=huge(0d0)
+!$omp parallel do default(shared) private(j,k) schedule(static)
+       do j=1,nk
+          k=2d0*pi*(dble(j)-0.5d0)/nk
+          call LeadBandPoint(L1D,k,bands(:,j,:),status(j),overlap_min(j))
+       end do
+!$omp end parallel do
+       if(any(status/=0)) then
+          print *, 'ERROR: Bloch diagonalization/overlap, lead ',L1D%LeadNo,minval(status),maxval(status)
+          worst=minloc(overlap_min,dim=1)
+          print '(A,F16.9,A,ES16.8)', 'Worst overlap k (radians): ', &
+               2d0*pi*(dble(worst)-0.5d0)/nk,' minimum eigenvalue: ',overlap_min(worst)
+          call flush(6)
           stop 1
        end if
-       ! Endpoint values are current-Hamiltonian evaluations, not stored history.
-       EFermi=BrentRoot(CountedLeadCharge,left,right,Delta, &
-                       5*Max,iterations,evaluations,info,residual,width,fleft,fright)
-    else
-       print '(A,I2)', 'Full Fermi bracket, no previous solution for lead ',WhichLead
-       EFermi=BrentRoot(CountedLeadCharge,L1D%EMin,L1D%EMax,Delta, &
-                       5*Max,iterations,evaluations,info,residual,width)
-    end if
-    print '(A,I5,A,I5)', 'Lead Fermi iterations: ',iterations, &
-                        ' charge evaluations: ',FermiEvaluations
-    print '(A,ES16.7,A,ES16.7)', 'Lead Fermi residual: ',residual, &
-                                ' bracket width (eV): ',width
-    print '(A,F12.6)', 'Lead Fermi wall seconds: ',omp_get_wtime()-started
-    if (info/=0) then
-       print *, 'ERROR: lead Fermi search failed, Brent status = ',info
-       stop 1
-    end if
-    L1D%EFermi=EFermi
-    ! Store only the energy, before AdjustFermi shifts this lead's matrices.
-    WarmLeadFermi(WhichLead)=EFermi
-    WarmLeadFermiValid(WhichLead)=.true.
-    print '(A,I3,A,F10.5)', 'EFermi in bulk electrode ',WhichLead,' = ',L1D%EFermi
+       lo=minval(bands);hi=maxval(bands);step=hi-lo+eta
+       do it=1,64
+          if(BandPopulation(bands,lo,eta,deg)<L1D%NPCEl) exit
+          lo=lo-step;step=2d0*step
+       end do
+       if(it>64) call BandSearchFailure('Band lower bracket failed')
+       step=hi-lo+eta
+       do it=1,64
+          if(BandPopulation(bands,hi,eta,deg)>L1D%NPCEl) exit
+          hi=hi+step;step=2d0*step
+       end do
+       if(it>64) call BandSearchFailure('Band upper bracket failed')
+       do it=1,256
+          mu=lo+(hi-lo)*0.5d0
+          q=BandPopulation(bands,mu,eta,deg)
+          if(q<L1D%NPCEl) then
+             lo=mu
+          else
+             hi=mu
+          end if
+          if(hi-lo<=FermiAcc.and.abs(q-L1D%NPCEl)<=ChargeAcc) exit
+       end do
+       if(it>256) call BandSearchFailure('Band filling root failed')
+       oldq=huge(0d0)
+       if(level>1) oldq=abs(BandPopulation(bands,oldmu,eta,deg)-L1D%NPCEl)
+       print '(A,I2,A,I8,A,F16.8,A,ES12.4,A,ES12.4)', &
+          'Band Fermi lead ',L1D%LeadNo,' k points ',nk,' EF (eV) ',mu, &
+          ' charge residual ',q-L1D%NPCEl,' previous-EF charge residual ',oldq
+       call flush(6)
+       if(level>1) converged=abs(mu-oldmu)<=FermiAcc.and.oldq<=ChargeAcc
+       if(converged) then
+          L1D%EFermi=mu
+          L1D%EMin=minval(bands)-25d0;L1D%EMax=maxval(bands)+25d0
+       end if
+       deallocate(bands,status,overlap_min)
+       if(converged) exit
+       oldmu=mu;nk=2*nk
+    end do
+    if(.not.converged) call BandSearchFailure('Band Fermi k mesh did not converge')
+    print '(A,I3,A,F12.6)', 'EFermi in bulk electrode ',L1D%LeadNo,' = ',L1D%EFermi
+    print '(A,F12.6)', 'Band Fermi wall seconds: ',omp_get_wtime()-started
     call flush(6)
-  end subroutine FindFermi
+  end subroutine FindBandFermi
+
+
 
 
   !*********************************************

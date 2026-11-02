@@ -59,7 +59,11 @@
   REAL*8 :: PA = 1.0d-7
   CHARACTER(len=10), PARAMETER ::  PAcc_keyw = "PACC"       
 
-  ! Work at full accuracy from the begining
+  ! Opt-in periodic band filling and adaptive contour quadrature.
+  CHARACTER(len=10), PARAMETER :: LeadBands_keyw = "LEADBANDS"
+  LOGICAL :: AdaptiveQuad = .FALSE.
+  CHARACTER(len=10), PARAMETER :: AdaptiveQuad_keyw = "ADAPTQUAD"
+  ! Work at full accuracy from the beginning.
   LOGICAL :: FullAcc = .FALSE. ; CHARACTER(len=10), PARAMETER :: FullAcc_keyw = "FULLACC"
 
   ! Maximum number of steps when searching for the Fermi level
@@ -363,6 +367,10 @@
   CHARACTER(len=10), PARAMETER :: EW2_keyw = "EW2"  
 
   ! calculate LDOS for atom numbers from LDOS_BEG up to LDOS_END
+  LOGICAL :: LDOSOutput = .false.
+  CHARACTER(len=10), PARAMETER :: LDOS_keyw = "LDOS"
+  LOGICAL :: LDOSBegSpecified = .false., LDOSEndSpecified = .false.
+
   INTEGER :: LDOS_Beg = 1      
   CHARACTER(len=10), PARAMETER :: LDOS_Beg_keyw = "LDOS_BEG" 
   INTEGER :: LDOS_End = 0      
@@ -553,8 +561,10 @@ CONTAINS
        SELECT CASE ( keyword )
        CASE ( LDOS_Beg_keyw )
           LDOS_Beg = ival
+          LDOSBegSpecified = .true.
        CASE ( LDOS_End_keyw )
           LDOS_End = ival
+          LDOSEndSpecified = .true.
        CASE( NChannels_keyw )
           NChannels = ival
        CASE( RedTransmB_keyw )
@@ -625,6 +635,8 @@ CONTAINS
        UD = .TRUE.
     CASE ( DD_keyw )
        DD = .TRUE.
+    CASE ( LDOS_keyw )
+       LDOSOutput = .TRUE.
     CASE ( LeadDOS_keyw )
        LeadDOS = .TRUE.
     CASE ( HTransm_keyw )
@@ -633,6 +645,11 @@ CONTAINS
        Hamilton = .TRUE.
     CASE ( Mulliken_keyw )
        Mulliken = .TRUE.
+    CASE ( LeadBands_keyw )
+       ! Accepted for compatibility; band filling is always used for 1D leads.
+       WRITE(unit=logfile,fmt=*) 'LEADBANDS is now automatic for 1D leads.'
+    CASE ( AdaptiveQuad_keyw )
+       AdaptiveQuad = .true.
     CASE ( FullAcc_keyw )
        FullAcc = .TRUE.
     CASE ( DFTU_keyw )
@@ -880,9 +897,26 @@ CONTAINS
        STOP
     END IF
     CALL resolve_lead_cells(logfile)
+    CALL validate_ldos(logfile)
     IF( ios < 0 ) WRITE ( unit=logfile, fmt=* ) "Done."    
   END SUBROUTINE read_parameters
   
+
+  SUBROUTINE validate_ldos(logfile)
+    INTEGER, INTENT(in) :: logfile
+    IF (LDOSOutput) THEN
+       IF (.not.LDOSBegSpecified .or. .not.LDOSEndSpecified) THEN
+          WRITE(logfile,*) 'ERROR: LDOS requires both LDOS_BEG and LDOS_END'
+          STOP 1
+       END IF
+       IF (LDOS_Beg<1 .or. LDOS_End<LDOS_Beg .or. LDOS_End>GetNAtoms()) THEN
+          WRITE(logfile,*) 'ERROR: LDOS requires 1 <= LDOS_BEG <= LDOS_END <= number of atoms'
+          STOP 1
+       END IF
+    ELSE IF (LDOSBegSpecified .or. LDOSEndSpecified) THEN
+       WRITE(logfile,*) 'WARNING: LDOS_BEG/LDOS_END supplied without LDOS; local DOS is disabled'
+    END IF
+  END SUBROUTINE validate_ldos
 
   SUBROUTINE resolve_lead_cells(logfile)
     INTEGER, INTENT(in) :: logfile
@@ -938,6 +972,8 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) FullAcc_keyw, " = ", FullAcc
     WRITE(unit=logfile,fmt=*) Max_keyw, " = ", Max
     WRITE(unit=logfile,fmt=*) Nip_keyw, " = ", NIP
+    WRITE(unit=logfile,fmt=*) '1D lead Fermi search: periodic band filling'
+    WRITE(unit=logfile,fmt=*) AdaptiveQuad_keyw, " = ", AdaptiveQuad
     WRITE(unit=logfile,fmt=*) SelfAcc_keyw, " = ", SelfAcc
     WRITE(unit=logfile,fmt=*) L1DAlpha_keyw, " = ", L1DAlpha
     WRITE(unit=logfile,fmt=*) Small_keyw, " = ", Small
@@ -1073,6 +1109,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) DOSEnergy_keyw, " = ", DOSEnergy
     WRITE(unit=logfile,fmt=*) EW1_keyw, " = ", EW1
     WRITE(unit=logfile,fmt=*) EW2_keyw, " = ", EW2
+    WRITE(unit=logfile,fmt=*) LDOS_keyw, " = ", LDOSOutput
     WRITE(unit=logfile,fmt=*) LDOS_Beg_keyw, " = ", LDOS_Beg
     WRITE(unit=logfile,fmt=*) LDOS_End_keyw, " = ", LDOS_End
     WRITE(unit=logfile,fmt=*) RedTransmB_keyw, " = ",RedTransmB

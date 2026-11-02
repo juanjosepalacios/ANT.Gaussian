@@ -87,7 +87,7 @@ program regression
  use test_device
  use parameters
  implicit none
- integer :: spin_count,threads,trial
+ integer :: spin_count,threads,trial,status
  real*8 :: ref,q
  complex*16 :: g1(2,2),g2(2,2)
  SD=0d0;SD(1,1)=1d0;SD(2,2)=1d0
@@ -111,6 +111,14 @@ program regression
  end do
  end do
  end do
+ ! Explicit spectral lower bound must not change the density bound.
+ q=TotCharge(0d0,lower_bound=-10d0,integration_status=status)
+ if(status/=0.or.EMin/=-5d0)stop 15
+ EMin=-10d0
+ ref=TotCharge(0d0)
+ if(q/=ref)stop 16
+ EMin=-5d0
+ ref=TotCharge(0d0)
  ElType='1DLEAD'
  max_team=1
  q=TotCharge(0d0)

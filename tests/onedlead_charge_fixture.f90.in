@@ -6,6 +6,7 @@ module constants
 end module
 module parameters
  implicit none
+ logical :: AdaptiveQuad=.false.
  integer, parameter :: MaxLAO=32
  integer :: NPC=1,L1DMaxCyc=10000
  real*8 :: eta=0.03d0,selfacc=1d-10,L1DALPHA=0.5d0,ChargeAcc=1d-4,Infty=20d0
@@ -122,8 +123,8 @@ program regression
  use numeric, only: gauleg
  use test_lead
  implicit none
- integer :: spins,threads,trial,case_no,i,j,spin_index
- real*8 :: ref,q,e,start,elapsed,nested_q,original_ref
+ integer :: spins,threads,trial,case_no,i,j,spin_index,charge_status
+ real*8 :: ref,q,e,start,elapsed,nested_q,original_ref,charge_error,saved_tolerance
  complex*16,target :: vn(2,2,0:1,2,2),sn(0:1,2,2)
  real*8 :: nodes(127),weights(127),points(127),reference_points(127)
  complex*16 :: actual(6,6),expected(6,6)
@@ -173,7 +174,22 @@ program regression
  original_ref=SerialCharge(e)
  call omp_set_num_threads(1)
  ref=TotCharge(e)
+ saved_tolerance=ChargeAcc
+ q=TotCharge(e,ChargeAcc/20d0,charge_error,charge_status)
+ if(charge_status/=0.or.charge_error>=ChargeAcc/20d0) stop 21
+ if(ChargeAcc/=saved_tolerance) stop 22
+ q=TotCharge(e,0d0,charge_error,charge_status)
+ if(charge_status/=1) stop 23
  if(abs(ref-original_ref)>1d-12) stop 17
+ AdaptiveQuad=.true.
+ call omp_set_num_threads(1)
+ q=TotCharge(e,ChargeAcc,charge_error,charge_status)
+ if(charge_status/=0.or.charge_error>ChargeAcc.or.abs(q-ref)>4d0*ChargeAcc) stop 24
+ nested_q=q
+ call omp_set_num_threads(8)
+ q=TotCharge(e,ChargeAcc,charge_error,charge_status)
+ if(charge_status/=0.or.q/=nested_q) stop 25
+ AdaptiveQuad=.false.
  ! Analytic Green function for isolated orthogonal orbitals.
  if(case_no==1) then
    call CompGreensFuncWorkspace(Lead1D(1),1,(0.2d0,0.4d0),actual)

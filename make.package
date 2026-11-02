@@ -19,7 +19,7 @@ cp -v BLDAT/*.dat ANT.Gaussian-$version/BLDAT/
 cp -rv doc/* ANT.Gaussian-$version/doc/
 cp -rv examples/* ANT.Gaussian-$version/examples/
 cp -v install/install* ANT.Gaussian-$version/install/
-cp -v make.package README.md LICENSE VERSION CHANGELOG.md OPENMP.md LIAN-2.8.1.md TOTCHARGE.md BRENT.md WARM_START.md DYSON_MIXING.md ANT.Gaussian-$version
+cp -v make.package README.md LICENSE VERSION CHANGELOG.md OPENMP.md LIAN-2.8.1.md TOTCHARGE.md BRENT.md WARM_START.md DYSON_MIXING.md BAND_FERMI.md LOWER_BOUND.md ADAPTIVE_QUADRATURE.md ANT.Gaussian-$version
 
 sources="
 src/ANT.F90 

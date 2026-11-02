@@ -1,0 +1,33 @@
+program test_bands
+ use test_leads
+ implicit none
+ type(T1DLead) :: a,b
+ complex*16,target :: v(2,2,0:2,1,1),s(0:2,1,1)
+ real*8 :: e(1,2),k,expected
+ integer :: info,spin
+ character(len=32) :: arg
+ v=0d0;s=0d0;s(0,1,1)=1d0
+ a%vn=>v;a%sn=>s;a%LeadNo=1;a%NPC=2;a%NPCAO=1;a%NPCEl=1;a%NSpin=2
+ v(1,1,0,1,1)=-5d0;v(2,2,0,1,1)=-3d0
+ v(1,1,1,1,1)=-1d0;v(2,2,1,1,1)=-1d0
+ ! Complex hopping and nonorthogonal second-neighbour overlap.
+ v(1,1,2,1,1)=cmplx(0.2d0,0.3d0,kind=double)
+ s(2,1,1)=0.05d0;k=0.7d0
+ call LeadBandPoint(a,k,e,info)
+ if(info/=0) stop 10
+ expected=(-5d0-2d0*cos(k)+0.4d0*cos(2*k)-0.6d0*sin(2*k))/(1d0+0.1d0*cos(2*k))
+ if(abs(e(1,1)-expected)>1d-12) stop 11
+ s(0,1,1)=-2d0
+ call LeadBandPoint(a,k,e,info)
+ if(info/=-2) stop 12
+ s(0,1,1)=1d0;s(2,1,1)=0d0;v(:,:,2,:,:)=0d0
+ call get_command_argument(1,arg)
+ if(trim(arg)=="invalid-eta") eta=-1d0
+ call FindBandFermi(a)
+ if(abs(a%EFermi+4d0)>FermiAcc) stop 13
+ b=a;b%LeadNo=2;b%NSpin=1;v(1,1,0,1,1)=-2d0
+ call FindBandFermi(b)
+ if(abs(b%EFermi+2d0)>FermiAcc) stop 14
+ if(abs(a%EFermi+4d0)>FermiAcc) stop 15
+ print *, 'PASS: Bloch spectrum, overlap rejection, spin filling and distinct leads'
+end program
