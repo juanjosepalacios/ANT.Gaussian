@@ -10,20 +10,14 @@ contains
  real*8,intent(in) :: e,lower_bound
  integer,intent(out) :: integration_status
  calls=calls+1
- if(calls==1) then
-  if(e/=1000d0.or.lower_bound/=-1000d0)stop 10
- else if(calls==2)then
-  if(e/=10000d0.or.lower_bound/=-10000d0)stop 11
- else
-  stop 12
- endif
+ ! Each call must use the current, widened EMin/EMax.
+ if(e/=EMax.or.lower_bound/=EMin)stop 10
+ if(e/=14567d0+10d0*(calls-1).or.lower_bound/=-123d0-10d0*(calls-1))stop 11
  integration_status=0;q=8d0
- if(calls==1)then
-  if(mode=='retry'.or.mode=='failure')q=7d0
-  if(mode=='excess')q=9d0
-  if(mode=='quadrature')integration_status=1
-  if(mode=='nonfinite')q=ieee_value(q,ieee_quiet_nan)
- endif
+ if(mode=='widen'.and.calls<=2)q=7d0
+ if(mode=='excess'.and.calls==1)q=9d0
+ if(mode=='quadrature'.and.calls==1)integration_status=1
+ if(mode=='nonfinite'.and.calls==1)q=ieee_value(q,ieee_quiet_nan)
  if(mode=='failure')q=7d0
  end function
 end module
@@ -35,6 +29,7 @@ program test
  call CheckEnergyBounds(bounds)
  if(.not.bounds)stop 20
  if(mode=='first'.and.calls/=1)stop 21
- if(mode/='first'.and.calls/=2)stop 22
- if(EMin/=-123d0.or.EMax/=14567d0)stop 23
+ if(mode=='widen'.and.calls/=3)stop 22
+ if((mode=='excess'.or.mode=='quadrature'.or.mode=='nonfinite').and.calls/=2)stop 23
+ if(EMin/=-123d0-10d0*(calls-1).or.EMax/=14567d0+10d0*(calls-1))stop 24
 end program

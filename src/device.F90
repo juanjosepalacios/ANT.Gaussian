@@ -95,6 +95,9 @@
   ! *** lower and upper energy bound ***
   real*8 :: EMin = 0.0, EMax = 0.0
 
+  ! *** Recent device Fermi shifts per spin slot (negative: no history) ***
+  real*8 :: FermiSteps(4,2) = -1d0
+
   ! *** Density of states projected on atoms at the Fermi energy
   real*8, dimension(:,:), allocatable :: AtomDOSEF
 
@@ -969,7 +972,7 @@
   ! A charge callback also builds PD; always evaluate the accepted root last.
   subroutine SolveDeviceFermi(charge,guess,qtol,root,width)
     use numeric, only: BracketRoot,BrentRoot
-    use parameters, only: FermiAcc,MaxIterations => Max
+    use parameters, only: FermiAcc,MaxIterations => Max,DevMuller
     use omp_lib, only: omp_get_wtime
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
@@ -978,14 +981,26 @@
     real*8,intent(in) :: guess,qtol
     real*8,intent(out) :: root,width
     real*8 :: center,left,right,fl,fr,residual,started,halfwidth
-    integer :: expansions,bracket_calls,iterations,calls,status
+    integer :: expansions,bracket_calls,iterations,calls,status,slot
+    if(DevMuller) then
+       call SolveDeviceFermiMuller(charge,guess,qtol,root,width)
+       return
+    end if
     center=guess
     started=omp_get_wtime()
     if(.not.ieee_is_finite(qtol).or.qtol<=0d0) then
        print *, 'ERROR: invalid device charge tolerance',qtol
        stop 1
     end if
-    halfwidth=max(0.25d0,2d0*FermiAcc)
+    ! Twice the largest of the last four shifts covers the periodic jumps
+    ! after Pulay extrapolation; BracketRoot still expands if it misses.
+    slot=1
+    if(NSpin==2.and.SpinLock.and.ispin==2) slot=2
+    if(any(FermiSteps(:,slot)<0d0)) then
+       halfwidth=max(0.25d0,2d0*FermiAcc)
+    else
+       halfwidth=min(0.25d0,max(2d0*maxval(FermiSteps(:,slot)),10d0*FermiAcc))
+    end if
     call BracketRoot(charge,center,EMin,EMax,halfwidth,left,right,fl,fr,expansions,bracket_calls,status)
     if(status/=0) then
        print *, 'ERROR: device Fermi bracket failed, status=',status
@@ -1001,8 +1016,10 @@
     end if
     ! Brent may return a cached endpoint rather than its last callback point.
     residual=charge(root)
-    write(ifu_log,'(A,I5,A,I5,A,I5)') 'Device Brent iterations: ',iterations, &
-         ' bracket expansions: ',expansions,' charge evaluations: ',bracket_calls+calls+1
+    FermiSteps(:,slot)=eoshift(FermiSteps(:,slot),-1,abs(root-guess))
+    write(ifu_log,'(A,I5,A,I5,A,I5,A,ES12.4)') 'Device Brent iterations: ',iterations, &
+         ' bracket expansions: ',expansions,' charge evaluations: ',bracket_calls+calls+1, &
+         ' initial half-width (eV): ',halfwidth
     write(ifu_log,'(A,ES16.7,A,ES16.7,A,ES16.7)') 'Device Brent charge residual: ', &
          residual,' charge tolerance: ',qtol,' shift bracket width (eV): ',width
     write(ifu_log,'(A,F12.6)') 'Device Brent wall seconds: ',omp_get_wtime()-started
@@ -1012,6 +1029,57 @@
        stop 1
     end if
   end subroutine SolveDeviceFermi
+
+  ! Default chain (DEVMULLER): Muller from guess+-1 eV, then secant, then
+  ! bisection over [EMin,EMax]. A failed method falls through when it hits
+  ! the iteration limit or leaves [EMin,EMax]. The accepted root is evaluated
+  ! last, as in SolveDeviceFermi, so the density matches the reported energy.
+  subroutine SolveDeviceFermiMuller(charge,guess,qtol,root,width)
+    use numeric, only: SECANT,MULLER,BISEC
+    use parameters, only: FermiAcc,MaxIterations => Max
+    use omp_lib, only: omp_get_wtime
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    real*8,external :: charge
+    real*8,intent(in) :: guess,qtol
+    real*8,intent(out) :: root,width
+    real*8 :: E0,E1,E2,E3,DE,residual,started
+    integer :: k,cond,calls
+    character(len=6) :: method
+    started=omp_get_wtime()
+    E0=guess-1d0;E1=guess;E2=guess+1d0
+    method='MULLER'
+    call MULLER(charge,E0,E1,E2,FermiAcc,qtol,MaxIterations,E3,DE,k,cond)
+    calls=k+3
+    if(k==MaxIterations.or.E3<EMin.or.E3>EMax.or..not.ieee_is_finite(E3)) then
+       print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+       E0=guess-1d0;E2=guess+1d0
+       method='SECANT'
+       call SECANT(charge,E0,E2,FermiAcc,qtol,MaxIterations,E3,DE,cond,k)
+       calls=calls+k+2
+       if(k==MaxIterations.or.E3<EMin.or.E3>EMax.or..not.ieee_is_finite(E3)) then
+          print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+          method='BISEC'
+          E3=BISEC(charge,EMin,EMax,FermiAcc,5*MaxIterations,k)
+          calls=calls+k+3
+          DE=FermiAcc
+          if(k>=5*MaxIterations) then
+             print *, 'ERROR: device MULLER, SECANT and BISEC searches all failed'
+             call flush(6)
+             stop 1
+          end if
+       end if
+    end if
+    root=E3
+    width=abs(DE)
+    residual=charge(root)
+    write(ifu_log,'(A,A,A,I5,A,I5)') 'Device ',trim(method),' iterations: ',k, &
+         ' charge evaluations: ',calls+1
+    write(ifu_log,'(A,A,A,ES16.7,A,ES16.7,A,ES16.7)') 'Device ',trim(method),' charge residual: ', &
+         residual,' charge tolerance: ',qtol,' last step (eV): ',width
+    write(ifu_log,'(A,A,A,F12.6)') 'Device ',trim(method),' wall seconds: ',omp_get_wtime()-started
+    call flush(ifu_log)
+  end subroutine SolveDeviceFermiMuller
 
   subroutine CompDensMat(ADDP)
     use parameters, only: ChargeAcc,QExcess,FixEFermi,FermiStart
@@ -1278,9 +1346,8 @@
      real*8 :: Q, QQ, R
      integer :: n, np, i, j, k, l, M !, info, ierr
      
-     ! Radius of complex contour integration
-     ! add 10eV just in case 
-     R  = 0.5*abs(EMin)
+     ! Radius of complex contour integration from EMin to 0
+     R  = 0.5d0*(d_zero-EMin)
 
      shift = mu
      PD_SOC=c_zero
@@ -1833,9 +1900,8 @@
     PD(ispin,:,:) = d_zero
     PDOUT(ispin,:,:) = c_zero
 
-    ! Radius of complex contour integration
-    ! add 10eV just in case 
-    rrr = 0.5*abs(EMin)
+    ! Radius of complex contour integration from EMin to -|V|/2
+    rrr = 0.5d0*(d_zero-dabs(biasvoltage/2.0)-EMin)
 
     !c c Integral limits ... (a,b)
     a = 0.d0
@@ -1894,9 +1960,8 @@
 
        Q = d_zero
 
-       ! Radius of complex contour integration
-       ! add 10eV just in case 
-       rrr = 0.5*abs(EMin) 
+       ! Radius of complex contour integration from EMin to -|V|/2
+       rrr = 0.5d0*(d_zero-dabs(biasvoltage/2.0)-EMin)
 
        !c c Integral limits ... (a,b)
        a = 0.d0
@@ -1953,9 +2018,8 @@
        PD_SOC = c_zero       
        PDOUT_SOC = c_zero
 
-       ! Radius of complex contour integration
-       ! add 10eV just in case 
-       rrr = 0.5*abs(EMin)
+       ! Radius of complex contour integration from EMin to -|V|/2
+       rrr = 0.5d0*(-dabs(biasvoltage/2.0)-EMin)
 
        !c c Integral limits ... (a,b)
        a = 0.d0
@@ -4012,22 +4076,23 @@
   !  above/below which DOS is gauranteed 
   !  to be zero
   ! *************************************
-  ! Fixed spectral-weight windows, independent of the density contour bounds.
+  ! Check the weight on [EMin,EMax], the bounds the density contours use,
+  ! widening both by 10 eV until it passes. The widened bounds are kept.
   subroutine CheckEnergyBounds(Bounds)
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
     logical,intent(out) :: Bounds
-    real*8,parameter :: windows(2)=(/1000d0,10000d0/)
+    integer,parameter :: max_widenings=100
     real*8 :: q,target
     integer :: attempt,status
     target=2d0*(NCDAO2-NCDAO1+1)
     Bounds=.false.
     print '(A,F12.5)', ' Total Integrated Spectral Weight target: ',target
-    do attempt=1,size(windows)
-       print '(A,F12.1,A,F12.1,A)', ' Spectral-weight window: [', &
-            -windows(attempt),', ',windows(attempt),'] eV'
+    do attempt=0,max_widenings
+       print '(A,F12.4,A,F12.4,A)', ' Spectral-weight window: [', &
+            EMin,', ',EMax,'] eV'
        call flush(6)
-       q=TotCharge(windows(attempt),lower_bound=-windows(attempt),integration_status=status)
+       q=TotCharge(EMax,lower_bound=EMin,integration_status=status)
        if(status==0.and.ieee_is_finite(q)) then
           Bounds=abs(q-target)<0.1d0
        end if
@@ -4036,9 +4101,13 @@
           print *, ' Spectral-weight check OK'
           return
        end if
-       if(attempt<size(windows)) print *, ' Retrying spectral-weight check with wider window.'
+       if(attempt==max_widenings) exit
+       EMin=EMin-10d0
+       EMax=EMax+10d0
+       print *, ' Widening EMin and EMax by 10 eV.'
     end do
-    print *, 'ERROR: spectral-weight check failed for both fixed windows; target=',target
+    print *, 'ERROR: spectral-weight check failed after widening EMin/EMax by', &
+         10d0*max_widenings,' eV; target=',target
     call flush(6)
     stop 1
   end subroutine CheckEnergyBounds

@@ -1,7 +1,7 @@
 module parameters
  real*8 :: FermiAcc=1d-8,ChargeAcc=1d-8,QExcess=0d0,FermiStart=0.7d0
  integer :: Max=40
- logical :: FixEFermi=.false.
+ logical :: FixEFermi=.false.,DevMuller=.false.
 end module
 module numeric
 contains
@@ -13,7 +13,7 @@ module model
  implicit none
  integer :: ifu_log=6,NCDEl=10,NSpin=1,ispin=1,mode=0
  real*8 :: EMin=-10d0,EMax=10d0,shift=2d0,shiftup=1d0,shiftdown=-1d0
- real*8 :: QAlpha,QBeta,Q_SOC,density(2)=0d0,last=0d0
+ real*8 :: QAlpha,QBeta,Q_SOC,density(2)=0d0,last=0d0,FermiSteps(4,2)=-1d0
  logical :: SPINLOCK=.false.
 contains
 @DEVICE@
@@ -88,4 +88,12 @@ program test
  call CompDensMat_SOC(ok)
  if(.not.ok.or.shift/=-FermiStart.or.last/=shift)stop 19
  print *, 'PASS: device Brent, final density state, spin branches, SOC and fixed Fermi'
+ FixEFermi=.false.;DevMuller=.true.;shift=2d0
+ call CompDensMat(ok)
+ if(.not.ok.or.abs(shift-0.4d0)>1d-6.or.last/=shift)stop 20
+ SPINLOCK=.true.;shiftup=1d0;shiftdown=-1d0
+ call CompDensMat(ok)
+ if(.not.ok.or.abs(shiftup-0.2d0)>1d-6.or.abs(shiftdown+0.3d0)>1d-6)stop 21
+ if(density(1)/=shiftup.or.density(2)/=shiftdown)stop 22
+ print *, 'PASS: DEVMULLER collinear and spin-locked searches'
 end program

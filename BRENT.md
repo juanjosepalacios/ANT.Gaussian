@@ -1,14 +1,21 @@
 # Device Fermi-level search
 
-The device uses safeguarded Brent iteration for collinear, spin-locked and
-SOC charge searches, both on the semicircular contour and imaginary axis.
+With DEVBRENT, the device uses safeguarded Brent iteration for collinear,
+spin-locked and SOC charge searches, both on the semicircular contour and
+imaginary axis. The default is the Muller -> secant -> bisection chain
+(DEVMULLER; see doc/keywords.txt), which used fewer charge evaluations on
+the Au4 and Pt9 Bethe-lattice nanocontact comparisons of 2 November 2026.
 Periodic lead Fermi levels use band filling separately; see
 [BAND_FERMI.md](BAND_FERMI.md).
 
 `device::SolveDeviceFermi` expands a bracket around the current device
 shift, within the existing device bounds, and calls `numeric::BrentRoot`.
-The initial half-width is max(0.25 eV, 2*FERMIACC); this is a bracketing
-heuristic, not an accuracy target. The root uses FERMIACC and at most 5*MAX
+The first search uses an initial half-width of max(0.25 eV, 2*FERMIACC).
+Later searches use twice the largest accepted shift of the previous four
+searches, clamped to [10*FERMIACC, 0.25 eV]; spin-locked searches keep
+separate histories per spin. Four searches cover the larger jumps that
+follow Pulay extrapolation. This is a bracketing heuristic, not an accuracy
+target: BracketRoot still doubles the bracket when it misses. The root uses FERMIACC and at most 5*MAX
 iterations. The accepted point is evaluated again so the returned density
 and populations correspond to the reported Fermi energy, even when Brent
 returns a previously evaluated endpoint. Search variables are device
@@ -33,14 +40,18 @@ charge and residual failure.
 
 ## Device spectral-weight windows
 
-The preliminary spectral-weight check first integrates from -1000 to
-+1000 eV on the existing complex contour. A failed quadrature, nonfinite
-result or mismatch of at least 0.1 electrons from the expected spectral
-weight triggers one retry from -10000 to +10000 eV. If the second check
-fails, stop explicitly. The 0.1-electron spectral-weight acceptance and
-successive-quadrature criteria are unchanged. These temporary check windows
-do not alter the density-contour bounds or device root bracket. The old
-incremental energy-bound expansion is removed.
+For all electrode types (Bethe lattice, 1D leads and GHOST), the
+preliminary spectral-weight check integrates the device DOS from EMin to
+EMax on the complex contour.
+A failed quadrature, nonfinite result or mismatch of at least 0.1 electrons
+from the expected spectral weight lowers EMin by 10 eV and raises EMax by
+10 eV, and the check is repeated until it passes; after 100 widenings
+(1000 eV) the run stops explicitly. The widened bounds are kept, so every
+density contour (collinear, spin-locked and SOC) runs from exactly EMin up
+to -|V|/2, and the device root bracket uses the same [EMin,EMax]. The
+0.1-electron spectral-weight acceptance and successive-quadrature criteria
+are unchanged. The former fixed -1000/+1000 and -10000/+10000 eV windows
+are removed.
 
 ## Au10 production comparison (2026-11-01)
 

@@ -63,6 +63,16 @@
   CHARACTER(len=10), PARAMETER :: LeadBands_keyw = "LEADBANDS"
   LOGICAL :: AdaptiveQuad = .FALSE.
   CHARACTER(len=10), PARAMETER :: AdaptiveQuad_keyw = "ADAPTQUAD"
+  ! Brent search for Bethe-lattice bulk Fermi levels; BLSECANT restores
+  ! the legacy bisection + secant search.
+  LOGICAL :: BLBrent = .TRUE.
+  CHARACTER(len=10), PARAMETER :: BLBrent_keyw = "BLBRENT"
+  CHARACTER(len=10), PARAMETER :: BLSecant_keyw = "BLSECANT"
+  ! Muller -> secant -> bisection device Fermi search; DEVBRENT selects
+  ! safeguarded Brent instead.
+  LOGICAL :: DevMuller = .TRUE.
+  CHARACTER(len=10), PARAMETER :: DevMuller_keyw = "DEVMULLER"
+  CHARACTER(len=10), PARAMETER :: DevBrent_keyw = "DEVBRENT"
   ! Work at full accuracy from the beginning.
   LOGICAL :: FullAcc = .FALSE. ; CHARACTER(len=10), PARAMETER :: FullAcc_keyw = "FULLACC"
 
@@ -650,6 +660,14 @@ CONTAINS
        WRITE(unit=logfile,fmt=*) 'LEADBANDS is now automatic for 1D leads.'
     CASE ( AdaptiveQuad_keyw )
        AdaptiveQuad = .true.
+    CASE ( BLBrent_keyw )
+       BLBrent = .true.
+    CASE ( BLSecant_keyw )
+       BLBrent = .false.
+    CASE ( DevMuller_keyw )
+       DevMuller = .true.
+    CASE ( DevBrent_keyw )
+       DevMuller = .false.
     CASE ( FullAcc_keyw )
        FullAcc = .TRUE.
     CASE ( DFTU_keyw )
@@ -974,6 +992,8 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) Nip_keyw, " = ", NIP
     WRITE(unit=logfile,fmt=*) '1D lead Fermi search: periodic band filling'
     WRITE(unit=logfile,fmt=*) AdaptiveQuad_keyw, " = ", AdaptiveQuad
+    WRITE(unit=logfile,fmt=*) BLBrent_keyw, " = ", BLBrent
+    WRITE(unit=logfile,fmt=*) DevMuller_keyw, " = ", DevMuller
     WRITE(unit=logfile,fmt=*) SelfAcc_keyw, " = ", SelfAcc
     WRITE(unit=logfile,fmt=*) L1DAlpha_keyw, " = ", L1DAlpha
     WRITE(unit=logfile,fmt=*) Small_keyw, " = ", Small

@@ -1082,15 +1082,20 @@ contains
   !    adjust Fermi level to zero
   ! *************************************
   subroutine AdjustFermi( BL )
-    use parameters, only: ChargeAcc, FermiAcc, BiasVoltage, Glue, Overlap
+    ! Electrodes are set up before the SCF stages ChargeAcc/FermiAcc, so use
+    ! the CHARGEACC/FERMIACC input values directly.
+    use parameters, only: ChargeAcc => ChargeA, FermiAcc => FermiA, BiasVoltage, Glue, Overlap, BLBrent
     use constants, only: d_zero
-    use numeric, only: bisec, muller_omp, secant_omp, secant, muller
+    use numeric, only: bisec, muller_omp, secant_omp, secant, muller, BrentRoot
+    use omp_lib, only: omp_get_wtime
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
 
     type(TBetheLattice), intent(inout) :: BL
 
-    integer :: ispin, i, j, cond, max,k 
-    real*8 :: DE, EFermi, Q, bias
+    integer :: ispin, i, j, cond, max,k
+    integer :: iterations, calls, status
+    real*8 :: DE, EFermi, Q, bias, started, elapsed
     real*8 :: E00,E1,E2,E3,Z, Delta, Epsilon
 
     print *, "Setting Fermi level to zero for Lead ", BL%LeadNo
@@ -1130,29 +1135,60 @@ contains
 
     ChargeOffSet = BL%NElectrons
 
+    E1 = BL%EMin+5
+    E2 = BL%EMax-5
+    Epsilon=ChargeAcc*BL%NElectrons
+    started=omp_get_wtime()
+
+    if( BLBrent )then
+     ! Brent on the same interval bisection uses; stops on width FermiAcc.
+     PRINT *, "Brent method:"
+     EFermi=BrentRoot(TotCharge,E1,E2,FermiAcc,100,iterations,calls,status,Q,DE)
+     if( status /= 0 )then
+        print *, 'ERROR: Bethe lattice Brent search failed, status=',status
+        call flush(6)
+        stop 1
+     end if
+     elapsed=omp_get_wtime()-started
+     ! Brent may return a cached endpoint rather than its last callback point.
+     Q=TotCharge(EFermi)
+     write(*,'(A,I2,A,I5,A,I5,A,ES12.4,A,ES12.4,A,F10.4)') 'Bethe lattice Brent lead ',BL%LeadNo, &
+          ' iterations ',iterations,' charge evaluations ',calls,' charge residual ',Q, &
+          ' bracket width (eV) ',DE,' wall seconds ',elapsed
+     if( .not.ieee_is_finite(Q) .or. abs(Q) > Epsilon )then
+        print *, 'ERROR: Bethe lattice charge residual exceeds tolerance at Brent root'
+        call flush(6)
+        stop 1
+     end if
+    else
     ! First use bisection method to loacalize
     ! the Fermi level very roughly (0.1 eV)
     ! so that the following Muller method
     ! does not get stuck within a band gap
-    E1 = BL%EMin+5
-    E2 = BL%EMax-5
     Delta = 0.1d0
 
-    EFermi = Bisec(TotCharge,E1,E2,Delta,100,K) 
+    EFermi = Bisec(TotCharge,E1,E2,Delta,100,K)
+    calls = K+3
 
     ! Now use Muller or Secant method to determine Fermi level exactly
     E00 = EFermi
     E1 = EFermi-Delta
-    E2 = EFermi+Delta    
+    E2 = EFermi+Delta
     Max = 25
     Delta=FermiAcc
-    Epsilon=ChargeAcc*BL%NElectrons
-    
+
     !PRINT *, "Muller method:"
     !CALL MULLER_OMP(TotCharge,E00,E1,E2,Delta,Epsilon,Max,EFermi,Z,K,Cond)
      PRINT *, "Secant method:"
      !call SECANT_OMP(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
      call SECANT(TotCharge,E1,E2,Delta,Epsilon,Max,EFermi,DE,Cond,K)
+     calls = calls+K+2
+     elapsed=omp_get_wtime()-started
+     Q=TotCharge(EFermi)
+     write(*,'(A,I2,A,I5,A,I5,A,ES12.4,A,ES12.4,A,I2,A,F10.4)') 'Bethe lattice secant lead ',BL%LeadNo, &
+          ' iterations ',K,' charge evaluations ',calls,' charge residual ',Q, &
+          ' last step (eV) ',DE,' converged ',Cond,' wall seconds ',elapsed
+    end if
     ChargeOffset = d_zero
     print *, "Bethe lattice Fermi energy = ", EFermi
 

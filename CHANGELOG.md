@@ -2,13 +2,20 @@
 
 ## Unreleased
 
-- Check device spectral weight on [-1000,1000] eV; retry once on
-  [-10000,10000] eV after a quadrature or weight-check failure. Preserve
-  the density-contour bounds and stop if both windows fail.
+- Check device spectral weight on [EMin,EMax] for all electrode types,
+  widening both bounds by 10 eV after a quadrature or weight-check failure
+  until it passes (stop after 1000 eV). Keep the widened bounds, and start
+  every density contour, including biased and SOC ones, at exactly EMin.
 
-- Use safeguarded Brent for device Fermi searches, including spin and SOC
-  paths; verify final charge and rebuild density at the accepted root.
-  Fix uninitialized FIXEFERMI success and remove the 0.1 eV fallback.
+- Device Fermi searches default to Muller -> secant -> bisection (DEVMULLER);
+  DEVBRENT selects safeguarded Brent with an adaptive warm-start bracket.
+  Both paths cover spin and SOC, rebuild the density at the accepted root
+  and log iterations, charge evaluations, residual and wall time. Fix
+  uninitialized FIXEFERMI success and remove the 0.1 eV fallback.
+
+- Find Bethe-lattice electrode Fermi levels with safeguarded Brent
+  (BLBRENT); BLSECANT restores bisection + secant. Electrode setup now uses
+  the FERMIACC and CHARGEACC input values instead of the internal 1.0D-2.
 
 - Use periodic band filling exclusively for 1D lead Fermi levels, with
   parallel generalized Bloch spectra, ETA-broadened occupations and independent

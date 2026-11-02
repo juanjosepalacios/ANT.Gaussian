@@ -45,6 +45,32 @@ for matrix elements, plus a charge-trace check. Other contour paths retain
 legacy integration. Maximum 128 panels; failure to converge stops the run.
 Default: .false. (off).
 
+* BLBRENT and BLSECANT (logical)
+Bethe-lattice bulk Fermi levels are found with safeguarded Brent by
+default (BLBRENT, kept for compatibility). BLSECANT restores the legacy
+bisection followed by the secant method. Brent stops on a bracket width of
+FERMIACC; the final charge residual must be below CHARGEACC times the
+number of electrons per Bethe-lattice atom, otherwise the run stops.
+Electrode setup always uses the FERMIACC and CHARGEACC input values,
+without the staged loosening applied to early device SCF cycles.
+Both methods print iterations, charge evaluations, residual and wall time.
+Default: Brent (BLSECANT absent).
+
+* DEVMULLER and DEVBRENT (logical)
+By default (DEVMULLER, kept for compatibility) the device Fermi level is
+found with Muller from the previous Fermi level +/-1 eV, then the secant
+method, then bisection over the full device interval. DEVBRENT selects
+safeguarded Brent instead (see BRENT.md). A method falls through when
+it reaches MAX iterations or leaves the device interval. Muller and secant
+use FERMIACC as a relative step tolerance and CHARGEACC*(NCDEl+QEXCESS)
+as the charge tolerance; bisection stops on a bracket of FERMIACC. Applies
+to collinear, spin-locked and SOC searches on the contour and imaginary
+axis. The accepted root is evaluated last and its residual is printed but,
+unlike Brent, not enforced. Failure of all three methods stops the run.
+Brent brackets the root and enforces the final charge residual, at the
+cost of more charge evaluations per search.
+Default: Muller (DEVBRENT absent).
+
 * PACC (real)
 Numerical integration maximum accuracy for density matrix.
 Default: PACC = 1.0D-7
@@ -53,10 +79,14 @@ Default: PACC = 1.0D-7
 Total charge maximum accuracy. Device roots require a final residual below
 CHARGEACC*(NCDEl+QEXCESS); lead band filling uses an absolute electron-count
 tolerance per chosen repeated cell. Device root failure stops explicitly.
+Bethe-lattice electrodes require residuals below CHARGEACC times the
+electrons per atom for their Fermi level, and below CHARGEACC times twice
+the orbitals per atom for their spectral range.
 Default: CHARGEACC = 1.0D-5
 
 * FERMIACC (real)
-Fermi level maximum accuracy (in eV).
+Fermi level maximum accuracy (in eV). Also used, from the start of the run,
+for Bethe-lattice electrode Fermi levels.
 Default: FERMIACC = 1.0D-5
 
 * SELFACC (real)
@@ -102,8 +132,8 @@ overruled by the existing value in P.<job_name>.dat.
 Default: FERMISTART = -5.0D0
 
 * SSM (real)
-Historical secant-switch threshold. Device Fermi searches now always use
-safeguarded Brent, so SSM no longer selects the device root algorithm.
+Historical secant-switch threshold. SSM no longer selects the device root
+algorithm; see DEVMULLER and DEVBRENT.
 Default: SSM = 1.0D-3
 
 * TYPE1 and TYPE2 (string)
