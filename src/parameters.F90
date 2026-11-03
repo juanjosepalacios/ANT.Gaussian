@@ -152,6 +152,11 @@
   REAL*8 :: FermiStart = -5.00d0   
   CHARACTER(len=10), PARAMETER :: FermiStart_keyw = "FERMISTART"
 
+  ! Upper bound on the device Fermi energy in its root search (eV).
+  ! EMin/EMax and the spectral-weight check are unaffected.
+  REAL*8 :: EFMax = huge(1d0)
+  CHARACTER(len=10), PARAMETER :: EFMax_keyw = "EFMAX"
+
   ! Fixing Fermi energy 
   LOGICAL :: FixEFermi = .FALSE. 
   CHARACTER(len=10), PARAMETER :: FixEFermi_keyw = "FIXEFERMI"
@@ -455,6 +460,7 @@ CONTAINS
          & SL_keyw        ,&
          & SwOffSpL_keyw  ,&
          & FermiStart_keyw,&
+         & EFMax_keyw     ,&
          & EStep_keyw     ,&
          & DOSEnergy_keyw     ,&
          & Overlap_keyw   ,&
@@ -516,6 +522,8 @@ CONTAINS
           SwOffSpL = rval
        CASE ( FermiStart_keyw ) 
           FermiStart = rval
+       CASE ( EFMax_keyw )
+          EFMax = rval
        CASE ( DOSEnergy_keyw ) 
           DOSEnergy = rval
        CASE ( EStep_keyw ) 
@@ -1004,6 +1012,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) gamma_keyw, " = ", gamma
     WRITE(unit=logfile,fmt=*) glue_keyw, " = ", glue
     WRITE(unit=logfile,fmt=*) FermiStart_keyw, " = ", FermiStart, " eV"
+    IF( EFMax < huge(1d0) ) WRITE(unit=logfile,fmt=*) EFMax_keyw, " = ", EFMax, " eV"
     WRITE(unit=logfile,fmt=*) FixEFermi_keyw, " = ", FixEFermi
     WRITE(unit=logfile,fmt=*) DMImag_keyw, " = ", DMImag
     WRITE(unit=logfile,fmt=*) FMixing_keyw, " = ", FMixing

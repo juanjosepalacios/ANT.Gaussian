@@ -131,6 +131,13 @@ Starting value for Fermi level search (in eV). When reinitializing a calculation
 overruled by the existing value in P.<job_name>.dat.
 Default: FERMISTART = -5.0D0
 
+* EFMAX (real)
+Upper bound on the device Fermi energy (in eV) during the device Fermi
+search (DEVBRENT bracket, DEVMULLER Muller/secant acceptance and the
+bisection fallback). EMin/EMax, the density contours and the spectral-weight
+check are unchanged. A search whose root lies above EFMAX fails explicitly.
+Default: no bound
+
 * SSM (real)
 Historical secant-switch threshold. SSM no longer selects the device root
 algorithm; see DEVMULLER and DEVBRENT.

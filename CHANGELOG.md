@@ -6,6 +6,10 @@
   integration and Fermi search starts. Informative progress messages
   (lattice directions, SOC/Zeeman Fermi levels) use the same banner form.
 
+- Add EFMAX: an optional upper bound (eV) on the device Fermi energy in the
+  Brent bracket and the Muller/secant/bisection chain. EMin/EMax, density
+  contours and the spectral-weight check are unchanged.
+
 - Check device spectral weight on [EMin,EMax] for all electrode types,
   widening both bounds by 10 eV after a quadrature or weight-check failure
   until it passes (stop after 1000 eV). Keep the widened bounds, and start

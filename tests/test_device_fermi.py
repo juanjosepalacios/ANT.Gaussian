@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory() as d:
  Path(d,'test.f90').write_text(f)
  subprocess.check_call([fc,*flags,'test.f90','-o','test'],cwd=d)
  subprocess.check_call(['./test'],cwd=d)
- for mode in ['no-bracket','nonfinite','charge-failure']:
+ for mode in ['no-bracket','nonfinite','charge-failure','efmax']:
   bad=subprocess.run(['./test',mode],cwd=d,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True)
   if bad.returncode==0 or 'ERROR:' not in bad.stdout:raise AssertionError(mode+bad.stdout)
- print('PASS: bracket, nonfinite and unacceptable final charge fail explicitly')
+ print('PASS: bracket, nonfinite, unacceptable final charge and EFMAX-excluded root fail explicitly')

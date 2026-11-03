@@ -1,5 +1,6 @@
 module parameters
  real*8 :: FermiAcc=1d-8,ChargeAcc=1d-8,QExcess=0d0,FermiStart=0.7d0
+ real*8 :: EFMax=huge(1d0)
  integer :: Max=40
  logical :: FixEFermi=.false.,DevMuller=.false.
 end module
@@ -64,6 +65,8 @@ program test
  if(arg=='no-bracket')mode=1
  if(arg=='nonfinite')mode=2
  if(arg=='charge-failure')mode=3
+ ! E_F<=-0.5 excludes the root at shift=0.4
+ if(arg=='efmax')EFMax=-0.5d0
  call CompDensMat(ok)
  if(.not.ok.or.abs(shift-0.4d0)>FermiAcc.or.last/=shift)stop 10
  call CompDensMat_SOC(ok)
@@ -96,4 +99,12 @@ program test
  if(.not.ok.or.abs(shiftup-0.2d0)>1d-6.or.abs(shiftdown+0.3d0)>1d-6)stop 21
  if(density(1)/=shiftup.or.density(2)/=shiftdown)stop 22
  print *, 'PASS: DEVMULLER collinear and spin-locked searches'
+ SPINLOCK=.false.;EFMax=1d0
+ DevMuller=.false.;shift=2d0
+ call CompDensMat(ok)
+ if(.not.ok.or.abs(shift-0.4d0)>FermiAcc.or.last/=shift)stop 23
+ DevMuller=.true.;shift=2d0
+ call CompDensMat(ok)
+ if(.not.ok.or.abs(shift-0.4d0)>1d-6.or.last/=shift)stop 24
+ print *, 'PASS: EFMAX above the root leaves Brent and DEVMULLER unchanged'
 end program

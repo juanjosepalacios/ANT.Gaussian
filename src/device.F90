@@ -972,7 +972,7 @@
   ! A charge callback also builds PD; always evaluate the accepted root last.
   subroutine SolveDeviceFermi(charge,guess,qtol,root,width)
     use numeric, only: BracketRoot,BrentRoot
-    use parameters, only: FermiAcc,MaxIterations => Max,DevMuller
+    use parameters, only: FermiAcc,MaxIterations => Max,DevMuller,EFMax
     use omp_lib, only: omp_get_wtime
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
@@ -980,7 +980,7 @@
     real*8,external :: charge
     real*8,intent(in) :: guess,qtol
     real*8,intent(out) :: root,width
-    real*8 :: center,left,right,fl,fr,residual,started,halfwidth
+    real*8 :: center,left,right,fl,fr,residual,started,halfwidth,lower
     integer :: expansions,bracket_calls,iterations,calls,status,slot
     write(ifu_log,*)'------------------------'
     write(ifu_log,*)'Integrating density matrix to find device Fermi energy'
@@ -1005,7 +1005,9 @@
     else
        halfwidth=min(0.25d0,max(2d0*maxval(FermiSteps(:,slot)),10d0*FermiAcc))
     end if
-    call BracketRoot(charge,center,EMin,EMax,halfwidth,left,right,fl,fr,expansions,bracket_calls,status)
+    ! The search variable is shift=-E_F, so EFMAX raises its lower bound.
+    lower=max(EMin,-EFMax)
+    call BracketRoot(charge,center,lower,EMax,halfwidth,left,right,fl,fr,expansions,bracket_calls,status)
     if(status/=0) then
        print *, 'ERROR: device Fermi bracket failed, status=',status
        print *, 'Device shift bracket/residuals: ',left,right,fl,fr
@@ -1040,31 +1042,33 @@
   ! last, as in SolveDeviceFermi, so the density matches the reported energy.
   subroutine SolveDeviceFermiMuller(charge,guess,qtol,root,width)
     use numeric, only: SECANT,MULLER,BISEC
-    use parameters, only: FermiAcc,MaxIterations => Max
+    use parameters, only: FermiAcc,MaxIterations => Max,EFMax
     use omp_lib, only: omp_get_wtime
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
+    intrinsic :: max
     real*8,external :: charge
     real*8,intent(in) :: guess,qtol
     real*8,intent(out) :: root,width
-    real*8 :: E0,E1,E2,E3,DE,residual,started
+    real*8 :: E0,E1,E2,E3,DE,residual,started,lower
     integer :: k,cond,calls
     character(len=6) :: method
     started=omp_get_wtime()
+    lower=max(EMin,-EFMax)
     E0=guess-1d0;E1=guess;E2=guess+1d0
     method='MULLER'
     call MULLER(charge,E0,E1,E2,FermiAcc,qtol,MaxIterations,E3,DE,k,cond)
     calls=k+3
-    if(k==MaxIterations.or.E3<EMin.or.E3>EMax.or..not.ieee_is_finite(E3)) then
+    if(k==MaxIterations.or.E3<lower.or.E3>EMax.or..not.ieee_is_finite(E3)) then
        print *, 'Warning: MULLER method failed to find root. Using SECANT.'
        E0=guess-1d0;E2=guess+1d0
        method='SECANT'
        call SECANT(charge,E0,E2,FermiAcc,qtol,MaxIterations,E3,DE,cond,k)
        calls=calls+k+2
-       if(k==MaxIterations.or.E3<EMin.or.E3>EMax.or..not.ieee_is_finite(E3)) then
+       if(k==MaxIterations.or.E3<lower.or.E3>EMax.or..not.ieee_is_finite(E3)) then
           print *, 'Warning: SECANT method failed to find root. Using BISEC.'
           method='BISEC'
-          E3=BISEC(charge,EMin,EMax,FermiAcc,5*MaxIterations,k)
+          E3=BISEC(charge,lower,EMax,FermiAcc,5*MaxIterations,k)
           calls=calls+k+3
           DE=FermiAcc
           if(k>=5*MaxIterations) then
