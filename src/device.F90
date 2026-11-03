@@ -982,6 +982,10 @@
     real*8,intent(out) :: root,width
     real*8 :: center,left,right,fl,fr,residual,started,halfwidth
     integer :: expansions,bracket_calls,iterations,calls,status,slot
+    write(ifu_log,*)'------------------------'
+    write(ifu_log,*)'Integrating density matrix to find device Fermi energy'
+    write(ifu_log,*)'------------------------'
+    call flush(ifu_log)
     if(DevMuller) then
        call SolveDeviceFermiMuller(charge,guess,qtol,root,width)
        return
@@ -2614,7 +2618,9 @@
     print *
     
     if (SOC .or. ROT .or. ZM .or. SCFSOC) then
-       write(ifu_log,*)' Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+       write(ifu_log,*)'------------------------'
+       write(ifu_log,*)'Finding new Fermi level after adding SOC and/or a Zeeman field and/or rotating spins'
+       write(ifu_log,*)'------------------------'
 
       !allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
@@ -2914,7 +2920,9 @@
 
     if (SOC .or. ROT .or. ZM .or. SCFSOC) then
        !print *, 'In loop irev = ', irev
-       write(ifu_log,*)' Finding final Fermi level after adding SOC and/or a Zeeman field and/or rotating spins ..........'
+       write(ifu_log,*)'------------------------'
+       write(ifu_log,*)'Finding final Fermi level after adding SOC and/or a Zeeman field and/or rotating spins'
+       write(ifu_log,*)'------------------------'
       !allocate(PD_SOC_R(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(PD_SOC_A(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
       !allocate(PDOUT_SOC(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop

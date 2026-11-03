@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Log a dashed banner, flushed immediately, when each device density-matrix
+  integration and Fermi search starts. Informative progress messages
+  (lattice directions, SOC/Zeeman Fermi levels) use the same banner form.
+
 - Check device spectral weight on [EMin,EMax] for all electrode types,
   widening both bounds by 10 eV after a quadrature or weight-check failure
   until it passes (stop after 1000 eV). Keep the widened bounds, and start

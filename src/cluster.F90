@@ -726,7 +726,9 @@ CONTAINS
  
     ! Finding lattice parameter for electrode 1
 
-    write(ifu_log,*)'Finding lattice directions in electrode 1 ....'
+    write(ifu_log,*)'------------------------'
+    write(ifu_log,*)'Finding lattice directions in electrode 1'
+    write(ifu_log,*)'------------------------'
     d1=100000000.0
     do i=1,NEmbed(1)
        do j=i+1,nlead1
@@ -789,7 +791,9 @@ CONTAINS
 
     !print *, "nn2 = ", nn2
 
-    write(ifu_log,*)'Finding lattice directions in electrode 2 ....'
+    write(ifu_log,*)'------------------------'
+    write(ifu_log,*)'Finding lattice directions in electrode 2'
+    write(ifu_log,*)'------------------------'
     d2=100000000.0
     ! Loop until nn2 gives problems when innermost atoms (not included in NEmbed(2))
     ! do not have perfect crystalline order: Nearest neighbour distance too short
@@ -1395,7 +1399,9 @@ CONTAINS
 
     ! Finding lattice parameter for electrode 1
 
-    write(ifu_log,*)'Finding lattice directions in electrode 1 ....'
+    write(ifu_log,*)'------------------------'
+    write(ifu_log,*)'Finding lattice directions in electrode 1'
+    write(ifu_log,*)'------------------------'
     d1=100000000.0
     do i=1,NEmbed(1)
        do j=i+1,nlead1
@@ -1903,7 +1909,9 @@ CONTAINS
 
     ! Finding lattice parameter for electrode 2
 
-    write(ifu_log,*)'Finding lattice directions in electrode 2 ....'
+    write(ifu_log,*)'------------------------'
+    write(ifu_log,*)'Finding lattice directions in electrode 2'
+    write(ifu_log,*)'------------------------'
     d2=100000000.0
     do i=1,NEmbed(2)
        do j=i+1,nlead2
