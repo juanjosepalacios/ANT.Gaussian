@@ -51,81 +51,141 @@ Especifications</a></li>
 <img style="width: 45px; height: 38px;" alt="" src="ant_45_45.gif"
  class="thumbnail"><br>
 <strong><big><big><big><big>.Gaussian</big></big></big></big><br>
-</strong><span style="font-weight: bold;"><br>
-<br>
-ANT.Gaussian</span> interfaces
-with the popular quantum chemistry code GAUSSIAN03/09 to compute the
-electronic structure with open boundary conditions in equilibrium
-and non-equilibrium situations (i.e., zero and finite bias voltage). It
-follows an onion shell structure, modeling the far
-electrodes with a parametrized Bethe lattice while computing at the
-density functional theory level, as implemented in GAUSSIAN03/09, the
-central scattering region. <br>
-<br>
+</strong><br>
+<p><span style="font-weight: bold;">ANT.Gaussian</span> (version 2.8.4)
+interfaces with the quantum chemistry code GAUSSIAN03/09 to compute the
+electronic structure and transport of nanoscale devices with open boundary
+conditions, in equilibrium and out of equilibrium (zero and finite bias
+voltage). It follows an onion-shell scheme: the central scattering region
+and part of the electrodes are computed at the density functional theory
+level, as implemented in GAUSSIAN03/09, while the far electrodes are
+described by model self-energies.</p>
 <img style="width: 178px; height: 108px;" alt="Bethe lattice"
  src="images/LDR.jpg" class="thumbnail"><img
  style="width: 253px; height: 105px;"
  alt="Scheme of Bethe lattice conneting a system"
- src="images/bl-scheme.jpg" class="thumbnail"><br>
-<strong><br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-Basic functionality:</strong><br>
+ src="images/bl-scheme.jpg" class="thumbnail"><br style="clear: both;">
+
+<p><strong>How a calculation proceeds:</strong></p>
 <ul>
-  <li>Spin-resolved transmission spectrum [T(E)] in equilibrium (linear
-response) or out of equilibrium (finite bias voltage) at zero
-temperature (<em>T.job_name.dat</em>).</li>
-  <br>
-  <li>Total density of states [DOS(E)] and DOS projected on selected
-atoms and orbitals (<em>DOS.job_name.dat</em>).</li>
-  <li><br>
-  </li>
-  <li>Orbital eigenchannel analysis (<em>T.job_name.dat,
-t.job_name.dat,</em> and
-standard output <em> job_name.log</em>).</li>
-  <li><br>
-  </li>
-  <li>Average electronic potential on atoms (<em>V.job_name.dat</em>
-and
-standard output <em> job_name.log</em>).</li>
-  <li><br>
-  </li>
-Mulliken and spin population analysis (<span style="font-style: italic;">Q.job_name.dat</span>
-and standard output <em> job_name.log</em>). When the DOS is requested,
-the DOS projected on atoms at a given energy (the default is the Fermi
-energy) is also dumped into<span style="font-style: italic;">
-<em>Q.job_name.dat</em>.<br>
-  </span>
+  <li>GAUSSIAN starts its usual SCF for the cluster. When its density
+convergence reaches <a href="manual_3_g03.html#sl"><em>SL</em></a>, ANT connects the electrodes and takes over
+the density matrix in every following cycle.</li>
+  <li>In each cycle ANT finds the device Fermi level that gives the right
+number of electrons, integrates the Green's function to build the density
+matrix, and mixes it with previous cycles (<a href="manual_3_g03.html#alpha"><em>ALPHA</em></a>,
+<a href="manual_3_g03.html#npulay"><em>NPULAY</em></a>, or Fock-matrix mixing with <a href="manual_3_g03.html#fmixing"><em>FMIXING</em></a>).</li>
+  <li>After convergence, ANT evaluates transmission, densities of states and
+population analyses on a real energy grid (<a href="manual_3_g03.html#ew1-and-ew2"><em>EW1/EW2</em></a>,
+<a href="manual_3_g03.html#estep"><em>ESTEP</em></a>).</li>
+  <li>The converged density matrix is saved as <em>P.job_name.dat</em> and
+is read automatically to restart a calculation, for example to ramp the
+bias or to start a new spin configuration (<a href="manual_3_g03.html#pfix"><em>PFIX</em></a>,
+<a href="manual_3_g03.html#nfix"><em>NFIX</em></a>).</li>
 </ul>
-<span style="font-style: italic;"></span>
+
+<p><strong>Electrode models</strong> (<a href="manual_3_g03.html#type1-and-type2"><em>TYPE1/TYPE2</em></a>):</p>
 <ul>
+  <li><em>BETHE</em>: a parametrized Bethe lattice attached to the outer
+electrode atoms, with tight-binding parameter sets for many elements in
+<em>BLDAT</em> (<a href="manual_3_g03.html#blpar1-and-blpar2"><em>BLPAR1/BLPAR2</em></a>,
+<a href="manual_3_g03.html#nembed1-and-nembed2"><em>NEMBED1/NEMBED2</em></a>, <a href="manual_3_g03.html#glue"><em>GLUE</em></a>).</li>
+  <li><em>1DLEAD</em>: periodic one-dimensional leads built from the
+Hamiltonian and overlap of repeated units in the cluster itself
+(<a href="manual_3_g03.html#natpc1-and-natpc2"><em>NATPC1/NATPC2</em></a>). Their Fermi levels come from
+periodic band filling and their self-energies from an iterative Dyson
+solution (<a href="manual_3_g03.html#selfacc"><em>SELFACC</em></a>, <a href="manual_3_g03.html#l1dalpha"><em>L1DALPHA</em></a>).</li>
+  <li><em>GHOST</em>: no electrode on that side; two GHOST electrodes give an
+isolated cluster treated with ANT's own convergence controls.</li>
 </ul>
-<span style="font-weight: bold;"><br>
-</span><strong>Advanced features:<br></strong>
+
+<p><strong>Basic functionality:</strong></p>
 <ul>
-<li> Spin manipulation directives for the creation of self-consistent solutions with
-tailored spin textures.<br></li>
-  <li><br>
-  </li>
-<li> Spin-orbit coupling after selfconsistency.
-<br></li>
-  <li><br>
-  </li>
-<li> Correlation effects at the Dynamical Mean Field Theory level.<br></li>
+  <li>Spin-resolved transmission T(E) in equilibrium or at finite bias, at
+zero temperature (<em>T.job_name.dat</em>, or <em>T.job_name.SOC.dat</em>
+with spin-orbit coupling or spin rotation).</li>
+  <li>Eigenchannel decomposition of the transmission
+(<a href="manual_3_g03.html#nchannels"><em>NCHANNELS</em></a>, <a href="manual_3_g03.html#htransm"><em>HTRANSM</em></a>) and reduced
+transmission matrix between selected atoms (<em>t.job_name.dat</em>,
+<a href="manual_3_g03.html#rtm-beg-and-rtm-end"><em>RTM_BEG/RTM_END</em></a>).</li>
+  <li>Total density of states and DOS projected on selected atoms and
+orbitals (<em>DOS.job_name.dat</em>, <a href="manual_3_g03.html#ldos"><em>LDOS</em></a>,
+<a href="manual_3_g03.html#ldos-beg-and-ldos-end"><em>LDOS_BEG/LDOS_END</em></a>,
+<a href="manual_3_g03.html#dosenergy"><em>DOSENERGY</em></a>), and bulk DOS of the electrodes
+(<em>Lead1DOS.dat</em>, <em>Lead2DOS.dat</em>, <a href="manual_3_g03.html#leaddos"><em>LEADDOS</em></a>).</li>
+  <li>Mulliken charge and spin population analysis (<em>Q.job_name.dat</em>,
+<a href="manual_3_g03.html#mulliken"><em>MULLIKEN</em></a>) and average on-site energies of the atoms
+(<em>V.job_name.dat</em>, keyword <em>HAMILTON</em>), useful to follow the
+potential drop at finite bias.</li>
+  <li>Finite bias voltage with a self-consistent non-equilibrium density
+(<a href="manual_3_g03.html#biasvolt"><em>BIASVOLT</em></a>) and gating through an excess charge
+(<a href="manual_3_g03.html#qexcess"><em>QEXCESS</em></a>).</li>
 </ul>
-<span style="font-weight: bold;"><br>
-Complementary codes:</span><br>
-CRY2TB: Code for the extraction of Bethe lattice parameters from
-CRYSTAL
-calculations.<br>
-<span style="font-weight: bold;"><br>
-<br>
-</span></div>
+
+<p><strong>Numerical methods:</strong></p>
+<ul>
+  <li>Density matrix from a complex-contour integration of the Green's
+function, plus a real-axis integration over the bias window at finite bias.
+The default Gauss-Chebyshev quadrature is controlled by
+<a href="manual_3_g03.html#pacc"><em>PACC</em></a> and a maximum number of points; the experimental
+adaptive Gauss-Kronrod quadrature (<a href="manual_3_g03.html#adaptquad"><em>ADAPTQUAD</em></a>) checks every
+density-matrix element.</li>
+  <li>Integration bounds EMin/EMax are verified by a spectral-weight check
+whose tolerance follows <a href="manual_3_g03.html#chargeacc"><em>CHARGEACC</em></a>.</li>
+  <li>Device Fermi search by Muller, secant and bisection, or by safeguarded
+Brent with an enforced charge residual
+(<a href="manual_3_g03.html#devmuller-and-devbrent"><em>DEVMULLER/DEVBRENT</em></a>, <a href="manual_3_g03.html#fermiacc"><em>FERMIACC</em></a>,
+<a href="manual_3_g03.html#chargeacc"><em>CHARGEACC</em></a>). An upper bound on the Fermi energy
+(<a href="manual_3_g03.html#efmax"><em>EFMAX</em></a>) and a diagnostic scan of the charge around a rejected
+root (<a href="manual_3_g03.html#qscan"><em>QSCAN</em></a>) are available. Bethe-lattice Fermi levels use
+Brent by default (<a href="manual_3_g03.html#blbrent-and-blsecant"><em>BLBRENT/BLSECANT</em></a>).</li>
+  <li><a href="manual_3_g03.html#eta"><em>ETA</em></a> broadens every device state, including states that do
+not couple to the electrodes, so that such levels can be partially occupied.</li>
+  <li>Tolerances are relaxed in early SCF cycles and tightened as the
+calculation converges, unless <a href="manual_3_g03.html#fullacc"><em>FULLACC</em></a> keeps them at their
+input values from the start.</li>
+  <li>OpenMP parallelization of the energy integrations (set
+<em>%NProcShared</em> and <em>OMP_NUM_THREADS</em> to the same value).</li>
+  <li>Progress messages in the log mark each stage, for example the start of
+every density-matrix integration and Fermi search.</li>
+</ul>
+
+<p><strong>Advanced features:</strong></p>
+<ul>
+  <li>Spin manipulation directives to build self-consistent solutions with
+tailored spin textures: reversing the magnetization from a given atom
+(<a href="manual_3_g03.html#mrstart"><em>MRSTART</em></a>), editing or deleting atomic spins
+(<a href="manual_3_g03.html#spinedit"><em>SPINEDIT</em></a>, <a href="manual_3_g03.html#spindel"><em>SPINDEL</em></a>), magnetic boundary
+conditions of the electrodes (<a href="manual_3_g03.html#ud-du-dd"><em>UD/DU/DD</em></a>), fixed electron
+numbers (<a href="manual_3_g03.html#nalpha-and-nbeta"><em>NALPHA/NBETA</em></a>) and spin locking during the
+first cycles (<a href="manual_3_g03.html#nspinlock"><em>NSPINLOCK</em></a>, <a href="manual_3_g03.html#swoffspl"><em>SWOFFSPL</em></a>).</li>
+  <li>Spin-orbit coupling after self-consistency (<a href="manual_3_g03.html#soc"><em>SOC</em></a>) or within
+the SCF cycle (<a href="manual_3_g03.html#scfsoc"><em>SCFSOC</em></a>), with scaling factors and values per
+shell and per atom (<a href="manual_3_g03.html#soc-fac-p"><em>SOC_FAC_P/D/F</em></a>,
+<a href="manual_3_g03.html#socfacatom"><em>SOCFACATOM</em></a>, <a href="manual_3_g03.html#soc-val-p"><em>SOC_VAL_P/D/F</em></a>,
+<a href="manual_3_g03.html#socvalatom"><em>SOCVALATOM</em></a>).</li>
+  <li>Rotation of the spin quantization axis (keyword <em>ROT</em>) and
+Zeeman fields applied to the whole device or to selected atoms (keyword
+<em>ZM</em>).</li>
+  <li>Correlation effects: DFT+U (<a href="manual_3_g03.html#dft-u"><em>DFT+U</em></a>) and the interface to
+Dynamical Mean Field Theory through correlated blocks and hybridization
+functions (<a href="manual_3_g03.html#corrblocks"><em>CORRBLOCKS</em></a>, <a href="manual_3_g03.html#hybfunc"><em>HYBFUNC</em></a>,
+<a href="manual_3_g03.html#portho"><em>PORTHO</em></a>, <a href="manual_3_g03.html#diagcorrbl"><em>DIAGCORRBL</em></a>).</li>
+</ul>
+
+<p><strong>Complementary codes:</strong></p>
+<ul>
+  <li>CRY2TB: extraction of Bethe lattice parameters from CRYSTAL
+calculations.</li>
+  <li><a href="ant_1D.html">ANT.1D</a>: transport through one-dimensional
+systems from a pre-computed Hamiltonian, either a tight-binding model or a
+periodic calculation with codes such as CRYSTAL or SIESTA.</li>
+</ul>
+<p>Worked examples (Al, Au, Ni, Pt and other nanocontacts, molecules and
+graphene) are distributed in the <em>examples</em> directory; see also the
+<a href="manual_g03.html">Manual</a> and the
+<a href="examples_g03.html">Examples</a> page.</p>
+</div>
 <div class="cleaner"><strong><strong><strong><strong><strong> &nbsp;</strong></strong></strong></strong></strong></div>
 </div>
 </div>
