@@ -155,6 +155,19 @@ checks retain their existing methods.</p>
 calculation. Matrix-panel storage increases memory use for large devices.</p>
   <p>Default: .false. (off; legacy quadrature).</p>
 </details>
+<details class="keyword" id="blbrent-and-blsecant">
+  <summary><em>BLBRENT and BLSECANT</em> (logical)</summary>
+  <p>Bethe-lattice bulk Fermi levels are found with safeguarded Brent by default (BLBRENT, kept for compatibility). BLSECANT restores the legacy bisection followed by the secant method. Brent stops on a bracket width of FERMIACC; the final charge residual must be below CHARGEACC times the number of electrons per Bethe-lattice atom, otherwise the run stops.</p>
+  <p>Electrode setup always uses the FERMIACC and CHARGEACC input values, without the staged loosening applied to early device SCF cycles. Both methods print iterations, charge evaluations, residual and wall time.</p>
+  <p>Default: Brent (BLSECANT absent).</p>
+</details>
+<details class="keyword" id="devmuller-and-devbrent">
+  <summary><em>DEVMULLER and DEVBRENT</em> (logical)</summary>
+  <p>By default (DEVMULLER, kept for compatibility) the device Fermi level is found with Muller from the previous Fermi level +/-1 eV, then the secant method, then bisection over the full device interval. DEVBRENT selects safeguarded Brent instead (see BRENT.md). A method falls through when it reaches MAX iterations or leaves the device interval.</p>
+  <p>Muller and secant use FERMIACC as a relative step tolerance and CHARGEACC*(NCDEl+QEXCESS) as the charge tolerance; bisection stops on a bracket of FERMIACC. Applies to collinear, spin-locked and SOC searches on the contour and imaginary axis. The accepted root is evaluated last and its residual is printed but, unlike Brent, not enforced. Failure of all three methods stops the run.</p>
+  <p>Brent brackets the root and enforces the final charge residual, at the cost of more charge evaluations per search.</p>
+  <p>Default: Muller (DEVBRENT absent).</p>
+</details>
 <details class="keyword" id="pacc">
   <summary><em>PACC</em> (real)</summary>
   <p>Numerical integration maximum accuracy for density matrix.</p>
@@ -237,6 +250,21 @@ search (in eV). When reinitializing a calculation from a
 P.job_name.dat file it is overruled by the existing value in
 P.job_name;.dat.</p>
   <p>Default: FERMISTART = -5.0D0</p>
+</details>
+<details class="keyword" id="efmax">
+  <summary><em>EFMAX</em> (real)</summary>
+  <p>Upper bound on the device Fermi energy (in eV) during the device Fermi search (DEVBRENT bracket, DEVMULLER Muller/secant acceptance and the bisection fallback). EMin/EMax, the density contours and the spectral-weight check are unchanged. A search whose root lies above EFMAX fails explicitly.</p>
+  <p>Default: no bound</p>
+</details>
+<details class="keyword" id="qscan">
+  <summary><em>QSCAN</em> (logical)</summary>
+  <p>Diagnostic. When a DEVBRENT root is rejected because its charge residual exceeds the tolerance, evaluate the device charge residual at 15 Fermi energies from -1 to +1 eV around that root (offsets down to 1.0D-4 eV), log them as QSCAN lines, then stop as before. Costs 15 extra density integrations. A jump that survives this scan marks a discontinuity in the device charge rather than an integration error.</p>
+  <p>Default: off</p>
+</details>
+<details class="keyword" id="ssm">
+  <summary><em>SSM</em> (real)</summary>
+  <p>Historical secant-switch threshold. SSM no longer selects the device root algorithm; see DEVMULLER and DEVBRENT.</p>
+  <p>Default: SSM = 1.0D-3</p>
 </details>
 <details class="keyword" id="natpc1-and-natpc2">
   <summary><em>NATPC1 and NATPC2</em> (integer)</summary>
@@ -343,6 +371,16 @@ of atoms in first metallic electrode and</p>
   <p>NATOMEL2 = Number of atoms in
 second metallic electrode.</p>
 </details>
+<details class="keyword" id="fmixing">
+  <summary><em>FMIXING</em> (logical)</summary>
+  <p>Requests that the damping of the self-consistency be done for the Fock (Kohn-Sham) matrix instead of the density matrix (default). In this case ALPHA refers to the amount of mixing with the newly calculated Fock matrix.</p>
+  <p>Default: FMIXING = .false.</p>
+</details>
+<details class="keyword" id="dmimag">
+  <summary><em>DMIMAG</em> (logical)</summary>
+  <p>Requests that the density matrix is calculated by integration of the Green&#x27;s function along the imaginary axis instead of the complex contour (default).</p>
+  <p>Default: DMIMAG = .false.</p>
+</details>
 <h3>Reinitialization options:</h3>
   <p>When the file P.job_name.dat is
 present, the calculation is
@@ -446,6 +484,11 @@ need to add &quot;nosymm&quot; to the SCF specifications line in  the
 GAUSSIAN03/09 input file as &quot;scf(nosymm)&quot;.</p>
   <p>Default: MRSTART = 0 (No effect).</p>
 </details>
+<details class="keyword" id="spindel">
+  <summary><em>SPINDEL</em> (logical)</summary>
+  <p>Erases the spin density of a spin-polarized initial guess in order to achieve a non-magnetic solution, i.e. the initial guess becomes the average of the spin-up and spin-down densities.</p>
+  <p>Default: SPINDEL = .false.</p>
+</details>
 <details class="keyword" id="spinedit">
   <summary><em>SPINEDIT</em> (logical)</summary>
   <p>Useful to create an educated
@@ -463,6 +506,11 @@ atoms where the spin is altered. The list below gives the atom numbers
 and the atom spins for the atoms to be altered where the atom spin can
 either be maintained (1), reversed (-1), or erased (0).</p>
   <p>Default: .false. (off)</p>
+</details>
+<details class="keyword" id="nalpha-and-nbeta">
+  <summary><em>NALPHA and NBETA</em> (integer)</summary>
+  <p>Number of alpha (up) and beta (down) electrons. It overrules the numbers determined by the multiplicity given in the GAUSSIAN03/09 input file. Any number is possible as long as it is &gt;= 0. Useful after editing the density matrix to create an educated guess for a new calculation (see SPINEDIT and MRSTART).</p>
+  <p>Default: NALPHA = NBETA = -1 (not used).</p>
 </details>
 <details class="keyword" id="soc">
   <summary><em>SOC</em> (logical)</summary>
