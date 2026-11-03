@@ -3947,7 +3947,7 @@
   ! 
   ! *** Total charge up to energy E, lower bound is EMin ***
   ! 
-  real*8 function TotCharge( E, lower_bound, integration_status )
+  real*8 function TotCharge( E, lower_bound, integration_status, tolerance )
     use constants, only: d_zero, d_pi, ui
     use parameters, only: ElType
     use numeric, only: gauleg 
@@ -3960,7 +3960,8 @@
     real*8, intent(in) :: E
     real*8, optional, intent(in) :: lower_bound
     integer, optional, intent(out) :: integration_status
-    real*8 :: q, qq, E0, R, charge_start, lower
+    real*8, optional, intent(in) :: tolerance
+    real*8 :: q, qq, E0, R, charge_start, lower, conv
     real*8, dimension(nmax) :: contribution
     real*8, dimension(nmax) :: x, w
     logical :: parallel_charge
@@ -3970,6 +3971,8 @@
     charge_start = omp_get_wtime()
 
     if(present(integration_status)) integration_status=0
+    conv=0.1d0
+    if(present(tolerance)) conv=tolerance
     lower=EMin
     if(present(lower_bound)) lower=lower_bound
     ! Local bounds do not modify the density contour or device root bracket.
@@ -4004,7 +4007,7 @@
           stop 1
        end if
        if (n > 31) then
-          if (abs(q-qq) < 0.1) exit
+          if (abs(q-qq) < conv) exit
        end if
        if( n >= nmax )then
           print '(A,I4,A)' , "TotCharge/Gaussian quadrature has not converged after", nmax, " steps."
@@ -4102,25 +4105,46 @@
   ! *************************************
   ! Check the weight on [EMin,EMax], the bounds the density contours use,
   ! widening both by 10 eV until it passes. The widened bounds are kept.
+  ! The tolerance is the input CHARGEACC times the device electron count
+  ! (at most 0.1), the same scale the device Fermi search accepts. The
+  ! device ETA gives every state Lorentzian tails beyond the window that no
+  ! widening removes; that analytic deficit is added back before comparing.
   subroutine CheckEnergyBounds(Bounds)
+    use parameters, only: ChargeA,QExcess,eta
+    use numeric, only: RMatPow, RSDiag
+    use constants, only: d_pi
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
+    intrinsic :: min
     logical,intent(out) :: Bounds
     integer,parameter :: max_widenings=100
-    real*8 :: q,target
-    integer :: attempt,status
+    real*8 :: q,target,tol,tail
+    real*8 :: X(NAOrbs,NAOrbs),HO(NAOrbs,NAOrbs),evals(NAOrbs,NSpin)
+    integer :: attempt,status,spin,info
     target=2d0*(NCDAO2-NCDAO1+1)
+    tol=ChargeA*(NCDEl+QExcess)
+    if(.not.ieee_is_finite(tol).or.tol<=0d0) tol=0.1d0
+    tol=min(0.1d0,tol)
+    call RMatPow(SD,-0.5d0,X)
+    do spin=1,NSpin
+       HO=matmul(X,matmul(HD(spin,:,:),X))
+       call RSDiag(HO,evals(:,spin),info)
+       if(info/=0) print *, 'Warning: device diagonalization failed in spectral-weight tail estimate'
+    end do
     Bounds=.false.
     print '(A,F12.5)', ' Total Integrated Spectral Weight target: ',target
+    print '(A,ES12.4)', ' Spectral-weight tolerance: ',tol
     do attempt=0,max_widenings
        print '(A,F12.4,A,F12.4,A)', ' Spectral-weight window: [', &
             EMin,', ',EMax,'] eV'
        call flush(6)
-       q=TotCharge(EMax,lower_bound=EMin,integration_status=status)
+       q=TotCharge(EMax,lower_bound=EMin,integration_status=status,tolerance=0.1d0*tol)
+       tail=EtaTail()
        if(status==0.and.ieee_is_finite(q)) then
-          Bounds=abs(q-target)<0.1d0
+          Bounds=abs(q+tail-target)<tol
        end if
-       print '(A,ES16.8,A,I3)', ' Spectral weight: ',q,' quadrature status: ',status
+       print '(A,ES16.8,A,ES12.4,A,I3)', ' Spectral weight: ',q,' ETA tail estimate: ',tail, &
+            ' quadrature status: ',status
        if(Bounds) then
           print *, ' Spectral-weight check OK'
           return
@@ -4134,6 +4158,23 @@
          10d0*max_widenings,' eV; target=',target
     call flush(6)
     stop 1
+  contains
+    ! Lorentzian weight outside [EMin,EMax] of states inside it, projected
+    ! uniformly onto the reduced device. States outside the window are not
+    ! corrected: their missing weight is what the check must detect.
+    real*8 function EtaTail()
+      integer :: n,k
+      real*8 :: e
+      EtaTail=0d0
+      do k=1,NSpin
+         do n=1,NAOrbs
+            e=evals(n,k)+shift
+            if(e>EMin.and.e<EMax) EtaTail=EtaTail+(atan(eta/(e-EMin))+atan(eta/(EMax-e)))/d_pi
+         end do
+      end do
+      EtaTail=EtaTail*dble(NCDAO2-NCDAO1+1)/dble(NAOrbs)
+      if(NSpin==1) EtaTail=2d0*EtaTail
+    end function EtaTail
   end subroutine CheckEnergyBounds
 
 !ccccccccccccccccccccccccccccccc

@@ -11,8 +11,9 @@ flags=['-i8','-r8','-check','bounds','-O0'] if Path(fc).name in ('ifx','ifort') 
 with tempfile.TemporaryDirectory() as d:
  Path(d,'test.f90').write_text(f)
  subprocess.check_call([fc,*flags,'test.f90','-o','test'],cwd=d)
- for mode in ['first','widen','excess','quadrature','nonfinite']:
+ for mode in ['first','widen','excess','quadrature','nonfinite','tail','outside','cap']:
   subprocess.check_call(['./test',mode],cwd=d)
  bad=subprocess.run(['./test','failure'],cwd=d,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True)
  if bad.returncode==0 or 'failed after widening EMin/EMax' not in bad.stdout:raise AssertionError(bad.stdout)
  print('PASS: [EMin,EMax] check, all widening reasons, widened bounds kept, explicit final failure')
+ print('PASS: CHARGEACC-scaled tolerance (capped at 0.1), quadrature at a tenth of it, ETA tail added back only for states inside the window')

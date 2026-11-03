@@ -1,35 +1,93 @@
+module parameters
+ real*8 :: ChargeA=1d-2,QExcess=0d0,eta=1d-10
+end module
+module constants
+ real*8,parameter :: d_pi=3.14159265358979323846d0
+end module
+module numeric
+contains
+ ! The model overlap is the identity and the Hamiltonian diagonal.
+ subroutine RMatPow(Z,a,X)
+ real*8,intent(in) :: Z(:,:),a
+ real*8,intent(out) :: X(:,:)
+ integer :: i
+ X=0d0
+ do i=1,size(X,1)
+  X(i,i)=Z(i,i)**a
+ end do
+ end subroutine
+ subroutine RSDiag(A,w,info)
+ real*8,intent(inout) :: A(:,:)
+ real*8,intent(out) :: w(:)
+ integer,intent(out) :: info
+ integer :: i
+ do i=1,size(w)
+  w(i)=A(i,i)
+ end do
+ info=0
+ end subroutine
+end module
 module model
  use, intrinsic :: ieee_arithmetic
  implicit none
- integer :: NCDAO1=1,NCDAO2=4,calls=0
- real*8 :: EMin=-123d0,EMax=14567d0
+ integer,parameter :: NAOrbs=4
+ integer :: NCDAO1=1,NCDAO2=4,calls=0,NSpin=1,NCDEl=4
+ real*8 :: EMin=-123d0,EMax=14567d0,shift=0d0,expected_conv=4d-3
+ real*8 :: SD(NAOrbs,NAOrbs),HD(1,NAOrbs,NAOrbs),levels(NAOrbs)=(/-1d0,0d0,1d0,2d0/)
  character(len=32) :: mode
 contains
 @CHECK@
- real*8 function TotCharge(e,lower_bound,integration_status) result(q)
- real*8,intent(in) :: e,lower_bound
+ real*8 function TotCharge(e,lower_bound,integration_status,tolerance) result(q)
+ use parameters, only: eta
+ use constants, only: d_pi
+ real*8,intent(in) :: e,lower_bound,tolerance
  integer,intent(out) :: integration_status
+ integer :: n
  calls=calls+1
  ! Each call must use the current, widened EMin/EMax.
  if(e/=EMax.or.lower_bound/=EMin)stop 10
  if(e/=14567d0+10d0*(calls-1).or.lower_bound/=-123d0-10d0*(calls-1))stop 11
+ ! Quadrature must converge to a tenth of the check tolerance.
+ if(abs(tolerance-expected_conv)>1d-15)stop 12
  integration_status=0;q=8d0
  if(mode=='widen'.and.calls<=2)q=7d0
  if(mode=='excess'.and.calls==1)q=9d0
  if(mode=='quadrature'.and.calls==1)integration_status=1
  if(mode=='nonfinite'.and.calls==1)q=ieee_value(q,ieee_quiet_nan)
  if(mode=='failure')q=7d0
+ if(mode=='tail'.or.mode=='outside')then
+  ! Exact Lorentzian weight on [lower_bound,e], both spins.
+  q=0d0
+  do n=1,NAOrbs
+   q=q+2d0*(atan((e-levels(n))/eta)-atan((lower_bound-levels(n))/eta))/d_pi
+  end do
+ end if
  end function
 end module
 program test
  use model
+ use parameters, only: ChargeA,eta
  implicit none
  logical :: bounds
+ integer :: i
  call get_command_argument(1,mode)
+ SD=0d0;HD=0d0
+ do i=1,NAOrbs
+  SD(i,i)=1d0
+ end do
+ ! A tail of about 0.10 states exceeds the 0.04 tolerance unless added back.
+ if(mode=='tail')eta=5d0
+ ! A state below EMin keeps its full weight missing until EMin passes it.
+ if(mode=='outside')levels(1)=-200d0
+ if(mode=='cap')then;ChargeA=1d0;expected_conv=1d-2;end if
+ do i=1,NAOrbs
+  HD(1,i,i)=levels(i)
+ end do
  call CheckEnergyBounds(bounds)
  if(.not.bounds)stop 20
- if(mode=='first'.and.calls/=1)stop 21
+ if((mode=='first'.or.mode=='tail'.or.mode=='cap').and.calls/=1)stop 21
  if(mode=='widen'.and.calls/=3)stop 22
  if((mode=='excess'.or.mode=='quadrature'.or.mode=='nonfinite').and.calls/=2)stop 23
+ if(mode=='outside'.and.calls/=9)stop 25
  if(EMin/=-123d0-10d0*(calls-1).or.EMax/=14567d0+10d0*(calls-1))stop 24
 end program

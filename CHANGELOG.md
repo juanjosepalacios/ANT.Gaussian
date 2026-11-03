@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Device spectral-weight check: replace the fixed 0.1 tolerance with
+  min(0.1, input CHARGEACC*(NCDEl+QEXCESS)), the device Fermi-search scale,
+  and converge its quadrature to a tenth of it. Add back the analytic ETA
+  Lorentzian tail of device states inside [EMin,EMax], which widening cannot
+  remove; states outside the window stay uncorrected. Log the tolerance and
+  tail estimate.
+
 - Apply ETA once in the device Green's function, (z+i*ETA)S-H-Sigma, in
   gplus0, gplus, glesser and their SOC variants (-i*ETA for advanced), so
   device states uncoupled from the electrodes are broadened and can be
