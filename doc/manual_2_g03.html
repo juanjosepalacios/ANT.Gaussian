@@ -276,6 +276,10 @@ ETA = 0.01
 <p>The numerical values above are starting settings, not a validated accuracy
 prescription. ETA may need to exceed its default for 1D leads, but broadens
 spectral features; verify results with respect to ETA and integration accuracy.
+ETA also broadens device states that barely couple to 1D leads, which lets
+such a level be partially occupied instead of blocking the device Fermi
+search (see <a href="manual_3_g03.html#eta">ETA</a> and
+<a href="manual_3_g03.html#qscan">QSCAN</a>).
 FERMIACC and CHARGEACC are subject to SCF accuracy adaptation unless FULLACC
 is requested. Check the log for lead initialization, both Fermi levels and
 integration warnings before interpreting transmission. See the

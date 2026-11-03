@@ -178,6 +178,7 @@ calculation. Matrix-panel storage increases memory use for large devices.</p>
   <summary><em>CHARGEACC</em> (real)</summary>
   <p>Total charge maximum accuracy. For 1D leads, the absolute electron-count tolerance per chosen repeated cell applies both to the band-filling root residual and to the previous Fermi energy's charge residual on a finer k mesh. FERMIACC separately controls energy convergence. No lead charge-contour or integration-bound search is used. Effective tolerances may be relaxed during early SCF cycles unless FULLACC is present.</p>
   <p>For the device, the final charge residual must be below CHARGEACC*(NCDEl+QEXCESS), preserving the device relative-charge convention. The safeguarded Brent search evaluates density again at the accepted root and stops if the final residual fails. Root convergence does not establish quadrature accuracy.</p>
+  <p>The device spectral-weight check on [EMin,EMax] accepts a deviation from twice the number of reduced-device orbitals below min(0.1, CHARGEACC*(NCDEl+QEXCESS)), the same scale as the device Fermi search. It uses the input CHARGEACC, not the value relaxed in early SCF cycles, and converges its quadrature to a tenth of that tolerance. The analytic ETA Lorentzian tail of device states inside the window is added back before comparing; states outside the window are not corrected, so a too-high EMin is still detected and widened. The log prints the tolerance and the tail estimate.</p>
   <p>Default: CHARGEACC = 1.0D-5</p>
 </details>
 <details class="keyword" id="fermiacc">
@@ -227,7 +228,8 @@ slightly disordered.</p>
 Green&#x27;s function. A value larger than the default may be needed when
 both electrodes are set to GHOST or when using periodic 1D leads
 (TYPE1 or TYPE2 = 1DLEAD).</p>
-  <p>ETA adds a positive imaginary component to the energy used in the device Green function. Increasing it smooths narrow spectral structure and can regularize nearly singular inversions, but also changes peak widths. Check transmission as ETA is reduced rather than treating smoother curves as proof of convergence.</p>
+  <p>ETA enters the electrode Green&#x27;s functions (Bethe lattice and 1D leads) and, once, the device Green&#x27;s function [(z+i*ETA)S-H-Sigma_L-Sigma_R]^-1 (-i*ETA for the advanced function). Every device state is therefore broadened by at least ETA, including states that do not couple to the electrodes. Such a state can then be partially occupied in the device Fermi search instead of producing a jump in the device charge that no Fermi energy can resolve (see <a href="#qscan">QSCAN</a>). ETA does not enter Gamma_L/R, so it does not create spurious transmission channels; GHOST electrodes contribute a zero self-energy.</p>
+  <p>Increasing ETA smooths narrow spectral structure and can regularize nearly singular inversions, but also changes peak widths and slightly lowers transmission where the electrode coupling is not much larger than ETA. Its Lorentzian tails also move a small amount of spectral weight outside [EMin,EMax]; the spectral-weight check adds this analytic tail back (see <a href="#chargeacc">CHARGEACC</a>). Check results as ETA is reduced rather than treating smoother curves as proof of convergence. With the default value these effects are negligible.</p>
   <p>Default: ETA = 1.0D-10</p>
 </details>
 <details class="keyword" id="sl">
