@@ -138,6 +138,15 @@ bisection fallback). EMin/EMax, the density contours and the spectral-weight
 check are unchanged. A search whose root lies above EFMAX fails explicitly.
 Default: no bound
 
+* QSCAN (logical)
+Diagnostic. When a DEVBRENT root is rejected because its charge residual
+exceeds the tolerance, evaluate the device charge residual at 15 Fermi
+energies from -1 to +1 eV around that root (offsets down to 1.0D-4 eV),
+log them as QSCAN lines, then stop as before. Costs 15 extra density
+integrations. A jump that survives this scan marks a discontinuity in the
+device charge rather than an integration error.
+Default: off
+
 * SSM (real)
 Historical secant-switch threshold. SSM no longer selects the device root
 algorithm; see DEVMULLER and DEVBRENT.

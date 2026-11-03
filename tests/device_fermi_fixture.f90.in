@@ -1,6 +1,7 @@
 module parameters
  real*8 :: FermiAcc=1d-8,ChargeAcc=1d-8,QExcess=0d0,FermiStart=0.7d0
  real*8 :: EFMax=huge(1d0)
+ logical :: QScan=.false.
  integer :: Max=40
  logical :: FixEFermi=.false.,DevMuller=.false.
 end module
@@ -67,6 +68,7 @@ program test
  if(arg=='charge-failure')mode=3
  ! E_F<=-0.5 excludes the root at shift=0.4
  if(arg=='efmax')EFMax=-0.5d0
+ if(arg=='qscan')then;mode=3;QScan=.true.;end if
  call CompDensMat(ok)
  if(.not.ok.or.abs(shift-0.4d0)>FermiAcc.or.last/=shift)stop 10
  call CompDensMat_SOC(ok)

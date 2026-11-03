@@ -20,4 +20,9 @@ with tempfile.TemporaryDirectory() as d:
  for mode in ['no-bracket','nonfinite','charge-failure','efmax']:
   bad=subprocess.run(['./test',mode],cwd=d,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True)
   if bad.returncode==0 or 'ERROR:' not in bad.stdout:raise AssertionError(mode+bad.stdout)
+ scan=subprocess.run(['./test','qscan'],cwd=d,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True)
+ rows=[l for l in scan.stdout.splitlines() if l.startswith(' QSCAN ') and 'Fermi energy' not in l]
+ if scan.returncode==0 or 'ERROR:' not in scan.stdout or len(rows)!=15 or 'Rejected device Brent root' not in scan.stdout:
+  raise AssertionError('qscan'+scan.stdout)
+ print('PASS: QSCAN logs 15 charge points around a rejected root before stopping')
  print('PASS: bracket, nonfinite, unacceptable final charge and EFMAX-excluded root fail explicitly')

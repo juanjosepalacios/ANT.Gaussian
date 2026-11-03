@@ -972,7 +972,7 @@
   ! A charge callback also builds PD; always evaluate the accepted root last.
   subroutine SolveDeviceFermi(charge,guess,qtol,root,width)
     use numeric, only: BracketRoot,BrentRoot
-    use parameters, only: FermiAcc,MaxIterations => Max,DevMuller,EFMax
+    use parameters, only: FermiAcc,MaxIterations => Max,DevMuller,EFMax,QScan
     use omp_lib, only: omp_get_wtime
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     implicit none
@@ -1031,9 +1031,31 @@
     write(ifu_log,'(A,F12.6)') 'Device Brent wall seconds: ',omp_get_wtime()-started
     call flush(ifu_log)
     if(.not.ieee_is_finite(residual).or.abs(residual)>qtol) then
+       write(ifu_log,'(A,F14.8,A)') 'Rejected device Brent root: Fermi energy= ',-root,' eV'
+       if(QScan) call ScanCharge()
        print *, 'ERROR: device charge residual exceeds tolerance at Brent root'
        stop 1
     end if
+  contains
+    ! Charge residual at Fermi energies around the rejected root; a jump
+    ! between neighbouring points that no quadrature change removes marks
+    ! a discontinuity in the device charge.
+    subroutine ScanCharge()
+      real*8,parameter :: offsets(15)=(/-1d0,-3d-1,-1d-1,-3d-2,-1d-2,-1d-3,-1d-4, &
+           0d0,1d-4,1d-3,1d-2,3d-2,1d-1,3d-1,1d0/)
+      integer :: k
+      write(ifu_log,*)'------------------------'
+      write(ifu_log,*)'Scanning device charge around the rejected root'
+      write(ifu_log,*)'------------------------'
+      write(ifu_log,'(A)') ' QSCAN  E_F-E_root (eV)    Fermi energy (eV)    charge residual'
+      call flush(ifu_log)
+      do k=1,size(offsets)
+         ! shift=-E_F, so raising E_F by an offset lowers the shift.
+         write(ifu_log,'(A,ES14.4,F20.8,ES20.8)') ' QSCAN ',offsets(k),-root+offsets(k), &
+              charge(root-offsets(k))
+         call flush(ifu_log)
+      end do
+    end subroutine ScanCharge
   end subroutine SolveDeviceFermi
 
   ! Default chain (DEVMULLER): Muller from guess+-1 eV, then secant, then

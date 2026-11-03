@@ -63,6 +63,9 @@
   CHARACTER(len=10), PARAMETER :: LeadBands_keyw = "LEADBANDS"
   LOGICAL :: AdaptiveQuad = .FALSE.
   CHARACTER(len=10), PARAMETER :: AdaptiveQuad_keyw = "ADAPTQUAD"
+  ! Scan device charge around a rejected Brent root before stopping.
+  LOGICAL :: QScan = .FALSE.
+  CHARACTER(len=10), PARAMETER :: QScan_keyw = "QSCAN"
   ! Brent search for Bethe-lattice bulk Fermi levels; BLSECANT restores
   ! the legacy bisection + secant search.
   LOGICAL :: BLBrent = .TRUE.
@@ -668,6 +671,8 @@ CONTAINS
        WRITE(unit=logfile,fmt=*) 'LEADBANDS is now automatic for 1D leads.'
     CASE ( AdaptiveQuad_keyw )
        AdaptiveQuad = .true.
+    CASE ( QScan_keyw )
+       QScan = .true.
     CASE ( BLBrent_keyw )
        BLBrent = .true.
     CASE ( BLSecant_keyw )
@@ -1000,6 +1005,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) Nip_keyw, " = ", NIP
     WRITE(unit=logfile,fmt=*) '1D lead Fermi search: periodic band filling'
     WRITE(unit=logfile,fmt=*) AdaptiveQuad_keyw, " = ", AdaptiveQuad
+    WRITE(unit=logfile,fmt=*) QScan_keyw, " = ", QScan
     WRITE(unit=logfile,fmt=*) BLBrent_keyw, " = ", BLBrent
     WRITE(unit=logfile,fmt=*) DevMuller_keyw, " = ", DevMuller
     WRITE(unit=logfile,fmt=*) SelfAcc_keyw, " = ", SelfAcc
