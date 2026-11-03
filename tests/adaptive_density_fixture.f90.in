@@ -48,7 +48,8 @@ program test
  h=0d0;h(1,1)=eig(1);h(2,2)=eig(2)
  HD(spin,:,:)=matmul(u,matmul(h,transpose(u)))
  do j=1,2
- occ(j)=(atan(-eig(j)/eta)-atan((-5d0-eig(j))/eta))/d_pi
+ ! Lead width eta from the stub self-energies plus eta in the device G.
+ occ(j)=(atan(-eig(j)/(2d0*eta))-atan((-5d0-eig(j))/(2d0*eta)))/d_pi
  enddo
  h=0d0;h(1,1)=occ(1);h(2,2)=occ(2)
  expected=matmul(u,matmul(h,transpose(u)))

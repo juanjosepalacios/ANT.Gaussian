@@ -115,9 +115,15 @@ Default: SMALL = 0.1
 Default: SMALLD = 0.1 (Angstrom)
 
 * ETA (real)
-Small imaginary part of the Green's function. A value larger than the
-default may be needed when both electrodes are set to GHOST or when
-using periodic 1D leads (TYPE1 or TYPE2 = 1DLEAD).
+Small imaginary part of the Green's function. ETA enters the electrode
+Green's functions and, once, the device Green's function
+[(z+i*ETA)S-H-Sigma_L-Sigma_R]^-1. Every device state is therefore
+broadened by at least ETA, including states that do not couple to the
+electrodes; such a state can then be partially occupied in the device
+Fermi search instead of producing a jump in the device charge. ETA does
+not enter Gamma_L/R. A value larger than the default may be needed when
+both electrodes are set to GHOST or when using periodic 1D leads
+(TYPE1 or TYPE2 = 1DLEAD).
 Default: ETA = 1.0D-10
 
 * SL (real)

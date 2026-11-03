@@ -1599,8 +1599,6 @@
     green=c_zero
     sigr=c_zero
     sigl=c_zero
-    sigr=-ui*eta*SD 
-    sigl=-ui*eta*SD 
 
     call CompSelfEnergies( selected_spin, z, sigl, sigr, 1 )
     sigr=glue*sigr
@@ -1611,7 +1609,7 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(selected_spin,i,j)-sigl(i,j)-sigr(i,j)
+          green(i,j)=(z-shift+ui*eta)*SD(i,j)-HD(selected_spin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
    
@@ -1651,8 +1649,6 @@
     gammal=c_zero
     sigr=c_zero
     sigl=c_zero
-    sigr=-ui*eta*SD 
-    sigl=-ui*eta*SD 
 
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
@@ -1670,7 +1666,7 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          green(i,j)=(z-shift+ui*eta)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
 
@@ -1717,8 +1713,6 @@
     gammal=c_zero
     sigr=c_zero
     sigl=c_zero
-    sigr=-ui*eta*SD 
-    sigl=-ui*eta*SD 
 
     call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
     sigr=glue*sigr
@@ -1735,7 +1729,7 @@
     !************************************************************************
     do i=1,NAOrbs
        do j=1,NAOrbs
-          green(i,j)=(z-shift)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          green(i,j)=(z-shift+ui*eta)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
        enddo
     enddo
 
@@ -1815,10 +1809,6 @@
     sigl1=c_zero
     sigr2=c_zero
     sigl2=c_zero
-    sigr1=-ui*eta*SD 
-    sigl1=-ui*eta*SD 
-    sigr2=-ui*eta*SD 
-    sigl2=-ui*eta*SD 
 
     call CompSelfEnergies( 1, z, sigl1, sigr1, 1 )
    
@@ -1860,7 +1850,7 @@
 
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-          green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+          green(i,j)=(z-shift+ui*eta)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
        enddo
     enddo
 
@@ -3610,7 +3600,7 @@
 !$OMP DO
        do n=1,nmax
           En = EMesh(n)
-          zn = En+ui*eta
+          zn = En
           call gplus0(zn,GD)
 !$OMP CRITICAL
           call CompDelta( ispin, En, -shift, GD, delta(n,ispin,:,:,:) )
@@ -3898,7 +3888,7 @@
     case( "1DLEAD" )
        call CompSelfEnergy1D( Lead1D(1), is, cenergy, Sigma1, NAOrbs, 1 )
     case( "GHOST" )
-        continue
+       Sigma1=c_zero
     end select
 
     if( DD .and. spin == 1 ) is=2
@@ -3920,7 +3910,7 @@
     case( "1DLEAD" )
        call CompSelfEnergy1D( Lead1D(2), is, cenergy, Sigma2, NAOrbs, 2 )
     case( "GHOST" )
-        continue
+       Sigma2=c_zero
     end select
   end subroutine CompSelfEnergies
 
@@ -4792,11 +4782,11 @@ subroutine IntRealAxis_SOC(Er,El)
     sigmal=c_zero
 
 
-    sigr1=-sgn*ui*eta*SD 
-    sigl1=-sgn*ui*eta*SD 
-    sigr2=-sgn*ui*eta*SD 
-    sigl2=-sgn*ui*eta*SD 
 
+    sigr1=c_zero
+    sigl1=c_zero
+    sigr2=c_zero
+    sigl2=c_zero
     call CompSelfEnergies( 1, z, sigl1, sigr1, sgn )
    
     if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2, sgn )
@@ -4837,7 +4827,7 @@ subroutine IntRealAxis_SOC(Er,El)
 
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-          green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+          green(i,j)=(z-shift+sgn*ui*eta)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
        enddo
     enddo
 
@@ -4877,10 +4867,6 @@ subroutine IntRealAxis_SOC(Er,El)
     sigl1=c_zero     
     sigr2=c_zero     
     sigl2=c_zero     
-    sigr1=-sgn*ui*eta*SD
-    sigl1=-sgn*ui*eta*SD 
-    sigr2=-sgn*ui*eta*SD 
-    sigl2=-sgn*ui*eta*SD
 
     call CompSelfEnergies( 1, z, sigl1, sigr1, sgn )
    
@@ -4920,13 +4906,13 @@ subroutine IntRealAxis_SOC(Er,El)
     if (sgn == 1) then
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-          green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+          green(i,j)=(z-shift+ui*eta)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
        enddo
     enddo
     else if (sgn == -1) then 
     do i=1,DNAOrbs
        do j=1,DNAOrbs
-          green(i,j)=(z-shift)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
+          green(i,j)=(z-shift-ui*eta)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
        enddo
     enddo
     else

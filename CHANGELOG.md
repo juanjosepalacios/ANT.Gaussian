@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Apply ETA once in the device Green's function, (z+i*ETA)S-H-Sigma, in
+  gplus0, gplus, glesser and their SOC variants (-i*ETA for advanced), so
+  device states uncoupled from the electrodes are broadened and can be
+  partially occupied. The -i*ETA*S electrode self-energy initialisations
+  were overwritten by CompSelfEnergies except for GHOST electrodes, where
+  they gave 2*ETA through undefined intent(out) values; GHOST now returns
+  an explicit zero. Gamma_L/R are unchanged. The hybridization mesh passes
+  real energies to gplus0 to avoid applying ETA twice.
+
 - Log a dashed banner, flushed immediately, when each device density-matrix
   integration and Fermi search starts. Informative progress messages
   (lattice directions, SOC/Zeeman Fermi levels) use the same banner form.
