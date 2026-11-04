@@ -318,10 +318,6 @@
   LOGICAL :: tcomp = .FALSE. 
   CHARACTER(len=10), PARAMETER :: TCOMP_keyw = "TCOMP"    
   
-  ! Prints transmission of reverse spin-diagonal SOC Hamiltonian when set to 2
-  INTEGER :: trev = 1 
-  CHARACTER(len=10), PARAMETER :: TREV_keyw = "TREV"         
-  
   ! THETA
   REAL*8 :: theta = 0.0d0                           
   CHARACTER(len=10), PARAMETER :: THETA_keyw = "THETA"
@@ -569,7 +565,7 @@ CONTAINS
        
     CASE ( LDOS_Beg_keyw, LDOS_End_keyw, NChannels_keyw, RedTransmB_keyw, RedTransmE_keyw, &
          MRStart_keyw, NSpinLock_keyw, NEmbed_keyw(1), NEmbed_keyw(2), NatPC_keyw(1), NatPC_keyw(2), NPC_keyw, NAtomEl_keyw(1), NAtomEl_keyw(2), &
-         NPulay_keyw, Max_keyw, Nip_keyw, PrtHatom_keyw, TREV_keyw   )
+         NPulay_keyw, Max_keyw, Nip_keyw, PrtHatom_keyw )
        !
        ! 2. looking for integer variables
        !
@@ -622,8 +618,6 @@ CONTAINS
           NIP = ival
        CASE( PrtHatom_keyw )
           PrtHatom = ival 
-       CASE( Trev_keyw )
-          Trev = ival            
 
        END SELECT
        
@@ -1098,11 +1092,6 @@ CONTAINS
     end if 
     WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol     
     WRITE(unit=logfile,fmt=*) TCOMP_keyw, " = ", tcomp         
-    if (Trev < 1 .or. Trev > 2) then
-    WRITE(unit=logfile,fmt=*) TREV_keyw, " = ? "
-    else
-    WRITE(unit=logfile,fmt=*) TREV_keyw, " = ", trev
-    end if              
     WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
     WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
     WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          

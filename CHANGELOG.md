@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Remove the TREV keyword and its second transmission pass with the
+  spin-reversed spinor Hamiltonian. That pass ignored SPINROT, reinitialized
+  the Bethe-lattice electrodes with UD/DU/DD and wrote unopened unit 666.
+
 - Rename the spin-rotation keyword ROT to SPINROT. ROT is no longer
   recognized.
 

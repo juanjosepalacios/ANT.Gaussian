@@ -54,7 +54,7 @@
   !*****************************
 
   ! *** Number of atomic orbitals, number of non-degenerate spin-channels ***
-  integer :: NAOrbs, NSpin, DNAOrbs, irev
+  integer :: NAOrbs, NSpin, DNAOrbs
 
   ! *** Total number of electrons in central device region
   integer :: NCDEl, NCDAO1, NCDAO2
@@ -2846,7 +2846,7 @@
     use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg, LDOSOutput,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, &
-                          ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, TREV, UD, DU, DD, SCFSOC
+                          ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, SCFSOC
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
@@ -2886,9 +2886,6 @@
     
     transport_start = omp_get_wtime()
     write(ifu_log,'(A,I6)') ' ANT OpenMP maximum threads: ', omp_get_max_threads()
-    if (TREV < 1 .or. TREV > 2) TREV = 1
-    
-    do irev=1,TREV    
 
     print *
     print *, "--------------------------------"
@@ -2897,36 +2894,6 @@
     print *, "--------------------------------"
     print *
     
-    if (irev == 2) then
-     
-    if (BL_NSpin (LeadBL(1)) == 1 .and. BL_NSpin (LeadBL(2)) == 2) then 
-      UD = .true.
-      DU = .false.
-      DD = .false.
-      print *, "UD : ", UD
-    else if (BL_NSpin (LeadBL(1)) == 2 .and. BL_NSpin (LeadBL(2)) == 1) then
-      DU = .true.
-      UD = .false.
-      DD = .false.      
-      print *, "DU : ", DU
-    else if (BL_NSpin (LeadBL(1)) == 2 .and. BL_NSpin (LeadBL(2)) == 2) then 
-      DD = .true.
-      UD = .false.
-      DU = .false.
-      print *, "DD : ", DD
-    else
-      DD = .false.
-      UD = .false.
-      DU = .false.
-    end if  
-           
-    do LeadNo=1,2
-       if (ElType(LeadNo) == "BETHE") then
-          call CleanUpBL (LeadBL(LeadNo))
-          call InitBetheLattice( LeadBL(LeadNo), LeadNo )
-       end if   
-    end do 
-    end if    
 
     if (ElType(1) == "1DLEAD" .and. ELType(2) == "1DLEAD")  then
         call CleanUp1DLead(1) 
@@ -2935,7 +2902,6 @@
     end if 
 
     if (SOC .or. ROT .or. ZM .or. SCFSOC) then
-       !print *, 'In loop irev = ', irev
        write(ifu_log,*)'------------------------'
        write(ifu_log,*)'Finding final Fermi level after adding SOC and/or a Zeeman field and/or rotating spins'
        write(ifu_log,*)'------------------------'
@@ -3413,7 +3379,6 @@
 
   ! Reordering in energy for nice T output
        
-       if (irev == 1) then 
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(334)
@@ -3442,36 +3407,6 @@
           end do
        end do
        close(334,status='delete')
-       else
-       do n=1,nsteps
-          energy=EW1+EStep*(n-1)
-          rewind(334)
-          do i=1,10000000000
-          read(334,*)energ
-          if (dabs(energy-energ) < 0.000001) then
-             backspace(334)
-             if (POL) then
-                if (.not. TCOMP) then 
-                    read(334,1002) (xxx(j),j=1,3+NChannels)
-                else    
-                    read(334,1002) (xxx(j),j=1,7+NChannels)
-                end if
-             end if          
-             if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
-             if (POL) then 
-                if (.not. TCOMP) then 
-                    write(666,1002) (xxx(j),j=1,3+NChannels)
-                else    
-                    write(666,1002) (xxx(j),j=1,7+NChannels)
-                end if
-             end if                 
-             if (.not. POL) write(666,1002) (xxx(j),j=1,2+NChannels)
-             exit
-          end if
-          end do
-       end do
-       close(334,status='delete')
-       end if       
 
   end if !End of SOC if
 
@@ -3520,7 +3455,6 @@
        deallocate( tchan1, tchan2, dummy )
     end if
     
-    end do    
 
     write(ifu_log,'(A,F12.4)') ' ANT transport analysis wall seconds: ', omp_get_wtime()-transport_start
 
@@ -5005,28 +4939,6 @@ subroutine IntRealAxis_SOC(Er,El)
 !! Duplicate the size of the Hamiltonian and Overlap matrix to include up and down
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
- if (irev == 2) then
-    print*,'Building the spin-reversed SOC Hamiltonian'
-    if (NSpin == 2) then
-       do i=1,NAOrbs
-       do j=1,NAOrbs
-          H_SOC(i,j)=dcmplx(HD(2,i,j),0.0d0)
-          H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-          S_SOC(i,j)=SD(i,j)              
-          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
-       end do
-       end do
-    else 
-       do i=1,NAOrbs
-       do j=1,NAOrbs
-          H_SOC(i,j)=dcmplx(HD(1,i,j),0.0d0)
-          H_SOC(i+NAOrbs,j+NAOrbs)=dcmplx(HD(1,i,j),0.0d0)
-          S_SOC(i,j)=SD(i,j)              
-          S_SOC(i+NAOrbs,j+NAOrbs)=SD(i,j)         
-       end do
-       end do
-    end if
- else
     print*,'Building the SOC Hamiltonian'
     if (NSpin == 2) then
        do i=1,NAOrbs
@@ -5047,7 +4959,6 @@ subroutine IntRealAxis_SOC(Er,El)
        end do
        end do
     end if
- end if 
  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Return the input matrix with double size plus the soc interaction
