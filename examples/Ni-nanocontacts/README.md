@@ -29,28 +29,27 @@ this folder restarts from the converged density; delete or move it to repeat cas
 | F | Minimal spd + ECP on all atoms | `Papacon` (default) | `MAX = 10`; `PACC` 1.0d-7, `CHARGEACC`/`FERMIACC` 1.0d-5 |
 | AF | As F | `Papacon`, right electrode reversed (`UD`) | `MRSTART = 15`, `LEADDOS`; `PACC` 1.0d-8 |
 | doll | sd + ECP on atoms 1-9 and 20-28; all-electron on 10-19 | `Papacon-sd` | `NSPINLOCK = 5`, `NIP = 7`; `PACC` 1.0d-6, `CHARGEACC`/`FERMIACC` 1.0d-4 |
-| rotx | As Ni4 | `Papacon-sd` | Ni4 settings plus `SPINROT` and `SPINROTATOM` (atoms 5 and 6 at THETA = 90, PHI = 0) |
+| rotx | As Ni4 | `Papacon-sd` | Ni4 settings plus `SPINROTATOM` (atoms 5 and 6 at theta = 90, phi = 0) |
 
 The Zeeman field is given in tesla (`BX`, `BY`, `BZ`), with E = muB * B * sigma and
-muB = 5.788e-5 eV/T, so 20 T splits the spin levels by 2.3 meV. The commented `ZMATOM`, `SPINROT`/`SPINROTATOM` and
-`SPINEDIT` blocks in the Ni4 `.ant` show per-atom fields, spin rotations and spin edits. Per-atom
-rotations use `SPINROT` with `SPINROTATOM` (see `doc/keywords.txt`), as in case 5:
+muB = 5.788e-5 eV/T, so 20 T splits the spin levels by 2.3 meV. The commented `ZMATOM`, `SPINROTATOM` and
+`SPINEDIT` blocks in the Ni4 `.ant` show per-atom fields, spin rotations and spin edits. Spin
+rotations use `SPINROTATOM` (see `doc/keywords.txt`), as in case 5:
 
 ```
-SPINROT
 SPINROTATOM
 2
 5, 90.0, 0.0
 6, 90.0, 0.0
 ```
 
-Each line gives an atom, THETA and PHI in degrees; the majority spin of that atom points along
-(sin THETA cos PHI, sin THETA sin PHI, cos THETA), here +x. Atoms not listed stay along z. The
+Each line gives an atom, theta and phi in degrees; the majority spin of that atom points along
+(sin theta cos phi, sin theta sin phi, cos theta), here +x. Atoms not listed stay along z. The
 rotation is applied once, after self-consistency: ANT converges the collinear solution, rebuilds the
 Hamiltonian in the spinor basis with the rotated blocks, finds the device Fermi energy again and then
 computes the populations and transmission.
 
-**Warning:** `SPINROT` rotates the spins but is not self-consistent. The rotated moments don't relax
+**Warning:** `SPINROTATOM` rotates the spins but is not self-consistent. The rotated moments don't relax
 after the rotation, so case 5 is a non-self-consistent estimate of a non-collinear spin texture. A
 true spin flip is better done with `SPINEDIT`, which reverses the spin of selected atoms in the
 starting density matrix and lets the SCF converge the new texture, as `MRSTART` does in case 3.
@@ -69,17 +68,17 @@ rotation, so their files have one block with the total transmission in units of 
 ## Results
 
 ANT.Gaussian 2.8.4, Gaussian 09 D.01, NVIDIA HPC SDK build, 4 threads. Cases 1-4: commit 1e4a005
-sources, 3 November 2026. Case 5: the same sources plus the uncommitted spin-rotation fixes in
-`SpinRotate.F90` and the `SPINROT` keyword, 4 November 2026.
+sources, 3 November 2026. Case 5: commit 1442c1d plus the removal of `SPINROT`, `THETA` and `PHI`, so that
+`SPINROTATOM` alone switches on the rotation, 4 November 2026.
 
 | | Ni4 (20 T) | F | AF | doll | rotx |
 |---|---|---|---|---|---|
 | Atoms / basis functions | 10 / 60 | 28 / 252 | 28 / 252 | 28 / 418 | 10 / 60 |
-| SCF energy (a.u.) | -402.179706 | -1126.758239 | -1126.768283 | -15786.572053 | -402.179692 |
+| SCF energy (a.u.) | -402.179706 | -1126.758239 | -1126.768283 | -15786.572053 | -402.179887 |
 | SCF cycles (device Fermi searches) | 37 (26) | 111 (99) | 19 (21) | 41 (35) | 37 (26) |
-| Device Fermi energy (eV) | -2.6383 | -4.3635 | -4.2798 | -6.4278 | -2.6690 |
+| Device Fermi energy (eV) | -2.6383 | -4.3635 | -4.2798 | -6.4278 | -2.6671 |
 | T(E_F) up / down | spinor | 0.837 / 2.864 | 1.202 / 1.227 | 0.871 / 2.548 | spinor |
-| T(E_F) total (e^2/h) | 2.101 | 3.700 | 2.429 | 3.418 | 2.708 |
+| T(E_F) total (e^2/h) | 2.101 | 3.700 | 2.429 | 3.418 | 2.706 |
 | Conductance G (G0) | 1.05 | 1.85 | 1.21 | 1.71 | 1.35 |
 | Spin polarization of T(E_F), (up - down)/(up + down) | | -0.55 | -0.01 | -0.49 | |
 | T total at E_F - 1 eV / E_F + 1 eV | 2.512 / 0.389 | 2.419 / 3.880 | 0.900 / 2.938 | 4.365 / 3.478 | 2.282 / 0.380 |
@@ -87,7 +86,7 @@ sources, 3 November 2026. Case 5: the same sources plus the uncommitted spin-rot
 | Electrons in left / right half | 50.00 / 50.00 | 139.73 / 140.27 | 139.76 / 140.24 | 230.00 / 230.00 | 50.00 / 50.00 |
 | Spin of left / right half | 5.77 / 5.77 | 12.96 / 12.50 | 13.16 / -12.78 | 11.47 / 11.47 | 5.71 / 5.71 |
 | Unsuccessful density integrations (point limit) | 45 (127) | 0 | 88 (127) | 10 (255) | 45 (127) |
-| Wall time | 15 s | 1935 s | 376 s | 4375 s | 15 s |
+| Wall time | 15 s | 1935 s | 376 s | 4375 s | 14 s |
 
 All runs terminate normally, pass the spectral-weight check without widening the energy window, and
 report no Fermi-search errors.
@@ -126,19 +125,19 @@ spins of case 1 are <Sz>, and case 5 gives the components <Sx>, <Sy>, <Sz> of ea
   no y component, while the other atoms stay along z (<Sz> = 1.17, <Sx> = 0.05). The moments of the
   rotated atoms keep a small z component and shrink from 1.15 to 1.04, and they take up 0.10 e,
   because the rotation is not followed by self-consistency. Restarting from one converged density and
-  changing only THETA of atoms 5 and 6 gives:
+  changing only theta of atoms 5 and 6 gives:
 
-  | THETA | <Sx> / <Sz> of atoms 5, 6 | Electrons on atoms 5, 6 | Device E_F (eV) | T(E_F) (e^2/h) |
+  | theta | <Sx> / <Sz> of atoms 5, 6 | Electrons on atoms 5, 6 | Device E_F (eV) | T(E_F) (e^2/h) |
   |---|---|---|---|---|
   | 0 | 0.00 / 1.15 | 10.10 | -2.638 | 2.101 |
   | 90 | 1.02 / 0.21 | 10.19 | -2.666 | 2.708 |
   | 180 | 0.00 / -0.83 | 10.34 | -2.707 | 2.972 |
 
-  THETA = 0 reproduces case 1 exactly, and THETA = 180 reverses the two moments. The rise in
+  theta = 0 reproduces case 1 exactly, and theta = 180 reverses the two moments. The rise in
   conductance with the rotation angle comes from a non-self-consistent spin texture and should not
   be read as the conductance of a domain wall.
 - Repeated runs of the collinear Ni4 SCF, which cases 1 and 5 share, ended between -402.17969 and
-  -402.18001 a.u. in four runs, since the 45 unsuccessful integrations leave the convergence loose.
-  Across three runs of case 5, T(E_F) agrees to 0.001 and the device Fermi energy to 3 meV.
+  -402.18001 a.u. in five runs, since the 45 unsuccessful integrations leave the convergence loose.
+  Across four runs of case 5, T(E_F) agrees to 0.001 and the device Fermi energy to 3 meV.
 - The `.gjf` files substitute links from `../../bin`. `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.gjf` asks for
   `%nproc=16`; lower it to the number of cores available.

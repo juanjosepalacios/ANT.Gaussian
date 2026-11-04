@@ -308,9 +308,8 @@
   REAL*8, DIMENSION(MaxAtm) :: SOCValAtomP, SOCValAtomD,  SOCValAtomF
   CHARACTER(LEN=KEYW_LEN), PARAMETER :: SOCValAtom_keyw = "SOCVALATOM"
 
-  ! SPINROT
+  ! Per-atom spin rotation, switched on by SPINROTATOM
   LOGICAL :: rot = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: ROT_keyw = "SPINROT"   
   
   ! POL
   LOGICAL :: pol = .FALSE. 
@@ -319,14 +318,6 @@
   ! Print all components of transmission
   LOGICAL :: tcomp = .FALSE. 
   CHARACTER(len=10), PARAMETER :: TCOMP_keyw = "TCOMP"    
-  
-  ! THETA
-  REAL*8 :: theta = 0.0d0                           
-  CHARACTER(len=10), PARAMETER :: THETA_keyw = "THETA"
-  
-  ! PHI                                             
-  REAL*8 :: phi = 0.0d0                             
-  CHARACTER(len=10), PARAMETER :: PHI_keyw = "PHI"  
   
   ! Atom spin orientation manipulation of initial guess
   INTEGER :: NSpinRotAtom = 0
@@ -472,8 +463,6 @@ CONTAINS
          & SOC_VAL_P_keyw   ,&
          & SOC_VAL_D_keyw   ,&
          & SOC_VAL_F_keyw   ,&         
-         & THETA_keyw   ,&
-         & PHI_keyw   ,&
          & Bx_keyw   ,&
          & By_keyw   ,&
          & Bz_keyw   ,&         
@@ -552,10 +541,6 @@ CONTAINS
        CASE ( SOC_VAL_F_keyw ) 
           soc_val_f = rval                     
           CALL note_soc_key( SOC_VAL_F_keyw )
-       CASE ( THETA_keyw )
-          theta = rval    
-       CASE ( PHI_keyw )   
-          phi = rval      
        CASE ( BX_keyw ) 
           Bx = rval
        CASE ( BY_keyw ) 
@@ -701,8 +686,6 @@ CONTAINS
     CASE ( SCFSOC_keyw )  
        SCFSOC = .true.           
        CALL note_soc_key( SCFSOC_keyw )
-    CASE ( ROT_keyw )
-       rot = .true.               
     CASE ( POL_keyw )
        pol = .true.  
     CASE ( TCOMP_keyw )   
@@ -852,6 +835,7 @@ CONTAINS
     CASE ( SPINROTATOM_keyw )
            READ (unit=inpfile,fmt=*,iostat=ios) NSpinRotAtom
            IF( ios /= 0 ) RETURN 
+           rot = NSpinRotAtom > 0
            DO i=1,NSpinRotAtom
               READ (unit=inpfile,fmt=*,iostat=ios) index, rval, rvall
               IF( ios /= 0 ) RETURN 
@@ -931,7 +915,7 @@ CONTAINS
     
     IF( ios > 0  ) THEN
        WRITE ( unit=logfile, fmt=* ) "Error reading ANT input file"
-       STOP
+       STOP 1
     END IF
     CALL resolve_lead_cells(logfile)
     CALL validate_ldos(logfile)
@@ -1119,16 +1103,13 @@ CONTAINS
     end if 
     WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol     
     WRITE(unit=logfile,fmt=*) TCOMP_keyw, " = ", tcomp         
-    WRITE(unit=logfile,fmt=*) ROT_keyw, " = ", rot
-    WRITE(unit=logfile,fmt=*) THETA_keyw, " = ", theta, " degrees"
-    WRITE(unit=logfile,fmt=*) PHI_keyw, " = ", phi, " degrees"          
     WRITE(unit=logfile,fmt=*) ZM_keyw, " = ", ZM
     WRITE(unit=logfile,fmt=*) Bx_keyw, " = ", BX, " Tesla"
     WRITE(unit=logfile,fmt=*) By_keyw, " = ", BY, " Tesla"
     WRITE(unit=logfile,fmt=*) Bz_keyw, " = ", BZ, " Tesla"                         
     WRITE(unit=logfile,fmt=*) SpinRotAtom_keyw, " = ", NSpinRotAtom
     DO i=1,MaxAtm
-       IF( SpinRotAtomTheta(i) > 0.0d0 .OR. SpinRotAtomPhi(i) > 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
+       IF( SpinRotAtomTheta(i) /= 0.0d0 .OR. SpinRotAtomPhi(i) /= 0.0d0 ) WRITE(unit=logfile,fmt='(I4,F11.4,F11.4)') i, SpinRotAtomTheta(i), SpinRotAtomPhi(i)
     END DO                                                                  
     WRITE(unit=logfile,fmt=*) ZMAtom_keyw, " = ", NZMAtom
     DO i=1,MaxAtm

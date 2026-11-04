@@ -2,8 +2,8 @@
  Input=Ni4-Ni-Ni-Ni4.rotx.gjf
  Output=Ni4-Ni-Ni-Ni4.rotx.log
  Initial command:
- /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe "/home/palacios/ANT-runs/Ni-nanocontacts-Ni4-Ni-Ni-Ni4.rotx.spinrot-20261104/scratch/Gau-914240.inp" -scrdir="/home/palacios/ANT-runs/Ni-nanocontacts-Ni4-Ni-Ni-Ni4.rotx.spinrot-20261104/scratch/"
- Entering Link 1 = /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe PID=    914241.
+ /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe "/home/palacios/ANT-runs/Ni-nanocontacts-Ni4-Ni-Ni-Ni4.rotx.spinrotatom-20261104/scratch/Gau-930675.inp" -scrdir="/home/palacios/ANT-runs/Ni-nanocontacts-Ni4-Ni-Ni-Ni4.rotx.spinrotatom-20261104/scratch/"
+ Entering Link 1 = /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe PID=    930676.
   
  Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
             Gaussian, Inc.  All Rights Reserved.
@@ -93,7 +93,7 @@
  5/5=2,6=6,18=-2,38=5/2;
  6/7=2,8=2,9=2,10=2,28=1/1;
  99/5=1,9=1/99;
- Leave Link    1 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.0
+ Leave Link    1 at Wed Nov  4 16:45:57 2026, MaxMem=   134217728 cpu:         0.0
  (Enter /home/palacios/GitHub/ANT.Gaussian/bin/l101.exe)
  ------------------
  Ni4-Ni-Ni-Ni4.rotx
@@ -125,7 +125,7 @@
  NQMom=    0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
  NMagM=    0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
  AtZNuc=  28.0000000  28.0000000  28.0000000  28.0000000  28.0000000  28.0000000  28.0000000  28.0000000  28.0000000  28.0000000
- Leave Link  101 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.0
+ Leave Link  101 at Wed Nov  4 16:45:57 2026, MaxMem=   134217728 cpu:         0.0
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l202.exe)
                           Input orientation:                          
  ---------------------------------------------------------------------
@@ -184,7 +184,7 @@
      10         28           0        0.000000    1.765000   -3.065000
  ---------------------------------------------------------------------
  Rotational constants (GHZ):      0.3500211      0.0958644      0.0958644
- Leave Link  202 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.0
+ Leave Link  202 at Wed Nov  4 16:45:57 2026, MaxMem=   134217728 cpu:         0.0
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l301.exe)
  General basis read from cards:  (5D, 7F)
  Centers:       1      2      3      4      5      6      7      8      9     10
@@ -444,7 +444,7 @@
  Integral buffers will be    131072 words long.
  Raffenetti 2 integral format.
  Two-electron integral symmetry is turned on.
- Leave Link  301 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.0
+ Leave Link  301 at Wed Nov  4 16:45:57 2026, MaxMem=   134217728 cpu:         0.0
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l302.exe)
  NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
          NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
@@ -459,10 +459,10 @@
  IXCGrd= 4 IRadAn=           0 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
  Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
  NSgBfM=    70    70    70    70    70 MxSgAt=    10 MxSgA2=    10.
- Leave Link  302 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.3
+ Leave Link  302 at Wed Nov  4 16:45:57 2026, MaxMem=   134217728 cpu:         0.3
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l303.exe)
  DipDrv:  MaxL=1.
- Leave Link  303 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.0
+ Leave Link  303 at Wed Nov  4 16:45:57 2026, MaxMem=   134217728 cpu:         0.0
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l401.exe)
  SCF N**3 symmetry information disabled.
  ExpMin= 4.40D-02 ExpMax= 2.87D+01 ExpMxC= 2.87D+01 IAcc=2 IRadAn=         4 AccDes= 0.00D+00
@@ -496,7 +496,7 @@
                  (A2U) (EU) (EU) (A1G) (EG) (EG) (A2U) (B1G) (B2U)
  The electronic state of the initial guess is 15-B1G.
  Initial guess <Sx>= 0.0000 <Sy>= 0.0000 <Sz>= 7.0000 <S**2>=56.0000 S= 7.0000
- Leave Link  401 at Wed Nov  4 10:42:50 2026, MaxMem=   134217728 cpu:         0.1
+ Leave Link  401 at Wed Nov  4 16:45:58 2026, MaxMem=   134217728 cpu:         0.1
  (Enter /home/palacios/GitHub/ANT.Gaussian/bin/l502.exe)
  UHF open shell SCF:
  Using DIIS extrapolation, IDIIS=  1040.
@@ -630,10 +630,6 @@
  SOCVALATOM           =                         0
  POL        =   F
  TCOMP      =   F
- TREV       =                         1
- SPINROT    =   T
- THETA      =     0.000000000000000       degrees
- PHI        =     0.000000000000000       degrees
  ZM         =   T
  BX         =     0.000000000000000       Tesla
  BY         =     0.000000000000000       Tesla
@@ -804,7 +800,7 @@ Found         12  lattice directions
  EMax=    20.00000000000000        Charge=    11.99999092703157     
  Now searching for Fermi energy...
  Brent method:
-Bethe lattice Brent lead  1 iterations    14 charge evaluations    16 charge residual   0.0000E+00 bracket width (eV)   0.0000E+00 wall seconds     1.4427
+Bethe lattice Brent lead  1 iterations    14 charge evaluations    16 charge residual   0.0000E+00 bracket width (eV)   0.0000E+00 wall seconds     1.4464
  Bethe lattice Fermi energy =     1.037397735274572     
  
  -----------------------------------------------------
@@ -850,7 +846,7 @@ Bethe lattice Brent lead  1 iterations    14 charge evaluations    16 charge res
  EMax=    20.00000000000000        Charge=    11.99999092703157     
  Now searching for Fermi energy...
  Brent method:
-Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge residual   0.0000E+00 bracket width (eV)   0.0000E+00 wall seconds     1.4642
+Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge residual   0.0000E+00 bracket width (eV)   0.0000E+00 wall seconds     1.4474
  Bethe lattice Fermi energy =     1.037397735274572     
  ---------------------------------------------------
  ----- Details on device and contacting atoms ------
@@ -863,9 +859,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  NCDAO1 =                         1
  NCDAO2 =                        60
  ---------------------------------------------------
- E= -401.319534213024    
+ E= -401.319534213025    
  DIIS: error= 4.92D-02 at cycle   1 NSaved=   1.
- NSaved= 1 IEnMin= 1 EnMin= -401.319534213024     IErMin= 1 ErrMin= 4.92D-02
+ NSaved= 1 IEnMin= 1 EnMin= -401.319534213025     IErMin= 1 ErrMin= 4.92D-02
  ErrMax= 4.92D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.49D-01 BMatP= 2.49D-01
  IDIUse=3 WtCom= 5.08D-01 WtEn= 4.92D-01
  Coeff-Com:  0.100D+01
@@ -876,9 +872,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=1.05D-01 MaxDP=1.50D+00              OVMax= 0.00D+00
 
  Cycle   2  Pass 1  IDiag  1:
- E= -381.986730493916     Delta-E=       19.332803719108 Rises=F Damp=F
+ E= -381.986730493916     Delta-E=       19.332803719109 Rises=F Damp=F
  DIIS: error= 3.56D-01 at cycle   2 NSaved=   2.
- NSaved= 2 IEnMin= 1 EnMin= -401.319534213024     IErMin= 1 ErrMin= 4.92D-02
+ NSaved= 2 IEnMin= 1 EnMin= -401.319534213025     IErMin= 1 ErrMin= 4.92D-02
  ErrMax= 3.56D-01  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.00D+01 BMatP= 2.49D-01
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  Coeff-En:   0.923D+00 0.766D-01
@@ -888,9 +884,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=6.66D-02 MaxDP=9.94D-01 DE= 1.93D+01 OVMax= 0.00D+00
 
  Cycle   3  Pass 1  IDiag  1:
- E= -398.226132019821     Delta-E=      -16.239401525904 Rises=F Damp=F
+ E= -398.226132019818     Delta-E=      -16.239401525902 Rises=F Damp=F
  DIIS: error= 1.88D-01 at cycle   3 NSaved=   3.
- NSaved= 3 IEnMin= 1 EnMin= -401.319534213024     IErMin= 1 ErrMin= 4.92D-02
+ NSaved= 3 IEnMin= 1 EnMin= -401.319534213025     IErMin= 1 ErrMin= 4.92D-02
  ErrMax= 1.88D-01  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.30D+00 BMatP= 2.49D-01
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  EnCoef did     3 forward-backward iterations
@@ -901,9 +897,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=9.08D-02 MaxDP=9.82D-01 DE=-1.62D+01 OVMax= 0.00D+00
 
  Cycle   4  Pass 1  IDiag  1:
- E= -392.810543589300     Delta-E=        5.415588430521 Rises=F Damp=F
+ E= -392.810543589318     Delta-E=        5.415588430500 Rises=F Damp=F
  DIIS: error= 4.24D-01 at cycle   4 NSaved=   4.
- NSaved= 4 IEnMin= 1 EnMin= -401.319534213024     IErMin= 1 ErrMin= 4.92D-02
+ NSaved= 4 IEnMin= 1 EnMin= -401.319534213025     IErMin= 1 ErrMin= 4.92D-02
  ErrMax= 4.24D-01  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.66D+01 BMatP= 2.49D-01
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  EnCoef did     2 forward-backward iterations
@@ -914,9 +910,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=4.44D-02 MaxDP=9.82D-01 DE= 5.42D+00 OVMax= 0.00D+00
 
  Cycle   5  Pass 1  IDiag  1:
- E= -402.531733899205     Delta-E=       -9.721190309904 Rises=F Damp=F
+ E= -402.531733899189     Delta-E=       -9.721190309871 Rises=F Damp=F
  DIIS: error= 3.97D-02 at cycle   5 NSaved=   5.
- NSaved= 5 IEnMin= 5 EnMin= -402.531733899205     IErMin= 5 ErrMin= 3.97D-02
+ NSaved= 5 IEnMin= 5 EnMin= -402.531733899189     IErMin= 5 ErrMin= 3.97D-02
  ErrMax= 3.97D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.67D-01 BMatP= 2.49D-01
  IDIUse=3 WtCom= 6.03D-01 WtEn= 3.97D-01
  Coeff-Com:  0.204D+00 0.419D-02-0.182D-01 0.679D-01 0.742D+00
@@ -928,9 +924,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=2.13D-02 MaxDP=3.61D-01 DE=-9.72D+00 OVMax= 0.00D+00
 
  Cycle   6  Pass 1  IDiag  1:
- E= -402.073183313156     Delta-E=        0.458550586049 Rises=F Damp=F
+ E= -402.073183312966     Delta-E=        0.458550586223 Rises=F Damp=F
  DIIS: error= 1.37D-01 at cycle   6 NSaved=   6.
- NSaved= 6 IEnMin= 5 EnMin= -402.531733899205     IErMin= 5 ErrMin= 3.97D-02
+ NSaved= 6 IEnMin= 5 EnMin= -402.531733899189     IErMin= 5 ErrMin= 3.97D-02
  ErrMax= 1.37D-01  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.64D+00 BMatP= 1.67D-01
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.000D+00 0.753D+00 0.247D+00
@@ -940,9 +936,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=1.97D-02 MaxDP=3.73D-01 DE= 4.59D-01 OVMax= 0.00D+00
 
  Cycle   7  Pass 1  IDiag  1:
- E= -402.596403647193     Delta-E=       -0.523220334038 Rises=F Damp=F
+ E= -402.596403647197     Delta-E=       -0.523220334232 Rises=F Damp=F
  DIIS: error= 1.10D-02 at cycle   7 NSaved=   7.
- NSaved= 7 IEnMin= 7 EnMin= -402.596403647193     IErMin= 7 ErrMin= 1.10D-02
+ NSaved= 7 IEnMin= 7 EnMin= -402.596403647197     IErMin= 7 ErrMin= 1.10D-02
  ErrMax= 1.10D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.06D-02 BMatP= 1.67D-01
  IDIUse=3 WtCom= 8.90D-01 WtEn= 1.10D-01
  Coeff-Com: -0.501D-01 0.289D-02-0.226D-02 0.639D-03 0.233D+00 0.933D-03
@@ -956,9 +952,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=7.76D-03 MaxDP=1.28D-01 DE=-5.23D-01 OVMax= 0.00D+00
 
  Cycle   8  Pass 1  IDiag  1:
- E= -402.491740846886     Delta-E=        0.104662800308 Rises=F Damp=F
+ E= -402.491740846896     Delta-E=        0.104662800301 Rises=F Damp=F
  DIIS: error= 5.13D-02 at cycle   8 NSaved=   8.
- NSaved= 8 IEnMin= 7 EnMin= -402.596403647193     IErMin= 7 ErrMin= 1.10D-02
+ NSaved= 8 IEnMin= 7 EnMin= -402.596403647197     IErMin= 7 ErrMin= 1.10D-02
  ErrMax= 5.13D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.76D-01 BMatP= 1.06D-02
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  EnCoef did    26 forward-backward iterations
@@ -971,9 +967,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=7.34D-03 MaxDP=1.63D-01 DE= 1.05D-01 OVMax= 0.00D+00
 
  Cycle   9  Pass 1  IDiag  1:
- E= -402.596229984007     Delta-E=       -0.104489137121 Rises=F Damp=F
+ E= -402.596229984004     Delta-E=       -0.104489137108 Rises=F Damp=F
  DIIS: error= 1.46D-02 at cycle   9 NSaved=   9.
- NSaved= 9 IEnMin= 7 EnMin= -402.596403647193     IErMin= 7 ErrMin= 1.10D-02
+ NSaved= 9 IEnMin= 7 EnMin= -402.596403647197     IErMin= 7 ErrMin= 1.10D-02
  ErrMax= 1.46D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.08D-02 BMatP= 1.06D-02
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  EnCoef did     6 forward-backward iterations
@@ -986,9 +982,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=4.06D-03 MaxDP=6.20D-02 DE=-1.04D-01 OVMax= 0.00D+00
 
  Cycle  10  Pass 1  IDiag  1:
- E= -402.599860662443     Delta-E=       -0.003630678435 Rises=F Damp=F
+ E= -402.599860662456     Delta-E=       -0.003630678452 Rises=F Damp=F
  DIIS: error= 1.28D-02 at cycle  10 NSaved=  10.
- NSaved=10 IEnMin=10 EnMin= -402.599860662443     IErMin= 7 ErrMin= 1.10D-02
+ NSaved=10 IEnMin=10 EnMin= -402.599860662456     IErMin= 7 ErrMin= 1.10D-02
  ErrMax= 1.28D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.57D-02 BMatP= 1.06D-02
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  EnCoef did     3 forward-backward iterations
@@ -1001,9 +997,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=1.76D-02 MaxDP=2.84D-01 DE=-3.63D-03 OVMax= 0.00D+00
 
  Cycle  11  Pass 1  IDiag  1:
- E= -402.416577378432     Delta-E=        0.183283284010 Rises=F Damp=F
+ E= -402.416577377560     Delta-E=        0.183283284897 Rises=F Damp=F
  DIIS: error= 8.60D-02 at cycle  11 NSaved=  11.
- NSaved=11 IEnMin=10 EnMin= -402.599860662443     IErMin= 7 ErrMin= 1.10D-02
+ NSaved=11 IEnMin=10 EnMin= -402.599860662456     IErMin= 7 ErrMin= 1.10D-02
  ErrMax= 8.60D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 5.90D-01 BMatP= 1.06D-02
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  EnCoef did    53 forward-backward iterations
@@ -1016,9 +1012,9 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=1.72D-02 MaxDP=2.81D-01 DE= 1.83D-01 OVMax= 0.00D+00
 
  Cycle  12  Pass 1  IDiag  1:
- E= -402.597711900421     Delta-E=       -0.181134521989 Rises=F Damp=F
+ E= -402.597711900327     Delta-E=       -0.181134522768 Rises=F Damp=F
  DIIS: error= 1.61D-02 at cycle  12 NSaved=  12.
- NSaved=12 IEnMin=10 EnMin= -402.599860662443     IErMin= 7 ErrMin= 1.10D-02
+ NSaved=12 IEnMin=10 EnMin= -402.599860662456     IErMin= 7 ErrMin= 1.10D-02
  ErrMax= 1.61D-02  0.00D+00 EMaxC= 1.00D-01 BMatC= 2.25D-02 BMatP= 1.06D-02
  IDIUse=2 WtCom= 0.00D+00 WtEn= 1.00D+00
  Coeff-En:   0.000D+00 0.000D+00 0.000D+00 0.000D+00 0.000D+00 0.000D+00
@@ -1030,7 +1026,7 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=1.49D-03 MaxDP=3.16D-02 DE=-1.81D-01 OVMax= 0.00D+00
 
  Cycle  13  Pass 1  IDiag  1:
- E= -402.605796548821     Delta-E=       -0.008084648399 Rises=F Damp=F
+ E= -402.605796548821     Delta-E=       -0.008084648494 Rises=F Damp=F
  DIIS: error= 5.07D-04 at cycle  13 NSaved=  13.
  NSaved=13 IEnMin=13 EnMin= -402.605796548821     IErMin=13 ErrMin= 5.07D-04
  ErrMax= 5.07D-04  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.52D-05 BMatP= 1.06D-02
@@ -1049,14 +1045,14 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
  RMSDP=2.61D-04 MaxDP=4.09D-03 DE=-8.08D-03 OVMax= 0.00D+00
 
  Cycle  14  Pass 1  IDiag  1:
- E= -402.605822127351     Delta-E=       -0.000025578530 Rises=F Damp=F
+ E= -402.605822127348     Delta-E=       -0.000025578526 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       14
  -------------------------------------------------------------------------
  -----------------------
  Estimated Energy Bounds
  -----------------------
- EMin=   -18.67880426311699     
+ EMin=   -18.67880426333046     
  EMax=    18.96260226472543     
  -----------------------
   Total DOS Point Check 
@@ -1067,7 +1063,7 @@ Bethe lattice Brent lead  2 iterations    14 charge evaluations    16 charge res
 TotCharge/Gaussian quadrature gives    31    119.99992
 TotCharge/Gaussian quadrature has converged after  63 steps. Error:      0.00000
 TotCharge/Gaussian quadrature gives      119.99992
- TotCharge wall seconds:     0.051921
+ TotCharge wall seconds:     0.051863
  Spectral weight:   1.19999922E+02 ETA tail estimate:   4.0966E-10 quadrature status:   0
   Spectral-weight check OK
  ------------------------
@@ -1092,14 +1088,14 @@ TotCharge/Gaussian quadrature gives      119.99992
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     5 charge evaluations:     9
-Device MULLER charge residual:    1.5564209E-06 charge tolerance:    1.0000000E-01 last step (eV):    2.0431473E-04
-Device MULLER wall seconds:     0.341223
+Device MULLER charge residual:    1.5564210E-06 charge tolerance:    1.0000000E-01 last step (eV):    2.0431473E-04
+Device MULLER wall seconds:     0.340493
  Fermi energy=    -3.250920 bracket width (eV)=   2.0431E-04
  Number of alpha electrons:     55.6301257
  Number of beta electrons:     44.3698759
  Total number of electrons:    100.0000016
  DIIS: error= 3.29D-04 at cycle  14 NSaved=  14.
- NSaved=14 IEnMin=14 EnMin= -402.605822127351     IErMin=14 ErrMin= 3.29D-04
+ NSaved=14 IEnMin=14 EnMin= -402.605822127348     IErMin=14 ErrMin= 3.29D-04
  ErrMax= 3.29D-04  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.07D-05 BMatP= 1.52D-05
  IDIUse=3 WtCom= 9.97D-01 WtEn= 3.29D-03
  Coeff-Com:  0.108D-03 0.168D-04 0.637D-04 0.113D-04-0.560D-03 0.235D-03
@@ -1114,7 +1110,7 @@ Device MULLER wall seconds:     0.341223
  RMSDP=2.60D-04 MaxDP=3.22D-03 DE=-2.56D-05 OVMax= 0.00D+00
 
  Cycle  15  Pass 1  IDiag  1:
- E= -402.601556643386     Delta-E=        0.004265483964 Rises=F Damp=F
+ E= -402.601556643388     Delta-E=        0.004265483960 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       15
  -------------------------------------------------------------------------
@@ -1136,8 +1132,8 @@ Device MULLER wall seconds:     0.341223
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:    8.7862873E-09 charge tolerance:    1.0000000E-01 last step (eV):    1.2788282E-05
-Device MULLER wall seconds:     0.250493
+Device MULLER charge residual:    8.7862588E-09 charge tolerance:    1.0000000E-01 last step (eV):    1.2788282E-05
+Device MULLER wall seconds:     0.249220
  Fermi energy=    -3.231747 bracket width (eV)=   1.2788E-05
  Number of alpha electrons:     55.6378005
  Number of beta electrons:     44.3621996
@@ -1145,7 +1141,7 @@ Device MULLER wall seconds:     0.250493
  RMSDP=2.54D-04 MaxDP=3.19D-03 DE= 4.27D-03 OVMax= 0.00D+00
 
  Cycle  16  Pass 1  IDiag  1:
- E= -402.597358763546     Delta-E=        0.004197879840 Rises=F Damp=F
+ E= -402.597358763540     Delta-E=        0.004197879848 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       16
  -------------------------------------------------------------------------
@@ -1167,8 +1163,8 @@ Device MULLER wall seconds:     0.250493
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:    1.0823939E-08 charge tolerance:    1.0000000E-01 last step (eV):    1.4253249E-05
-Device MULLER wall seconds:     0.251022
+Device MULLER charge residual:    1.0823982E-08 charge tolerance:    1.0000000E-01 last step (eV):    1.4253249E-05
+Device MULLER wall seconds:     0.249725
  Fermi energy=    -3.212513 bracket width (eV)=   1.4253E-05
  Number of alpha electrons:     55.6458053
  Number of beta electrons:     44.3541947
@@ -1176,7 +1172,7 @@ Device MULLER wall seconds:     0.251022
  RMSDP=2.50D-04 MaxDP=3.16D-03 DE= 4.20D-03 OVMax= 0.00D+00
 
  Cycle  17  Pass 1  IDiag  1:
- E= -402.593230307686     Delta-E=        0.004128455860 Rises=F Damp=F
+ E= -402.593230307691     Delta-E=        0.004128455850 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       17
  -------------------------------------------------------------------------
@@ -1198,8 +1194,8 @@ Device MULLER wall seconds:     0.251022
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:    1.0626025E-08 charge tolerance:    1.0000000E-01 last step (eV):    1.4202457E-05
-Device MULLER wall seconds:     0.260327
+Device MULLER charge residual:    1.0626053E-08 charge tolerance:    1.0000000E-01 last step (eV):    1.4202457E-05
+Device MULLER wall seconds:     0.259002
  Fermi energy=    -3.194014 bracket width (eV)=   1.4202E-05
  Number of alpha electrons:     55.6535327
  Number of beta electrons:     44.3464673
@@ -1207,7 +1203,7 @@ Device MULLER wall seconds:     0.260327
  RMSDP=2.47D-04 MaxDP=3.13D-03 DE= 4.13D-03 OVMax= 0.00D+00
 
  Cycle  18  Pass 1  IDiag  1:
- E= -402.589167957113     Delta-E=        0.004062350573 Rises=F Damp=F
+ E= -402.589167957112     Delta-E=        0.004062350579 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       18
  -------------------------------------------------------------------------
@@ -1229,8 +1225,8 @@ Device MULLER wall seconds:     0.260327
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:    9.2240811E-09 charge tolerance:    1.0000000E-01 last step (eV):    1.3299300E-05
-Device MULLER wall seconds:     0.260106
+Device MULLER charge residual:    9.2240384E-09 charge tolerance:    1.0000000E-01 last step (eV):    1.3299300E-05
+Device MULLER wall seconds:     0.259319
  Fermi energy=    -3.176586 bracket width (eV)=   1.3299E-05
  Number of alpha electrons:     55.6607114
  Number of beta electrons:     44.3392886
@@ -1239,7 +1235,7 @@ Device MULLER wall seconds:     0.260106
  RMSDP=2.40D-02 MaxDP=3.04D-01 DE= 4.06D-03 OVMax= 0.00D+00
 
  Cycle  19  Pass 1  IDiag  1:
- E= -402.211085832557     Delta-E=        0.378082124556 Rises=F Damp=F
+ E= -402.211081672453     Delta-E=        0.378086284659 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       19
  -------------------------------------------------------------------------
@@ -1265,16 +1261,16 @@ Device MULLER wall seconds:     0.260106
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
 Device MULLER iterations:     5 charge evaluations:     9
-Device MULLER charge residual:    6.7569883E-06 charge tolerance:    1.0000000E+00 last step (eV):    3.8456908E-04
-Device MULLER wall seconds:     0.273390
- Fermi energy=    -1.514391 bracket width (eV)=   3.8457E-04
- Number of alpha electrons:     56.0843791
- Number of beta electrons:     43.9156276
+Device MULLER charge residual:    6.7527430E-06 charge tolerance:    1.0000000E+00 last step (eV):    3.8452690E-04
+Device MULLER wall seconds:     0.271904
+ Fermi energy=    -1.514492 bracket width (eV)=   3.8453E-04
+ Number of alpha electrons:     56.0843754
+ Number of beta electrons:     43.9156314
  Total number of electrons:    100.0000068
  RMSDP=8.29D-05 MaxDP=1.26D-03 DE= 3.78D-01 OVMax= 0.00D+00
 
  Cycle  20  Pass 1  IDiag  1:
- E= -402.211122788225     Delta-E=       -0.000036955667 Rises=F Damp=F
+ E= -402.211118668853     Delta-E=       -0.000036996400 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       20
  -------------------------------------------------------------------------
@@ -1296,16 +1292,16 @@ Device MULLER wall seconds:     0.273390
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:   -5.9804961E-09 charge tolerance:    1.0000000E-02 last step (eV):    9.6506756E-06
-Device MULLER wall seconds:     0.293629
- Fermi energy=    -1.536943 bracket width (eV)=   9.6507E-06
- Number of alpha electrons:     56.0776268
- Number of beta electrons:     43.9223732
+Device MULLER charge residual:   -5.9795155E-09 charge tolerance:    1.0000000E-02 last step (eV):    9.6499519E-06
+Device MULLER wall seconds:     0.291545
+ Fermi energy=    -1.537042 bracket width (eV)=   9.6500E-06
+ Number of alpha electrons:     56.0776230
+ Number of beta electrons:     43.9223770
  Total number of electrons:    100.0000000
  RMSDP=8.10D-05 MaxDP=1.23D-03 DE=-3.70D-05 OVMax= 0.00D+00
 
  Cycle  21  Pass 1  IDiag  1:
- E= -402.211145906068     Delta-E=       -0.000023117844 Rises=F Damp=F
+ E= -402.211141825702     Delta-E=       -0.000023156849 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       21
  -------------------------------------------------------------------------
@@ -1327,16 +1323,16 @@ Device MULLER wall seconds:     0.293629
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:   -5.2800004E-09 charge tolerance:    1.0000000E-02 last step (eV):    9.1364357E-06
-Device MULLER wall seconds:     0.307726
- Fermi energy=    -1.558874 bracket width (eV)=   9.1364E-06
- Number of alpha electrons:     56.0711083
- Number of beta electrons:     43.9288917
+Device MULLER charge residual:   -5.2790341E-09 charge tolerance:    1.0000000E-02 last step (eV):    9.1356771E-06
+Device MULLER wall seconds:     0.306142
+ Fermi energy=    -1.558973 bracket width (eV)=   9.1357E-06
+ Number of alpha electrons:     56.0711045
+ Number of beta electrons:     43.9288955
  Total number of electrons:    100.0000000
- RMSDP=7.91D-05 MaxDP=1.20D-03 DE=-2.31D-05 OVMax= 0.00D+00
+ RMSDP=7.92D-05 MaxDP=1.20D-03 DE=-2.32D-05 OVMax= 0.00D+00
 
  Cycle  22  Pass 1  IDiag  1:
- E= -402.211157160751     Delta-E=       -0.000011254683 Rises=F Damp=F
+ E= -402.211153118217     Delta-E=       -0.000011292515 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       22
  -------------------------------------------------------------------------
@@ -1358,16 +1354,16 @@ Device MULLER wall seconds:     0.307726
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:   -4.7519109E-09 charge tolerance:    1.0000000E-02 last step (eV):    8.7327382E-06
-Device MULLER wall seconds:     0.307506
- Fermi energy=    -1.580247 bracket width (eV)=   8.7327E-06
- Number of alpha electrons:     56.0647834
- Number of beta electrons:     43.9352166
+Device MULLER charge residual:   -4.7511435E-09 charge tolerance:    1.0000000E-02 last step (eV):    8.7319624E-06
+Device MULLER wall seconds:     0.306208
+ Fermi energy=    -1.580344 bracket width (eV)=   8.7320E-06
+ Number of alpha electrons:     56.0647796
+ Number of beta electrons:     43.9352204
  Total number of electrons:    100.0000000
  RMSDP=7.74D-05 MaxDP=1.17D-03 DE=-1.13D-05 OVMax= 0.00D+00
 
  Cycle  23  Pass 1  IDiag  1:
- E= -402.211157966646     Delta-E=       -0.000000805895 Rises=F Damp=F
+ E= -402.211153961109     Delta-E=       -0.000000842892 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       23
  -------------------------------------------------------------------------
@@ -1389,23 +1385,23 @@ Device MULLER wall seconds:     0.307506
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:   -4.3157513E-09 charge tolerance:    1.0000000E-02 last step (eV):    8.3767376E-06
-Device MULLER wall seconds:     0.307238
- Fermi energy=    -1.601102 bracket width (eV)=   8.3767E-06
- Number of alpha electrons:     56.0586282
- Number of beta electrons:     43.9413718
+Device MULLER charge residual:   -4.3147708E-09 charge tolerance:    1.0000000E-02 last step (eV):    8.3759575E-06
+Device MULLER wall seconds:     0.305822
+ Fermi energy=    -1.601198 bracket width (eV)=   8.3760E-06
+ Number of alpha electrons:     56.0586245
+ Number of beta electrons:     43.9413755
  Total number of electrons:    100.0000000
- RMSDP=7.57D-05 MaxDP=1.14D-03 DE=-8.06D-07 OVMax= 0.00D+00
+ RMSDP=7.57D-05 MaxDP=1.14D-03 DE=-8.43D-07 OVMax= 0.00D+00
 
  Cycle  24  Pass 1  IDiag  1:
- E= -402.211149377650     Delta-E=        0.000008588996 Rises=F Damp=F
+ E= -402.211145408482     Delta-E=        0.000008552628 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       24
  -------------------------------------------------------------------------
  -----------------------
  Estimated Energy Bounds
  -----------------------
- EMin=   -18.67880426311699     
+ EMin=   -18.67880426333046     
  EMax=    18.96260226472543     
  -----------------------
   Total DOS Point Check 
@@ -1416,7 +1412,7 @@ Device MULLER wall seconds:     0.307238
 TotCharge/Gaussian quadrature gives    31    119.99992
 TotCharge/Gaussian quadrature has converged after  63 steps. Error:      0.00000
 TotCharge/Gaussian quadrature gives      119.99992
- TotCharge wall seconds:     0.051869
+ TotCharge wall seconds:     0.051816
  Spectral weight:   1.19999922E+02 ETA tail estimate:   4.1338E-10 quadrature status:   0
   Spectral-weight check OK
  ------------------------
@@ -1437,17 +1433,17 @@ TotCharge/Gaussian quadrature gives      119.99992
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     3 charge evaluations:     7
-Device MULLER charge residual:   -3.9424890E-09 charge tolerance:    1.0000000E-02 last step (eV):    8.0534518E-06
-Device MULLER wall seconds:     0.307229
- Fermi energy=    -1.621471 bracket width (eV)=   8.0535E-06
- Number of alpha electrons:     56.0526266
- Number of beta electrons:     43.9473734
+Device MULLER charge residual:   -3.9416932E-09 charge tolerance:    1.0000000E-02 last step (eV):    8.0526755E-06
+Device MULLER wall seconds:     0.306032
+ Fermi energy=    -1.621566 bracket width (eV)=   8.0527E-06
+ Number of alpha electrons:     56.0526230
+ Number of beta electrons:     43.9473770
  Total number of electrons:    100.0000000
  Pulay kick .............
- RMSDP=4.94D-03 MaxDP=5.14D-02 DE= 8.59D-06 OVMax= 0.00D+00
+ RMSDP=4.94D-03 MaxDP=5.14D-02 DE= 8.55D-06 OVMax= 0.00D+00
 
  Cycle  25  Pass 1  IDiag  1:
- E= -402.195964613949     Delta-E=        0.015184763701 Rises=F Damp=F
+ E= -402.198606696822     Delta-E=        0.012538711660 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       25
  -------------------------------------------------------------------------
@@ -1455,7 +1451,7 @@ Device MULLER wall seconds:     0.307229
  Integrating density matrix to find device Fermi energy
  ------------------------
  Integration of the density matrix has needed    31 points
- Integration of the density matrix has needed    15 points
+ Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
@@ -1467,16 +1463,16 @@ Device MULLER wall seconds:     0.307229
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:   -1.9983688E-04 charge tolerance:    1.0000000E+00 last step (eV):    2.8366211E-03
-Device MULLER wall seconds:     0.180758
- Fermi energy=    -2.504277 bracket width (eV)=   2.8366E-03
- Number of alpha electrons:     55.7820645
- Number of beta electrons:     44.2177357
- Total number of electrons:     99.9998002
- RMSDP=1.42D-05 MaxDP=2.64D-04 DE= 1.52D-02 OVMax= 0.00D+00
+Device MULLER charge residual:   -2.3172508E-03 charge tolerance:    1.0000000E+00 last step (eV):    8.1996804E-03
+Device MULLER wall seconds:     0.185188
+ Fermi energy=    -2.415487 bracket width (eV)=   8.1997E-03
+ Number of alpha electrons:     55.7927405
+ Number of beta electrons:     44.2049422
+ Total number of electrons:     99.9976827
+ RMSDP=1.59D-05 MaxDP=3.24D-04 DE= 1.25D-02 OVMax= 0.00D+00
 
  Cycle  26  Pass 1  IDiag  1:
- E= -402.195804058761     Delta-E=        0.000160555187 Rises=F Damp=F
+ E= -402.198412159406     Delta-E=        0.000194537416 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       26
  -------------------------------------------------------------------------
@@ -1496,16 +1492,16 @@ Device MULLER wall seconds:     0.180758
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    5.9963270E-09 charge tolerance:    1.0000000E-02 last step (eV):    1.1786389E-05
-Device MULLER wall seconds:     0.326805
- Fermi energy=    -2.504484 bracket width (eV)=   1.1786E-05
- Number of alpha electrons:     55.7828275
- Number of beta electrons:     44.2171725
- Total number of electrons:    100.0000000
- RMSDP=1.28D-05 MaxDP=1.92D-04 DE= 1.61D-04 OVMax= 0.00D+00
+Device MULLER charge residual:    1.7877153E-07 charge tolerance:    1.0000000E-02 last step (eV):    6.3736289E-05
+Device MULLER wall seconds:     0.326188
+ Fermi energy=    -2.416661 bracket width (eV)=   6.3736E-05
+ Number of alpha electrons:     55.7935694
+ Number of beta electrons:     44.2064308
+ Total number of electrons:    100.0000002
+ RMSDP=1.37D-05 MaxDP=2.30D-04 DE= 1.95D-04 OVMax= 0.00D+00
 
  Cycle  27  Pass 1  IDiag  1:
- E= -402.195655866210     Delta-E=        0.000148192551 Rises=F Damp=F
+ E= -402.198235450385     Delta-E=        0.000176709021 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       27
  -------------------------------------------------------------------------
@@ -1525,16 +1521,16 @@ Device MULLER wall seconds:     0.326805
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    4.1310315E-08 charge tolerance:    1.0000000E-02 last step (eV):    3.1346585E-05
-Device MULLER wall seconds:     0.327286
- Fermi energy=    -2.505013 bracket width (eV)=   3.1347E-05
- Number of alpha electrons:     55.7833362
- Number of beta electrons:     44.2166638
- Total number of electrons:    100.0000000
- RMSDP=1.20D-05 MaxDP=1.44D-04 DE= 1.48D-04 OVMax= 0.00D+00
+Device MULLER charge residual:    3.4417198E-07 charge tolerance:    1.0000000E-02 last step (eV):    9.0062305E-05
+Device MULLER wall seconds:     0.325895
+ Fermi energy=    -2.418228 bracket width (eV)=   9.0062E-05
+ Number of alpha electrons:     55.7939843
+ Number of beta electrons:     44.2060161
+ Total number of electrons:    100.0000003
+ RMSDP=1.26D-05 MaxDP=1.67D-04 DE= 1.77D-04 OVMax= 0.00D+00
 
  Cycle  28  Pass 1  IDiag  1:
- E= -402.195516275045     Delta-E=        0.000139591165 Rises=F Damp=F
+ E= -402.198069709517     Delta-E=        0.000165740867 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       28
  -------------------------------------------------------------------------
@@ -1554,16 +1550,16 @@ Device MULLER wall seconds:     0.327286
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    8.6083006E-08 charge tolerance:    1.0000000E-02 last step (eV):    4.5621262E-05
-Device MULLER wall seconds:     0.327088
- Fermi energy=    -2.505764 bracket width (eV)=   4.5621E-05
- Number of alpha electrons:     55.7836732
- Number of beta electrons:     44.2163269
- Total number of electrons:    100.0000001
- RMSDP=1.17D-05 MaxDP=1.17D-04 DE= 1.40D-04 OVMax= 0.00D+00
+Device MULLER charge residual:    4.9185259E-07 charge tolerance:    1.0000000E-02 last step (eV):    1.0888447E-04
+Device MULLER wall seconds:     0.325772
+ Fermi energy=    -2.420059 bracket width (eV)=   1.0888E-04
+ Number of alpha electrons:     55.7941869
+ Number of beta electrons:     44.2058136
+ Total number of electrons:    100.0000005
+ RMSDP=1.20D-05 MaxDP=1.25D-04 DE= 1.66D-04 OVMax= 0.00D+00
 
  Cycle  29  Pass 1  IDiag  1:
- E= -402.195382810242     Delta-E=        0.000133464803 Rises=F Damp=F
+ E= -402.197911771507     Delta-E=        0.000157938011 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       29
  -------------------------------------------------------------------------
@@ -1583,16 +1579,16 @@ Device MULLER wall seconds:     0.327088
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    1.2617883E-07 charge tolerance:    1.0000000E-02 last step (eV):    5.5509865E-05
-Device MULLER wall seconds:     0.327095
- Fermi energy=    -2.506664 bracket width (eV)=   5.5510E-05
- Number of alpha electrons:     55.7838928
- Number of beta electrons:     44.2161073
- Total number of electrons:    100.0000001
- RMSDP=1.14D-05 MaxDP=1.17D-04 DE= 1.33D-04 OVMax= 0.00D+00
+Device MULLER charge residual:    6.0700967E-07 charge tolerance:    1.0000000E-02 last step (eV):    1.2180142E-04
+Device MULLER wall seconds:     0.326518
+ Fermi energy=    -2.422063 bracket width (eV)=   1.2180E-04
+ Number of alpha electrons:     55.7942444
+ Number of beta electrons:     44.2057562
+ Total number of electrons:    100.0000006
+ RMSDP=1.17D-05 MaxDP=1.17D-04 DE= 1.58D-04 OVMax= 0.00D+00
 
  Cycle  30  Pass 1  IDiag  1:
- E= -402.195253779245     Delta-E=        0.000129030997 Rises=F Damp=F
+ E= -402.197759446436     Delta-E=        0.000152325070 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       30
  -------------------------------------------------------------------------
@@ -1612,17 +1608,17 @@ Device MULLER wall seconds:     0.327095
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    1.5682519E-07 charge tolerance:    1.0000000E-02 last step (eV):    6.2067581E-05
-Device MULLER wall seconds:     0.327351
- Fermi energy=    -2.507662 bracket width (eV)=   6.2068E-05
- Number of alpha electrons:     55.7840333
- Number of beta electrons:     44.2159669
- Total number of electrons:    100.0000002
+Device MULLER charge residual:    6.8682562E-07 charge tolerance:    1.0000000E-02 last step (eV):    1.3010135E-04
+Device MULLER wall seconds:     0.326237
+ Fermi energy=    -2.424177 bracket width (eV)=   1.3010E-04
+ Number of alpha electrons:     55.7942050
+ Number of beta electrons:     44.2057956
+ Total number of electrons:    100.0000007
  Pulay kick .............
- RMSDP=1.93D-03 MaxDP=2.19D-02 DE= 1.29D-04 OVMax= 0.00D+00
+ RMSDP=1.92D-03 MaxDP=2.12D-02 DE= 1.52D-04 OVMax= 0.00D+00
 
  Cycle  31  Pass 1  IDiag  1:
- E= -402.179579541574     Delta-E=        0.015674237671 Rises=F Damp=F
+ E= -402.178168604874     Delta-E=        0.019590841562 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       31
  -------------------------------------------------------------------------
@@ -1632,7 +1628,7 @@ Device MULLER wall seconds:     0.327351
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
- Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
@@ -1642,16 +1638,16 @@ Device MULLER wall seconds:     0.327351
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    2.3625480E-04 charge tolerance:    1.0000000E+00 last step (eV):    1.3037805E-03
-Device MULLER wall seconds:     0.204707
- Fermi energy=    -2.576192 bracket width (eV)=   1.3038E-03
- Number of alpha electrons:     55.7905802
- Number of beta electrons:     44.2096561
- Total number of electrons:    100.0002363
- RMSDP=5.70D-06 MaxDP=1.21D-04 DE= 1.57D-02 OVMax= 0.00D+00
+Device MULLER charge residual:   -5.3552189E-04 charge tolerance:    1.0000000E+00 last step (eV):    6.7483187E-04
+Device MULLER wall seconds:     0.194336
+ Fermi energy=    -2.648185 bracket width (eV)=   6.7483E-04
+ Number of alpha electrons:     55.7786182
+ Number of beta electrons:     44.2208462
+ Total number of electrons:     99.9994645
+ RMSDP=6.63D-06 MaxDP=1.70D-04 DE= 1.96D-02 OVMax= 0.00D+00
 
  Cycle  32  Pass 1  IDiag  1:
- E= -402.179566258015     Delta-E=        0.000013283559 Rises=F Damp=F
+ E= -402.178160396604     Delta-E=        0.000008208270 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       32
  -------------------------------------------------------------------------
@@ -1671,16 +1667,16 @@ Device MULLER wall seconds:     0.204707
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    1.2184501E-08 charge tolerance:    1.0000000E-03 last step (eV):    1.2067666E-05
-Device MULLER wall seconds:     0.365522
- Fermi energy=    -2.576705 bracket width (eV)=   1.2068E-05
- Number of alpha electrons:     55.7906919
- Number of beta electrons:     44.2093082
+Device MULLER charge residual:    1.9374454E-08 charge tolerance:    1.0000000E-03 last step (eV):    1.9254612E-05
+Device MULLER wall seconds:     0.363891
+ Fermi energy=    -2.647370 bracket width (eV)=   1.9255E-05
+ Number of alpha electrons:     55.7791823
+ Number of beta electrons:     44.2208177
  Total number of electrons:    100.0000000
- RMSDP=4.38D-06 MaxDP=7.71D-05 DE= 1.33D-05 OVMax= 0.00D+00
+ RMSDP=4.64D-06 MaxDP=1.13D-04 DE= 8.21D-06 OVMax= 0.00D+00
 
  Cycle  33  Pass 1  IDiag  1:
- E= -402.179559433665     Delta-E=        0.000006824350 Rises=F Damp=F
+ E= -402.178161500620     Delta-E=       -0.000001104016 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       33
  -------------------------------------------------------------------------
@@ -1700,23 +1696,23 @@ Device MULLER wall seconds:     0.365522
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    2.4346321E-08 charge tolerance:    1.0000000E-03 last step (eV):    1.7536940E-05
-Device MULLER wall seconds:     0.365377
- Fermi energy=    -2.577402 bracket width (eV)=   1.7537E-05
- Number of alpha electrons:     55.7906670
- Number of beta electrons:     44.2093331
+Device MULLER charge residual:    9.1991694E-09 charge tolerance:    1.0000000E-03 last step (eV):    1.4078638E-05
+Device MULLER wall seconds:     0.364311
+ Fermi energy=    -2.646823 bracket width (eV)=   1.4079E-05
+ Number of alpha electrons:     55.7795206
+ Number of beta electrons:     44.2204794
  Total number of electrons:    100.0000000
- RMSDP=3.66D-06 MaxDP=4.85D-05 DE= 6.82D-06 OVMax= 0.00D+00
+ RMSDP=3.44D-06 MaxDP=7.53D-05 DE=-1.10D-06 OVMax= 0.00D+00
 
  Cycle  34  Pass 1  IDiag  1:
- E= -402.179557021100     Delta-E=        0.000002412565 Rises=F Damp=F
+ E= -402.178168369340     Delta-E=       -0.000006868719 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       34
  -------------------------------------------------------------------------
  -----------------------
  Estimated Energy Bounds
  -----------------------
- EMin=   -18.67880426311699     
+ EMin=   -18.67880426333046     
  EMax=    18.96260226472543     
  -----------------------
   Total DOS Point Check 
@@ -1727,8 +1723,8 @@ Device MULLER wall seconds:     0.365377
 TotCharge/Gaussian quadrature gives    31    119.99992
 TotCharge/Gaussian quadrature has converged after  63 steps. Error:      0.00000
 TotCharge/Gaussian quadrature gives      119.99992
- TotCharge wall seconds:     0.051956
- Spectral weight:   1.19999922E+02 ETA tail estimate:   4.1311E-10 quadrature status:   0
+ TotCharge wall seconds:     0.051828
+ Spectral weight:   1.19999922E+02 ETA tail estimate:   4.1310E-10 quadrature status:   0
   Spectral-weight check OK
  ------------------------
  Integrating density matrix to find device Fermi energy
@@ -1746,16 +1742,16 @@ TotCharge/Gaussian quadrature gives      119.99992
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    3.4974434E-08 charge tolerance:    1.0000000E-03 last step (eV):    2.1378603E-05
-Device MULLER wall seconds:     0.365314
- Fermi energy=    -2.578217 bracket width (eV)=   2.1379E-05
- Number of alpha electrons:     55.7905435
- Number of beta electrons:     44.2094565
+Device MULLER charge residual:    4.2366537E-09 charge tolerance:    1.0000000E-03 last step (eV):    9.9180765E-06
+Device MULLER wall seconds:     0.364629
+ Fermi energy=    -2.646457 bracket width (eV)=   9.9181E-06
+ Number of alpha electrons:     55.7797222
+ Number of beta electrons:     44.2202778
  Total number of electrons:    100.0000000
- RMSDP=3.28D-06 MaxDP=4.23D-05 DE= 2.41D-06 OVMax= 0.00D+00
+ RMSDP=2.76D-06 MaxDP=5.04D-05 DE=-6.87D-06 OVMax= 0.00D+00
 
  Cycle  35  Pass 1  IDiag  1:
- E= -402.179557464140     Delta-E=       -0.000000443039 Rises=F Damp=F
+ E= -402.178178992612     Delta-E=       -0.000010623272 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       35
  -------------------------------------------------------------------------
@@ -1775,16 +1771,16 @@ Device MULLER wall seconds:     0.365314
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    4.2706006E-08 charge tolerance:    1.0000000E-03 last step (eV):    2.3874737E-05
-Device MULLER wall seconds:     0.365461
- Fermi energy=    -2.579103 bracket width (eV)=   2.3875E-05
- Number of alpha electrons:     55.7903570
- Number of beta electrons:     44.2096430
+Device MULLER charge residual:    1.9241213E-09 charge tolerance:    1.0000000E-03 last step (eV):    6.8447408E-06
+Device MULLER wall seconds:     0.363982
+ Fermi energy=    -2.646213 bracket width (eV)=   6.8447E-06
+ Number of alpha electrons:     55.7798325
+ Number of beta electrons:     44.2201675
  Total number of electrons:    100.0000000
- RMSDP=3.07D-06 MaxDP=4.02D-05 DE=-4.43D-07 OVMax= 0.00D+00
+ RMSDP=2.42D-06 MaxDP=3.40D-05 DE=-1.06D-05 OVMax= 0.00D+00
 
  Cycle  36  Pass 1  IDiag  1:
- E= -402.179559726592     Delta-E=       -0.000002262452 Rises=F Damp=F
+ E= -402.178192020725     Delta-E=       -0.000013028113 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       36
  -------------------------------------------------------------------------
@@ -1804,17 +1800,17 @@ Device MULLER wall seconds:     0.365461
  Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    4.7613540E-08 charge tolerance:    1.0000000E-03 last step (eV):    2.5376783E-05
-Device MULLER wall seconds:     0.365546
- Fermi energy=    -2.580030 bracket width (eV)=   2.5377E-05
- Number of alpha electrons:     55.7901313
- Number of beta electrons:     44.2098687
+Device MULLER charge residual:    8.7803187E-10 charge tolerance:    1.0000000E-03 last step (eV):    4.6946685E-06
+Device MULLER wall seconds:     0.363801
+ Fermi energy=    -2.646049 bracket width (eV)=   4.6947E-06
+ Number of alpha electrons:     55.7798828
+ Number of beta electrons:     44.2201172
  Total number of electrons:    100.0000000
  Pulay kick .............
- RMSDP=2.11D-04 MaxDP=3.48D-03 DE=-2.26D-06 OVMax= 0.00D+00
+ RMSDP=2.41D-04 MaxDP=3.33D-03 DE=-1.30D-05 OVMax= 0.00D+00
 
  Cycle  37  Pass 1  IDiag  1:
- E= -402.179691693225     Delta-E=       -0.000131966633 Rises=F Damp=F
+ E= -402.179886768569     Delta-E=       -0.001694747844 Rises=F Damp=F
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                       37
  -------------------------------------------------------------------------
@@ -1826,7 +1822,7 @@ Device MULLER wall seconds:     0.365546
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    63 points
- Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
  Integration of the density matrix has needed    31 points
@@ -1834,22 +1830,22 @@ Device MULLER wall seconds:     0.365546
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    2.4131661E-04 charge tolerance:    1.0000000E-01 last step (eV):    1.4744856E-03
-Device MULLER wall seconds:     0.214770
- Fermi energy=    -2.639849 bracket width (eV)=   1.4745E-03
- Number of alpha electrons:     55.7765275
- Number of beta electrons:     44.2237138
- Total number of electrons:    100.0002413
- RMSDP=5.09D-07 MaxDP=7.30D-06 DE=-1.32D-04 OVMax= 0.00D+00
+Device MULLER charge residual:    1.9955090E-06 charge tolerance:    1.0000000E-01 last step (eV):    2.1656526E-04
+Device MULLER wall seconds:     0.204076
+ Fermi energy=    -2.637849 bracket width (eV)=   2.1657E-04
+ Number of alpha electrons:     55.7763213
+ Number of beta electrons:     44.2236807
+ Total number of electrons:    100.0000020
+ RMSDP=8.17D-07 MaxDP=1.62D-05 DE=-1.69D-03 OVMax= 0.00D+00
 
  Density matrix is not changing but DIIS error= 3.29D-04 CofLast= 3.14D-01.
- SCF Done:  E(US-VWN) =  -402.179691693     A.U. after   37 cycles
-            NFock= 37  Conv=0.51D-06     -V/T= 1.5129
+ SCF Done:  E(US-VWN) =  -402.179886769     A.U. after   37 cycles
+            NFock= 37  Conv=0.82D-06     -V/T= 1.5129
  <Sx>= 0.0000 <Sy>= 0.0000 <Sz>= 7.0000 <S**2>=56.0366 S= 7.0024
  <L.S>=  0.00000000000    
- KE= 7.841496701478D+02 PE=-2.798134627243D+03 EE= 9.739561795141D+02
+ KE= 7.841433531076D+02 PE=-2.798136072986D+03 EE= 9.739637472213D+02
  Annihilation of the first spin contaminant:
- S**2 before annihilation    56.1878,   after    56.5717
+ S**2 before annihilation    56.1874,   after    56.5713
  -------------------------------------------------------------------------
  Computing the density matrix at cycle:                     1000
  -------------------------------------------------------------------------
@@ -1869,11 +1865,11 @@ Device MULLER wall seconds:     0.214770
  Integration of the density matrix has needed    31 points
  Integration of the density matrix has needed    63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    1.2818191E-11 charge tolerance:    1.0000000E-01 last step (eV):    4.0263699E-07
-Device MULLER wall seconds:     0.205437
- Fermi energy=    -2.639864 bracket width (eV)=   4.0264E-07
- Number of alpha electrons:     55.7765136
- Number of beta electrons:     44.2234864
+Device MULLER charge residual:   -2.8421709E-14 charge tolerance:    1.0000000E-01 last step (eV):    3.3370356E-09
+Device MULLER wall seconds:     0.205106
+ Fermi energy=    -2.637849 bracket width (eV)=   3.3370E-09
+ Number of alpha electrons:     55.7763211
+ Number of beta electrons:     44.2236789
  Total number of electrons:    100.0000000
  
  ****************************************** 
@@ -1888,19 +1884,19 @@ Device MULLER wall seconds:     0.205437
  ---------
  Left lead
  ---------
- Atom:   1   -4.692692
- Atom:   2   -4.692692
- Atom:   3   -4.692692
- Atom:   4   -4.692692
- Atom:   5   -4.599906
+ Atom:   1   -4.690355
+ Atom:   2   -4.690355
+ Atom:   3   -4.690355
+ Atom:   4   -4.690355
+ Atom:   5   -4.598907
  ----------
  Right lead
  ----------
- Atom:   6   -4.599906
- Atom:   7   -4.692692
- Atom:   8   -4.692692
- Atom:   9   -4.692692
- Atom:  10   -4.692692
+ Atom:   6   -4.598907
+ Atom:   7   -4.690355
+ Atom:   8   -4.690355
+ Atom:   9   -4.690355
+ Atom:  10   -4.690355
  ANT OpenMP maximum threads:      4
  
  --------------------------------
@@ -1928,25 +1924,25 @@ Device MULLER wall seconds:     0.205437
  Integration of the retarded density matrix on the complex plane has needed   63 points
  Integration of the advanced density matrix on the complex plane has needed   63 points
 Device MULLER iterations:     2 charge evaluations:     6
-Device MULLER charge residual:    5.1098381E-06 charge tolerance:    1.0000000E-01 last step (eV):    7.3880225E-05
-Device MULLER wall seconds:     0.645289
- Fermi energy=    -2.669035 bracket width (eV)=   7.3880E-05
- Total number of electrons:    100.0000051
- ANT transport analysis wall seconds:       1.5467
+Device MULLER charge residual:    5.5280933E-06 charge tolerance:    1.0000000E-01 last step (eV):    7.9730396E-05
+Device MULLER wall seconds:     0.646289
+ Fermi energy=    -2.667055 bracket width (eV)=   7.9730E-05
+ Total number of electrons:    100.0000055
+ ANT transport analysis wall seconds:       1.5478
  -----------------------------------------------
  --- Mulliken population analysis (with SOC) ---
  -----------------------------------------------
  ----------------------
  Charges in electrode 1
  ----------------------
- Atom:   1  El.dens:  9.9512     <Sx>:  0.05316     <Sy>: -0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:   2  El.dens:  9.9512     <Sx>:  0.05316     <Sy>:  0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:   3  El.dens:  9.9512     <Sx>:  0.05316     <Sy>:  0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:   4  El.dens:  9.9512     <Sx>:  0.05316     <Sy>:  0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:   5  El.dens: 10.1951     <Sx>:  1.02248     <Sy>: -0.00000     <Sz>:  0.20627     mod(S):  1.04308
+ Atom:   1  El.dens:  9.9506     <Sx>:  0.05311     <Sy>: -0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:   2  El.dens:  9.9506     <Sx>:  0.05311     <Sy>:  0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:   3  El.dens:  9.9506     <Sx>:  0.05311     <Sy>: -0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:   4  El.dens:  9.9506     <Sx>:  0.05311     <Sy>:  0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:   5  El.dens: 10.1978     <Sx>:  1.01978     <Sy>: -0.00000     <Sz>:  0.20613     mod(S):  1.04041
  ---------------------------------------------------------
- Total num. of electrons in electrode 1:    50.00000255491928     
- Total spin in electrode 1:    5.709901682437041     
+ Total num. of electrons in electrode 1:    50.00000276404646     
+ Total spin in electrode 1:    5.709720256941500     
  ---------------------------------------------------------
  ----------------------------------------------------
  Total num. of electrons in molecule:    0.000000000000000     
@@ -1955,17 +1951,17 @@ Device MULLER wall seconds:     0.645289
  ----------------------
  Charges in electrode 2
  ----------------------
- Atom:   6  El.dens: 10.1951     <Sx>:  1.02248     <Sy>: -0.00000     <Sz>:  0.20627     mod(S):  1.04308
- Atom:   7  El.dens:  9.9512     <Sx>:  0.05316     <Sy>: -0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:   8  El.dens:  9.9512     <Sx>:  0.05316     <Sy>:  0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:   9  El.dens:  9.9512     <Sx>:  0.05316     <Sy>:  0.00000     <Sz>:  1.16549     mod(S):  1.16670
- Atom:  10  El.dens:  9.9512     <Sx>:  0.05316     <Sy>: -0.00000     <Sz>:  1.16549     mod(S):  1.16670
+ Atom:   6  El.dens: 10.1978     <Sx>:  1.01978     <Sy>: -0.00000     <Sz>:  0.20613     mod(S):  1.04041
+ Atom:   7  El.dens:  9.9506     <Sx>:  0.05311     <Sy>:  0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:   8  El.dens:  9.9506     <Sx>:  0.05311     <Sy>:  0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:   9  El.dens:  9.9506     <Sx>:  0.05311     <Sy>:  0.00000     <Sz>:  1.16612     mod(S):  1.16733
+ Atom:  10  El.dens:  9.9506     <Sx>:  0.05311     <Sy>:  0.00000     <Sz>:  1.16612     mod(S):  1.16733
  ---------------------------------------------------------
- Total num. of electrons in electrode 2:    50.00000255491928     
- Total spin in electrode 2:    5.709901682437041     
+ Total num. of electrons in electrode 2:    50.00000276404648     
+ Total spin in electrode 2:    5.709720256941493     
  ---------------------------------------------------------
   ----------------- End of ANT.G09 ------------------- 
- Leave Link  502 at Wed Nov  4 10:43:05 2026, MaxMem=   134217728 cpu:        40.5
+ Leave Link  502 at Wed Nov  4 16:46:11 2026, MaxMem=   134217728 cpu:        40.3
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l601.exe)
  Copying SCF densities to generalized density rwf, IOpCl= 1 IROHF=0.
 
@@ -2022,134 +2018,134 @@ Device MULLER wall seconds:     0.645289
   Beta virt. eigenvalues --    0.00346   0.02435
           Condensed to atoms (all electrons):
                1          2          3          4          5          6
-     1  Ni  10.251828  -0.059711  -0.063918  -0.059711  -0.078892  -0.015914
-     2  Ni  -0.059711  10.251828  -0.059711  -0.063918  -0.078892  -0.015914
-     3  Ni  -0.063918  -0.059711  10.251828  -0.059711  -0.078892  -0.015914
-     4  Ni  -0.059711  -0.063918  -0.059711  10.251828  -0.078892  -0.015914
-     5  Ni  -0.078892  -0.078892  -0.078892  -0.078892  10.295942   0.178923
-     6  Ni  -0.015914  -0.015914  -0.015914  -0.015914   0.178923  10.295942
-     7  Ni   0.000512   0.000355   0.000512   0.000930  -0.015914  -0.078892
-     8  Ni   0.000355   0.000512   0.000930   0.000512  -0.015914  -0.078892
-     9  Ni   0.000512   0.000930   0.000512   0.000355  -0.015914  -0.078892
-    10  Ni   0.000930   0.000512   0.000355   0.000512  -0.015914  -0.078892
+     1  Ni  10.251878  -0.059714  -0.063916  -0.059714  -0.078947  -0.015913
+     2  Ni  -0.059714  10.251878  -0.059714  -0.063916  -0.078947  -0.015913
+     3  Ni  -0.063916  -0.059714  10.251878  -0.059714  -0.078947  -0.015913
+     4  Ni  -0.059714  -0.063916  -0.059714  10.251878  -0.078947  -0.015913
+     5  Ni  -0.078947  -0.078947  -0.078947  -0.078947  10.296804   0.178621
+     6  Ni  -0.015913  -0.015913  -0.015913  -0.015913   0.178621  10.296804
+     7  Ni   0.000512   0.000355   0.000512   0.000930  -0.015913  -0.078947
+     8  Ni   0.000355   0.000512   0.000930   0.000512  -0.015913  -0.078947
+     9  Ni   0.000512   0.000930   0.000512   0.000355  -0.015913  -0.078947
+    10  Ni   0.000930   0.000512   0.000355   0.000512  -0.015913  -0.078947
                7          8          9         10
      1  Ni   0.000512   0.000355   0.000512   0.000930
      2  Ni   0.000355   0.000512   0.000930   0.000512
      3  Ni   0.000512   0.000930   0.000512   0.000355
      4  Ni   0.000930   0.000512   0.000355   0.000512
-     5  Ni  -0.015914  -0.015914  -0.015914  -0.015914
-     6  Ni  -0.078892  -0.078892  -0.078892  -0.078892
-     7  Ni  10.251828  -0.059711  -0.063918  -0.059711
-     8  Ni  -0.059711  10.251828  -0.059711  -0.063918
-     9  Ni  -0.063918  -0.059711  10.251828  -0.059711
-    10  Ni  -0.059711  -0.063918  -0.059711  10.251828
+     5  Ni  -0.015913  -0.015913  -0.015913  -0.015913
+     6  Ni  -0.078947  -0.078947  -0.078947  -0.078947
+     7  Ni  10.251878  -0.059714  -0.063916  -0.059714
+     8  Ni  -0.059714  10.251878  -0.059714  -0.063916
+     9  Ni  -0.063916  -0.059714  10.251878  -0.059714
+    10  Ni  -0.059714  -0.063916  -0.059714  10.251878
           Atomic-Atomic Spin Densities.
                1          2          3          4          5          6
-     1  Ni   1.193903  -0.004607  -0.012672  -0.004607  -0.012843  -0.004050
-     2  Ni  -0.004607   1.193903  -0.004607  -0.012672  -0.012843  -0.004050
-     3  Ni  -0.012672  -0.004607   1.193903  -0.004607  -0.012843  -0.004050
-     4  Ni  -0.004607  -0.012672  -0.004607   1.193903  -0.012843  -0.004050
-     5  Ni  -0.012843  -0.012843  -0.012843  -0.012843   1.148940   0.073601
-     6  Ni  -0.004050  -0.004050  -0.004050  -0.004050   0.073601   1.148940
-     7  Ni   0.000139   0.000089   0.000139   0.000228  -0.004050  -0.012843
-     8  Ni   0.000089   0.000139   0.000228   0.000139  -0.004050  -0.012843
-     9  Ni   0.000139   0.000228   0.000139   0.000089  -0.004050  -0.012843
-    10  Ni   0.000228   0.000139   0.000089   0.000139  -0.004050  -0.012843
+     1  Ni   1.193887  -0.004613  -0.012676  -0.004613  -0.012811  -0.004052
+     2  Ni  -0.004613   1.193887  -0.004613  -0.012676  -0.012811  -0.004052
+     3  Ni  -0.012676  -0.004613   1.193887  -0.004613  -0.012811  -0.004052
+     4  Ni  -0.004613  -0.012676  -0.004613   1.193887  -0.012811  -0.004052
+     5  Ni  -0.012811  -0.012811  -0.012811  -0.012811   1.148609   0.073698
+     6  Ni  -0.004052  -0.004052  -0.004052  -0.004052   0.073698   1.148609
+     7  Ni   0.000139   0.000089   0.000139   0.000228  -0.004052  -0.012811
+     8  Ni   0.000089   0.000139   0.000228   0.000139  -0.004052  -0.012811
+     9  Ni   0.000139   0.000228   0.000139   0.000089  -0.004052  -0.012811
+    10  Ni   0.000228   0.000139   0.000089   0.000139  -0.004052  -0.012811
                7          8          9         10
      1  Ni   0.000139   0.000089   0.000139   0.000228
      2  Ni   0.000089   0.000139   0.000228   0.000139
      3  Ni   0.000139   0.000228   0.000139   0.000089
      4  Ni   0.000228   0.000139   0.000089   0.000139
-     5  Ni  -0.004050  -0.004050  -0.004050  -0.004050
-     6  Ni  -0.012843  -0.012843  -0.012843  -0.012843
-     7  Ni   1.193903  -0.004607  -0.012672  -0.004607
-     8  Ni  -0.004607   1.193903  -0.004607  -0.012672
-     9  Ni  -0.012672  -0.004607   1.193903  -0.004607
-    10  Ni  -0.004607  -0.012672  -0.004607   1.193903
+     5  Ni  -0.004052  -0.004052  -0.004052  -0.004052
+     6  Ni  -0.012811  -0.012811  -0.012811  -0.012811
+     7  Ni   1.193887  -0.004613  -0.012676  -0.004613
+     8  Ni  -0.004613   1.193887  -0.004613  -0.012676
+     9  Ni  -0.012676  -0.004613   1.193887  -0.004613
+    10  Ni  -0.004613  -0.012676  -0.004613   1.193887
  Mulliken charges and spin densities:
                1          2
-     1  Ni   0.024009   1.155716
-     2  Ni   0.024009   1.155716
-     3  Ni   0.024009   1.155716
-     4  Ni   0.024009   1.155716
-     5  Ni  -0.095640   1.154968
-     6  Ni  -0.095640   1.154968
-     7  Ni   0.024009   1.155716
-     8  Ni   0.024009   1.155716
-     9  Ni   0.024009   1.155716
-    10  Ni   0.024009   1.155716
- Sum of Mulliken charges =   0.00079  11.55566
+     1  Ni   0.024017   1.155716
+     2  Ni   0.024017   1.155716
+     3  Ni   0.024017   1.155716
+     4  Ni   0.024017   1.155716
+     5  Ni  -0.095985   1.154854
+     6  Ni  -0.095985   1.154854
+     7  Ni   0.024017   1.155716
+     8  Ni   0.024017   1.155716
+     9  Ni   0.024017   1.155716
+    10  Ni   0.024017   1.155716
+ Sum of Mulliken charges =   0.00017  11.55544
  Mulliken charges and spin densities with hydrogens summed into heavy atoms:
                1          2
-     1  Ni   0.024009   1.155716
-     2  Ni   0.024009   1.155716
-     3  Ni   0.024009   1.155716
-     4  Ni   0.024009   1.155716
-     5  Ni  -0.095640   1.154968
-     6  Ni  -0.095640   1.154968
-     7  Ni   0.024009   1.155716
-     8  Ni   0.024009   1.155716
-     9  Ni   0.024009   1.155716
-    10  Ni   0.024009   1.155716
- Electronic spatial extent (au):  <R**2>=           3941.8559
- Charge=              0.0008 electrons
+     1  Ni   0.024017   1.155716
+     2  Ni   0.024017   1.155716
+     3  Ni   0.024017   1.155716
+     4  Ni   0.024017   1.155716
+     5  Ni  -0.095985   1.154854
+     6  Ni  -0.095985   1.154854
+     7  Ni   0.024017   1.155716
+     8  Ni   0.024017   1.155716
+     9  Ni   0.024017   1.155716
+    10  Ni   0.024017   1.155716
+ Electronic spatial extent (au):  <R**2>=           3941.8761
+ Charge=              0.0002 electrons
  Dipole moment (field-independent basis, Debye):
     X=              0.0000    Y=              0.0000    Z=              0.0000  Tot=              0.0000
  Quadrupole moment (field-independent basis, Debye-Ang):
-   XX=           -113.9497   YY=           -113.9497   ZZ=           -104.8478
-   XY=             -0.0000   XZ=             -0.0000   YZ=             -0.0000
+   XX=           -113.9558   YY=           -113.9558   ZZ=           -104.8627
+   XY=             -0.0000   XZ=              0.0000   YZ=              0.0000
  Traceless Quadrupole moment (field-independent basis, Debye-Ang):
-   XX=             -3.0340   YY=             -3.0340   ZZ=              6.0679
-   XY=             -0.0000   XZ=             -0.0000   YZ=             -0.0000
+   XX=             -3.0311   YY=             -3.0311   ZZ=              6.0621
+   XY=             -0.0000   XZ=              0.0000   YZ=              0.0000
  Octapole moment (field-independent basis, Debye-Ang**2):
   XXX=              0.0000  YYY=              0.0000  ZZZ=              0.0000  XYY=              0.0000
-  XXY=              0.0000  XXZ=              0.0000  XZZ=              0.0000  YZZ=              0.0000
-  YYZ=             -0.0000  XYZ=              0.0000
+  XXY=              0.0000  XXZ=             -0.0000  XZZ=              0.0000  YZZ=              0.0000
+  YYZ=              0.0000  XYZ=              0.0000
  Hexadecapole moment (field-independent basis, Debye-Ang**3):
- XXXX=          -1090.6464 YYYY=          -1090.6464 ZZZZ=          -5333.1993 XXXY=             -0.0000
- XXXZ=             -0.0000 YYYX=              0.0000 YYYZ=             -0.0000 ZZZX=             -0.0000
- ZZZY=             -0.0000 XXYY=           -349.4432 XXZZ=          -1123.3232 YYZZ=          -1123.3232
- XXYZ=             -0.0000 YYXZ=             -0.0000 ZZXY=             -0.0000
- N-N= 6.378490858883D+02 E-N=-2.798135805961D+03  KE= 7.841499662161D+02
+ XXXX=          -1090.6811 YYYY=          -1090.6811 ZZZZ=          -5333.4165 XXXY=             -0.0000
+ XXXZ=             -0.0000 YYYX=             -0.0000 YYYZ=              0.0000 ZZZX=              0.0000
+ ZZZY=              0.0000 XXYY=           -349.4538 XXZZ=          -1123.3593 YYZZ=          -1123.3593
+ XXYZ=              0.0000 YYXZ=             -0.0000 ZZXY=             -0.0000
+ N-N= 6.378490858883D+02 E-N=-2.798137496232D+03  KE= 7.841437696320D+02
                           Isotropic Fermi Contact Couplings
         Atom                 a.u.       MegaHertz       Gauss      10(-4) cm-1
-     1  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-     2  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-     3  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-     4  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-     5  Ni(61)            -0.00007       0.00213       0.00076       0.00071
-     6  Ni(61)            -0.00007       0.00213       0.00076       0.00071
-     7  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-     8  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-     9  Ni(61)            -0.00001       0.00027       0.00009       0.00009
-    10  Ni(61)            -0.00001       0.00027       0.00009       0.00009
+     1  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+     2  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+     3  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+     4  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+     5  Ni(61)            -0.00007       0.00214       0.00076       0.00071
+     6  Ni(61)            -0.00007       0.00214       0.00076       0.00071
+     7  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+     8  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+     9  Ni(61)            -0.00001       0.00027       0.00010       0.00009
+    10  Ni(61)            -0.00001       0.00027       0.00010       0.00009
  --------------------------------------------------------
        Center         ----  Spin Dipole Couplings  ----
                       3XX-RR        3YY-RR        3ZZ-RR
  --------------------------------------------------------
-     1   Atom       -0.002957      0.081818     -0.078861
-     2   Atom        0.081818     -0.002957     -0.078861
-     3   Atom       -0.002957      0.081818     -0.078861
-     4   Atom        0.081818     -0.002957     -0.078861
-     5   Atom       -0.082369     -0.082369      0.164737
-     6   Atom       -0.082369     -0.082369      0.164737
-     7   Atom        0.081818     -0.002957     -0.078861
-     8   Atom       -0.002957      0.081818     -0.078861
-     9   Atom        0.081818     -0.002957     -0.078861
-    10   Atom       -0.002957      0.081818     -0.078861
+     1   Atom       -0.002928      0.081599     -0.078671
+     2   Atom        0.081599     -0.002928     -0.078671
+     3   Atom       -0.002928      0.081599     -0.078671
+     4   Atom        0.081599     -0.002928     -0.078671
+     5   Atom       -0.083437     -0.083437      0.166873
+     6   Atom       -0.083437     -0.083437      0.166873
+     7   Atom        0.081599     -0.002928     -0.078671
+     8   Atom       -0.002928      0.081599     -0.078671
+     9   Atom        0.081599     -0.002928     -0.078671
+    10   Atom       -0.002928      0.081599     -0.078671
  --------------------------------------------------------
                         XY            XZ            YZ
  --------------------------------------------------------
-     1   Atom       -0.000000     -0.000000      0.209393
-     2   Atom       -0.000000     -0.209393      0.000000
-     3   Atom        0.000000     -0.000000     -0.209393
-     4   Atom        0.000000      0.209393     -0.000000
-     5   Atom       -0.000000      0.000000     -0.000000
-     6   Atom       -0.000000      0.000000     -0.000000
-     7   Atom       -0.000000     -0.209393     -0.000000
-     8   Atom        0.000000     -0.000000      0.209393
-     9   Atom       -0.000000      0.209393     -0.000000
-    10   Atom       -0.000000     -0.000000     -0.209393
+     1   Atom       -0.000000      0.000000      0.209522
+     2   Atom       -0.000000     -0.209522      0.000000
+     3   Atom        0.000000      0.000000     -0.209522
+     4   Atom        0.000000      0.209522      0.000000
+     5   Atom       -0.000000      0.000000      0.000000
+     6   Atom       -0.000000      0.000000      0.000000
+     7   Atom       -0.000000     -0.209522      0.000000
+     8   Atom       -0.000000     -0.000000      0.209522
+     9   Atom       -0.000000      0.209522     -0.000000
+    10   Atom       -0.000000      0.000000     -0.209522
  --------------------------------------------------------
 
 
@@ -2159,71 +2155,65 @@ Device MULLER wall seconds:     0.645289
 
        Atom             a.u.   MegaHertz   Gauss  10(-4) cm-1        Axes
 
-              Baa    -0.2228    10.641     3.797     3.550 -0.0000 -0.5665  0.8241
-     1 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  1.0000  0.0000  0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597 -0.0000  0.8241  0.5665
+              Baa    -0.2229    10.644     3.798     3.551 -0.0000 -0.5669  0.8238
+     1 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  1.0000  0.0000  0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597 -0.0000  0.8238  0.5669
  
-              Baa    -0.2228    10.641     3.797     3.550  0.5665  0.0000  0.8241
-     2 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  0.0000  1.0000 -0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597  0.8241 -0.0000 -0.5665
+              Baa    -0.2229    10.644     3.798     3.551  0.5669  0.0000  0.8238
+     2 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  0.0000  1.0000 -0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597  0.8238 -0.0000 -0.5669
  
-              Baa    -0.2228    10.641     3.797     3.550 -0.0000  0.5665  0.8241
-     3 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  1.0000 -0.0000  0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597  0.0000  0.8241 -0.5665
+              Baa    -0.2229    10.644     3.798     3.551 -0.0000  0.5669  0.8238
+     3 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  1.0000 -0.0000  0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597  0.0000  0.8238 -0.5669
  
-              Baa    -0.2228    10.641     3.797     3.550 -0.5665  0.0000  0.8241
-     4 Ni(61) Bbb    -0.0030     0.141     0.050     0.047 -0.0000  1.0000 -0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597  0.8241  0.0000  0.5665
+              Baa    -0.2229    10.644     3.798     3.551 -0.5669  0.0000  0.8238
+     4 Ni(61) Bbb    -0.0029     0.140     0.050     0.047 -0.0000  1.0000 -0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597  0.8238  0.0000  0.5669
  
-              Baa    -0.0824     3.934     1.404     1.312  0.0006  1.0000  0.0000
-     5 Ni(61) Bbb    -0.0824     3.934     1.404     1.312  1.0000 -0.0006 -0.0000
-              Bcc     0.1647    -7.868    -2.808    -2.625  0.0000 -0.0000  1.0000
+              Baa    -0.0834     3.985     1.422     1.329  0.0052  1.0000 -0.0000
+     5 Ni(61) Bbb    -0.0834     3.985     1.422     1.329  1.0000 -0.0052 -0.0000
+              Bcc     0.1669    -7.970    -2.844    -2.659  0.0000  0.0000  1.0000
  
-              Baa    -0.0824     3.934     1.404     1.312  0.0004  1.0000  0.0000
-     6 Ni(61) Bbb    -0.0824     3.934     1.404     1.312  1.0000 -0.0004 -0.0000
-              Bcc     0.1647    -7.868    -2.808    -2.625  0.0000 -0.0000  1.0000
+              Baa    -0.0834     3.985     1.422     1.329  0.9997  0.0259 -0.0000
+     6 Ni(61) Bbb    -0.0834     3.985     1.422     1.329 -0.0259  0.9997 -0.0000
+              Bcc     0.1669    -7.970    -2.844    -2.659  0.0000  0.0000  1.0000
  
-              Baa    -0.2228    10.641     3.797     3.550  0.5665  0.0000  0.8241
-     7 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  0.0000  1.0000 -0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597  0.8241 -0.0000 -0.5665
+              Baa    -0.2229    10.644     3.798     3.551  0.5669  0.0000  0.8238
+     7 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  0.0000  1.0000 -0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597  0.8238 -0.0000 -0.5669
  
-              Baa    -0.2228    10.641     3.797     3.550  0.0000 -0.5665  0.8241
-     8 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  1.0000 -0.0000 -0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597  0.0000  0.8241  0.5665
+              Baa    -0.2229    10.644     3.798     3.551 -0.0000 -0.5669  0.8238
+     8 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  1.0000  0.0000  0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597 -0.0000  0.8238  0.5669
  
-              Baa    -0.2228    10.641     3.797     3.550 -0.5665 -0.0000  0.8241
-     9 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  0.0000  1.0000  0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597  0.8241 -0.0000  0.5665
+              Baa    -0.2229    10.644     3.798     3.551 -0.5669 -0.0000  0.8238
+     9 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  0.0000  1.0000  0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597  0.8238 -0.0000  0.5669
  
-              Baa    -0.2228    10.641     3.797     3.550  0.0000  0.5665  0.8241
-    10 Ni(61) Bbb    -0.0030     0.141     0.050     0.047  1.0000  0.0000 -0.0000
-              Bcc     0.2258   -10.782    -3.847    -3.597 -0.0000  0.8241 -0.5665
+              Baa    -0.2229    10.644     3.798     3.551  0.0000  0.5669  0.8238
+    10 Ni(61) Bbb    -0.0029     0.140     0.050     0.047  1.0000  0.0000 -0.0000
+              Bcc     0.2258   -10.784    -3.848    -3.597 -0.0000  0.8238 -0.5669
  
 
  ---------------------------------------------------------------------------------
 
  No NMR shielding tensors so no spin-rotation constants.
- Leave Link  601 at Wed Nov  4 10:43:05 2026, MaxMem=   134217728 cpu:         0.2
+ Leave Link  601 at Wed Nov  4 16:46:11 2026, MaxMem=   134217728 cpu:         0.2
  (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l9999.exe)
  1\1\GINC-LIAN\SP\USVWN\Gen\Ni10(15)\PALACIOS\04-Nov-2026\0\\#p ULSDA/g
  en pseudo=read Scf=(conver=6,nodamp,nosymm)\\Ni4-Ni-Ni-Ni4.rotx\\0,15\
  Ni,0,1.765,0.,-3.065\Ni,0,0.,-1.765,-3.065\Ni,0,-1.765,0.,-3.065\Ni,0,
  0.,1.765,-3.065\Ni,0,0.,0.,-1.3\Ni,0,0.,0.,1.3\Ni,0,0.,1.765,3.065\Ni,
  0,-1.765,0.,3.065\Ni,0,0.,-1.765,3.065\Ni,0,1.765,0.,3.065\\Version=AM
- 64L-G09RevD.01\State=15-B2U\HF=-402.1796917\S2=56.036585\S2-1=0.\S2A=5
- 6.571723\RMSD=5.086e-07\Dipole=0.,0.,0.\Quadrupole=-2.2556757,-2.25567
- 57,4.5113514,0.,0.,0.\PG=D04H [C4(Ni1.Ni1),2SGV(Ni4)]\\@
+ 64L-G09RevD.01\State=15-B2U\HF=-402.1798868\S2=56.036585\S2-1=0.\S2A=5
+ 6.571291\RMSD=8.172e-07\Dipole=0.,0.,0.\Quadrupole=-2.253514,-2.253514
+ ,4.507028,0.,0.,0.\PG=D04H [C4(Ni1.Ni1),2SGV(Ni4)]\\@
 
 
- IT WAS A GAME, A VERY INTERESTING GAME ONE COULD
- PLAY.  WHENEVER ONE SOLVED ONE OF THE LITTLE PROBLEMS,
- ONE COULD WRITE A PAPER ABOUT IT.  IT WAS VERY EASY IN
- THOSE DAYS FOR ANY SECOND-RATE PHYSICIST TO DO
- FIRST-RATE WORK.  THERE HAS NOT BEEN SUCH A GLORIOUS
- TIME SINCE.  IT IS VERY DIFFICULT NOW FOR A FIRST-RATE
- PHYSICIST TO DO SECOND-RATE WORK.
-     P.A.M. DIRAC, ON THE EARLY DAYS OF QUANTUM MECHANICS
-                   DIRECTIONS IN PHYSICS, 1978, P. 7
- Job cpu time:       0 days  0 hours  0 minutes 41.1 seconds.
+ Life may have no meaning.  Or even worse, it may have a
+ meaning of which I disapprove.
+                                 -- Ashleigh Brilliant
+ Job cpu time:       0 days  0 hours  0 minutes 40.9 seconds.
  File lengths (MBytes):  RWF=      5 Int=      0 D2E=      0 Chk=      1 Scr=      1
- Normal termination of Gaussian 09 at Wed Nov  4 10:43:05 2026.
+ Normal termination of Gaussian 09 at Wed Nov  4 16:46:11 2026.

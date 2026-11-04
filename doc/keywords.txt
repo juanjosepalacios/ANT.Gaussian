@@ -371,7 +371,7 @@ found again with the same charge. Transmission, DOS and the Mulliken analysis
 Hamiltonian. The SOC does not feed back into the density, so results compare
 transport with and without SOC on the same scalar-relativistic solution.
 Transmission is written to T.<job_name>.SOC.dat. Can be combined with
-SPINROT and ZM. The SOC integrals are scaled with SOC_FAC_P/D/F and
+SPINROTATOM and ZM. The SOC integrals are scaled with SOC_FAC_P/D/F and
 SOCFACATOM or replaced with SOC_VAL_P/D/F and SOCVALATOM. SOC is the only
 keyword that builds the SOC matrix. If SCFSOC or any of these modifiers is
 given without SOC, ANT stops while reading the input with
@@ -434,15 +434,21 @@ SOC_VAL_P/D/F in effect when this block is read. There is no cutoff column;
 use SOCFACATOM for atom-specific RCUT. Requires SOC.
 Default: none (global values for all atoms)
 
-* SPINROT, THETA and PHI (logical, real, real)
-SPINROT rotates the spin quantization axis of the converged collinear solution
-after self-consistency. The device Hamiltonian is rebuilt in the spinor basis
-as H_up*(1+n.sigma)/2 + H_down*(1-n.sigma)/2 with
-n = (sin THETA cos PHI, sin THETA sin PHI, cos THETA), angles in degrees, so
-the majority spin points along n. Without SPINROTATOM, THETA and PHI rotate
-every on-site and inter-atomic block rigidly. The electrode self-energies stay
-collinear along z. Transmission is written to T.<job_name>.SOC.dat and can be
-combined with SOC and ZM.
+* SPINROTATOM (integer list)
+Rotates the spin quantization axis of selected atoms after self-consistency.
+Syntax:
+SPINROTATOM
+#natoms
+#atom, #theta, #phi
+...
+with theta in [-180,180] and phi in [-360,360] degrees. The majority spin of
+each listed atom points along n = (sin theta cos phi, sin theta sin phi,
+cos theta); atoms not listed stay along z. The device Hamiltonian is rebuilt
+in the spinor basis: on-site blocks become H_up*(1+n.sigma)/2 +
+H_down*(1-n.sigma)/2, and blocks between two atoms use the average of their
+two projectors. The electrode self-energies stay collinear along z, so rotate
+only atoms that are not coupled directly to the electrodes. Transmission is
+written to T.<job_name>.SOC.dat; can be combined with SOC and ZM.
 WARNING: the rotation is not self-consistent. It is applied once to the
 converged collinear solution, followed by a new device Fermi search, so the
 rotated moments do not relax: they can keep part of their original direction
@@ -450,19 +456,7 @@ and change size and charge. Use the results as a non-self-consistent estimate.
 To reverse the spin of selected atoms (a true spin flip), use SPINEDIT instead,
 which edits the starting density matrix and lets the SCF converge the new
 spin texture.
-Default: SPINROT off, THETA = PHI = 0.0
-
-* SPINROTATOM (integer list)
-Per-atom quantization axes for SPINROT; SPINROT must also be present. Atoms not
-listed keep THETA = PHI = 0. Blocks between two atoms use the average of the
-two rotations. Syntax:
-SPINROTATOM
-#natoms
-#atom, #theta, #phi
-...
-with theta in [-180,180] and phi in [-360,360] degrees.
-Default: none (THETA and PHI apply to all atoms)
-
+Default: none (no rotation)
 
 * ZM, BX, BY and BZ (logical, real, real, real)
 ZM adds a spin-only Zeeman term after self-consistency, E = muB*B.sigma with
@@ -470,7 +464,7 @@ muB = 5.788e-5 eV/T, using the field (BX, BY, BZ) in tesla on every atom. As
 with SOC, the Hamiltonian is rebuilt in the spinor basis and the device Fermi
 energy is found again; the field does not feed back into the density. A
 field of 1 T splits the spin levels by 0.116 meV. Can be combined with SOC
-and SPINROT. With ZM alone, transmission is written to T.<job_name>.dat as a
+and SPINROTATOM. With ZM alone, transmission is written to T.<job_name>.dat as a
 single spinor block.
 Default: ZM off, BX = BY = BZ = 0.0
 
@@ -533,7 +527,7 @@ for large clusters. The diagonalization of both forms yield the same eigenvalues
 Default: .false. (transmission matrix in non-hermitian form).
 
 * POL (logical)
-For spinor calculations (SOC, SCFSOC, SPINROT or ZM), adds a third column to
+For spinor calculations (SOC, SCFSOC, SPINROTATOM or ZM), adds a third column to
 the transmission file with the spin polarization of the transmitted current
 along z: T_uu + T_du - T_dd - T_ud, where T_ab is the transmission from spin
 a in the left electrode to spin b in the right electrode. The column holds

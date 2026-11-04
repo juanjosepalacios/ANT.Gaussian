@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Remove SPINROT, THETA and PHI and the rigid rotation of the whole system.
+  SPINROTATOM alone now switches on the spin rotation; atoms not listed stay
+  along z. Input errors from read_parameters now stop with exit status 1.
+
 - Stop while reading the input when SCFSOC, SOC_FAC_P/D/F, RCUT,
   SOC_VAL_P/D/F, SOCFACATOM or SOCVALATOM is given without SOC; these
   keywords had no effect without it. Document that SCFSOC needs SOC, replace

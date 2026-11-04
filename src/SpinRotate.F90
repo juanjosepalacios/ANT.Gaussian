@@ -87,22 +87,17 @@ CONTAINS
   END SUBROUTINE ROT_MATRICES
 
   !***************************************************************
-  !*** Magnetization angles of an atom: SPINROTATOM values if   ***
-  !*** any are given, otherwise the global THETA and PHI.       ***
+  !*** Magnetization angles of an atom from SPINROTATOM; atoms  ***
+  !*** not listed keep THETA = PHI = 0 (along z).               ***
   !*** On-site and inter-atomic blocks must use the same rule.  ***
   !***************************************************************
   SUBROUTINE AtomAngles(AtomID,theta_atom,phi_atom)
-    USE parameters, ONLY: theta, phi, NSpinRotAtom, SpinRotAtomTheta, SpinRotAtomPhi
+    USE parameters, ONLY: SpinRotAtomTheta, SpinRotAtomPhi
     IMPLICIT NONE
     INTEGER, INTENT(in) :: AtomID
     REAL*8, INTENT(out) :: theta_atom, phi_atom
-    IF( NSpinRotAtom > 0 ) THEN
-       theta_atom = SpinRotAtomTheta(AtomID)
-       phi_atom = SpinRotAtomPhi(AtomID)
-    ELSE
-       theta_atom = theta
-       phi_atom = phi
-    END IF
+    theta_atom = SpinRotAtomTheta(AtomID)
+    phi_atom = SpinRotAtomPhi(AtomID)
   END SUBROUTINE AtomAngles
   
   !*******************************************************************

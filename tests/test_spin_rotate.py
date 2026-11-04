@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Compile the production SpinRotate module against stub modules and check CompHROT
-against spin projectors (1 +/- n.sigma)/2 for global and per-atom rotations."""
+against spin projectors (1 +/- n.sigma)/2 for SPINROTATOM rotations."""
 from pathlib import Path
 import os,subprocess,tempfile
 p=Path(__file__).resolve().parents[1]
@@ -11,4 +11,4 @@ with tempfile.TemporaryDirectory() as d:
  Path(d,'test.f90').write_text(f)
  subprocess.check_call([fc,*flags,'test.f90','-o','test'],cwd=d)
  subprocess.check_call(['./test'],cwd=d)
-print('PASS: CompHROT rigid global rotation, (90,90) along +y, per-atom on-site and averaged hopping blocks, spin-diagonal overlap')
+print('PASS: CompHROT rigid rotation, (90,90) along +y, per-atom on-site and averaged hopping blocks, unlisted atoms along z, spin-diagonal overlap')

@@ -3,7 +3,6 @@ module constants
  complex*16,parameter :: ui=(0d0,1d0),c_zero=(0d0,0d0)
 end module
 module parameters
- real*8 :: theta=0d0,phi=0d0
  integer :: NSpinRotAtom=0
  real*8 :: SpinRotAtomTheta(2)=0d0,SpinRotAtomPhi(2)=0d0
 end module
@@ -51,19 +50,25 @@ program test
  integer :: i,j,a,b
  real*8 :: err,serr,herr
  call model()
- ! Global rotation: every block, on-site and hopping, is the same rigid rotation.
- theta=60d0;phi=135d0;NSpinRotAtom=0
- ang(:,1)=(/theta,phi/);ang(:,2)=(/theta,phi/)
+ ! Both atoms at the same angles: every block, on-site and hopping, is the
+ ! same rigid rotation.
+ NSpinRotAtom=2
+ SpinRotAtomTheta=(/60d0,60d0/);SpinRotAtomPhi=(/135d0,135d0/)
+ ang(:,1)=(/60d0,135d0/);ang(:,2)=ang(:,1)
  call check(1)
  ! Same moment direction for (90,90) must be +y, not -y.
- theta=90d0;phi=90d0
- ang(:,1)=(/theta,phi/);ang(:,2)=(/theta,phi/)
+ SpinRotAtomTheta=(/90d0,90d0/);SpinRotAtomPhi=(/90d0,90d0/)
+ ang(:,1)=(/90d0,90d0/);ang(:,2)=ang(:,1)
  call check(2)
- ! Per-atom rotation: on-site blocks use their atom, hoppings average both.
- NSpinRotAtom=2
+ ! Different atoms: on-site blocks use their atom, hoppings average both.
  SpinRotAtomTheta=(/90d0,30d0/);SpinRotAtomPhi=(/90d0,-45d0/)
  ang(:,1)=(/90d0,90d0/);ang(:,2)=(/30d0,-45d0/)
  call check(3)
+ ! Only atom 2 listed: atom 1 stays along z.
+ NSpinRotAtom=1
+ SpinRotAtomTheta=(/0d0,120d0/);SpinRotAtomPhi=(/0d0,200d0/)
+ ang(:,1)=(/0d0,0d0/);ang(:,2)=(/120d0,200d0/)
+ call check(4)
  print *,'PASS'
 contains
  subroutine model()
