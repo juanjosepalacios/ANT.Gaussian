@@ -11,12 +11,12 @@ BLPAR2 = Papacon-sd
 !LDOS_BEG = 5
 !LDOS_END = 6
 !SOC
-!ROT   
+!SPINROT
 !SOCFAC = 0
 ZM
 Bx = 0.0
 By = 0.0
-Bz = 20000.0
+Bz = 20.0
 !ZMATOM        
 !10             
 !1,  0.0,  0.0 , 20000.0
@@ -29,7 +29,7 @@ Bz = 20000.0
 !8,  0.0,  0.0 , 20000.0
 !9,  0.0,  0.0 , 20000.0
 !10, 0.0,  0.0 , 20000.0          
-!SPINROT         
+!SPINROTATOM
 !10              
 !1,  0.0, 0.0 
 !2,  0.0, 0.0 
