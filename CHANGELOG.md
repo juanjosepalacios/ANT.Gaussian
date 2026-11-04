@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Rename the spin-rotation keyword ROT to SPINROT. ROT is no longer
+  recognized.
+
+- Fix spin rotation (SPINROT): the up-down spinor blocks used the conjugate
+  phase, so (THETA, PHI) rotated the moment to (THETA, -PHI); and global
+  THETA/PHI without SPINROTATOM rotated only on-site blocks, leaving
+  inter-atomic blocks collinear along z. Both branches now take angles from
+  one rule. Add test_spin_rotate.py and document SPINROT, THETA, PHI and
+  SPINROTATOM.
+
 - Device spectral-weight check: replace the fixed 0.1 tolerance with
   min(0.1, input CHARGEACC*(NCDEl+QEXCESS)), the device Fermi-search scale,
   and converge its quadrature to a tenth of it. Add back the analytic ETA

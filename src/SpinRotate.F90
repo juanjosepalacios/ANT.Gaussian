@@ -85,12 +85,30 @@ CONTAINS
     vstar=dconjg(v)						
     
   END SUBROUTINE ROT_MATRICES
+
+  !***************************************************************
+  !*** Magnetization angles of an atom: SPINROTATOM values if   ***
+  !*** any are given, otherwise the global THETA and PHI.       ***
+  !*** On-site and inter-atomic blocks must use the same rule.  ***
+  !***************************************************************
+  SUBROUTINE AtomAngles(AtomID,theta_atom,phi_atom)
+    USE parameters, ONLY: theta, phi, NSpinRotAtom, SpinRotAtomTheta, SpinRotAtomPhi
+    IMPLICIT NONE
+    INTEGER, INTENT(in) :: AtomID
+    REAL*8, INTENT(out) :: theta_atom, phi_atom
+    IF( NSpinRotAtom > 0 ) THEN
+       theta_atom = SpinRotAtomTheta(AtomID)
+       phi_atom = SpinRotAtomPhi(AtomID)
+    ELSE
+       theta_atom = theta
+       phi_atom = phi
+    END IF
+  END SUBROUTINE AtomAngles
   
   !*******************************************************************
   !*** Compute matrix of Rotated Hamiltonian for a given basis set ***
   !*******************************************************************
   SUBROUTINE CompHROT(HD,hamilrot,SD,overlaprot,NAOs,Nshell)
-    USE parameters, ONLY: theta, phi, NSpinRotAtom, SpinRotAtomTheta, SpinRotAtomPhi
     USE G09common, ONLY : GetNAtoms, GetShellT, GetAtm4Sh, GetShellN
     USE cluster, ONLY : LoAOrbNo, HiAOrbNo
     USE constants
@@ -153,51 +171,47 @@ CONTAINS
             AtomID2 = GetAtm4Sh(k)   
           	DO q=1,2*ShellT2+1
           	  IF (AtomID2 == AtomID1) THEN 
-                    IF( NSpinRotAtom > 0) THEN
-                      theta_atom = SpinRotAtomTheta(AtomID2)
-                      phi_atom = SpinRotAtomPhi(AtomID2)
-                    ELSE
-                      theta_atom = theta
-                      phi_atom = phi	
-                    END IF                   	    
+                    CALL AtomAngles( AtomID2, theta_atom, phi_atom )
                     CALL Rot_Matrices( theta_atom, phi_atom, u, v, ustar, vstar )                     	        
                     ! Rotate INTRA-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space
                        !Hamiltonian                                                                
                        HROT (1, ish1, 1, ish2) =  u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                       HROT (1, ish1, 2, ish2) =  v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                       HROT (2, ish1, 1, ish2) =  u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
+                       HROT (1, ish1, 2, ish2) =  u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
+                       HROT (2, ish1, 1, ish2) =  v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                        HROT (2, ish1, 2, ish2) =  v*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)+u*ustar*dcmplx(HD(2,ish1,ish2),0.0d0)     
                        
                        !Overlap matrix
                        SROT (1, ish1, 1, ish2) =  u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                       SROT (1, ish1, 2, ish2) =  v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                       SROT (2, ish1, 1, ish2) =  u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
+                       SROT (1, ish1, 2, ish2) =  u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
+                       SROT (2, ish1, 1, ish2) =  v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                        SROT (2, ish1, 2, ish2) =  v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                   ! Rotate INTER-ATOMIC SELF-CONSISTENT COLLINEAR and OVERLAP matrix elements from local to global spin space    
                   ELSE
                       
-                      CALL Rot_Matrices( SpinRotAtomTheta(AtomID1), SpinRotAtomPhi(AtomID1), u, v, ustar, vstar )
+                      CALL AtomAngles( AtomID1, theta_atom, phi_atom )
+                      CALL Rot_Matrices( theta_atom, phi_atom, u, v, ustar, vstar )
                       ! Hamiltonian
                       HROT1temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT1temp12 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT1temp21 = u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
+                      HROT1temp12 = u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
+                      HROT1temp21 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                       HROT1temp22 = v*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)+u*ustar*dcmplx(HD(2,ish1,ish2),0.0d0)     
                       ! Overlap matrix
                       SROT1temp11 = u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT1temp12 = v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT1temp21 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
+                      SROT1temp12 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
+                      SROT1temp21 = v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                       SROT1temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                                                                                                                                       
-                      CALL Rot_Matrices( SpinRotAtomTheta(AtomID2), SpinRotAtomPhi(AtomID2), u, v, ustar, vstar )
+                      CALL AtomAngles( AtomID2, theta_atom, phi_atom )
+                      CALL Rot_Matrices( theta_atom, phi_atom, u, v, ustar, vstar )
                       ! Hamiltonian
                       HROT2temp11 = u*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)+v*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT2temp12 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
-                      HROT2temp21 = u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
+                      HROT2temp12 = u*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)-u*vstar*dcmplx(HD(2,ish1,ish2),0.0d0) 
+                      HROT2temp21 = v*ustar*dcmplx(HD(1,ish1,ish2),0.0d0)-v*ustar*dcmplx(HD(2,ish1,ish2),0.0d0) 
                       HROT2temp22 = v*vstar*dcmplx(HD(1,ish1,ish2),0.0d0)+u*ustar*dcmplx(HD(2,ish1,ish2),0.0d0)     
                       ! Overlap matrix
                       SROT2temp11 = u*ustar*dcmplx(SD(ish1,ish2),0.0d0)+v*vstar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT2temp12 = v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
-                      SROT2temp21 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
+                      SROT2temp12 = u*vstar*dcmplx(SD(ish1,ish2),0.0d0)-u*vstar*dcmplx(SD(ish1,ish2),0.0d0)
+                      SROT2temp21 = v*ustar*dcmplx(SD(ish1,ish2),0.0d0)-v*ustar*dcmplx(SD(ish1,ish2),0.0d0)
                       SROT2temp22 = v*vstar*dcmplx(SD(ish1,ish2),0.0d0)+u*ustar*dcmplx(SD(ish1,ish2),0.0d0)
 				  
                       ! Average Hamiltonian elements  

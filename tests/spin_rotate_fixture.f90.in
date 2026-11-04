@@ -1,0 +1,111 @@
+module constants
+ real*8,parameter :: d_pi=3.14159265358979323846d0
+ complex*16,parameter :: ui=(0d0,1d0),c_zero=(0d0,0d0)
+end module
+module parameters
+ real*8 :: theta=0d0,phi=0d0
+ integer :: NSpinRotAtom=0
+ real*8 :: SpinRotAtomTheta(2)=0d0,SpinRotAtomPhi(2)=0d0
+end module
+module G09common
+ ! Atom 1: s and p shells (orbitals 1-4); atom 2: one s shell (orbital 5).
+ integer,parameter :: shell_type(3)=(/0,1,0/),shell_atom(3)=(/1,1,2/)
+contains
+ integer function GetNAtoms()
+ GetNAtoms=2
+ end function
+ integer function GetShellT(i)
+ integer,intent(in) :: i
+ GetShellT=shell_type(i)
+ end function
+ integer function GetAtm4Sh(i)
+ integer,intent(in) :: i
+ GetAtm4Sh=shell_atom(i)
+ end function
+ integer function GetShellN(i)
+ integer,intent(in) :: i
+ GetShellN=i
+ end function
+end module
+module cluster
+contains
+ integer function LoAOrbNo(iAtom)
+ integer,intent(in) :: iAtom
+ LoAOrbNo=merge(1,5,iAtom==1)
+ end function
+ integer function HiAOrbNo(iAtom)
+ integer,intent(in) :: iAtom
+ HiAOrbNo=merge(4,5,iAtom==1)
+ end function
+end module
+@SPINROTATE@
+program test
+ use SpinRotate
+ use parameters
+ use constants
+ implicit none
+ integer,parameter :: n=5
+ integer :: atom_of(n)=(/1,1,1,1,2/)
+ real*8 :: HD(2,n,n),SD(n,n),ang(2,2)
+ complex*16 :: hrot(2*n,2*n),srot(2*n,2*n),expect(2,2),pu(2,2),pd(2,2)
+ integer :: i,j,a,b
+ real*8 :: err,serr,herr
+ call model()
+ ! Global rotation: every block, on-site and hopping, is the same rigid rotation.
+ theta=60d0;phi=135d0;NSpinRotAtom=0
+ ang(:,1)=(/theta,phi/);ang(:,2)=(/theta,phi/)
+ call check(1)
+ ! Same moment direction for (90,90) must be +y, not -y.
+ theta=90d0;phi=90d0
+ ang(:,1)=(/theta,phi/);ang(:,2)=(/theta,phi/)
+ call check(2)
+ ! Per-atom rotation: on-site blocks use their atom, hoppings average both.
+ NSpinRotAtom=2
+ SpinRotAtomTheta=(/90d0,30d0/);SpinRotAtomPhi=(/90d0,-45d0/)
+ ang(:,1)=(/90d0,90d0/);ang(:,2)=(/30d0,-45d0/)
+ call check(3)
+ print *,'PASS'
+contains
+ subroutine model()
+ do i=1,n
+  do j=1,n
+   HD(1,i,j)=-0.3d0/(1+abs(i-j))+0.07d0*(i+j)
+   HD(2,i,j)=0.2d0/(1+abs(i-j))+0.05d0*(i*j)
+   SD(i,j)=merge(1d0,0.1d0/(i+j),i==j)
+  end do
+ end do
+ end subroutine
+ ! Spin projectors (1 +/- n.sigma)/2 with standard Pauli matrices.
+ subroutine projectors(th,ph,pu,pd)
+ real*8,intent(in) :: th,ph
+ complex*16,intent(out) :: pu(2,2),pd(2,2)
+ real*8 :: nx,ny,nz,t,p
+ t=th*d_pi/180d0;p=ph*d_pi/180d0
+ nx=sin(t)*cos(p);ny=sin(t)*sin(p);nz=cos(t)
+ pu(1,1)=(1+nz)/2;pu(2,2)=(1-nz)/2;pu(1,2)=dcmplx(nx,-ny)/2;pu(2,1)=dcmplx(nx,ny)/2
+ pd=-pu;pd(1,1)=pd(1,1)+1;pd(2,2)=pd(2,2)+1
+ end subroutine
+ subroutine check(code)
+ integer,intent(in) :: code
+ complex*16 :: qa(2,2),qb(2,2),ra(2,2),rb(2,2)
+ hrot=c_zero;srot=c_zero
+ call CompHROT(HD,hrot,SD,srot,n,3)
+ err=0d0;serr=0d0;herr=0d0
+ do i=1,n
+  do j=1,n
+   a=atom_of(i);b=atom_of(j)
+   call projectors(ang(1,a),ang(2,a),qa,ra)
+   call projectors(ang(1,b),ang(2,b),qb,rb)
+   expect=HD(1,i,j)*qa+HD(2,i,j)*ra
+   if(a/=b)expect=(expect+HD(1,i,j)*qb+HD(2,i,j)*rb)/2
+   err=max(err,maxval(abs(expect-reshape((/hrot(i,j),hrot(i+n,j),hrot(i,j+n),hrot(i+n,j+n)/),(/2,2/)))))
+   serr=max(serr,abs(srot(i,j)-SD(i,j)),abs(srot(i+n,j+n)-SD(i,j)),abs(srot(i,j+n)),abs(srot(i+n,j)))
+  end do
+ end do
+ herr=maxval(abs(hrot-conjg(transpose(hrot))))
+ print '(A,I2,3ES11.3)',' case',code,err,serr,herr
+ if(err>1d-12)stop 10+code
+ if(serr>1d-12)stop 20+code
+ if(herr>1d-12)stop 30+code
+ end subroutine
+end program

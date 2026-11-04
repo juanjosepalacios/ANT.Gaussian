@@ -306,9 +306,9 @@
   REAL*8, DIMENSION(MaxAtm) :: SOCValAtomP, SOCValAtomD,  SOCValAtomF
   CHARACTER(LEN=KEYW_LEN), PARAMETER :: SOCValAtom_keyw = "SOCVALATOM"
 
-  ! ROT
+  ! SPINROT
   LOGICAL :: rot = .FALSE. 
-  CHARACTER(len=10), PARAMETER :: ROT_keyw = "ROT"      
+  CHARACTER(len=10), PARAMETER :: ROT_keyw = "SPINROT"   
   
   ! POL
   LOGICAL :: pol = .FALSE. 

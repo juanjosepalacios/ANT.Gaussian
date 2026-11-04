@@ -362,6 +362,35 @@ given in the GAUSSIAN03/09 input file. Any number is possible as long as is >= 0
 the density matrix to create an educated guess for a new calculation  (see SPINEDIT and MRSTART).
 Default: NALPHA = NBETA = -1 (not used).
 
+* SPINROT, THETA and PHI (logical, real, real)
+SPINROT rotates the spin quantization axis of the converged collinear solution
+after self-consistency. The device Hamiltonian is rebuilt in the spinor basis
+as H_up*(1+n.sigma)/2 + H_down*(1-n.sigma)/2 with
+n = (sin THETA cos PHI, sin THETA sin PHI, cos THETA), angles in degrees, so
+the majority spin points along n. Without SPINROTATOM, THETA and PHI rotate
+every on-site and inter-atomic block rigidly. The electrode self-energies stay
+collinear along z. Transmission is written to T.<job_name>.SOC.dat and can be
+combined with SOC and ZM.
+WARNING: the rotation is not self-consistent. It is applied once to the
+converged collinear solution, followed by a new device Fermi search, so the
+rotated moments do not relax: they can keep part of their original direction
+and change size and charge. Use the results as a non-self-consistent estimate.
+To reverse the spin of selected atoms (a true spin flip), use SPINEDIT instead,
+which edits the starting density matrix and lets the SCF converge the new
+spin texture.
+Default: SPINROT off, THETA = PHI = 0.0
+
+* SPINROTATOM (integer list)
+Per-atom quantization axes for SPINROT; SPINROT must also be present. Atoms not
+listed keep THETA = PHI = 0. Blocks between two atoms use the average of the
+two rotations. Syntax:
+SPINROTATOM
+#natoms
+#atom, #theta, #phi
+...
+with theta in [-180,180] and phi in [-360,360] degrees.
+Default: none (THETA and PHI apply to all atoms)
+
 
 ------------------------
 5) Evaluation parameters
