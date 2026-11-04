@@ -372,28 +372,37 @@ Hamiltonian. The SOC does not feed back into the density, so results compare
 transport with and without SOC on the same scalar-relativistic solution.
 Transmission is written to T.<job_name>.SOC.dat. Can be combined with
 SPINROT and ZM. The SOC integrals are scaled with SOC_FAC_P/D/F and
-SOCFACATOM or replaced with SOC_VAL_P/D/F and SOCVALATOM.
+SOCFACATOM or replaced with SOC_VAL_P/D/F and SOCVALATOM. SOC is the only
+keyword that builds the SOC matrix. If SCFSOC or any of these modifiers is
+given without SOC, ANT stops while reading the input with
+"ERROR: <keyword> requires SOC".
 Default: .false. (off)
 
 * SCFSOC (logical)
-Includes SOC within the SCF cycles. In every ANT cycle the density matrix is
-computed from the spinor Hamiltonian with SOC, and its real spin-diagonal
-blocks (up-up and down-down) are returned to GAUSSIAN as the collinear
-density. The spin-off-diagonal part of the density does not enter the SCF.
-SOC therefore changes the converged density and moments, unlike SOC, which
-is applied only after convergence.
+Includes SOC within the SCF cycles. SOC must also be present; ANT stops if
+SCFSOC is given without it. Use
+SOC
+SCFSOC
+In every ANT cycle the density matrix is computed from the spinor
+Hamiltonian with SOC, and its real spin-diagonal blocks (up-up and
+down-down) are returned to GAUSSIAN as the collinear density. The spin
+off-diagonal part of the density does not enter the SCF. With SCFSOC, SOC
+changes the converged density and moments; with SOC alone it is applied
+only after convergence.
 Default: .false. (off)
 
 * SOC_FAC_P, SOC_FAC_D and SOC_FAC_F (real)
 Global factors multiplying the calculated SOC constants of p, d and f shells.
 They correct for basis functions whose radial part lacks the nodal structure
 near the nucleus; 1.0 keeps the value obtained from the integral and 0.0
-switches SOC off for that shell type. They do not activate SOC by themselves.
+switches SOC off for that shell type. They require SOC.
+They replace the old SOCFAC keyword, which is no longer recognized.
 Default: SOC_FAC_P = SOC_FAC_D = SOC_FAC_F = 1.0
 
 * RCUT (real)
 Cutoff radius, in Bohr, of the Yukawa screening of the nuclear potential in
 the intra-atomic SOC integrals (Beilstein J. Nanotechnol. 2018, 9, 1015).
+Requires SOC.
 Default: RCUT = 2.0
 
 * SOCFACATOM (integer list)
@@ -404,13 +413,13 @@ SOCFACATOM
 ...
 Values must be non-negative. Atoms not listed take the global SOC_FAC_P/D/F
 and RCUT in effect when this block is read, so give the global keywords
-before it.
+before it. Requires SOC.
 Default: none (global values for all atoms)
 
 * SOC_VAL_P, SOC_VAL_D and SOC_VAL_F (real)
 Global SOC constants, in eV, for p, d and f shells. A positive value replaces
 the calculated (and scaled) SOC constant of that shell type; 0.0 keeps the
-integral.
+integral. They require SOC.
 Default: SOC_VAL_P = SOC_VAL_D = SOC_VAL_F = 0.0
 
 * SOCVALATOM (integer list)
@@ -422,7 +431,7 @@ SOCVALATOM
 Values must be non-negative; a positive value replaces the calculated SOC
 constant of that shell on that atom. Atoms not listed take the global
 SOC_VAL_P/D/F in effect when this block is read. There is no cutoff column;
-use SOCFACATOM for atom-specific RCUT.
+use SOCFACATOM for atom-specific RCUT. Requires SOC.
 Default: none (global values for all atoms)
 
 * SPINROT, THETA and PHI (logical, real, real)

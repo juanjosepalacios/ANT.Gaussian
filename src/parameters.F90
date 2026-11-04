@@ -268,6 +268,8 @@
   ! SOC
   LOGICAL :: soc = .FALSE. 
   CHARACTER(len=10), PARAMETER :: SOC_keyw = "SOC"  
+  ! First keyword read that only has an effect with SOC (checked in validate_soc)
+  CHARACTER(LEN=KEYW_LEN) :: SOCKeyUsed = ''
   
   ! Whether to include the spin-diagonal blocks of the SOC matrix in the SCF cycles           
   LOGICAL :: SCFSOC = .false.; CHARACTER(len=10), PARAMETER :: SCFSOC_keyw = "SCFSOC"    
@@ -531,18 +533,25 @@ CONTAINS
           Overlap = rval
        CASE( SOC_FAC_P_keyw )
           soc_fac_p = rval    
+          CALL note_soc_key( SOC_FAC_P_keyw )
        CASE( SOC_FAC_D_keyw )
           soc_fac_d = rval    
+          CALL note_soc_key( SOC_FAC_D_keyw )
        CASE( SOC_FAC_F_keyw )
           soc_fac_f = rval
+          CALL note_soc_key( SOC_FAC_F_keyw )
        CASE( RCUT_keyw )
           rcut = rval                                               
+          CALL note_soc_key( RCUT_keyw )
        CASE ( SOC_VAL_P_keyw ) 
           soc_val_p = rval
+          CALL note_soc_key( SOC_VAL_P_keyw )
        CASE ( SOC_VAL_D_keyw ) 
           soc_val_d = rval   
+          CALL note_soc_key( SOC_VAL_D_keyw )
        CASE ( SOC_VAL_F_keyw ) 
           soc_val_f = rval                     
+          CALL note_soc_key( SOC_VAL_F_keyw )
        CASE ( THETA_keyw )
           theta = rval    
        CASE ( PHI_keyw )   
@@ -691,6 +700,7 @@ CONTAINS
        soc = .true.   
     CASE ( SCFSOC_keyw )  
        SCFSOC = .true.           
+       CALL note_soc_key( SCFSOC_keyw )
     CASE ( ROT_keyw )
        rot = .true.               
     CASE ( POL_keyw )
@@ -786,6 +796,7 @@ CONTAINS
        ! 5. Real arrays
        !
     CASE ( SOCFACATOM_keyw )
+      CALL note_soc_key( SOCFacAtom_keyw )
       SOCFacAtomP=soc_fac_p
       SOCFacAtomD=soc_fac_d
       SOCFacAtomF=soc_fac_f
@@ -813,6 +824,7 @@ CONTAINS
       END DO       
                          
     CASE ( SOCValAtom_keyw )
+      CALL note_soc_key( SOCValAtom_keyw )
       SOCValAtomP=soc_val_p
       SOCValAtomD=soc_val_d
       SOCValAtomF=soc_val_f
@@ -923,9 +935,24 @@ CONTAINS
     END IF
     CALL resolve_lead_cells(logfile)
     CALL validate_ldos(logfile)
+    CALL validate_soc(logfile)
     IF( ios < 0 ) WRITE ( unit=logfile, fmt=* ) "Done."    
   END SUBROUTINE read_parameters
   
+
+  SUBROUTINE note_soc_key(keyw)
+    CHARACTER(*), INTENT(in) :: keyw
+    IF (len_trim(SOCKeyUsed) == 0) SOCKeyUsed = keyw
+  END SUBROUTINE note_soc_key
+
+  ! SCFSOC and the SOC modifiers are ignored unless SOC builds the SOC matrix.
+  SUBROUTINE validate_soc(logfile)
+    INTEGER, INTENT(in) :: logfile
+    IF (.not.soc .and. len_trim(SOCKeyUsed) > 0) THEN
+       WRITE(logfile,*) 'ERROR: ',trim(SOCKeyUsed),' requires SOC; add the SOC keyword to the .ant file'
+       STOP 1
+    END IF
+  END SUBROUTINE validate_soc
 
   SUBROUTINE validate_ldos(logfile)
     INTEGER, INTENT(in) :: logfile

@@ -12,7 +12,9 @@ BLPAR2 = Papacon-sd
 !LDOS_END = 6
 !SOC
 SPINROT
-!SOCFAC = 0
+!SOC_FAC_P = 0
+!SOC_FAC_D = 0
+!SOC_FAC_F = 0
 ZM
 Bx = 0.0
 By = 0.0

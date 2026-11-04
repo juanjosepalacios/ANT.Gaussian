@@ -523,25 +523,26 @@ the solution converged in the absence of SOC.</p>
 <details class="keyword" id="scfsoc">
   <summary><em>SCFSOC</em> (logical)</summary>
   <p>Sets a SCF spin-orbit coupling calculation. The SCF procedure itself includes SOC.</p>
+  <p><em>SOC</em> must also be present; ANT stops while reading the input if <em>SCFSOC</em>, <em>SOC_FAC_P/D/F</em>, <em>RCUT</em>, <em>SOC_VAL_P/D/F</em>, <em>SOCFACATOM</em> or <em>SOCVALATOM</em> is given without it. In every cycle only the real spin-diagonal blocks of the spinor density are returned to GAUSSIAN.</p>
   <p>SOC participates in the SCF procedure rather than being added only when evaluating final spectra. This can change the converged density and magnetic state as well as transmission. Converge the SCF solution before comparing it with a post-SCF SOC calculation.</p>
   <p>Default: .false.</p>
 </details>
 <details class="keyword" id="soc-fac-p">
   <summary><em>SOC_FAC_P</em> (real)</summary>
   <p>Global SOC multiplicative factor for all p orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
-  <p>This scales the calculated SOC integrals for the p shells globally. It does not change the basis functions or activate SOC by itself; request SOC or SCFSOC for the corresponding calculation. SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_P replaces the calculated shell coupling rather than scaling it.</p>
+  <p>This scales the calculated SOC integrals for the p shells globally. It does not change the basis functions or activate SOC by itself; request SOC (and SCFSOC as well for the self-consistent variant). SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_P replaces the calculated shell coupling rather than scaling it.</p>
   <p>Default: 1.0</p>
 </details>
 <details class="keyword" id="soc-fac-d">
   <summary><em>SOC_FAC_D</em> (real)</summary>
   <p>Global SOC multiplicative factor for all d orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
-  <p>This scales the calculated SOC integrals for the d shells globally. It does not change the basis functions or activate SOC by itself; request SOC or SCFSOC for the corresponding calculation. SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_D replaces the calculated shell coupling rather than scaling it.</p>
+  <p>This scales the calculated SOC integrals for the d shells globally. It does not change the basis functions or activate SOC by itself; request SOC (and SCFSOC as well for the self-consistent variant). SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_D replaces the calculated shell coupling rather than scaling it.</p>
   <p>Default: 1.0</p>
 </details>
 <details class="keyword" id="soc-fac-f">
   <summary><em>SOC_FAC_F</em> (real)</summary>
   <p>Global SOC multiplicative factor for all f orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
-  <p>This scales the calculated SOC integrals for the f shells globally. It does not change the basis functions or activate SOC by itself; request SOC or SCFSOC for the corresponding calculation. SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_F replaces the calculated shell coupling rather than scaling it.</p>
+  <p>This scales the calculated SOC integrals for the f shells globally. It does not change the basis functions or activate SOC by itself; request SOC (and SCFSOC as well for the self-consistent variant). SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_F replaces the calculated shell coupling rather than scaling it.</p>
   <p>Default: 1.0</p>
 </details>
 <details class="keyword" id="rcut">

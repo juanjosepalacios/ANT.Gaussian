@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Stop while reading the input when SCFSOC, SOC_FAC_P/D/F, RCUT,
+  SOC_VAL_P/D/F, SOCFACATOM or SOCVALATOM is given without SOC; these
+  keywords had no effect without it. Document that SCFSOC needs SOC, replace
+  the obsolete SOCFAC keyword in the Ag and Ni example inputs, and add
+  test_soc_keywords.py.
+
 - Fix ZMATOM: per-atom Zeeman fields were looked up with an atom index that
   was never set in CompHZM, so they landed on an undefined atom. Each orbital
   now takes the field of its own atom. Add test_zeeman.py and document SOC,
