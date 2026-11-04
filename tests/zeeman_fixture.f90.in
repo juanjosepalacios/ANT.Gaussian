@@ -1,0 +1,91 @@
+module constants
+ complex*16,parameter :: ui=(0d0,1d0),c_zero=(0d0,0d0)
+end module
+module parameters
+ real*8 :: Bx=0d0,By=0d0,Bz=0d0
+ integer :: NZMAtom=0
+ real*8 :: ZMAtomBx(2)=0d0,ZMAtomBy(2)=0d0,ZMAtomBz(2)=0d0
+end module
+module G09common
+ ! Atom 1: s and p shells (orbitals 1-4); atom 2: one s shell (orbital 5).
+ integer,parameter :: shell_type(3)=(/0,1,0/),shell_atom(3)=(/1,1,2/)
+contains
+ integer function GetNAtoms()
+ GetNAtoms=2
+ end function
+ integer function GetShellT(i)
+ integer,intent(in) :: i
+ GetShellT=shell_type(i)
+ end function
+ integer function GetShellC(i)
+ integer,intent(in) :: i
+ GetShellC=0
+ end function
+ integer function GetAtm4Sh(i)
+ integer,intent(in) :: i
+ GetAtm4Sh=shell_atom(i)
+ end function
+end module
+module cluster
+contains
+ integer function LoAOrbNo(iAtom)
+ integer,intent(in) :: iAtom
+ LoAOrbNo=merge(1,5,iAtom==1)
+ end function
+ integer function HiAOrbNo(iAtom)
+ integer,intent(in) :: iAtom
+ HiAOrbNo=merge(4,5,iAtom==1)
+ end function
+end module
+@ZEEMAN@
+program test
+ use Zeeman
+ use parameters
+ implicit none
+ integer,parameter :: n=5
+ integer :: atom_of(n)=(/1,1,1,1,2/)
+ real*8,parameter :: muB=5.7883818012d-5
+ real*8 :: S(n,n),field(3,2)
+ complex*16 :: h(2*n,2*n)
+ integer :: i
+ S=0d0
+ do i=1,n
+  S(i,i)=1d0
+ end do
+ ! Global field: the same muB*B.sigma on every orbital.
+ Bx=1d0;By=-2d0;Bz=3d0;NZMAtom=0
+ field(:,1)=(/Bx,By,Bz/);field(:,2)=field(:,1)
+ call check(1)
+ ! Per-atom fields: each orbital takes the field of its own atom, and the
+ ! global field is not used.
+ NZMAtom=2
+ ZMAtomBx=(/0.5d0,-4d0/);ZMAtomBy=(/1.5d0,0d0/);ZMAtomBz=(/-2.5d0,7d0/)
+ field(:,1)=(/0.5d0,1.5d0,-2.5d0/);field(:,2)=(/-4d0,0d0,7d0/)
+ call check(2)
+ ! Only atom 2 listed: atom 1 gets no field.
+ ZMAtomBx(1)=0d0;ZMAtomBy(1)=0d0;ZMAtomBz(1)=0d0
+ field(:,1)=0d0
+ call check(3)
+ print *,'PASS'
+contains
+ subroutine check(code)
+ integer,intent(in) :: code
+ complex*16 :: expect(2*n,2*n)
+ real*8 :: b(3),err
+ integer :: k
+ expect=(0d0,0d0)
+ do k=1,n
+  b=muB*field(:,atom_of(k))
+  ! muB*(Bx*sigma_x + By*sigma_y + Bz*sigma_z) in the (up,down) basis.
+  expect(k,k)=b(3)
+  expect(k+n,k+n)=-b(3)
+  expect(k,k+n)=dcmplx(b(1),-b(2))
+  expect(k+n,k)=dcmplx(b(1),b(2))
+ end do
+ h=(1d9,1d9)
+ call CompHZM(h,S,n,3)
+ err=maxval(abs(h-expect))
+ print '(A,I2,ES11.3)',' case',code,err
+ if(err>1d-15)stop 10+code
+ end subroutine
+end program

@@ -92,7 +92,7 @@ CONTAINS
     IMPLICIT NONE
     
     INTEGER, INTENT(IN) :: NAOs, NShell
-    INTEGER :: AtomID1, AtomID2, ShellT1, ShellT2, ShellC1, ShellC2
+    INTEGER :: AtomID1, ShellT1, ShellT2, ShellC1, ShellC2
     INTEGER, DIMENSION(NAOs) :: AOT
 
     !*********************************
@@ -142,10 +142,10 @@ CONTAINS
           ShellC1 = GetShellC(i)
           AtomID1 = GetAtm4Sh(i)
           DO j=1,2*ShellT1+1
-            IF( NZMAtom > 0) THEN  ! User-defined Zeeman field at atom AtomID2
-              Bx_atom = ZMAtomBx(AtomID2)
-              By_atom = ZMAtomBy(AtomID2)
-              Bz_atom = ZMAtomBz(AtomID2)
+            IF( NZMAtom > 0) THEN  ! User-defined Zeeman field at atom AtomID1
+              Bx_atom = ZMAtomBx(AtomID1)
+              By_atom = ZMAtomBy(AtomID1)
+              Bz_atom = ZMAtomBz(AtomID1)
             ELSE
                Bx_atom = Bx
                By_atom = By

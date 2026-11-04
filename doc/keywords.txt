@@ -362,6 +362,69 @@ given in the GAUSSIAN03/09 input file. Any number is possible as long as is >= 0
 the density matrix to create an educated guess for a new calculation  (see SPINEDIT and MRSTART).
 Default: NALPHA = NBETA = -1 (not used).
 
+* SOC (logical)
+Adds spin-orbit coupling after self-consistency. The converged collinear
+Hamiltonian is rebuilt in the spinor basis (twice the number of orbitals),
+the on-site SOC matrix of each atom is added, and the device Fermi energy is
+found again with the same charge. Transmission, DOS and the Mulliken analysis
+(spin components <Sx>, <Sy>, <Sz> of each atom) then use the spinor
+Hamiltonian. The SOC does not feed back into the density, so results compare
+transport with and without SOC on the same scalar-relativistic solution.
+Transmission is written to T.<job_name>.SOC.dat. Can be combined with
+SPINROT and ZM. The SOC integrals are scaled with SOC_FAC_P/D/F and
+SOCFACATOM or replaced with SOC_VAL_P/D/F and SOCVALATOM.
+Default: .false. (off)
+
+* SCFSOC (logical)
+Includes SOC within the SCF cycles. In every ANT cycle the density matrix is
+computed from the spinor Hamiltonian with SOC, and its real spin-diagonal
+blocks (up-up and down-down) are returned to GAUSSIAN as the collinear
+density. The spin-off-diagonal part of the density does not enter the SCF.
+SOC therefore changes the converged density and moments, unlike SOC, which
+is applied only after convergence.
+Default: .false. (off)
+
+* SOC_FAC_P, SOC_FAC_D and SOC_FAC_F (real)
+Global factors multiplying the calculated SOC constants of p, d and f shells.
+They correct for basis functions whose radial part lacks the nodal structure
+near the nucleus; 1.0 keeps the value obtained from the integral and 0.0
+switches SOC off for that shell type. They do not activate SOC by themselves.
+Default: SOC_FAC_P = SOC_FAC_D = SOC_FAC_F = 1.0
+
+* RCUT (real)
+Cutoff radius, in Bohr, of the Yukawa screening of the nuclear potential in
+the intra-atomic SOC integrals (Beilstein J. Nanotechnol. 2018, 9, 1015).
+Default: RCUT = 2.0
+
+* SOCFACATOM (integer list)
+Atom-by-atom SOC factors and cutoff radius. Syntax:
+SOCFACATOM
+#natoms
+#atom, #soc_fac_p, #soc_fac_d, #soc_fac_f, #rcut
+...
+Values must be non-negative. Atoms not listed take the global SOC_FAC_P/D/F
+and RCUT in effect when this block is read, so give the global keywords
+before it.
+Default: none (global values for all atoms)
+
+* SOC_VAL_P, SOC_VAL_D and SOC_VAL_F (real)
+Global SOC constants, in eV, for p, d and f shells. A positive value replaces
+the calculated (and scaled) SOC constant of that shell type; 0.0 keeps the
+integral.
+Default: SOC_VAL_P = SOC_VAL_D = SOC_VAL_F = 0.0
+
+* SOCVALATOM (integer list)
+Atom-by-atom SOC constants in eV. Syntax:
+SOCVALATOM
+#natoms
+#atom, #soc_val_p, #soc_val_d, #soc_val_f
+...
+Values must be non-negative; a positive value replaces the calculated SOC
+constant of that shell on that atom. Atoms not listed take the global
+SOC_VAL_P/D/F in effect when this block is read. There is no cutoff column;
+use SOCFACATOM for atom-specific RCUT.
+Default: none (global values for all atoms)
+
 * SPINROT, THETA and PHI (logical, real, real)
 SPINROT rotates the spin quantization axis of the converged collinear solution
 after self-consistency. The device Hamiltonian is rebuilt in the spinor basis
@@ -390,6 +453,27 @@ SPINROTATOM
 ...
 with theta in [-180,180] and phi in [-360,360] degrees.
 Default: none (THETA and PHI apply to all atoms)
+
+
+* ZM, BX, BY and BZ (logical, real, real, real)
+ZM adds a spin-only Zeeman term after self-consistency, E = muB*B.sigma with
+muB = 5.788e-5 eV/T, using the field (BX, BY, BZ) in tesla on every atom. As
+with SOC, the Hamiltonian is rebuilt in the spinor basis and the device Fermi
+energy is found again; the field does not feed back into the density. A
+field of 1 T splits the spin levels by 0.116 meV. Can be combined with SOC
+and SPINROT. With ZM alone, transmission is written to T.<job_name>.dat as a
+single spinor block.
+Default: ZM off, BX = BY = BZ = 0.0
+
+* ZMATOM (integer list)
+Atom-by-atom Zeeman fields for ZM, in tesla. Syntax:
+ZMATOM
+#natoms
+#atom, #bx, #by, #bz
+...
+When ZMATOM is present, atoms not listed get no field (BX, BY and BZ are not
+used).
+Default: none (BX, BY and BZ apply to all atoms)
 
 
 ------------------------
@@ -438,6 +522,19 @@ Compute Transmision matrix in hermitian form T = \Gamma_L^{1/2} G^\dagger \Gamma
 The default is the easier non-hermitian form \Gamma_L G^\dagger \Gamma_R G which is considerably faster 
 for large clusters. The diagonalization of both forms yield the same eigenvalues.
 Default: .false. (transmission matrix in non-hermitian form).
+
+* POL (logical)
+For spinor calculations (SOC, SCFSOC, SPINROT or ZM), adds a third column to
+the transmission file with the spin polarization of the transmitted current
+along z: T_uu + T_du - T_dd - T_ud, where T_ab is the transmission from spin
+a in the left electrode to spin b in the right electrode. The column holds
+the difference, not the normalized ratio.
+Default: .false. (off)
+
+* TCOMP (logical)
+With POL, also writes the four spin components T_uu, T_ud, T_du and T_dd
+after the polarization column.
+Default: .false. (off)
 
 * RTM_BEG and RTM_END (integer)
 Perform eigenchannel analysis with reduced transmission matrix [see PRB 73, 075429 (2006)] on atoms from 

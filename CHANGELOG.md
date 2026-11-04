@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fix ZMATOM: per-atom Zeeman fields were looked up with an atom index that
+  was never set in CompHZM, so they landed on an undefined atom. Each orbital
+  now takes the field of its own atom. Add test_zeeman.py and document SOC,
+  SCFSOC, SOC_FAC_P/D/F, RCUT, SOCFACATOM, SOC_VAL_P/D/F, SOCVALATOM, ZM,
+  BX/BY/BZ, ZMATOM, POL and TCOMP in keywords.txt.
+
 - Remove the TREV keyword and its second transmission pass with the
   spin-reversed spinor Hamiltonian. That pass ignored SPINROT, reinitialized
   the Bethe-lattice electrodes with UD/DU/DD and wrote unopened unit 666.
