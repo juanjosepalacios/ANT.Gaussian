@@ -2,10 +2,14 @@
 
 ## Unreleased
 
+- Change the default of NSPINLOCK from 0 to -1, so that SWOFFSPL (default
+  1.0D-3) decides when spin locking is switched off unless NSPINLOCK >= 0 is
+  given or the calculation restarts from a density matrix file.
+
 - Set NSPINLOCK to 0 when the calculation starts from a density matrix file,
-  whatever its value in the input, and say so in the log. Spin locking would
-  otherwise pull the spin of the restarted density back to the multiplicity of
-  the Gaussian input.
+  whatever its value in the input or default, and say so in the log. Spin
+  locking would otherwise pull the spin of the restarted density back to the
+  multiplicity of the Gaussian input. NSPINLOCK >= 0 supersedes SWOFFSPL.
 
 - Remove SPINROT, THETA and PHI and the rigid rotation of the whole system.
   SPINROTATOM alone now switches on the spin rotation; atoms not listed stay

@@ -313,20 +313,21 @@ Default: QEXCESS = 0.0
 --------------------------
 
 * SWOFFSPL (real)
-Convergence criterion for switching off spin locking in a spin unrestricted calculation (default). Thus 
-in a spin-unrestricted calculation the total spin of the device is kept fixed to the value $(M-1)/2$ 
-given by the multiplicity $M$ in the GAUSSIAN03 input file until a certain convergence is reached: 
-RMSDP < SWOFFSPL. (See also NSPINLOCK below)
+Convergence criterion for switching off spin locking in a spin unrestricted calculation. Unless
+NSPINLOCK >= 0 (see NSPINLOCK below), the total spin of the device is kept fixed to the value $(M-1)/2$
+given by the multiplicity $M$ in the GAUSSIAN input file until a certain convergence is reached:
+RMSDP < SWOFFSPL. This is the default, since NSPINLOCK = -1 by default.
 Advice: SWOFFSPL < SL
 Default: SWOFFSPL = 1.0D-3
 
 * NSPINLOCK (integer)
-Number of steps with spin locking on. It supercedes the SWOFFSPL criterion  when >= 0 (see keyword 
-SWOFFSPL above)
+Number of steps with spin locking on after the electrodes are connected. When >= 0 it supersedes the
+SWOFFSPL criterion (see keyword SWOFFSPL above); NSPINLOCK = 0 switches spin locking off from the first
+step. When < 0 (the default), spin locking is switched off once RMSDP < SWOFFSPL.
 When the calculation starts from a density matrix file (P.<job>.dat), NSPINLOCK is set to 0 whatever
 its value in the input, so that the spin polarization of that density matrix is not locked back to
 the multiplicity of the Gaussian input.
-Default: NSPINLOCK = 0.
+Default: NSPINLOCK = -1.
 
 * UD, DU, DD (logical)
 Magnetization direction of the Bethe lattice electrodes when these are magnetic. U stands for  "up" and 

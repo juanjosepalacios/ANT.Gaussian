@@ -258,7 +258,7 @@
   CHARACTER(LEN=10), PARAMETER :: SpinEdit_keyw = "SPINEDIT"
 
   ! Number of steps with spinlock
-  INTEGER :: NSpinLock = 0
+  INTEGER :: NSpinLock = -1
   CHARACTER(len=10), PARAMETER :: NSpinLock_keyw = "NSPINLOCK"
 
   ! Convergence before switching off spin lock, (  SwOffSpL < SL  )
