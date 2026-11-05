@@ -145,3 +145,44 @@ d
  ddp =    4.9757307100723243E-02
  ddd =   -7.3505636637852929E-04
  ENDSET
+
+ BEGINSET
+ BCC-sd
+6 2 8 0
+s
+d
+ RYD
+ ! Fitted on an 8-direction (bcc) Bethe lattice to the CRYSTAL23 LSDA DOS of
+ ! ferromagnetic bcc Fe, a = 2.87 A, with the sd basis + ECP of the ANT Fe wire
+ ! (s and d projected DOS of both spins and the 2.89 muB moment). No overlaps.
+ ISPIN =            1
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  =    3.1814813401515590E-01
+ edd =    1.0151693417063620E-01
+ edt =    2.0127332300487008E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss =   -1.3687889805998213E-01
+ sds =   -9.4067900982138533E-02
+ dds =   -1.4700248960146847E-02
+ ddp =    3.3733574410186790E-02
+ ddd =   -2.1624974864638522E-02
+ ISPIN =            2
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  =    6.1213900970714508E-01
+ edd =    4.6274007520898491E-01
+ edt =    6.0900847351600707E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss =   -1.3687889805998213E-01
+ sds =   -9.4067900982138533E-02
+ dds =   -1.4700248960146847E-02
+ ddp =    3.3733574410186790E-02
+ ddd =   -2.1624974864638522E-02
+ ENDSET
