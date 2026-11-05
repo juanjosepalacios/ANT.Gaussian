@@ -323,6 +323,9 @@ Default: SWOFFSPL = 1.0D-3
 * NSPINLOCK (integer)
 Number of steps with spin locking on. It supercedes the SWOFFSPL criterion  when >= 0 (see keyword 
 SWOFFSPL above)
+When the calculation starts from a density matrix file (P.<job>.dat), NSPINLOCK is set to 0 whatever
+its value in the input, so that the spin polarization of that density matrix is not locked back to
+the multiplicity of the Gaussian input.
 Default: NSPINLOCK = 0.
 
 * UD, DU, DD (logical)

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Set NSPINLOCK to 0 when the calculation starts from a density matrix file,
+  whatever its value in the input, and say so in the log. Spin locking would
+  otherwise pull the spin of the restarted density back to the multiplicity of
+  the Gaussian input.
+
 - Remove SPINROT, THETA and PHI and the rigid rotation of the whole system.
   SPINROTATOM alone now switches on the spin rotation; atoms not listed stay
   along z. Input errors from read_parameters now stop with exit status 1.

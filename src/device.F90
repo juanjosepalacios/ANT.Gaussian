@@ -413,7 +413,7 @@
   !* Read initial density matrix from file P.dat *
   !***********************************************
   subroutine ReadDensMat(densitymatrix)
-    use parameters, only: NSpinEdit, SpinEdit, MRStart, SpinDel, PFix, NFix, IFix, densitymatrixx
+    use parameters, only: NSpinEdit, SpinEdit, MRStart, SpinDel, PFix, NFix, IFix, densitymatrixx, NSpinLock
     use constants, only: d_zero
     use numeric, only: RMatPow
     use cluster, only: LoAOrbNo, HiAOrbNo,NAOAtom
@@ -436,6 +436,13 @@
     write(ifu_log,*) "-------------------------------------------------------------------------------------------"
     write(ifu_log,*) "Starting calculation with density matrix from file  ", densitymatrix
     write(ifu_log,*) "-------------------------------------------------------------------------------------------"
+
+    ! The density matrix read from file already has its own spin polarization;
+    ! spin locking would drag it back to the multiplicity of the Gaussian input.
+    if (NSpinLock /= 0) then
+       write(ifu_log,'(A,I0,A)') " NSPINLOCK = ", NSpinLock, " ignored: NSPINLOCK = 0 when restarting from a density matrix file"
+       NSpinLock = 0
+    end if
 
     PD=0.0d0
     PDMod=0.0d0
