@@ -105,3 +105,43 @@ d
  S_ddd =    6.9804323190194744E-002
  ENDSET
 
+ BEGINSET
+ FCC-sd
+6 2 8 0
+s
+d
+ RYD
+ ! Fitted on a 12-direction (fcc) Bethe lattice to the CRYSTAL23 LSDA DOS of
+ ! ferromagnetic fcc Fe, a = 3.515 A, with the sd basis + ECP of the ANT Fe wire
+ ! (s and d projected DOS of both spins and the 2.83 muB moment). No overlaps.
+ ISPIN =            1
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  =    2.0587822076881343E-01
+ edd =    1.0151693417063620E-01
+ edt =    1.5368957217527512E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss =   -8.6344652514977263E-02
+ sds =   -7.9410323016610843E-02
+ dds =   -1.4700036166758872E-02
+ ddp =    4.9757307100723243E-02
+ ddd =   -7.3505636637852929E-04
+ ISPIN =            2
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  =    3.8901158507790973E-01
+ edd =    4.6364506149880225E-01
+ edt =    5.1964359763191126E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss =   -8.6344652514977263E-02
+ sds =   -7.9410323016610843E-02
+ dds =   -1.4700036166758872E-02
+ ddp =    4.9757307100723243E-02
+ ddd =   -7.3505636637852929E-04
+ ENDSET
