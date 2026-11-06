@@ -1,7 +1,7 @@
 %mem=4000mb
 %chk=Fe64-bcc-wire.chk
 %NProcShared=8
-#p ulsda/gen pseudo=read scf=(qc,intrep,maxcycle=512,conver=2)
+#p ulsda/gen pseudo=read scf=(qc,intrep,maxcycle=512,conver=3)
 
 Fe64-bcc-wire
 
