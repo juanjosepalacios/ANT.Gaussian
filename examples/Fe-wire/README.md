@@ -104,9 +104,7 @@ end of the log. ANT splits the cluster into atoms 1-32 and 33-64, which cuts the
   | Electrodes | E_F (eV) | T(E_F) up + down (e^2/h) | G (G0) |
   |---|---|---|---|
   | Bethe `BCC-sd` (this example) | -1.184 | 2.796 + 1.815 = 4.611 | 2.31 |
-  | Bethe `lsda-3d4s` | -2.022 | 2.114 + 1.568 = 3.682 | 1.84 |
-  | 1D (`1DLEAD`, `NATPC1/2 = 5`, `NPC = 3`), restarted from the `lsda-3d4s` density | -2.181 | 2.679 + 1.572 = 4.251 | 2.13 |
+  | 1D (`1DLEAD`, `NATPC1/2 = 5`, `NPC = 3`), restarted from a converged Bethe-lattice density | -2.181 | 2.679 + 1.572 = 4.251 | 2.13 |
 
-  The `lsda-3d4s` electrodes scatter more at the interface (74% of the open channels at E_F).
 - The `.gjf` files use `%NProcShared=8`; change it to the number of cores available. Step 2
   substitutes links from `../../bin`.

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Remove the lsda-3d4s Fe Bethe-lattice set from BL026.dat; use FCC-sd or
+  BCC-sd instead. Inputs with BLPAR1/2 = lsda-3d4s no longer run.
+
 - Change the default of NSPINLOCK from 0 to -1, so that SWOFFSPL (default
   1.0D-3) decides when spin locking is switched off unless NSPINLOCK >= 0 is
   given or the calculation restarts from a density matrix file.
