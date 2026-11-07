@@ -3,7 +3,7 @@
 %NProcShared=8
 %Subst L101 ../../bin
 %Subst L502 ../../bin
-#p ulsda/gen pseudo=read scf=(maxcycle=300,conver=5,dsymm,fermi,nodiis,vshift=500,nodamp) guess=read
+#p ulsda/gen pseudo=read scf=(maxcycle=300,conver=5,dsymm,fermi,nodiis,vshift=500,nodamp) guess=read nosymm
 
 Fe64-bcc-wire
 
