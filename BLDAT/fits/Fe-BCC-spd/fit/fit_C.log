@@ -1,0 +1,41 @@
+C start cost 173.518, 5.7 s per call
+C call 20 cost 99.454 best 99.454 moment 3.098
+C call 40 cost 69.420 best 69.385 moment 2.935
+C call 60 cost 62.840 best 62.820 moment 2.960
+C call 80 cost 58.670 best 58.670 moment 2.947
+C call 100 cost 54.515 best 54.449 moment 2.973
+C call 120 cost 51.727 best 51.693 moment 2.957
+C call 140 cost 50.058 best 50.032 moment 2.921
+C call 160 cost 49.198 best 49.180 moment 2.923
+C call 180 cost 48.920 best 48.896 moment 2.928
+C call 200 cost 48.441 best 48.402 moment 2.912
+C call 220 cost 48.196 best 48.196 moment 2.918
+C call 240 cost 47.902 best 47.897 moment 2.897
+C call 260 cost 47.843 best 47.842 moment 2.899
+C call 280 cost 47.815 best 47.811 moment 2.908
+C call 300 cost 47.792 best 47.788 moment 2.903
+C call 320 cost 47.772 best 47.770 moment 2.905
+C call 340 cost 47.735 best 47.730 moment 2.911
+C call 360 cost 47.684 best 47.678 moment 2.919
+C call 380 cost 47.671 best 47.528 moment 2.918
+C call 400 cost 47.646 best 47.528 moment 2.943
+C call 420 cost 47.495 best 47.495 moment 2.916
+C call 440 cost 47.482 best 47.482 moment 2.908
+C call 460 cost 47.478 best 47.478 moment 2.910
+C call 480 cost 47.473 best 47.473 moment 2.908
+C call 500 cost 47.474 best 47.470 moment 2.909
+C call 520 cost 47.465 best 47.465 moment 2.911
+C call 540 cost 47.460 best 47.459 moment 2.912
+C call 560 cost 47.454 best 47.454 moment 2.913
+C call 580 cost 47.453 best 47.453 moment 2.913
+C call 600 cost 47.452 best 47.449 moment 2.917
+C call 620 cost 47.448 best 47.448 moment 2.915
+C call 640 cost 47.447 best 47.447 moment 2.915
+C call 660 cost 47.447 best 47.446 moment 2.916
+C call 680 cost 47.450 best 47.446 moment 2.915
+C call 700 cost 47.453 best 47.445 moment 2.917
+C call 720 cost 47.446 best 47.445 moment 2.916
+C call 740 cost 47.445 best 47.445 moment 2.916
+C call 760 cost 47.445 best 47.445 moment 2.916
+C done 3 `xtol` termination condition is satisfied. cost 47.445
+C active bounds: ['dds']

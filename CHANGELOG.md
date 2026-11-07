@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add the BCC-spd Fe Bethe-lattice set to BL026.dat, fitted to the CRYSTAL23
+  LSDA DOS of bcc Fe with the CRENBS s+d basis plus a scaled STO-3G 4p shell.
+  BLDAT/fits/Fe-BCC-spd holds the basis, the 4p-scale optimization, the CRYSTAL23
+  inputs and fit target DOS, and the fit scripts and logs.
+
 - Remove the lsda-3d4s Fe Bethe-lattice set from BL026.dat; use FCC-sd or
   BCC-sd instead. Inputs with BLPAR1/2 = lsda-3d4s no longer run.
 

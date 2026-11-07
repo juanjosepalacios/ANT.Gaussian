@@ -1,0 +1,20 @@
+! Fe minimal spd basis for the CRENBS ECP (Ar core, 8 valence electrons):
+! CRENBS s and d shells + STO-3G Fe 4p shell with exponents scaled by 0.586,
+! optimized for the LSDA (SVWN) total energy of bcc Fe, a = 2.87 A (CRYSTAL23).
+Fe     0
+S    4   1.00
+      1.9210000              0.0164600
+      0.7000000             -0.2600570
+      0.1139000              0.6487290
+      0.0404200              0.4994440
+P    3   1.00
+      0.3469798             -0.1215468600
+      0.1280574              0.5715227604
+      0.0565515              0.5498949471
+D    5   1.00
+     24.0800000              0.0613960
+      6.3760000              0.2713330
+      2.0370000              0.4491940
+      0.7593000              0.3434950
+      0.2913000              0.2159600
+****
