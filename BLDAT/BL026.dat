@@ -198,3 +198,58 @@ d
  ddp =  2.6365800699239637E-02
  ddd = -8.7289825945501918E-03
  ENDSET
+
+ BEGINSET
+ FCC-spd
+9 2 8 0
+s
+p
+d
+ RYD
+ ! Fitted on a 12-direction (fcc) Bethe lattice to the CRYSTAL23 LSDA DOS of
+ ! ferromagnetic fcc Fe, a = 3.515 A, with the basis and ECP of BCC-spd (CRENBS s+d
+ ! plus the STO-3G 4p shell scaled by 0.586; s, d and total DOS of both spins and
+ ! the 2.80 muB moment; p DOS not fitted). No overlaps.
+ ISPIN =            1
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  =  6.0952551627680907E-01
+ ep  =  1.7598955804185483E+00
+ edd =  1.0151693417063620E-01
+ edt =  2.2471615421049121E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss = -8.1579444782873586E-02
+ sps =  1.4720649358475690E-01
+ pps =  4.1395471152605845E-01
+ ppp = -8.0065886982502732E-04
+ sds = -7.0161519309799775E-02
+ pds = -2.0138436893323944E-01
+ pdp = -2.0172863457732803E-03
+ dds = -7.3498661228198646E-03
+ ddp =  3.6751572233485888E-03
+ ddd = -7.3498662005826848E-04
+ ISPIN =            2
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  =  5.5177080964367242E-01
+ ep  =  1.8262261977615801E+00
+ edd =  4.8077127099078160E-01
+ edt =  6.6901475245401132E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss = -8.1579444782873586E-02
+ sps =  1.4720649358475690E-01
+ pps =  4.1395471152605845E-01
+ ppp = -8.0065886982502732E-04
+ sds = -7.0161519309799775E-02
+ pds = -2.0138436893323944E-01
+ pdp = -2.0172863457732803E-03
+ dds = -7.3498661228198646E-03
+ ddp =  3.6751572233485888E-03
+ ddd = -7.3498662005826848E-04
+ ENDSET

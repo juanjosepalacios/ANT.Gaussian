@@ -1,0 +1,35 @@
+C start cost 122.481, 7.4 s per call
+C call 20 cost 102.470 best 102.470 moment 3.044
+C call 40 cost 71.249 best 71.243 moment 2.936
+C call 60 cost 61.786 best 61.699 moment 2.895
+C call 80 cost 55.026 best 55.026 moment 2.801
+C call 100 cost 54.143 best 54.084 moment 2.873
+C call 120 cost 51.216 best 51.216 moment 2.842
+C call 140 cost 50.074 best 50.064 moment 2.845
+C call 160 cost 48.252 best 48.236 moment 2.817
+C call 180 cost 47.539 best 47.496 moment 2.832
+C call 200 cost 46.917 best 46.878 moment 2.803
+C call 220 cost 45.326 best 45.326 moment 2.817
+C call 240 cost 44.890 best 44.867 moment 2.805
+C call 260 cost 44.394 best 44.391 moment 2.790
+C call 280 cost 43.878 best 43.871 moment 2.799
+C call 300 cost 43.391 best 43.391 moment 2.790
+C call 320 cost 42.741 best 42.710 moment 2.809
+C call 340 cost 42.339 best 42.337 moment 2.781
+C call 360 cost 42.243 best 42.212 moment 2.803
+C call 380 cost 42.060 best 42.047 moment 2.803
+C call 400 cost 41.950 best 41.950 moment 2.800
+C call 420 cost 41.864 best 41.860 moment 2.803
+C call 440 cost 41.802 best 41.802 moment 2.787
+C call 460 cost 41.671 best 41.653 moment 2.807
+C call 480 cost 41.628 best 41.624 moment 2.787
+C call 500 cost 41.621 best 41.611 moment 2.787
+C call 520 cost 41.615 best 41.611 moment 2.810
+C call 540 cost 41.616 best 41.611 moment 2.810
+C call 560 cost 41.616 best 41.611 moment 2.810
+C call 580 cost 41.612 best 41.611 moment 2.786
+C call 600 cost 41.618 best 41.611 moment 2.808
+C call 620 cost 41.614 best 41.611 moment 2.810
+C call 640 cost 41.613 best 41.611 moment 2.786
+C done 3 `xtol` termination condition is satisfied. cost 41.612
+C active bounds: []

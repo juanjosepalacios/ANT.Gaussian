@@ -1,0 +1,33 @@
+D start cost 83.301, 6.8 s per call
+D call 20 cost 69.686 best 69.686 moment 2.800
+D call 40 cost 62.448 best 62.446 moment 2.837
+D call 60 cost 59.756 best 59.735 moment 2.826
+D call 80 cost 53.409 best 53.385 moment 2.716
+D call 100 cost 52.667 best 52.620 moment 2.749
+D call 120 cost 50.774 best 50.733 moment 2.782
+D call 140 cost 50.225 best 50.210 moment 2.779
+D call 160 cost 49.693 best 49.690 moment 2.762
+D call 180 cost 49.050 best 49.039 moment 2.775
+D call 200 cost 47.968 best 47.958 moment 2.784
+D call 220 cost 43.433 best 43.433 moment 2.845
+D call 240 cost 42.295 best 42.295 moment 2.793
+D call 260 cost 41.776 best 41.757 moment 2.818
+D call 280 cost 41.712 best 41.712 moment 2.759
+D call 300 cost 41.669 best 41.669 moment 2.796
+D call 320 cost 41.430 best 41.388 moment 2.775
+D call 340 cost 41.045 best 41.027 moment 2.782
+D call 360 cost 40.799 best 40.789 moment 2.795
+D call 380 cost 40.424 best 40.408 moment 2.797
+D call 400 cost 39.764 best 39.764 moment 2.822
+D call 420 cost 39.535 best 39.530 moment 2.807
+D call 440 cost 39.458 best 39.458 moment 2.803
+D call 460 cost 39.421 best 39.420 moment 2.798
+D call 480 cost 39.414 best 39.414 moment 2.797
+D call 500 cost 39.413 best 39.412 moment 2.796
+D call 520 cost 39.424 best 39.412 moment 2.799
+D call 540 cost 39.416 best 39.412 moment 2.797
+D call 560 cost 39.445 best 39.412 moment 2.832
+D call 580 cost 39.442 best 39.412 moment 2.832
+D call 600 cost 39.414 best 39.412 moment 2.796
+D done 3 `xtol` termination condition is satisfied. cost 39.412
+D active bounds: ['ddd']
