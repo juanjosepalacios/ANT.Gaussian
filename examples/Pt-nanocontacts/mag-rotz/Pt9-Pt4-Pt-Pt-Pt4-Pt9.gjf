@@ -1,5 +1,5 @@
-%Subst L502 ../../bin
-%Subst L101 ../../bin
+%Subst L502 ../../../bin
+%Subst L101 ../../../bin
 %nproc=4
 #p LSDA/gen pseudo=read scf=(conver=5,nosymm,maxcyc=300)
 

@@ -1,23 +1,23 @@
 Pt nanocontact (Pt9-Pt4-Pt-Pt-Pt4-Pt9, 28 atoms, Bethe-lattice electrodes) in five cases.
 
+Each subdirectory is one case, with its own inputs, outputs and README. Every case is run as
+`Pt9-Pt4-Pt-Pt-Pt4-Pt9.gjf` with `Pt9-Pt4-Pt-Pt-Pt4-Pt9.ant` in its own directory; the `.gjf` files
+substitute links from `../../../bin`.
+
 Spin-orbit coupling:
 
-1) A Pt nanocontact with SOC and a small basis set (`.gbssmall`; outputs `-small`)
-2) A Pt nanocontact with a large basis set and modified values of SOC integrals (`.gbslarge`;
-   outputs `-large`)
+1) [SOC-small/](SOC-small/README.md): a Pt nanocontact with SOC and a small basis set (`.gbssmall`)
+2) [SOC-large/](SOC-large/README.md): a Pt nanocontact with a large basis set and modified values of
+   SOC integrals (`.gbslarge`)
 
 Spin rotation test on a Pt contact forced to be magnetic (no SOC, small basis):
 
-3) Collinear spin-polarized calculation with multiplicity 15 and spin locking (`-mag`)
-4) Case 3 restarted with every atom listed in `SPINROTATOM` at theta = 0 (`-mag-rotz`)
-5) Case 3 restarted with every spin rotated to the x axis (`-mag-rotx`)
+3) [mag/](mag/README.md): collinear spin-polarized calculation with multiplicity 15 and spin locking
+4) [mag-rotz/](mag-rotz/README.md): case 3 restarted with every atom listed in `SPINROTATOM` at
+   theta = 0
+5) [mag-rotx/](mag-rotx/README.md): case 3 restarted with every spin rotated to the x axis
 
-## Running the SOC cases
-
-Run `Pt9-Pt4-Pt-Pt-Pt4-Pt9.gjf` with `Pt9-Pt4-Pt-Pt-Pt4-Pt9.ant`. The `.gjf` includes the basis with
-`@Pt9-Pt4-Pt-Pt-Pt4-Pt9.gbssmall`; change it to `.gbslarge` for case 2. Their outputs are
-`Pt9-Pt4-Pt-Pt-Pt4-Pt9.log-<case>` and `T.Pt9-Pt4-Pt-Pt-Pt4-Pt9.SOC.dat-<case>`. These outputs and
-`P.Pt9-Pt4-Pt-Pt-Pt4-Pt9.dat`, `Lead1DOS.dat` and `Lead2DOS.dat` come from earlier versions of ANT.
+The outputs of cases 1 and 2 come from earlier versions of ANT.
 
 ## Spin rotation test (cases 3-5)
 
@@ -27,16 +27,16 @@ not change when the spins rotate. Rotating every spin of the device by the same 
 rotation of the whole system, and the Fermi energy, charges, moment sizes and transmission must not
 change. This tests the implementation of `SPINROTATOM`.
 
-| Case | `.gjf` | `.ant` | Settings |
-|---|---|---|---|
-| 3 | `.gjf-mag` | `.ant-mag` | Charge 0, multiplicity 15 (147 alpha and 133 beta electrons), `nosymm`, `NSPINLOCK = 1000` |
-| 4 | `.gjf-mag` | `.ant-mag-rotz` | Case 3 plus `SPINROTATOM` with atoms 1-28 at theta = 0, phi = 0 |
-| 5 | `.gjf-mag` | `.ant-mag-rotx` | Case 3 plus `SPINROTATOM` with atoms 1-28 at theta = 90, phi = 0 |
+| Case | Settings |
+|---|---|
+| 3 (`mag`) | Charge 0, multiplicity 15 (147 alpha and 133 beta electrons), `nosymm`, `NSPINLOCK = 1000` |
+| 4 (`mag-rotz`) | Case 3 plus `SPINROTATOM` with atoms 1-28 at theta = 0, phi = 0 |
+| 5 (`mag-rotx`) | Case 3 plus `SPINROTATOM` with atoms 1-28 at theta = 90, phi = 0 |
 
-To run them, copy the `.gjf-mag` file to `Pt9-Pt4-Pt-Pt-Pt4-Pt9.gjf` and the `.ant` of the case to
-`Pt9-Pt4-Pt-Pt-Pt4-Pt9.ant`. Run case 3 first. For cases 4 and 5, copy its density matrix
-(`P.Pt9-Pt4-Pt-Pt-Pt4-Pt9.dat-mag` from the run below) to `P.Pt9-Pt4-Pt-Pt-Pt4-Pt9.dat`, so both
-restart from the same collinear solution. Remove that file before repeating case 3 from scratch.
+The three cases share the same `.gjf` and basis. Run case 3 first. For cases 4 and 5, copy its density
+matrix `mag/P.Pt9-Pt4-Pt-Pt-Pt4-Pt9.dat` into `mag-rotz/` and `mag-rotx/`, so both restart from the
+same collinear solution. Delete `mag/P.Pt9-Pt4-Pt-Pt-Pt4-Pt9.dat` before repeating case 3 from
+scratch; ANT reads that file at start-up as the initial density matrix.
 
 Case 4 does not rotate anything, but listing atoms in `SPINROTATOM` sends the calculation through the
 same spinor code as case 5. Comparing cases 4 and 5 therefore isolates the rotation. Cases 4 and 5
