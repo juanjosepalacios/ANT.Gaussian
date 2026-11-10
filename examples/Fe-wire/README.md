@@ -11,6 +11,9 @@ README:
   describes the two-step procedure (QC seed, then ANT) that the other variations also use.
 - [BCC-spd/](BCC-spd/README.md): the same basis plus a scaled STO-3G 4p shell, Bethe-lattice
   electrodes `BCC-spd`.
+- [1DLEAD-spd/](1DLEAD-spd/README.md): the spd basis with 1D electrodes (`NATPC1/2 = 5`, `NPC = 3`),
+  restarted from the BCC-spd solution. Its density-matrix integrations are not converged; it
+  probably needs a larger `NIP`.
 
 ## Comparison
 
@@ -19,3 +22,4 @@ README:
 | sd, Bethe `BCC-sd` ([BCC-sd/](BCC-sd/README.md)) | -2.114 | 2.801 + 1.658 = 4.458 | 2.23 |
 | sd, 1D (`1DLEAD`, `NATPC1/2 = 5`, `NPC = 3`), restarted from a converged Bethe-lattice density (not included) | -2.181 | 2.679 + 1.572 = 4.251 | 2.13 |
 | spd, Bethe `BCC-spd` ([BCC-spd/](BCC-spd/README.md)) | -5.583 | 2.893 + 2.440 = 5.333 | 2.67 |
+| spd, 1D (`1DLEAD`, `NATPC1/2 = 5`, `NPC = 3`), restarted from the BCC-spd density ([1DLEAD-spd/](1DLEAD-spd/README.md), unconverged integrations) | -5.830 | 2.579 + 1.090 = 3.669 | 1.83 |
