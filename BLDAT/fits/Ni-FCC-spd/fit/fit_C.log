@@ -1,0 +1,14 @@
+C start cost 103.977, 6.0 s per call
+C call 20 cost 91.159 best 91.159 moment 0.173
+C call 40 cost 64.383 best 64.383 moment 0.348
+C call 60 cost 51.770 best 51.735 moment 0.499
+C call 80 cost 43.975 best 43.975 moment 0.566
+C call 100 cost 43.374 best 43.374 moment 0.519
+C call 120 cost 42.407 best 42.380 moment 0.585
+C call 140 cost 41.497 best 41.484 moment 0.550
+C call 160 cost 41.543 best 41.484 moment 0.491
+C call 180 cost 41.503 best 41.484 moment 0.550
+C call 200 cost 41.582 best 41.484 moment 0.491
+C call 220 cost 41.496 best 41.484 moment 0.550
+C done 3 `xtol` termination condition is satisfied. cost 41.496
+C active bounds: ['dds', 'ddd']

@@ -176,3 +176,99 @@ S_dds =    2.4512922333620475E-003
 S_ddp =   -2.2269541560923778E-002
 S_ddd =    6.7977240753691373E-003
 ENDSET
+
+ BEGINSET
+ FCC-sd
+6 2 10 0
+s
+d
+ RYD
+ ! Fitted on a 12-direction (fcc) Bethe lattice to the CRYSTAL23 LSDA DOS of
+ ! ferromagnetic fcc Ni, a = 3.524 A, with the CRENBS sd basis + ECP (s and d
+ ! projected DOS of both spins and the 0.70 muB moment). No overlaps.
+ ISPIN =            1
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  = -1.9888814821426425E-02
+ edd = 1.0151693417063620E-01
+ edt = 7.3404623842398292E-02
+ !
+ ! Hoppings in Ryd
+ !
+ sss = -1.0877552398355383E-01
+ sds = -6.2707630366708206E-02
+ dds = -4.0729932348325268E-02
+ ddp = 9.6362040904571997E-03
+ ddd = -6.8258522972442703E-03
+ ISPIN =            2
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  = 1.2108344851112483E-01
+ edd = 1.8562750163180805E-01
+ edt = 1.6324082472986295E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss = -1.0877552398355383E-01
+ sds = -6.2707630366708206E-02
+ dds = -4.0729932348325268E-02
+ ddp = 9.6362040904571997E-03
+ ddd = -6.8258522972442703E-03
+ ENDSET
+
+ BEGINSET
+ FCC-spd
+9 2 10 0
+s
+p
+d
+ RYD
+ ! Fitted on a 12-direction (fcc) Bethe lattice to the CRYSTAL23 LSDA DOS of
+ ! ferromagnetic fcc Ni, a = 3.524 A, with the CRENBS s+d basis + ECP plus the
+ ! STO-3G 4p shell scaled by 0.60 (s, d and total DOS of both spins and the
+ ! 0.53 muB moment; p DOS not fitted). No overlaps.
+ ISPIN =            1
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  = 4.0318955361538100E-01
+ ep  = 1.4089473732025051E+00
+ edd = 1.0151693417063620E-01
+ edt = 7.4580392307555754E-02
+ !
+ ! Hoppings in Ryd
+ !
+ sss = -1.0905674294100787E-01
+ sps = 1.0639022372229331E-01
+ pps = 1.4126480977640996E-01
+ ppp = -1.0211685590030274E-02
+ sds = -3.5151455245158385E-02
+ pds = -1.5016135607129572E-01
+ pdp = 7.1076064033751565E-02
+ dds = -2.7041248230230776E-02
+ ddp = 3.6762978647747078E-03
+ ddd = -9.2555759282997297E-04
+ ISPIN =            2
+ !
+ ! On-site enrgies in Ryd
+ !
+ es  = 4.1558931640269309E-01
+ ep  = 1.3372336387363430E+00
+ edd = 1.8874696080059047E-01
+ edt = 1.5181323398164390E-01
+ !
+ ! Hoppings in Ryd
+ !
+ sss = -1.0905674294100787E-01
+ sps = 1.0639022372229331E-01
+ pps = 1.4126480977640996E-01
+ ppp = -1.0211685590030274E-02
+ sds = -3.5151455245158385E-02
+ pds = -1.5016135607129572E-01
+ pdp = 7.1076064033751565E-02
+ dds = -2.7041248230230776E-02
+ ddp = 3.6762978647747078E-03
+ ddd = -9.2555759282997297E-04
+ ENDSET

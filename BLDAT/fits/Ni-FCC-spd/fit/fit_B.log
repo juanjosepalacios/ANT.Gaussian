@@ -1,0 +1,29 @@
+B start cost 113.140, 5.3 s per call
+B call 20 cost 81.706 best 81.706 moment 0.403
+B call 40 cost 70.600 best 70.596 moment 0.474
+B call 60 cost 63.043 best 63.043 moment 0.573
+B call 80 cost 53.730 best 53.716 moment 0.600
+B call 100 cost 53.661 best 53.619 moment 0.502
+B call 120 cost 48.106 best 48.084 moment 0.565
+B call 140 cost 46.854 best 46.845 moment 0.523
+B call 160 cost 46.092 best 46.087 moment 0.534
+B call 180 cost 45.268 best 45.261 moment 0.530
+B call 200 cost 44.478 best 44.450 moment 0.500
+B call 220 cost 44.404 best 44.372 moment 0.510
+B call 240 cost 43.660 best 43.660 moment 0.555
+B call 260 cost 43.472 best 43.471 moment 0.520
+B call 280 cost 42.858 best 42.857 moment 0.519
+B call 300 cost 42.257 best 42.257 moment 0.560
+B call 320 cost 42.211 best 42.200 moment 0.542
+B call 340 cost 42.133 best 42.131 moment 0.498
+B call 360 cost 42.058 best 42.051 moment 0.549
+B call 380 cost 42.013 best 42.006 moment 0.557
+B call 400 cost 42.032 best 42.003 moment 0.494
+B call 420 cost 42.000 best 41.998 moment 0.558
+B call 440 cost 42.041 best 41.989 moment 0.495
+B call 460 cost 42.005 best 41.981 moment 0.495
+B call 480 cost 41.981 best 41.981 moment 0.558
+B call 500 cost 42.003 best 41.981 moment 0.494
+B call 520 cost 41.981 best 41.981 moment 0.558
+B done 3 `xtol` termination condition is satisfied. cost 41.981
+B active bounds: []

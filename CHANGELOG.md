@@ -22,6 +22,13 @@
   unless LEADDOS was given: the extended-Hamiltonian matrices of the first
   electrode were only freed after writing the lead DOS.
 
+- Add the FCC-sd and FCC-spd Ni Bethe-lattice sets to BL028.dat, fitted on a
+  12-direction Bethe lattice to the CRYSTAL23 LSDA DOS of fcc Ni (a = 3.524 A)
+  with the CRENBS s+d basis and ECP and with the same basis plus the STO-3G 4p
+  shell scaled by 0.60. BLDAT/fits/Ni-FCC-sd and BLDAT/fits/Ni-FCC-spd hold the
+  bases, the 4p-scale optimization, the CRYSTAL23 inputs, outputs and fit
+  target DOS, and the fit scripts and logs.
+
 - Add the FCC-spd Fe Bethe-lattice set to BL026.dat, fitted on a 12-direction
   Bethe lattice to the CRYSTAL23 LSDA DOS of fcc Fe (a = 3.515 A) with the
   BCC-spd basis. BLDAT/fits/Fe-FCC-spd holds the CRYSTAL23 input, output and

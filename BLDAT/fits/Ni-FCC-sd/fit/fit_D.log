@@ -1,0 +1,15 @@
+D start cost 113.386, 5.0 s per call
+D call 20 cost 98.664 best 98.625 moment 0.595
+D call 40 cost 92.230 best 92.222 moment 0.611
+D call 60 cost 90.298 best 90.298 moment 0.731
+D call 80 cost 90.211 best 90.209 moment 0.725
+D call 100 cost 90.101 best 90.100 moment 0.699
+D call 120 cost 90.083 best 90.083 moment 0.698
+D call 140 cost 90.084 best 90.082 moment 0.700
+D call 160 cost 90.082 best 90.081 moment 0.699
+D call 180 cost 90.081 best 90.081 moment 0.698
+D call 200 cost 90.081 best 90.081 moment 0.698
+D call 220 cost 90.081 best 90.081 moment 0.699
+D call 240 cost 90.081 best 90.081 moment 0.698
+D done 4 Both `ftol` and `xtol` termination conditions are satisfied. cost 90.081
+D active bounds: []
