@@ -966,6 +966,15 @@
     end if
   end subroutine transport
   
+  ! Lower end of the density contours. The Green's functions take the trial
+  ! Fermi level as shift=-E_F, which moves the device spectrum by shift on the
+  ! contour axis; a negative shift moves the lower end down with it, so the
+  ! bottom of the spectrum stays the same distance above it as above EMin.
+  real*8 function ContourEMin()
+    implicit none
+    ContourEMin = min(EMin, EMin+shift)
+  end function ContourEMin
+
   !**************************************************************
   !* Subroutine for determining Fermi energy and density matrix *
   !* for some total charge                                      *
@@ -1384,10 +1393,10 @@
      real*8 :: Q, QQ, R
      integer :: n, np, i, j, k, l, M !, info, ierr
      
-     ! Radius of complex contour integration from EMin to 0
-     R  = 0.5d0*(d_zero-EMin)
-
      shift = mu
+
+     ! Radius of complex contour integration from ContourEMin() to 0
+     R  = 0.5d0*(d_zero-ContourEMin())
      PD_SOC=c_zero
 
 ! Retarded density matrix
@@ -1928,8 +1937,8 @@
     PD(ispin,:,:) = d_zero
     PDOUT(ispin,:,:) = c_zero
 
-    ! Radius of complex contour integration from EMin to -|V|/2
-    rrr = 0.5d0*(d_zero-dabs(biasvoltage/2.0)-EMin)
+    ! Radius of complex contour integration from ContourEMin() to -|V|/2
+    rrr = 0.5d0*(d_zero-dabs(biasvoltage/2.0)-ContourEMin())
 
     !c c Integral limits ... (a,b)
     a = 0.d0
@@ -1988,8 +1997,8 @@
 
        Q = d_zero
 
-       ! Radius of complex contour integration from EMin to -|V|/2
-       rrr = 0.5d0*(d_zero-dabs(biasvoltage/2.0)-EMin)
+       ! Radius of complex contour integration from ContourEMin() to -|V|/2
+       rrr = 0.5d0*(d_zero-dabs(biasvoltage/2.0)-ContourEMin())
 
        !c c Integral limits ... (a,b)
        a = 0.d0
@@ -2046,8 +2055,8 @@
        PD_SOC = c_zero       
        PDOUT_SOC = c_zero
 
-       ! Radius of complex contour integration from EMin to -|V|/2
-       rrr = 0.5d0*(-dabs(biasvoltage/2.0)-EMin)
+       ! Radius of complex contour integration from ContourEMin() to -|V|/2
+       rrr = 0.5d0*(-dabs(biasvoltage/2.0)-ContourEMin())
 
        !c c Integral limits ... (a,b)
        a = 0.d0

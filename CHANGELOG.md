@@ -7,6 +7,16 @@
   the input is read; NSPINLOCK >= 0 still supersedes it. Inputs that give
   SWOFFSPL stop with "Undefined keyword".
 
+- Move the lower end of the device density contours down with the trial
+  Fermi level during the device Fermi search, to min(EMin, EMin+shift), in
+  QTot, QTot_SPINLOCK, QTot_SOC and CompPD_SOC. The contours ran from the
+  fixed EMin while shift=-E_F moved the device spectrum along them, so a
+  trial Fermi level more than the 10 eV buffer above the bottom of the
+  spectrum pushed the lowest states below EMin and lost their charge. The
+  charge then fell again at high trial Fermi levels, the Brent bracket could
+  fail with negative residuals at both ends, and roots far above the device
+  spectrum could be accepted.
+
 - Add the FCC-spd Fe Bethe-lattice set to BL026.dat, fitted on a 12-direction
   Bethe lattice to the CRYSTAL23 LSDA DOS of fcc Fe (a = 3.515 A) with the
   BCC-spd basis. BLDAT/fits/Fe-FCC-spd holds the CRYSTAL23 input, output and
