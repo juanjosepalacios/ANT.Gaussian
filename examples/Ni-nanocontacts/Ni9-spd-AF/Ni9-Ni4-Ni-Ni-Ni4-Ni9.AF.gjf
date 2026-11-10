@@ -1,10 +1,10 @@
 %mem=1000mb
-%nproc=16
-%Subst L101 ../../bin
-%Subst L502 ../../bin
+%nproc=4
+%Subst L101 ../../../bin
+%Subst L502 ../../../bin
 #p LSDA/gen pseudo=read scf=(maxcycle=300,conver=5,nodamp) nosymm
 
-Ni9-Ni4-Ni-Ni-Ni4-Ni9.F
+Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF
 
 0,31
 Ni      0.00000    -3.50000    -4.75000

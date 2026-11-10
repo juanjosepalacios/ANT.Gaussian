@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Reorganize examples/Ni-nanocontacts in the per-variation folder layout of
+  examples/Fe-wire: one subfolder per variation with its own inputs, outputs
+  and README, and a top README with a comparison table. The Ni9 F, AF and
+  doll cases move to Ni9-spd-F/, Ni9-spd-AF/ and Ni9-doll/. Add
+  Ni4-LANL1MB-Papacon/ and Ni9-LANL1MB-Papacon/: the minimal spd basis
+  LANL1MB and the Hay-Wadt LANL1 ECP on all atoms with the new orthogonal
+  `Papacon` electrodes. Remove the old Ni4 cases (the 20 T sd contact and
+  its SPINROTATOM rotx variant).
+
+- Replace the Ni `Papacon` and `Papacon-old` Bethe-lattice sets in BL028.dat
+  with the first-neighbour Slater-Koster fit of ferromagnetic fcc Ni from
+  Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids,
+  2nd ed. (2015), Tables 4.73 and 4.78: `Papacon` (the BLPAR default) is the
+  orthogonal fit and `Papacon-nonortho` the fit with overlaps (spin-averaged).
+  They are now the first two sets in the file. Inputs that use the default
+  electrodes for Ni get different parameters; inputs with Papacon-old no
+  longer run. Papacon-sd, FCC-sd and FCC-spd are unchanged.
+
 - Remove the SWOFFSPL keyword. With NSPINLOCK < 0 (the default), spin locking
   is now switched off once RMSDP < SL/10, the threshold being set from SL after
   the input is read; NSPINLOCK >= 0 still supersedes it. Inputs that give

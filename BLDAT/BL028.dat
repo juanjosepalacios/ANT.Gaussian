@@ -2,60 +2,9 @@
 ! Ni Bethe Lattice parameters
 ! ***************************
 !
-! *****************************************
-! *** Papacon orthogonal TB parameters  ***
-! *****************************************
-!  
-BEGINSET
-Papacon-old
-9 2 10 0
-s
-p
-d
-!
-! *** 1. Spin-up parameters in Ryd (!) ***
-!
-RYD
-ISPIN = 1
-es  = 1.00243
-ep  = 1.42873
-edd = 0.48986
-edt = 0.49574
-!
-sss = -0.09034
-sps =  0.14060
-sds = -0.03958
-pps =  0.23271
-ppp =  0.02788
-pds = -0.05056
-pdp =  0.02550
-dds = -0.03128
-ddp =  0.02215
-ddd = -0.00660
-!
-! *** 2. Spin-down parameters in Ryd (!) ***
-!
-ISPIN = 2
-es  = 0.99207
-ep  = 1.39786
-edd = 0.54495
-edt = 0.54881
-!
-sss = -0.08866
-sps =  0.13251
-sds = -0.04149
-pps =  0.22424
-ppp =  0.03210
-pds = -0.05295
-pdp =  0.02850
-dds = -0.03310
-ddp =  0.02284
-ddd = -0.00665
-ENDSET
-!
-! *********************************************
-! *** Papacon non-orthogonal TB parameters  ***
-! *********************************************
+! *********************************************************
+! *** Papacon: orthogonal and non-orthogonal book fits  ***
+! *********************************************************
 !
 BEGINSET
 Papacon
@@ -64,66 +13,127 @@ s
 p
 d
 RYD
-ISPIN =            1
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Ni fcc ferromagnetic, a = 6.65845 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 4.73 (spin up) and Table 4.78 (spin down).
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
 !
-! On-site enrgies in Ryd
+! On-site energies in Ryd
 !
-es =    0.1056093448686473     
-ep =    0.9105458345776812     
-edd =   -12.4333420050839312E-002
-edt =   -12.4333420050839312E-002
-!
-! Hoppings in Ryd
-!
-sss =   -0.1030332419052912     
-sps =   -8.3352517514460338E-002
-pps =    0.2547689359497468     
-ppp =    5.3884809349807323E-003
-sds =   -3.7607911533326481E-002
-pds =    5.5496810342579250E-002
-pdp =   -2.3485409083813549E-002
-dds =   -3.4820425342845902E-002
-ddp =    2.5599190083128160E-002
-ddd =   -5.6870005292460890E-003
-ISPIN =            2
-!
-! On-site enrgies in Ryd
-!
-es =    0.1350694887335478     
-ep =    0.9292122342500587     
-edd =   -1.9697235493986081E-002
-edt =   -1.9697235493986081E-002
+es  =   0.99144
+ep  =   1.52711
+edd =   0.48665
+edt =   0.48464
 !
 ! Hoppings in Ryd
 !
-sss =   -0.1030332419052912     
-sps =   -8.3352517514460338E-002
-pps =    0.2547689359497468     
-ppp =    5.3884809349807323E-003
-sds =   -3.7607911533326481E-002
-pds =    5.5496810342579250E-002
-pdp =   -2.3485409083813549E-002
-dds =   -3.4820425342845902E-002
-ddp =    2.5599190083128160E-002
-ddd =   -5.6870005292460890E-003
-! 
-! Overlap parameters
-! 
-S_sss =    0.1817704879067281     
-S_sps =    3.0471350185594841E-002
-S_pps =   -0.2113661658526804     
-S_ppp =    8.9658546077930623E-002
-S_sds =    8.1324419773221734E-004
-S_pds =    2.9995797509112254E-002
-S_pdp =    9.9776143600185812E-003
-S_dds =    2.4512922333620475E-003
-S_ddp =   -2.2269541560923778E-002
-S_ddd =    6.7977240753691373E-003
+sss =  -0.08657
+sps =   0.13148
+pps =   0.21620
+ppp =   0.00965
+sds =  -0.03056
+pds =  -0.03015
+pdp =   0.02725
+dds =  -0.03441
+ddp =   0.02534
+ddd =  -0.00597
+ISPIN = 2
+!
+! On-site energies in Ryd
+!
+es  =   0.98738
+ep  =   1.50091
+edd =   0.53843
+edt =   0.54152
+!
+! Hoppings in Ryd
+!
+sss =  -0.08649
+sps =   0.12589
+pps =   0.20673
+ppp =   0.01310
+sds =  -0.03632
+pds =  -0.03814
+pdp =   0.02894
+dds =  -0.03579
+ddp =   0.02590
+ddd =  -0.00633
 ENDSET
 !
-! *********************************************
-! *** Papacon non-orthogonal TB parameters  ***
-! *********************************************
+BEGINSET
+Papacon-nonortho
+9 2 10 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Ni fcc ferromagnetic, a = 6.65845 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 4.73 (spin up) and Table 4.78 (spin down).
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps.
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =   0.56544
+ep  =   1.00232
+edd =   0.48830
+edt =   0.48837
+!
+! Hoppings in Ryd
+!
+sss =  -0.04783
+sps =  -0.00561
+pps =  -0.19160
+ppp =  -0.02827
+sds =  -0.02904
+pds =  -0.01053
+pdp =   0.01666
+dds =  -0.02037
+ddp =   0.01359
+ddd =  -0.00180
+ISPIN = 2
+!
+! On-site energies in Ryd
+!
+es  =   0.57809
+ep  =   1.01983
+edd =   0.54070
+edt =   0.54087
+!
+! Hoppings in Ryd
+!
+sss =  -0.04486
+sps =  -0.00981
+pps =  -0.19683
+ppp =  -0.02104
+sds =  -0.02878
+pds =  -0.00807
+pdp =   0.01402
+dds =  -0.02026
+ddp =   0.01214
+ddd =  -0.00073
+!
+! Overlap parameters (spin average of the book values; ANT uses one set for both spins)
+!
+S_sss =   0.131595
+S_sps =  -0.208150
+S_pps =  -0.345195
+S_ppp =   0.060055
+S_sds =   0.039960
+S_pds =   0.073555
+S_pdp =  -0.037045
+S_dds =   0.028045
+S_ddp =  -0.019155
+S_ddd =   0.003745
+ENDSET
+!
+! ************************************************
+! *** Papacon-sd non-orthogonal TB parameters  ***
+! ************************************************
 !
 BEGINSET
 Papacon-sd
