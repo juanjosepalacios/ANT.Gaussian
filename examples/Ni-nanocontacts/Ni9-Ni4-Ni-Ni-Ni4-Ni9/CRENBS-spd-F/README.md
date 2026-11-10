@@ -10,16 +10,15 @@ since been removed from `BLDAT/BL028.dat`. The `.ant` gives no `BLPAR`, so a rer
 current default `Papacon`, the orthogonal first-neighbour fit from Papaconstantopoulos's handbook,
 and gives different numbers. Runs of this input with the current `Papacon` and `Papacon-nonortho`
 have so far not converged: the device Fermi energy runs away. With the current `Papacon`, use the
-LANL1MB basis instead ([../Ni9-LANL1MB-Papacon](../Ni9-LANL1MB-Papacon/README.md)).
+LANL1MB basis instead ([../LANL1MB-Papacon-F](../LANL1MB-Papacon-F/README.md)).
 
 ## Running the example
 
 Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.ant`, with
 `scf=(maxcycle=300,conver=5,nodamp) nosymm`. It writes `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`.
 
-`P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat` from the run reported below is included, as the starting density of
-the antiparallel case ([../Ni9-spd-AF](../Ni9-spd-AF/README.md)). ANT reads it at start-up as the
-initial density matrix, so running the input in this folder restarts from the converged density;
+`P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat` from the run reported below is included. ANT reads it at start-up as
+the initial density matrix, so running the input in this folder restarts from the converged density;
 delete or move it to repeat the run from scratch.
 
 `.ant` settings: `ALPHA = 0.02`, `NPULAY = 4`, `SL = 0.02`, `MAX = 10`, `PACC = 1.0d-7`, `CHARGEACC`
@@ -66,4 +65,4 @@ the central atoms are 14 and 15.
 - The conductance is carried mostly by the spin-down channel, which has partly filled d states at
   E_F (T down / T up = 3.4).
 - The `.gjf` asks for `%nproc=16`; lower it to the number of cores available. It substitutes links
-  from `../../../bin`.
+  from `../../../../bin`.

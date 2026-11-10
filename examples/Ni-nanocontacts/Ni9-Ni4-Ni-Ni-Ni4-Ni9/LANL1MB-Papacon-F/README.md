@@ -11,8 +11,11 @@ alpha and 125 beta electrons).
 Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.ant`. It starts from Gaussian's
 default guess with `scf=(maxcycle=300,conver=5,nodamp) nosymm`; no QC seed is needed.
 
-The run writes `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`. ANT reads that file at start-up as the initial
-density matrix, so delete it before repeating the run from scratch. It is not included here.
+The run writes `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`. The file from the run reported below is included, as
+the starting density of the antiparallel case
+([../LANL1MB-Papacon-AF](../LANL1MB-Papacon-AF/README.md)). ANT reads it at start-up as the
+initial density matrix, so running the input in this folder restarts from the converged density;
+delete or move it to repeat the run from scratch.
 
 `.ant` settings: no `BLPAR`, so both electrodes use the default Ni set `Papacon` (s, p and d, the
 orthogonal first-neighbour Slater-Koster fit of ferromagnetic fcc Ni from Papaconstantopoulos,
@@ -27,6 +30,7 @@ so spin locking is switched off once RMSDP < SL/10.
   of e^2/h, in two blocks separated by a blank line, spin up and then spin down
 - `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where the
   Bethe lattices attach to the cluster; they are not part of the calculation.
+- `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`: the converged density matrix
 
 ## Results
 
@@ -66,7 +70,8 @@ end of the log. ANT splits the cluster into atoms 1-14 and 15-28; the central at
 - The apex atoms 14 and 15 lose about 1.2 electrons each (8.78 electrons) and carry 0.52 muB. The
   atoms of the 4-atom layers have 9.87 electrons and 0.44 muB, and the outer atoms 10.17-10.32
   electrons and 0.50-0.69 muB. The same loss of charge on the apex atoms appears in the Ni4-Ni-Ni-Ni4
-  contact with this basis ([../Ni4-LANL1MB-Papacon](../Ni4-LANL1MB-Papacon/README.md)).
+  contact with this basis
+  ([../../Ni4-Ni-Ni-Ni4/LANL1MB-Papacon](../../Ni4-Ni-Ni-Ni4/LANL1MB-Papacon/README.md)).
 - Spin-down transmission dominates at E_F. Spin-up transmission reaches 3.3 near E - E_F = -1 eV and
   falls to about 0.3 between -0.9 and -0.6 eV; spin-down transmission drops from about 2.5 to 0.55
   between +0.1 and +0.4 eV. Above +1 eV both spins carry about 1.1.

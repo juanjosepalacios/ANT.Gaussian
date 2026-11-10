@@ -65,7 +65,7 @@ of the on-site energies.
 
 ## Check in ANT
 
-ANT with `FCC-sd` on both electrodes of the Ni4-Ni-Ni-Ni4 geometry (now `examples/Ni-nanocontacts/Ni4-LANL1MB-Papacon`)
+ANT with `FCC-sd` on both electrodes of the Ni4-Ni-Ni-Ni4 geometry (now `examples/Ni-nanocontacts/Ni4-Ni-Ni-Ni4`)
 (`LEADDOS`, links from `bin/`, 8 November 2026) finds 12 <110> directions and a Bethe-lattice
 E_F of 3.467 eV (ETA -> 0, so slightly below the fit value). Its `Lead1DOS.dat` agrees with
 `bethe9.py` at the same E_F and ETA = 0.001 eV to 1e-4 states/eV; DOS(E_F) is 0.218 (up) and 1.569

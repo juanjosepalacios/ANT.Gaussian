@@ -2,14 +2,17 @@
 
 ## Unreleased
 
-- Reorganize examples/Ni-nanocontacts in the per-variation folder layout of
-  examples/Fe-wire: one subfolder per variation with its own inputs, outputs
-  and README, and a top README with a comparison table. The Ni9 F, AF and
-  doll cases move to Ni9-spd-F/, Ni9-spd-AF/ and Ni9-doll/. Add
-  Ni4-LANL1MB-Papacon/ and Ni9-LANL1MB-Papacon/: the minimal spd basis
+- Reorganize examples/Ni-nanocontacts by atomic structure: Ni4-Ni-Ni-Ni4/
+  and Ni9-Ni4-Ni-Ni-Ni4-Ni9/, each with a README comparing its variations,
+  which sit in subfolders with their own inputs, outputs and README, as in
+  examples/Fe-wire. The files keep the system name. The Ni9 F and doll cases
+  move to CRENBS-spd-F/ and doll-Papacon-sd/. Add LANL1MB-Papacon/ (Ni4),
+  LANL1MB-Papacon-F/ and LANL1MB-Papacon-AF/ (Ni9): the minimal spd basis
   LANL1MB and the Hay-Wadt LANL1 ECP on all atoms with the new orthogonal
-  `Papacon` electrodes. Remove the old Ni4 cases (the 20 T sd contact and
-  its SPINROTATOM rotx variant).
+  `Papacon` electrodes; the AF case starts from the density of the F case,
+  whose P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat is included. Remove the old AF case,
+  computed with the removed Papacon set, and the old Ni4 cases (the 20 T sd
+  contact and its SPINROTATOM rotx variant).
 
 - Replace the Ni `Papacon` and `Papacon-old` Bethe-lattice sets in BL028.dat
   with the first-neighbour Slater-Koster fit of ferromagnetic fcc Ni from

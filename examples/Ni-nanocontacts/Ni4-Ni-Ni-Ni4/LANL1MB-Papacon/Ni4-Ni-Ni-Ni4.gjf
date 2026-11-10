@@ -1,7 +1,7 @@
 %mem=1Gb
 %NProcShared=4
-%Subst L101 ../../../bin
-%Subst L502 ../../../bin
+%Subst L101 ../../../../bin
+%Subst L502 ../../../../bin
 #p ULSDA/gen pseudo=read Scf=(conver=6,nodamp,nosymm)
 
 Ni4-Ni-Ni-Ni4

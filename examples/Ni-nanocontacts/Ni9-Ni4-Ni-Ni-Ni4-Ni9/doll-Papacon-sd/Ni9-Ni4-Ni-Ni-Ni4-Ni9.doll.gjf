@@ -1,6 +1,6 @@
 %mem=500mb
-%Subst L502 ../../../bin
-%Subst L101 ../../../bin
+%Subst L502 ../../../../bin
+%Subst L101 ../../../../bin
 %NProcShared=4
 #p lsda/gen pseudo=read pop=min Scf=(conver=4,maxcycle=300,dsymm)
 

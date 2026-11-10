@@ -61,4 +61,4 @@ the central atoms are 14 and 15.
   15. Most outer atoms keep about 1.0 each, so each half carries a spin of 11.47.
 - Spin-down transmission dominates at E_F, as with the spd basis on all atoms.
 - The `.gjf` uses `%NProcShared=4`; change it to the number of cores available. It substitutes links
-  from `../../../bin`.
+  from `../../../../bin`.
