@@ -134,6 +134,7 @@ Default: ETA = 1.0D-10
 Convergence criterion for switching on the infinite electrodes (Bethe lattice). These are connected when the standard GAUSSIAN03 SCF convergence for the density matrix (RMSDP) reaches RMSDP < SL, where the overall convergence criterion is set in the GAUSSIAN03 input file with the SCF option "scf(conver=n)".
 Remark: If SL = 0, the leads are only connected after the GAUSSIAN03 SCF calculation has converged (cycle=1000). 
 This is only recommended for quick and dirty calculations.
+SL/10 is also the RMSDP threshold at which spin locking is switched off when NSPINLOCK < 0 (see NSPINLOCK).
 Default: SL = 1.0D-2
 
 * FERMISTART (real)
@@ -312,18 +313,12 @@ Default: QEXCESS = 0.0
 4) Spin related parameters
 --------------------------
 
-* SWOFFSPL (real)
-Convergence criterion for switching off spin locking in a spin unrestricted calculation. Unless
-NSPINLOCK >= 0 (see NSPINLOCK below), the total spin of the device is kept fixed to the value $(M-1)/2$
-given by the multiplicity $M$ in the GAUSSIAN input file until a certain convergence is reached:
-RMSDP < SWOFFSPL. This is the default, since NSPINLOCK = -1 by default.
-Advice: SWOFFSPL < SL
-Default: SWOFFSPL = 1.0D-3
-
 * NSPINLOCK (integer)
-Number of steps with spin locking on after the electrodes are connected. When >= 0 it supersedes the
-SWOFFSPL criterion (see keyword SWOFFSPL above); NSPINLOCK = 0 switches spin locking off from the first
-step. When < 0 (the default), spin locking is switched off once RMSDP < SWOFFSPL.
+Number of steps with spin locking on after the electrodes are connected. In a spin unrestricted
+calculation spin locking keeps the total spin of the device fixed to the value (M-1)/2 given by the
+multiplicity M in the GAUSSIAN input file. When NSPINLOCK < 0 (the default), spin locking is switched
+off once RMSDP < SL/10 (see keyword SL); this threshold is set from SL and is not an input keyword.
+NSPINLOCK >= 0 supersedes it; NSPINLOCK = 0 switches spin locking off from the first step.
 When the calculation starts from a density matrix file (P.<job>.dat), NSPINLOCK is set to 0 whatever
 its value in the input, so that the spin polarization of that density matrix is not locked back to
 the multiplicity of the Gaussian input.

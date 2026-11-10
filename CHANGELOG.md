@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Remove the SWOFFSPL keyword. With NSPINLOCK < 0 (the default), spin locking
+  is now switched off once RMSDP < SL/10, the threshold being set from SL after
+  the input is read; NSPINLOCK >= 0 still supersedes it. Inputs that give
+  SWOFFSPL stop with "Undefined keyword".
+
 - Add the FCC-spd Fe Bethe-lattice set to BL026.dat, fitted on a 12-direction
   Bethe lattice to the CRYSTAL23 LSDA DOS of fcc Fe (a = 3.515 A) with the
   BCC-spd basis. BLDAT/fits/Fe-FCC-spd holds the CRYSTAL23 input, output and

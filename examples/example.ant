@@ -153,9 +153,7 @@
 !
 !  NSPINLOCK = 0
 !
-! *** Fixes spin multiplicity until a given convergence has been achieved
-!
-!  SWOFFSPL = 1.0d-3
+! *** Without NSPINLOCK the spin multiplicity is fixed until RMSDP < SL/10
 !
 ! *** Manipulate the direction of atomic spins in initial guess
 ! 

@@ -261,9 +261,9 @@
   INTEGER :: NSpinLock = -1
   CHARACTER(len=10), PARAMETER :: NSpinLock_keyw = "NSPINLOCK"
 
-  ! Convergence before switching off spin lock, (  SwOffSpL < SL  )
-  REAL*8 :: SwOffSpL = 1.0d-3            
-  CHARACTER(len=10), PARAMETER ::  SwOffSpL_keyw = "SWOFFSPL"        
+  ! Convergence before switching off spin lock when NSPINLOCK < 0. Not an
+  ! input keyword: read_parameters sets it to SL/10 once the input is read.
+  REAL*8 :: SwOffSpL = 1.0d-3
 
   ! SOC
   LOGICAL :: soc = .FALSE. 
@@ -450,7 +450,6 @@ CONTAINS
          & gamma_keyw       ,&
          & glue_keyw      ,&
          & SL_keyw        ,&
-         & SwOffSpL_keyw  ,&
          & FermiStart_keyw,&
          & EFMax_keyw     ,&
          & EStep_keyw     ,&
@@ -508,8 +507,6 @@ CONTAINS
           glue = rval
        CASE ( SL_keyw )
           SL = rval
-       CASE ( SwOffSpL_keyw )
-          SwOffSpL = rval
        CASE ( FermiStart_keyw ) 
           FermiStart = rval
        CASE ( EFMax_keyw )
@@ -917,6 +914,8 @@ CONTAINS
        WRITE ( unit=logfile, fmt=* ) "Error reading ANT input file"
        STOP 1
     END IF
+    ! Spin locking (NSPINLOCK < 0) is switched off once RMSDP < SL/10
+    SwOffSpL = SL/10.0d0
     CALL resolve_lead_cells(logfile)
     CALL validate_ldos(logfile)
     CALL validate_soc(logfile)
@@ -1069,7 +1068,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) "**********************************"
     WRITE(unit=logfile,fmt=*) "Spin-resolved transport parameters"
     WRITE(unit=logfile,fmt=*) "**********************************"
-    WRITE(unit=logfile,fmt=*) SwOffSpL_keyw, " = ", SwOffSpL
+    WRITE(unit=logfile,fmt=*) "SWOFFSPL   = ", SwOffSpL, " (SL/10)"
     WRITE(unit=logfile,fmt=*) NSpinLock_keyw, " = ", NSpinLock
     WRITE(unit=logfile,fmt=*) DU_keyw, " = ", DU
     WRITE(unit=logfile,fmt=*) UD_keyw, " = ", UD

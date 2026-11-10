@@ -438,7 +438,7 @@
     write(ifu_log,*) "-------------------------------------------------------------------------------------------"
 
     ! The density matrix read from file already has its own spin polarization;
-    ! NSPINLOCK = 0 (which supersedes SWOFFSPL) keeps spin locking from dragging it back to the
+    ! NSPINLOCK = 0 (which supersedes the RMSDP < SL/10 criterion) keeps spin locking from dragging it back to the
     ! multiplicity of the Gaussian input.
     if (NSpinLock /= 0) then
        write(ifu_log,'(A,I0,A)') " NSPINLOCK = ", NSpinLock, " ignored: NSPINLOCK = 0 when restarting from a density matrix file"
