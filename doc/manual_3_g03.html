@@ -242,6 +242,8 @@ with the SCF option &quot;scf(conver=n)&quot;.</p>
   <p>Remark: If SL = 0, the leads are only connected after the
 GAUSSIAN03/09 SCF calculation has converged (cycle=1000). This is only
 recommended for quick and dirty calculations.</p>
+  <p>SL/10 is also the RMSDP threshold at which spin locking is switched
+off when NSPINLOCK &lt; 0 (see <a href="#nspinlock"><em>NSPINLOCK</em></a>).</p>
   <p>Default: SL = 1.0D-2</p>
 </details>
 <details class="keyword" id="fermistart">
@@ -447,24 +449,22 @@ file, but it is recommended these two quantities to be equal for a more efficien
   <p>Default: QEXCESS = 0.0</p>
 </details>
 <h3>Spin related parameters:</h3>
-<details class="keyword" id="swoffspl">
-  <summary><em>SWOFFSPL</em> (real)</summary>
-  <p>Convergence criterion for
-switching off spin locking in a spin unrestricted calculation
-(default). Thus in a spin-unrestricted calculation the total spin of
-the device is kept fixed to the value $(M-1)/2$ given by the
-multiplicity $M$ in the GAUSSIAN03/09 input file until a certain
-convergence is reached: RMSDP &lt; SWOFFSPL. (See also
-NSPINLOCK below)</p>
-  <p>Advice: SWOFFSPL &lt; SL</p>
-  <p>Default: SWOFFSPL = 1.0D-3</p>
-</details>
 <details class="keyword" id="nspinlock">
   <summary><em>NSPINLOCK</em> (integer)</summary>
   <p>Number of steps with spin
-locking on. It supercedes the SWOFFSPL criterion  when
-&gt;= 0 (see keyword SWOFFSPL above)</p>
-  <p>Default: NSPINLOCK = 0.</p>
+locking on after the electrodes are connected. In a spin-unrestricted
+calculation spin locking keeps the total spin of the device fixed to
+the value $(M-1)/2$ given by the multiplicity $M$ in the GAUSSIAN03/09
+input file. When NSPINLOCK &lt; 0 (the default), spin locking is
+switched off once RMSDP &lt; SL/10 (see <a href="#sl"><em>SL</em></a>); this
+threshold is set from SL and is not an input keyword. NSPINLOCK &gt;= 0
+supersedes it; NSPINLOCK = 0 switches spin locking off from the first
+step.</p>
+  <p>When the calculation starts from a density matrix file
+(P.&lt;job&gt;.dat), NSPINLOCK is set to 0 whatever its value in the
+input, so that the spin polarization of that density matrix is not
+locked back to the multiplicity of the GAUSSIAN03/09 input.</p>
+  <p>Default: NSPINLOCK = -1.</p>
 </details>
 <details class="keyword" id="ud-du-dd">
   <summary><em>UD, DU, DD</em> (logical)</summary>
