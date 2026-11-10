@@ -17,6 +17,11 @@
   fail with negative residuals at both ends, and roots far above the device
   spectrum could be accepted.
 
+- Fix Bethe-lattice electrodes with overlaps (OVERLAP > 0) stopping at the
+  second electrode with "could not allocate memory for H0X and S0X matrices"
+  unless LEADDOS was given: the extended-Hamiltonian matrices of the first
+  electrode were only freed after writing the lead DOS.
+
 - Add the FCC-spd Fe Bethe-lattice set to BL026.dat, fitted on a 12-direction
   Bethe lattice to the CRYSTAL23 LSDA DOS of fcc Fe (a = 3.515 A) with the
   BCC-spd basis. BLDAT/fits/Fe-FCC-spd holds the CRYSTAL23 input, output and

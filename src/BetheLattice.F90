@@ -506,7 +506,12 @@ contains
     !
     call AdjustFermi( BL )
 
-    if (.not.LeadDOS) return
+    ! H0X and S0X are only needed while the electrode is initialized; free them
+    ! before returning, or the next electrode cannot allocate them
+    if (.not.LeadDOS) then
+       if( BL%Overlap ) deallocate( H0X, S0X )
+       return
+    end if
 
     ! Write electrode bulk DOS to file
     if(LeadNo==1)then 
