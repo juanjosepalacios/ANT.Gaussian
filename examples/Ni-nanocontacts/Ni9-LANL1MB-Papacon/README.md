@@ -30,8 +30,8 @@ so spin locking is switched off once RMSDP < SL/10.
 
 ## Results
 
-ANT.Gaussian 2.8.4 (commit 874c070 plus uncommitted changes to `src/device.F90` and
-`src/BetheLattice.F90`), Gaussian 09 D.01, NVIDIA HPC SDK build, 4 threads, 10 November 2026.
+ANT.Gaussian 2.8.4 (commit 46e8a71 sources), Gaussian 09 D.01, NVIDIA HPC SDK build, 4 threads,
+10 November 2026.
 
 | Quantity | Value |
 |---|---|
