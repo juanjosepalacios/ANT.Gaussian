@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Warn in the Pt, Ni and Fe example READMEs that Gaussian moves the
+  molecule to its standard orientation unless `nosymm` is on the route
+  line (inside `scf=()` it does not prevent it), and that ANT then works
+  in that frame: the ZM and ZMATOM fields, the SPINROTATOM angles, the
+  direction of the moments with SOC and the Bethe-lattice d on-site
+  energies all refer to it. The Pt cases and the Ni4 and doll-Papacon-sd
+  Ni cases are reoriented by whole axes, so their cubic axes still lie
+  along X, Y and Z; the Ni4 field Bz acts along -z of the input. The other
+  Ni9 cases and the Fe wire keep the input frame.
+
 - Fix the d on-site energies of the Pt `Papacon` and `Papacon-nonortho`
   sets in BL078.dat, which were swapped. The handbook's two-center d1 (t2g,
   0.45468 and 0.41348 Ry) now goes to `edt` and d2 (eg, 0.43701 and

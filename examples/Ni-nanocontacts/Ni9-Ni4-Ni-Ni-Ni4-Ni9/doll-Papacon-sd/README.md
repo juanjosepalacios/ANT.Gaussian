@@ -57,6 +57,12 @@ the central atoms are 14 and 15.
 
 ## Notes
 
+- Warning: the route has no `nosymm` (`scf=(dsymm)`), so Gaussian reorients the contact and ANT
+  works in its standard frame: X = y_in, Y = x_in, Z = -z_in. The cubic axes stay along X, Y and Z,
+  so the Bethe-lattice d on-site energies keep their meaning. The moments here are collinear and
+  without SOC, so the results do not depend on it. With SOC, or with the commented `SPINROTATOM`
+  block, the spin directions refer to this frame, not to the input one. Give `nosymm` on the route
+  line to keep the input frame.
 - The moments of the central atoms are small: 0.58 on atoms 10-13 and 16-19 and 0.37 on atoms 14 and
   15. Most outer atoms keep about 1.0 each, so each half carries a spin of 11.47.
 - Spin-down transmission dominates at E_F, as with the spd basis on all atoms.

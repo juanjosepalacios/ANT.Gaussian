@@ -56,6 +56,12 @@ log). ANT splits the cluster into atoms 1-5 and 6-10.
 
 ## Notes
 
+- Warning: `nosymm` is only inside `scf=()`, so Gaussian reorients the contact and ANT works in its
+  standard frame: X = y_in, Y = x_in, Z = -z_in. The Zeeman field `Bz = 20.0` is applied along Z,
+  that is along -z of the input, still along the transport axis. The cubic axes stay along X, Y and
+  Z, so the Bethe-lattice d on-site energies keep their meaning. The spin directions of `ZMATOM`
+  and `SPINROTATOM`, if used, also refer to this frame. Give `nosymm` on the route line to keep the
+  input frame.
 - The central atoms lose charge to the outer layers: 9.31 electrons on atoms 5 and 6, 10.17 on the
   outer atoms. Their moments (0.44) are smaller than those of the outer atoms (0.68).
 - The device Fermi energy moves from -6.5 to -6.8 eV in the first 5 searches, jumps to -14.0 eV at

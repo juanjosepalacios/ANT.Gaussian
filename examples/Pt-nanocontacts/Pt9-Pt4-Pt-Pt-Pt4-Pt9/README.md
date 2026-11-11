@@ -26,6 +26,27 @@ Spin rotation test on the contact forced to be magnetic (no SOC, small basis):
 
 The outputs of cases 1 and 2 come from earlier versions of ANT.
 
+## Warning: Gaussian reorients the contact
+
+None of the `.gjf` files has `nosymm` on the route line: cases 1 and 2 give `scf=(dsymm)` and cases
+3-5 `scf=(nosymm)`, which only switches off symmetry inside the SCF. Gaussian therefore moves the
+contact to its standard orientation, and ANT works in that frame, not in the input one. In all five
+logs the standard coordinates are
+
+    X = -y_in + 0.0036 A,   Y = z_in - 4.31 A,   Z = -x_in
+
+so the transport axis is Y, not z, and the off-axis displacement of the upper apex atom is along -X.
+
+This is a proper rotation by whole axes, so the cubic axes of the contact still lie along X, Y and Z
+and the Bethe-lattice d on-site energies (`edd` on x^2-y^2 and 3z^2-r^2, `edt` on xy, xz and yz,
+both set in the fixed X, Y, Z frame) keep their meaning. A geometry that Gaussian rotates by a
+general angle would break this. To keep the input frame, give `nosymm` on the route line, as in the
+Ni9 examples.
+
+The spin directions of cases 4 and 5 refer to the standard frame too. "Along z" (case 4) is along
+-x_in and "along x" (case 5) along -y_in, both perpendicular to the transport axis; neither is along
+the contact.
+
 ## Spin rotation test (cases 3-5)
 
 Pt is not magnetic, but a fixed multiplicity and spin locking keep it spin-polarized. The Pt
