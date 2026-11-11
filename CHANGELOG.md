@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Name every file of the Ni9-Ni4-Ni-Ni-Ni4-Ni9 Ni examples after the
+  system, as the folder that holds them: drop the `.F`, `.AF` and `.doll`
+  job-name suffixes from the inputs, outputs and `.gjf` titles, and from
+  the job names recorded in the logs, since each variation has its own
+  subfolder. The AF case now starts from
+  `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat` copied unchanged from LANL1MB-Papacon-F/.
+
 - Remove the Ni `Papacon-sd` Bethe-lattice set from BL028.dat. Inputs that
   give `BLPAR = Papacon-sd`, among them the doll-Papacon-sd Ni example, no
   longer run.

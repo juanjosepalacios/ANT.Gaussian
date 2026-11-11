@@ -9,7 +9,7 @@ the apex atoms at -1.30 and +1.30 A. The charge is 0 and the starting multiplici
 
 ## Running the example
 
-Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.ant`, with
+Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.ant`, with
 `scf=(conver=4,maxcycle=300,dsymm) pop=min`.
 
 `.ant` settings: Bethe-lattice electrodes `Papacon-sd` (`BLPAR1`, `BLPAR2`), `NSPINLOCK = 5`,
@@ -22,10 +22,10 @@ in the `.ant`, commented out.
 
 ## Outputs
 
-- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.log`: the ANT run
-- `T.Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.dat`: transmission for E - E_F = -3 to +3 eV in 0.01 eV steps, in
+- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.log`: the ANT run
+- `T.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat`: transmission for E - E_F = -3 to +3 eV in 0.01 eV steps, in
   units of e^2/h, in two blocks separated by a blank line, spin up and then spin down
-- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where
+- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where
   the Bethe lattices attach to the cluster; they are not part of the calculation.
 
 ## Results

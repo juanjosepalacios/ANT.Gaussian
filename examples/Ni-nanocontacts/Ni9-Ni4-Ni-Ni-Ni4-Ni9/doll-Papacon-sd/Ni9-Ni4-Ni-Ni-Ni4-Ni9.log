@@ -1,8 +1,8 @@
  Entering Gaussian System, Link 0=g09
- Input=Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.gjf
- Output=Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.log
+ Input=Ni9-Ni4-Ni-Ni-Ni4-Ni9.gjf
+ Output=Ni9-Ni4-Ni-Ni-Ni4-Ni9.log
  Initial command:
- /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe "/home/palacios/ANT-runs/Ni-nanocontacts-Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.nip7-nosoc-20261103/scratch/Gau-834484.inp" -scrdir="/home/palacios/ANT-runs/Ni-nanocontacts-Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.nip7-nosoc-20261103/scratch/"
+ /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe "/home/palacios/ANT-runs/Ni-nanocontacts-Ni9-Ni4-Ni-Ni-Ni4-Ni9.nip7-nosoc-20261103/scratch/Gau-834484.inp" -scrdir="/home/palacios/ANT-runs/Ni-nanocontacts-Ni9-Ni4-Ni-Ni-Ni4-Ni9.nip7-nosoc-20261103/scratch/"
  Entering Link 1 = /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe PID=    834485.
   
  Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
@@ -96,7 +96,7 @@
  Leave Link    1 at Tue Nov  3 18:27:12 2026, MaxMem=    65536000 cpu:         0.0
  (Enter /home/palacios/GitHub/ANT.Gaussian/bin/l101.exe)
  --------------------------
- Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll
+ Ni9-Ni4-Ni-Ni-Ni4-Ni9
  --------------------------
  Symbolic Z-matrix:
  Charge =  0 Multiplicity =37
@@ -1018,7 +1018,7 @@
   *                                                                * 
   ****************************************************************** 
  
- Scanning Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll.ant file for parameter specifications...
+ Scanning Ni9-Ni4-Ni-Ni-Ni4-Ni9.ant file for parameter specifications...
  Done.
  ****************************
  Basic calculation parameters

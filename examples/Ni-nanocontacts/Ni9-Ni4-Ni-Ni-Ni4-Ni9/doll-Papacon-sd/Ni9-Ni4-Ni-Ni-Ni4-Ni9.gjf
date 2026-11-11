@@ -4,7 +4,7 @@
 %NProcShared=4
 #p lsda/gen pseudo=read pop=min Scf=(conver=4,maxcycle=300,dsymm)
 
-Ni9-Ni4-Ni-Ni-Ni4-Ni9.doll
+Ni9-Ni4-Ni-Ni-Ni4-Ni9
 
 0,37
 Ni     3.530000    0.000000   -4.830000

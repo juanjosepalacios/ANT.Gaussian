@@ -7,8 +7,7 @@ the starting multiplicity is 31. The `doll-Papacon-sd` variation uses the same a
 a = 3.53 A (layers at +-4.83, +-3.065 and +-1.30 A) and starting multiplicity 37.
 
 Each subdirectory is one variation of the calculation for this contact, with its own inputs, outputs
-and README. The files keep the name of the system, `Ni9-Ni4-Ni-Ni-Ni4-Ni9`, with `.F`, `.AF` or
-`.doll` for the configuration.
+and README. The files keep the name of the system, `Ni9-Ni4-Ni-Ni-Ni4-Ni9`.
 
 - [LANL1MB-Papacon-F/](LANL1MB-Papacon-F/README.md): parallel electrodes, minimal spd basis
   LANL1MB with the Hay-Wadt large-core ECP on all atoms, Bethe-lattice electrodes `Papacon`.

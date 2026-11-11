@@ -6,9 +6,8 @@ and electrodes (`Papacon`) are those of [../LANL1MB-Papacon-F](../LANL1MB-Papaco
 
 The run starts from the converged parallel solution:
 
-1. Copy `../LANL1MB-Papacon-F/P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat` to
-   `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF.dat` in this folder.
-2. Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF.ant`, with
+1. Copy `../LANL1MB-Papacon-F/P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat` to this folder.
+2. Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.ant`, with
    `scf=(maxcycle=300,conver=5,nodamp) nosymm`.
 
 ANT reads that file at start-up as the initial density matrix. `MRSTART = 15` reverses the spin of
@@ -21,12 +20,12 @@ file, ANT sets `NSPINLOCK` to 0 and the spin is free from the first cycle.
 
 ## Outputs
 
-- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF.log`: the ANT run
-- `T.Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF.dat`: transmission for E - E_F = -3 to +3 eV in 0.01 eV steps, in units
+- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.log`: the ANT run
+- `T.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat`: transmission for E - E_F = -3 to +3 eV in 0.01 eV steps, in units
   of e^2/h, in two blocks separated by a blank line, spin up and then spin down
 - `Lead1DOS.dat`, `Lead2DOS.dat`: electrode DOS (`LEADDOS`) from -18.6 to +31.4 eV in 0.1 eV steps,
   spin up and then spin down (with negative sign), in two blocks
-- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.AF.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where
+- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where
   the Bethe lattices attach to the cluster; they are not part of the calculation.
 
 ## Results

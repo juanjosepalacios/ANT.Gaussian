@@ -8,10 +8,10 @@ alpha and 125 beta electrons).
 
 ## Running the example
 
-Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.ant`. It starts from Gaussian's
+Run `Ni9-Ni4-Ni-Ni-Ni4-Ni9.gjf` with `Ni9-Ni4-Ni-Ni-Ni4-Ni9.ant`. It starts from Gaussian's
 default guess with `scf=(maxcycle=300,conver=5,nodamp) nosymm`; no QC seed is needed.
 
-The run writes `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`. The file from the run reported below is included, as
+The run writes `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat`. The file from the run reported below is included, as
 the starting density of the antiparallel case
 ([../LANL1MB-Papacon-AF](../LANL1MB-Papacon-AF/README.md)). ANT reads it at start-up as the
 initial density matrix, so running the input in this folder restarts from the converged density;
@@ -25,12 +25,12 @@ so spin locking is switched off once RMSDP < SL/10.
 
 ## Outputs
 
-- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.log`: the ANT run
-- `T.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`: transmission for E - E_F = -3 to +3 eV in 0.01 eV steps, in units
+- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.log`: the ANT run
+- `T.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat`: transmission for E - E_F = -3 to +3 eV in 0.01 eV steps, in units
   of e^2/h, in two blocks separated by a blank line, spin up and then spin down
-- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where the
+- `Ni9-Ni4-Ni-Ni-Ni4-Ni9.xyz`: the geometry written by ANT. The `Ar` atoms mark the sites where the
   Bethe lattices attach to the cluster; they are not part of the calculation.
-- `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.F.dat`: the converged density matrix
+- `P.Ni9-Ni4-Ni-Ni-Ni4-Ni9.dat`: the converged density matrix
 
 ## Results
 
