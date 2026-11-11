@@ -7,7 +7,8 @@ the one of [case 1](../SOC-small/README.md) with the basis read from
 
 ## Outputs
 
-These come from an earlier version of ANT (10 April 2024).
+These come from the rerun of 11 November 2026 with the corrected Pt d on-site energies; results are
+in the [structure README](../README.md#soc-results-cases-1-and-2).
 
 - `Pt9-Pt4-Pt-Pt-Pt4-Pt9.log`
 - `T.Pt9-Pt4-Pt-Pt-Pt4-Pt9.SOC.dat`: total transmission in units of e^2/h

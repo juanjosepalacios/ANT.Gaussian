@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Rerun the five Pt9-Pt4-Pt-Pt-Pt4-Pt9 examples with the corrected Pt d
+  on-site energies and update their outputs and READMEs. The SOC cases
+  and the collinear case change little (T(E_F) 4.231, 5.898 and 3.033
+  against 4.252, 5.914 and 3.053 e^2/h). The restarts mag-rotz and
+  mag-rotx are no longer spin-locked (NSPINLOCK is ignored on a restart
+  since f027077), so they relax to a weakly magnetic state 16 mHa below
+  the collinear one; they still agree with each other, which is what the
+  spin rotation test checks.
+
 - Warn in the Pt, Ni and Fe example READMEs that Gaussian moves the
   molecule to its standard orientation unless `nosymm` is on the route
   line (inside `scf=()` it does not prevent it), and that ANT then works
