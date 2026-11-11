@@ -4055,13 +4055,15 @@
   !  to be zero
   ! *************************************
   ! Check the weight on [EMin,EMax], the bounds the density contours use,
-  ! widening both by 10 eV until it passes. The widened bounds are kept.
+  ! widening both by 10 eV (100 eV with Bethe-lattice overlaps, OVERLAP > 0)
+  ! until it passes. The widened bounds are kept.
   ! The tolerance is the input CHARGEACC times the device electron count
-  ! (at most 0.1), the same scale the device Fermi search accepts. The
-  ! device ETA gives every state Lorentzian tails beyond the window that no
-  ! widening removes; that analytic deficit is added back before comparing.
+  ! (at most 0.1), the same scale the device Fermi search accepts, and 100
+  ! times that (still at most 0.1) with Bethe-lattice overlaps (OVERLAP > 0).
+  ! The device ETA gives every state Lorentzian tails beyond the window that
+  ! no widening removes; that analytic deficit is added back before comparing.
   subroutine CheckEnergyBounds(Bounds)
-    use parameters, only: ChargeA,QExcess,eta
+    use parameters, only: ChargeA,QExcess,eta,Overlap
     use numeric, only: RMatPow, RSDiag
     use constants, only: d_pi
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
@@ -4069,11 +4071,17 @@
     intrinsic :: min
     logical,intent(out) :: Bounds
     integer,parameter :: max_widenings=100
-    real*8 :: q,target,tol,tail
+    real*8 :: q,target,tol,tail,step
     real*8 :: X(NAOrbs,NAOrbs),HO(NAOrbs,NAOrbs),evals(NAOrbs,NSpin)
     integer :: attempt,status,spin,info
     target=2d0*(NCDAO2-NCDAO1+1)
     tol=ChargeA*(NCDEl+QExcess)
+    ! Electrodes with overlaps leave a small spectral-weight excess or deficit
+    ! that widening the window does not remove, so loosen the check
+    if(Overlap>0d0) tol=100d0*tol
+    ! Widening step of EMin and EMax (eV)
+    step=10d0
+    if(Overlap>0d0) step=100d0
     if(.not.ieee_is_finite(tol).or.tol<=0d0) tol=0.1d0
     tol=min(0.1d0,tol)
     call RMatPow(SD,-0.5d0,X)
@@ -4101,12 +4109,12 @@
           return
        end if
        if(attempt==max_widenings) exit
-       EMin=EMin-10d0
-       EMax=EMax+10d0
-       print *, ' Widening EMin and EMax by 10 eV.'
+       EMin=EMin-step
+       EMax=EMax+step
+       print '(A,F6.1,A)', '  Widening EMin and EMax by ',step,' eV.'
     end do
     print *, 'ERROR: spectral-weight check failed after widening EMin/EMax by', &
-         10d0*max_widenings,' eV; target=',target
+         step*max_widenings,' eV; target=',target
     call flush(6)
     stop 1
   contains

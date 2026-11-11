@@ -84,7 +84,9 @@ electrons per atom for their Fermi level, and below CHARGEACC times twice
 the orbitals per atom for their spectral range. The device spectral-weight
 check on [EMin,EMax] accepts a deviation below min(0.1,
 CHARGEACC*(NCDEl+QEXCESS)), using the input value (not the SCF-adapted one),
-with its quadrature converged to a tenth of that. The analytic ETA
+with its quadrature converged to a tenth of that. With Bethe-lattice overlaps
+(OVERLAP > 0) the tolerance is min(0.1, 100*CHARGEACC*(NCDEl+QEXCESS)) and
+the window is widened in steps of 100 eV instead of 10 eV. The analytic ETA
 Lorentzian tail of device states inside the window is added back first.
 Default: CHARGEACC = 1.0D-5
 

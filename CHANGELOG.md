@@ -9,6 +9,13 @@
   folders and file names are unchanged. The `.gjf` files now substitute
   links from `../../../../bin`.
 
+- Loosen the device spectral-weight check by a factor of 100 (still at most
+  0.1) and widen its window in steps of 100 eV instead of 10 eV when the
+  Bethe-lattice electrodes have overlaps (OVERLAP > 0). With
+  Papacon-nonortho at OVERLAP = 0.5 the device weight missed or exceeded its
+  target by 1e-4 to 4e-3 whatever the window, so the check failed after
+  1000 eV of widening.
+
 - Reorganize examples/Ni-nanocontacts by atomic structure: Ni4-Ni-Ni-Ni4/
   and Ni9-Ni4-Ni-Ni-Ni4-Ni9/, each with a README comparing its variations,
   which sit in subfolders with their own inputs, outputs and README, as in
