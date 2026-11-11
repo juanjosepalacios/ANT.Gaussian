@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Group examples/Fe-wire by atomic structure, as the Ni and Pt examples:
+  BCC-sd/, BCC-spd/ and 1DLEAD-spd/ move into Fe64-bcc-wire/, named after
+  the system like its files, whose README describes the wire and compares
+  the variations. The `.gjf` files now substitute links from
+  `../../../../bin`.
+
 - Name every file of the Ni9-Ni4-Ni-Ni-Ni4-Ni9 Ni examples after the
   system, as the folder that holds them: drop the `.F`, `.AF` and `.doll`
   job-name suffixes from the inputs, outputs and `.gjf` titles, and from

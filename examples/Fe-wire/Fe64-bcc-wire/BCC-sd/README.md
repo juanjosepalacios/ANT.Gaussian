@@ -106,4 +106,4 @@ end of the log. ANT splits the cluster into atoms 1-32 and 33-64, which cuts the
 - [../README.md](../README.md) compares this run with the other electrodes and bases for the same
   wire.
 - The `.gjf` files use `%NProcShared=8`; change it to the number of cores available. Step 2
-  substitutes links from `../../../bin`.
+  substitutes links from `../../../../bin`.

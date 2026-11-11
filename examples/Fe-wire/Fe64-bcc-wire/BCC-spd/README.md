@@ -12,7 +12,7 @@ all other settings are the same.
   `BLDAT/fits/Fe-BCC-spd/Fe-crenbs-spd.gbs`.
 - `.ant`: `BLPAR1 = BLPAR2 = BCC-spd` (s+p+d, fitted to the CRYSTAL23 LSDA DOS of bulk bcc Fe with
   this basis; see `BLDAT/fits/Fe-BCC-spd/README.md`).
-- Step 2 substitutes links from `../../../bin`.
+- Step 2 substitutes links from `../../../../bin`.
 
 The running instructions of the BCC-sd README apply unchanged: step 1 must end normally, and
 `P.Fe64-bcc-wire.dat` must be deleted before repeating step 2 from the checkpoint.
