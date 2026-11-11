@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Group examples/Pt-nanocontacts by atomic structure, as in
+  examples/Ni-nanocontacts: the five cases (SOC-small, SOC-large, mag,
+  mag-rotz, mag-rotx) move into Pt9-Pt4-Pt-Pt-Pt4-Pt9/, whose README
+  describes the contact and holds the spin rotation test results. The case
+  folders and file names are unchanged. The `.gjf` files now substitute
+  links from `../../../../bin`.
+
 - Reorganize examples/Ni-nanocontacts by atomic structure: Ni4-Ni-Ni-Ni4/
   and Ni9-Ni4-Ni-Ni-Ni4-Ni9/, each with a README comparing its variations,
   which sit in subfolders with their own inputs, outputs and README, as in

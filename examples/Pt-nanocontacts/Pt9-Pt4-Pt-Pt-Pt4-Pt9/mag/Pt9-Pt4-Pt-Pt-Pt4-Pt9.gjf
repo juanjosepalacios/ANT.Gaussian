@@ -1,11 +1,11 @@
-%Subst L502 ../../../bin
-%Subst L101 ../../../bin
-%nproc=8
-#p LSDA/gen pseudo=read scf=(conver=5,dsymm,maxcyc=300) test
+%Subst L502 ../../../../bin
+%Subst L101 ../../../../bin
+%nproc=4
+#p LSDA/gen pseudo=read scf=(conver=5,nosymm,maxcyc=300)
 
 Pt9-Pt4-Pt-Pt-Pt4-Pt9
 
-0,1
+0,15
 78           -1.960000    1.960000    9.460000
 78           -3.920000    0.000000    9.460000
 78            1.960000    1.960000    9.460000
@@ -35,5 +35,5 @@ Pt9-Pt4-Pt-Pt-Pt4-Pt9
 78            3.920000    0.000000   -0.840000
 78            1.960000   -1.960000   -0.840000
 
-@Pt9-Pt4-Pt-Pt-Pt4-Pt9.gbslarge
+@Pt9-Pt4-Pt-Pt-Pt4-Pt9.gbssmall
 
