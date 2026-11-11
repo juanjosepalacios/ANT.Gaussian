@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Remove the Ni `Papacon-sd` Bethe-lattice set from BL028.dat. Inputs that
+  give `BLPAR = Papacon-sd`, among them the doll-Papacon-sd Ni example, no
+  longer run.
+
 - Group examples/Pt-nanocontacts by atomic structure, as in
   examples/Ni-nanocontacts: the five cases (SOC-small, SOC-large, mag,
   mag-rotz, mag-rotx) move into Pt9-Pt4-Pt-Pt-Pt4-Pt9/, whose README
