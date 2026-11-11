@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Fix the d on-site energies of the Pt `Papacon` and `Papacon-nonortho`
+  sets in BL078.dat, which were swapped. The handbook's two-center d1 (t2g,
+  0.45468 and 0.41348 Ry) now goes to `edt` and d2 (eg, 0.43701 and
+  0.41334 Ry) to `edd`, as in Papaconstantopoulos, Handbook of the Band
+  Structure of Elemental Solids, 2nd ed. (2015), Table 6.55, and as in the
+  Ni sets. The orthogonal set changes by 17.7 mRy in each level; the Pt
+  example results were computed with the swapped values.
+
 - Group examples/Fe-wire by atomic structure, as the Ni and Pt examples:
   BCC-sd/, BCC-spd/ and 1DLEAD-spd/ move into Fe64-bcc-wire/, named after
   the system like its files, whose README describes the wire and compares

@@ -16,8 +16,8 @@ RYD
 ! On-site energies
 es = 0.77393 
 ep = 1.48490 
-edd = 0.45468
-edt = 0.43701
+edd = 0.43701
+edt = 0.45468
 ! Hopping     
 sss = -0.07835 
 pps =  0.18677 
@@ -43,8 +43,8 @@ RYD
 ! On-site energies
 es = 0.45649
 ep = 0.98826
-edd = 0.41348
-edt = 0.41334
+edd = 0.41334
+edt = 0.41348
 ! Hopping     
 sss = -0.05907 
 pps = -0.17826  
