@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add the nanographene example with the new carbon `Papacon` electrode
+  (`examples/graphene/nanographene/Papacon`): 170 C atoms, `SL = 0.1`, a
+  restart from the density matrix with `nodamp` and the LDOS of the
+  central atom 81. The flake comes out essentially non-magnetic (atomic
+  spins below 0.005): the Bethe lattice is attached at 38 sites around the
+  whole perimeter. Logs are stored gzip-compressed.
+
 - Fix the units and spin of Bethe-lattice parameter sets: `readline`
   kept the energy unit (`RYD`, `EV`) and the `ISPIN` of the set read
   before, so a set without a unit keyword (Hartree by default) was read
