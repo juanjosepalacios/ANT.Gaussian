@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# ANT.G-2.8.4 - release packaging
+# ANT.G-3.0.0 - release packaging
 # Run from the repository root, as required by the paths below.
 read -r version < VERSION || exit 1
 if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then

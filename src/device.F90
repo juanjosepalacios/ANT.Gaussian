@@ -1,5 +1,5 @@
 !*********************************************************!
-!*********************  ANT.G-2.8.4  *********************!
+!*********************  ANT.G-3.0.0  *********************!
 !*********************************************************!
 !                                                         !
 !  Copyright (c) by                                       !
@@ -3814,7 +3814,6 @@
     complex*16, intent(in) :: cenergy
     complex*16, dimension(:,:),intent(out) :: Sigma1
     complex*16, dimension(:,:),intent(out) :: Sigma2
-    complex*16, dimension(NAOrbs,NAOrbs) :: temp
     integer :: is, omp_get_thread_num
     
     !Sigma1=(0.0,0.0)
@@ -3833,8 +3832,7 @@
        ! transform to non-orthogonal basis
        if( Overlap < 0.0 .and. .not. HDOrtho )then
           ! Sigma1 -> S^1/2 * Sigma1 * S^1/2
-          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, Sigma1,NAorbs, SPH,  NAOrbs, c_zero, temp,   NAOrbs)
-          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma1, NAOrbs)
+          call SigmaToNonOrtho( Sigma1 )
        endif
     case( "1DLEAD" )
        call CompSelfEnergy1D( Lead1D(1), is, cenergy, Sigma1, NAOrbs, 1 )
@@ -3855,8 +3853,7 @@
        ! transform to non-orthogonal basis 
        if( Overlap < 0.0 .and. .not. HDOrtho )then
           ! Sigma2 -> S^1/2 * Sigma2 * S^1/2
-          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, Sigma2,NAorbs, SPH,  NAOrbs, c_zero, temp,   NAOrbs)
-          call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one, SPH,   NAorbs, temp, NAOrbs, c_zero, Sigma2, NAOrbs)
+          call SigmaToNonOrtho( Sigma2 )
        endif
     case( "1DLEAD" )
        call CompSelfEnergy1D( Lead1D(2), is, cenergy, Sigma2, NAOrbs, 2 )
@@ -3864,6 +3861,56 @@
        Sigma2=c_zero
     end select
   end subroutine CompSelfEnergies
+
+
+  ! *************************************************************************
+  ! Sigma -> S^1/2 * Sigma * S^1/2 (Bethe-lattice self-energy to the
+  ! non-orthogonal basis). Sigma is non-zero only on the orbitals of the atoms
+  ! attached to the electrode, so the products are restricted to the rows and
+  ! columns of Sigma that are not zero: with C those orbitals,
+  ! S^1/2 Sigma S^1/2 = S^1/2(:,C) * ( Sigma(C,C) * S^1/2(C,:) ),
+  ! which is the same result as the full products at a fraction of the cost.
+  ! *************************************************************************
+  subroutine SigmaToNonOrtho( Sigma )
+    use constants, only: c_zero, c_one
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
+    implicit none
+    external zgemm
+
+    complex*16, dimension(:,:), intent(inout) :: Sigma
+    integer :: i, j, nc
+    integer, dimension(NAOrbs) :: idx
+    logical, dimension(NAOrbs) :: used
+    complex*16, dimension(:,:), allocatable :: SigC, SPHc, SPHr, temp
+
+    used = .false.
+    do j=1,NAOrbs
+       do i=1,NAOrbs
+          if( Sigma(i,j) /= c_zero )then
+             used(i) = .true.
+             used(j) = .true.
+          end if
+       end do
+    end do
+    nc = 0
+    do i=1,NAOrbs
+       if( used(i) )then
+          nc = nc+1
+          idx(nc) = i
+       end if
+    end do
+    if( nc == 0 ) return
+
+    allocate( SigC(nc,nc), SPHc(NAOrbs,nc), SPHr(nc,NAOrbs), temp(nc,NAOrbs) )
+    SigC = Sigma(idx(1:nc),idx(1:nc))
+    SPHc = SPH(:,idx(1:nc))
+    SPHr = SPH(idx(1:nc),:)
+    call zgemm('N','N',nc,NAOrbs,nc,c_one,SigC,nc,SPHr,nc,c_zero,temp,nc)
+    call zgemm('N','N',NAOrbs,NAOrbs,nc,c_one,SPHc,NAOrbs,temp,nc,c_zero,Sigma,NAOrbs)
+    deallocate( SigC, SPHc, SPHr, temp )
+  end subroutine SigmaToNonOrtho
 
 
   !

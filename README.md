@@ -1,4 +1,4 @@
-# ANT.Gaussian (2.8.4)
+# ANT.Gaussian (3.0.0)
 
 ********************************************************************************
 Release versions are recorded in VERSION. See CHANGELOG.md for release notes.

@@ -1,6 +1,21 @@
 # Changelog
 
-## Unreleased
+## 3.0.0 - 2026-11-13
+
+- Version 3.0.0: the device Green's functions are several times cheaper.
+  With the three changes below (contour integration over single points,
+  OpenBLAS in the NVIDIA build, restricted S^1/2 Sigma S^1/2), the 60-atom
+  Al example runs in 42 s instead of 135 s on 8 cores and in 210 s instead
+  of 570 s on 1, with the same results.
+
+- Restrict the transformation of the Bethe-lattice self-energies to the
+  non-orthogonal basis, S^1/2 Sigma S^1/2, to the rows and columns of
+  Sigma that are not zero (the orbitals of the atoms attached to the
+  electrode) instead of two full NAOrbs^3 complex matrix products per
+  electrode (`SigmaToNonOrtho`). The result is the same: the 1-core
+  60-atom Al run gives the same SCF energy to all printed digits. That
+  run drops from 448 to 210 s on 1 core and from 70 to 42 s on 8 (device
+  Fermi search 39 -> 14 s); Ni4-Ni-Ni-Ni4 from 27 to 24 s on 8 cores.
 
 - NVIDIA build: link the optimized BLAS/LAPACK of the NVIDIA HPC SDK
   (OpenBLAS, `liblapack_ilp64`/`libblas_ilp64`) instead of compiling the
