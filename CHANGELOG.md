@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Bethe-lattice parameters from Papaconstantopoulos, Handbook of the Band
+  Structure of Elemental Solids, 2nd ed. (2015), for every element of the
+  examples: `Papacon` (orthogonal) and `Papacon-nonortho` (with overlaps),
+  2-center, first neighbours, book d1 = t2g (`edt`) and d2 = eg (`edd`).
+  New in BL025 (Mn bcc, Table 4.39), BL026 (Fe bcc ferromagnetic, Tables
+  4.46 and 4.51, overlaps averaged over spin as for Ni) and BL046 (Pd,
+  Table 5.64); the previous `Papacon` sets, which are not the book fits,
+  are kept as `Papacon-old` (Mn, Fe) and `lsda-crenbs-outp` (Pd, a fit
+  from Pd.lsda.crenbs.outp; `Papacon-old` there is unchanged). In BL047
+  (Ag, Table 5.71) and BL079 (Au, Table 6.62) `Papacon` was the book's
+  orthogonal set with `edd` and `edt` swapped; corrected, and
+  `Papacon-nonortho` added. Ni (BL028) and Pt (BL078) already had both
+  book sets. `Papacon` is the default electrode set, so the Mn, Ag and Au
+  examples without `BLPAR`, and the right electrode of the Pd example,
+  now use the book parameters; their stored outputs predate this.
+
 - Compute the lesser Green's function (`glesser`, `glesser_SOC`) from the
   low-rank couplings: Gamma = i(Sigma - Sigma^+) is non-zero only on the
   orbitals C of the atoms attached to the electrode, or equals

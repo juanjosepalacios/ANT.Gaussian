@@ -1,5 +1,94 @@
+! *********************************************************
+! *** Papacon: orthogonal and non-orthogonal book fits  ***
+! *********************************************************
+!
 BEGINSET
 Papacon
+9 1 7 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Mn bcc paramagnetic, a = 5.39700 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 4.39.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    1.16833
+ep  =    1.84211
+edd =    0.70341
+edt =    0.73531
+!
+! Hoppings in Ryd
+!
+sss =   -0.13490
+sps =    0.16844
+pps =    0.25792
+ppp =    0.03037
+sds =   -0.07524
+pds =   -0.10344
+pdp =    0.02040
+dds =   -0.05509
+ddp =    0.03210
+ddd =   -0.00173
+ENDSET
+!
+BEGINSET
+Papacon-nonortho
+9 1 7 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Mn bcc paramagnetic, a = 5.39700 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 4.39.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps. ANT uses the overlaps only with OVERLAP > 0
+! (OVERLAP = 1 for the book values).
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.84661
+ep  =    1.35281
+edd =    0.69912
+edt =    0.70096
+!
+! Hoppings in Ryd
+!
+sss =   -0.06272
+sps =   -0.04958
+pps =    0.00720
+ppp =   -0.09393
+sds =   -0.03315
+pds =    0.01665
+pdp =   -0.04574
+dds =   -0.02463
+ddp =    0.02937
+ddd =   -0.01337
+!
+! Overlap parameters
+!
+S_sss =    0.11062
+S_sps =    0.13893
+S_pps =   -0.17223
+S_ppp =    0.01411
+S_sds =    0.03794
+S_pds =   -0.05788
+S_pdp =    0.01256
+S_dds =    0.04069
+S_ddp =   -0.01027
+S_ddd =   -0.00949
+ENDSET
+!
+! Papacon set of ANT up to 3.0.0, of unknown origin (not the book fit above).
+BEGINSET
+Papacon-old
 9 2 7 0
 s
 p

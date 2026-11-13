@@ -14,22 +14,81 @@ s
 p
 d
 RYD
-! On-site
-es = 0.56220 
-ep = 1.27897 
-edd = 0.26097
-edt = 0.25309
-! Hopping     
-sss =  -0.06680  
-pps =  0.17866  
-ppp =  -0.01645  
-dds =  -0.04971  
-ddp =  0.02624 
-ddd =  -0.00457  
-sps =  0.09721 
-sds =  -0.04722  
-pds =  -0.06399  
-pdp =  0.01896
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Au fcc, a = 7.70687 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 6.62.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.56220
+ep  =    1.27897
+edd =    0.25309
+edt =    0.26097
+!
+! Hoppings in Ryd
+!
+sss =   -0.06680
+sps =    0.09721
+pps =    0.17866
+ppp =   -0.01645
+sds =   -0.04722
+pds =   -0.06399
+pdp =    0.01896
+dds =   -0.04971
+ddp =    0.02624
+ddd =   -0.00457
+ENDSET
+!
+BEGINSET
+Papacon-nonortho
+9 1 11 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Au fcc, a = 7.70687 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 6.62.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps. ANT uses the overlaps only with OVERLAP > 0
+! (OVERLAP = 1 for the book values).
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.29240
+ep  =    0.73634
+edd =    0.24249
+edt =    0.24145
+!
+! Hoppings in Ryd
+!
+sss =   -0.05747
+sps =    0.02800
+pps =   -0.16644
+ppp =   -0.00709
+sds =   -0.03739
+pds =   -0.01303
+pdp =    0.01950
+dds =   -0.03600
+ddp =    0.02259
+ddd =   -0.00357
+!
+! Overlap parameters
+!
+S_sss =    0.09205
+S_sps =   -0.18632
+S_pps =   -0.36368
+S_ppp =    0.06975
+S_sds =    0.06401
+S_pds =    0.12648
+S_pdp =   -0.05120
+S_dds =    0.05031
+S_ddp =   -0.02668
+S_ddd =    0.00256
 ENDSET
 !
 ! ***********************************************************

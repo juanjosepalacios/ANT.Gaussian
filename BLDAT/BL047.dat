@@ -8,21 +8,80 @@ Papacon
 s
 p
 d
-ISPIN = 1
 RYD
-es  =   0.68297   
-ep  =   1.13432   
-edd =  0.12249    
-edt =  0.12006
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Ag fcc, a = 7.68000 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 5.71.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
 !
-sss = -0.06581 (-)
-sps = 0.09781 (+)
-pps = 0.15752 (+)
-ppp = 0.00649 (-)
-sds = -0.03110 (-)
-pds = -0.03905 (-)
-pdp = 0.01519 (+)
-dds = -0.03151 (-)
-ddp = 0.01757 (+)
-ddd = -0.00336 (-)
+! On-site energies in Ryd
+!
+es  =    0.68297
+ep  =    1.13432
+edd =    0.12006
+edt =    0.12249
+!
+! Hoppings in Ryd
+!
+sss =   -0.06581
+sps =    0.09781
+pps =    0.15752
+ppp =    0.00649
+sds =   -0.03110
+pds =   -0.03905
+pdp =    0.01519
+dds =   -0.03151
+ddp =    0.01757
+ddd =   -0.00336
+ENDSET
+!
+BEGINSET
+Papacon-nonortho
+9 1 11 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Ag fcc, a = 7.68000 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 5.71.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps. ANT uses the overlaps only with OVERLAP > 0
+! (OVERLAP = 1 for the book values).
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.39890
+ep  =    0.72680
+edd =    0.11834
+edt =    0.11776
+!
+! Hoppings in Ryd
+!
+sss =   -0.04280
+sps =    0.00996
+pps =   -0.14727
+ppp =    0.00420
+sds =   -0.03057
+pds =   -0.02255
+pdp =    0.01861
+dds =   -0.02825
+ddp =    0.01580
+ddd =   -0.00235
+!
+! Overlap parameters
+!
+S_sss =    0.11070
+S_sps =   -0.19464
+S_pps =   -0.35644
+S_ppp =    0.07676
+S_sds =    0.04683
+S_pds =    0.09964
+S_pdp =   -0.04465
+S_dds =    0.02651
+S_ddp =   -0.01514
+S_ddd =    0.00113
 ENDSET

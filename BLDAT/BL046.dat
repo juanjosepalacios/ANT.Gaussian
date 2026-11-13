@@ -2,8 +2,97 @@
 ! *** TB parameters from Pd.lsda.crenbs.outp ***
 ! ***********************************************************
 !
+! *********************************************************
+! *** Papacon: orthogonal and non-orthogonal book fits  ***
+! *********************************************************
+!
 BEGINSET
 Papacon
+9 1 10 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Pd fcc, a = 7.35120 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 5.64.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.94261
+ep  =    1.36110
+edd =    0.36265
+edt =    0.37285
+!
+! Hoppings in Ryd
+!
+sss =   -0.07962
+sps =    0.11332
+pps =    0.17119
+ppp =   -0.00540
+sds =   -0.04885
+pds =   -0.06563
+pdp =    0.02124
+dds =   -0.05216
+ddp =    0.02878
+ddd =   -0.00533
+ENDSET
+!
+BEGINSET
+Papacon-nonortho
+9 1 10 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Pd fcc, a = 7.35120 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 5.64.
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps. ANT uses the overlaps only with OVERLAP > 0
+! (OVERLAP = 1 for the book values).
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.52122
+ep  =    1.00597
+edd =    0.35127
+edt =    0.35083
+!
+! Hoppings in Ryd
+!
+sss =   -0.03712
+sps =   -0.02276
+pps =   -0.14554
+ppp =   -0.05335
+sds =   -0.02949
+pds =   -0.01586
+pdp =    0.02136
+dds =   -0.03309
+ddp =    0.02203
+ddd =   -0.00355
+!
+! Overlap parameters
+!
+S_sss =    0.12155
+S_sps =   -0.19954
+S_pps =   -0.29494
+S_ppp =    0.02818
+S_sds =    0.06623
+S_pds =    0.08650
+S_pdp =   -0.03444
+S_dds =    0.04968
+S_ddp =   -0.02767
+S_ddd =    0.00311
+ENDSET
+!
+! Called Papacon in ANT up to 3.0.0; a fit from Pd.lsda.crenbs.outp, not the book fit above.
+BEGINSET
+lsda-crenbs-outp
 9 1 10 0
 s
 p

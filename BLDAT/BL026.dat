@@ -1,5 +1,136 @@
+! *********************************************************
+! *** Papacon: orthogonal and non-orthogonal book fits  ***
+! *********************************************************
+!
+BEGINSET
+Papacon
+9 2 8 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Fe bcc ferromagnetic, a = 5.40570 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 4.46 (spin up) and Table 4.51 (spin down).
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    1.13516
+ep  =    1.81739
+edd =    0.62960
+edt =    0.64840
+!
+! Hoppings in Ryd
+!
+sss =   -0.12950
+sps =    0.17363
+pps =    0.25741
+ppp =    0.02422
+sds =   -0.06115
+pds =   -0.08485
+pdp =    0.01778
+dds =   -0.04541
+ddp =    0.02714
+ddd =   -0.00260
+ISPIN = 2
+!
+! On-site energies in Ryd
+!
+es  =    1.14481
+ep  =    1.80769
+edd =    0.75661
+edt =    0.78456
+!
+! Hoppings in Ryd
+!
+sss =   -0.13243
+sps =    0.17278
+pps =    0.25911
+ppp =    0.02653
+sds =   -0.07145
+pds =   -0.09702
+pdp =    0.02129
+dds =   -0.05266
+ddp =    0.03276
+ddd =   -0.00286
+ENDSET
+!
+BEGINSET
+Papacon-nonortho
+9 2 8 0
+s
+p
+d
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Fe bcc ferromagnetic, a = 5.40570 bohr, Slater-Koster 2-center
+! parameters, first neighbours only: Table 4.46 (spin up) and Table 4.51 (spin down).
+! Book on-site d1 = t2g (edt) and d2 = eg (edd). Second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps. ANT uses the overlaps only with OVERLAP > 0
+! (OVERLAP = 1 for the book values).
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =    0.85674
+ep  =    1.36382
+edd =    0.62920
+edt =    0.63010
+!
+! Hoppings in Ryd
+!
+sss =   -0.06479
+sps =   -0.06822
+pps =    0.03700
+ppp =   -0.06914
+sds =   -0.03943
+pds =    0.03065
+pdp =   -0.03899
+dds =   -0.02284
+ddp =    0.02648
+ddd =   -0.01242
+ISPIN = 2
+!
+! On-site energies in Ryd
+!
+es  =    0.83934
+ep  =    1.33360
+edd =    0.75455
+edt =    0.75962
+!
+! Hoppings in Ryd
+!
+sss =   -0.06738
+sps =   -0.06186
+pps =    0.01187
+ppp =   -0.08700
+sds =   -0.04101
+pds =    0.02645
+pdp =   -0.04680
+dds =   -0.02266
+ddp =    0.03018
+ddd =   -0.01318
+!
+! Overlap parameters (spin average of the book values; ANT uses one set for both spins)
+!
+S_sss =    0.099635
+S_sps =    0.125545
+S_pps =   -0.168755
+S_ppp =    0.021530
+S_sds =    0.025515
+S_pds =   -0.042440
+S_pdp =    0.012010
+S_dds =    0.035115
+S_ddp =   -0.006010
+S_ddd =   -0.009875
+ENDSET
+!
+! Papacon set of ANT up to 3.0.0, of unknown origin (not the book fit above).
  BEGINSET
- Papacon
+ Papacon-old
 9 2 8 0
 s
 p
