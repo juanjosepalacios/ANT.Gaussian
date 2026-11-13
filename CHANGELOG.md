@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Parallelize the contour integration of the device density matrix
+  (`IntCompPlane`) over single quadrature points instead of pairs, and
+  evaluate the centre point and the first doubling levels (15 points, or
+  more if there are more threads) in one parallel loop, so the threads are
+  no longer idle at the low levels. The stopping test is applied level by
+  level as before, and levels it does not reach are discarded; on one
+  thread nothing is computed ahead. Also fixes out-of-bounds writes of the
+  abscissa arrays at the last level (255 points with `NIP = 7`). In the
+  60-atom Al example the device Fermi search drops from 98 to 48 s on 8
+  cores and the run from 135 to 84 s (125 to 94 s and 189 to 158 s on 4);
+  1 and 2 cores are unchanged. Results agree within the run-to-run scatter
+  (SCF energies within 5e-5 a.u., E_F within 0.04 meV, T(E_F) = 2.0067),
+  except one 2-core run whose final Fermi search fell back from MULLER to
+  SECANT and ended 1.3 meV off (T(E_F) = 2.0064); two repeats did not.
+
 - Add the 60-atom Al16-Al9-Al4-Al-Al-Al4-Al9-Al16 example (LANL2DZ on the
   28 inner atoms, `Papacon`, `conver=6`): T(E_F) = 2.007, and a timing
   study on 1-8 cores (570, 320, 189 and 135 s; about 13% serial work).

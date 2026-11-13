@@ -4488,25 +4488,29 @@ subroutine IntRealAxis_SOC(Er,El)
 
     use parameters, only: PAcc, NIP, AdaptiveQuad
     use constants, only: d_pi, d_zero, ui
-!   USE IFLPORT
     use omp_lib
 
     implicit none
 
     real*8,intent(in) :: rrr, bi, Emi, Eq
-    real*8, dimension(NAOrbs,NAOrbs) :: PDP
 
-    real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
-    integer :: n,i,j,l,k,k1,chunk, M                                         
-    real*8, dimension(2**NIP-1) :: xs,xcc
+    ! Gauss-Chebyshev quadrature of the second kind with nested doubling: level 0 is the
+    ! centre point, level lev (1..NIP) adds 2**lev points, and level lev is computed only
+    ! if the stopping test fails after level lev-1 (at most 2**(NIP+1)-1 points).
+    ! The centre point and the first nspec levels are evaluated together in one parallel
+    ! loop over single points, so that the threads are not idle at the low levels; the
+    ! stopping test is then applied level by level as before, and the levels it does not
+    ! reach are discarded.
 
-    complex*16 :: E0,E
-    complex*16, dimension(2) :: EE
-    complex*16, dimension(NAOrbs,NAOrbs) :: green
-    complex*16, dimension(2,NAOrbs,NAOrbs) :: greenn 
+    real*8 :: a,b,Em,S0,C0,x0,er0,der0,ch,xp,q,C1,S1,x,erp,erm
+    integer :: n,l,M,lev,nspec,npts
+    real*8, dimension(2**NIP+1) :: xs,xcc
+    complex*16, dimension(2**(NIP+1)-1) :: Ept, cpt   ! energy and weight factor of each point
+    integer, dimension(2**(NIP+1)-1) :: levpt          ! level of each point
+    integer, dimension(0:NIP+1) :: first               ! first point of each level
+    real*8, dimension(0:NIP) :: chlev                  ! charge of each level
+    real*8, allocatable :: PDL(:,:,:)                  ! density matrix of each level
 
-   !M on entry: number of integration points. On exit: error flag
- 
     if(AdaptiveQuad) then
        call AdaptiveDensityContour(rrr,bi,Emi,Eq,ispin)
        return
@@ -4515,97 +4519,130 @@ subroutine IntRealAxis_SOC(Er,El)
     a = 1.d0/d_pi
     b = bi
     Em = Emi
-    PD(ispin,:,:) = d_zero
-   !M = (M-1)*0.5
+    der0 = 0.5d0*(Em-b)
+
+    ! Energies and weights of all the points of all the levels
+    x0 = 0.d0
+    er0 = edex3(Em,b,x0)
+    first(0) = 1
+    npts = 1
+    Ept(1) = rrr*exp(ui*er0)-rrr+Eq
+    cpt(1) = a*der0*ui*rrr*exp(ui*er0)
+    levpt(1) = 0
     n = 1
     S0 = 1
     C0 = 0
-    x0 = 0.d0
-    er0 = edex3(Em,b,x0)
-    der0 = 0.5d0*(Em-b)
-    E0 = rrr*exp(ui*er0)-rrr+Eq
-    call gplus0(E0,green)
-   
-    CH = 0.d0
-    do i = 1,NAOrbs
-       do j =1,NAOrbs
-          PD(ispin,i,j)= a*dimag(ui*rrr*exp(ui*er0)*green(i,j))*der0
-          CH = CH + PD(ispin,i,j)*SD(j,i)
-       enddo
-    enddo
+    do lev=1,NIP
+       first(lev) = npts+1
+       C1 = C0
+       S1 = S0
+       C0 = sqrt((1+C1)*0.5d0)
+       S0 = S1/(C0+C0)
+       xs(1) = S0
+       xcc(1) = C0
+       do l=1,n,2
+          xs(l+2)=xs(l)*C1+xcc(l)*S1
+          xcc(l+2)=xcc(l)*C1-xs(l)*S1
+       end do
+       do l=1,n,2
+          x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+          erp = 0.5d0*((Em-b)*x + (Em+b))
+          erm = 0.5d0*(-(Em-b)*x + (Em+b))
+          npts = npts+1
+          Ept(npts) = rrr*exp(ui*erp)-rrr+Eq
+          cpt(npts) = a*der0*xs(l)**4*ui*rrr*exp(ui*erp)
+          levpt(npts) = lev
+          npts = npts+1
+          Ept(npts) = rrr*exp(ui*erm)-rrr+Eq
+          cpt(npts) = a*der0*xs(l)**4*ui*rrr*exp(ui*erm)
+          levpt(npts) = lev
+       end do
+       n = n + n + 1
+    end do
+    first(NIP+1) = npts+1
+
+    ! Levels evaluated together with the centre point: at least 3 (15 points) and enough
+    ! points for all the threads; none on one thread, where it would only add work
+    nspec = 0
+    if (omp_get_max_threads() > 1) then
+       nspec = 3
+       do while (2**(nspec+1)-1 < omp_get_max_threads())
+          nspec = nspec+1
+       end do
+       nspec = min(nspec,NIP)
+    end if
+
+    ! PDL(:,:,0:nspec) hold the levels evaluated together, PDL(:,:,nspec+1) each later level
+    allocate(PDL(NAOrbs,NAOrbs,0:nspec+1))
+    PDL = d_zero
+    chlev = d_zero
+
+    ! Centre point and levels 1..nspec
+    call IntCompPlanePoints(first(0),first(nspec+1)-1,Ept,cpt,levpt,nspec,PDL,chlev)
+    PD(ispin,:,:) = PDL(:,:,0)
+    CH = chlev(0)
 
     xp = CH
-1   q = xp + xp
-    xp = CH + CH
-    C1 = C0
-    S1 = S0
-    C0 = sqrt((1+C1)*0.5d0)
-    S0 = S1/(C0+C0)
-    xs(1) = S0
-    xcc(1) = C0
-    do l=1,n,2
-       xs(l+2)=xs(l)*C1+xcc(l)*S1
-       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    n = 1
+    lev = 0
+    do
+       q = xp + xp
+       xp = CH + CH
+       lev = lev+1
+       if (lev > nspec) then
+          PDL(:,:,nspec+1) = d_zero
+          call IntCompPlanePoints(first(lev),first(lev+1)-1,Ept,cpt,levpt,nspec,PDL,chlev)
+          PD(ispin,:,:) = PD(ispin,:,:) + PDL(:,:,nspec+1)
+       else
+          PD(ispin,:,:) = PD(ispin,:,:) + PDL(:,:,lev)
+       end if
+       CH = CH + chlev(lev)
+       ! ... replacing n by 2n+1
+       n = n + n + 1
+       ! Stopping?
+       if (.not.((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1))) exit
     end do
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,pdp,chunk,k)
-    PDP=d_zero
-     chunk=max(((n+1)/2)/omp_get_num_threads(),1)
-    !chunk=1
-!$OMP DO SCHEDULE(STATIC,chunk)
-    do l=1,n,2
-       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
-       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-       erp = 0.5d0*((Em-b)*x + (Em+b))
-       erm = 0.5d0*(-(Em-b)*x + (Em+b))
-       EE(1) = rrr*exp(ui*erp)-rrr+Eq
-       EE(2) = rrr*exp(ui*erm)-rrr+Eq
-       do k=1,2
-          !print *,'l',l,'k',k,omp_get_thread_num()
-          call gplus0(EE(k),greenn(k,:,:))
-       end do
-       do i = 1,NAOrbs
-          do j = 1,NAOrbs
-             PDP(i,j) = PDP(i,j)+ a*(dimag(ui*rrr*exp(ui*erp)*greenn(1,i,j))*der0 &
-                  &   +dimag(ui*rrr*exp(ui*erm)*greenn(2,i,j))*der0)*xs(l)**4
-          end do
-       end do
-    end do
-!$OMP END DO NOWAIT
-!$OMP CRITICAL
-       do i = 1,NAOrbs
-          do j = 1,NAOrbs
-             PD(ispin,i,j)=PD(ispin,i,j)+PDP(i,j)
-          end do
-       end do
-!$OMP END CRITICAL
-!$OMP END PARALLEL
-    CH = 0.d0
-    do k=1,NAOrbs
-       ! Non-orthogonal basis: Ch = Tr[P*SD]   
-       do k1=1,NAOrbs
-          CH = CH + PD(ispin,k,k1)*SD(k1,k)
-       end do
-    enddo
-   !print*,'ch',n,  16*CH/(3*(n+1))
-    ! ... replacing n by 2n+1
-    n = n + n + 1
-    ! Stopping?
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1)) goto 1
+    deallocate(PDL)
+
     ! Test for successfullness and integral final value
     M = 0
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
     CH = 16*CH/(3*(n+1))
-    do k=1,NAOrbs
-       do l=1,NAOrbs
-          PD(ispin,k,l) = 16*PD(ispin,k,l)/(3*(n+1))
-       enddo
-    enddo
+    PD(ispin,:,:) = 16*PD(ispin,:,:)/(3*(n+1))
 
     if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the density matrix has needed ',n, ' points'
     if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the density matrix using up to',n,' points. Continue at your own risk ...'
 
     return
+
   end subroutine IntCompPlane
+
+  ! Green's functions of the points ip1..ip2 of IntCompPlane in parallel, one point per
+  ! iteration, summed into the density matrix PDL(:,:,min(level,nspec+1)) and the charge
+  ! chlev(level) of their level
+  subroutine IntCompPlanePoints(ip1,ip2,Ept,cpt,levpt,nspec,PDL,chlev)
+    implicit none
+    integer, intent(in) :: ip1, ip2, nspec
+    complex*16, intent(in) :: Ept(:), cpt(:)
+    integer, intent(in) :: levpt(:)
+    real*8, intent(inout) :: PDL(:,:,0:), chlev(0:)
+    integer :: ip, slot
+    real*8 :: chp
+    complex*16, dimension(NAOrbs,NAOrbs) :: green
+    real*8, dimension(NAOrbs,NAOrbs) :: contrib
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ip,green,contrib,chp,slot) SCHEDULE(DYNAMIC,1)
+    do ip=ip1,ip2
+       call gplus0(Ept(ip),green)
+       contrib = dimag(cpt(ip)*green)
+       chp = sum(contrib*transpose(SD))
+       slot = min(levpt(ip),nspec+1)
+!$OMP CRITICAL (IntCompPlane_sum)
+       PDL(:,:,slot) = PDL(:,:,slot) + contrib
+       chlev(levpt(ip)) = chlev(levpt(ip)) + chp
+!$OMP END CRITICAL (IntCompPlane_sum)
+    end do
+!$OMP END PARALLEL DO
+  end subroutine IntCompPlanePoints
 
   !ccccccccccccccccccccccccccccccc
   !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
