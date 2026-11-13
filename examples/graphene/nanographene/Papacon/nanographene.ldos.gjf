@@ -5,7 +5,7 @@ $ RunGauss
 %NProcShared=4
 #p ulsda/gen guess=mix pseudo=read Scf=(dsymm,maxcycle=200,conver=5,nodamp) pop=reg 
 
-nanographene
+nanographene.ldos
 
 0,3
  C     9.176892     2.003766     0.793766

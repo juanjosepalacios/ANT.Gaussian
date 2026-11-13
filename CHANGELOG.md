@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Rerun the Mn, Ag9, Au, Pd and Au-benzene-Au examples with the book
+  `Papacon` sets (default electrode set) and store their outputs and a
+  README per folder, from scratch with ANT 3.0.0. Au9-Au4-Au-Au4-Au9 loses
+  its `PFIX` lines (the `.dat0` file is not in the repository).
+  Au4-Au-Au--Au4 gets an `.ant` with the s-only `lsda-6s` electrodes and
+  its title fixed. Rename Ag25-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16 to
+  Ag16-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16 (its geometry and title); fix the title of
+  nanographene.ldos.gjf. ANT takes the job name from the `.gjf` title, so a
+  title that differs from the file name makes it ignore the `.ant`. Not
+  rerun: the Au-benzene junction (keywords `MOLGAP`, `MOLBLOCKS`, `IP`, `EA`
+  no longer exist) and the Mn9-Mn4-Mn optimization (stops with `Bisec/Error`).
+  The Pd example mixes `Papacon-old` and the book `Papacon` and gives
+  T(E_F) = 0.044.
+
 - Smaller density-matrix files. P.<job>.dat no longer stores elements
   below 1.0d-12 in magnitude (read as zero; 31% of the Ni4-Ni-Ni-Ni4
   file, 37.5% for the planar nanographene flake). The new keyword

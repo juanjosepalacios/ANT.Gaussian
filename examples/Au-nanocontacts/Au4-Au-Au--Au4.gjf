@@ -4,7 +4,7 @@
 %NProcShared=4
 #p lsda/gen pseudo=read gfinput Scf=(dsymm,conver=6,nodamp)
 
-Au-nanocontact
+Au4-Au-Au--Au4
 
 0,1
 Au     2.036000     0.000000     3.376438
