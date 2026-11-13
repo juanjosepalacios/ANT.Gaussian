@@ -1,0 +1,16 @@
+ALPHA = 0.05
+BLPAR1 = FCC-spd
+BLPAR2 = FCC-spd
+NSPINLOCK = 10
+SL = 1.0d-2
+CHARGEACC = 1.0d-5
+FERMIACC = 1.0d-5
+PACC = 1.0d-7
+NIP = 7
+!SOC
+!SOCFACATOM
+!1
+!10 150,50,0,1.0
+!SPINROTATOM
+!1              
+!14,  90.0, 90.0   
