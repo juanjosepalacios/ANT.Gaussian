@@ -10,7 +10,7 @@ Au nanocontacts between Bethe-lattice electrodes, LSDA, with the book `Papacon` 
 | `Au9-Au4-Au-Au-Au4-Au9` | 28 atoms | none (no `.ant`, defaults) | |
 | `Au9-Au4-Au--Au4-Au9`, `Au9-Au4--Au-Au4-Au9` | 27 atoms with a gap on either side of the apex atom | `BIASVOLT = -3.0`, `SL = 1.0d-3`, `MULLIKEN` | |
 | `Au4-Au` | 5 atoms | ghost electrodes | not rerun; no Bethe lattice |
-| `Au4-Au-Au--Au4` | 10 atoms, one s function on the 8 outer atoms, LANL2DZ on the apex atoms | `ALPHA = 0.02`, `BLPAR1 = BLPAR2 = lsda-6s` | the 1-orbital `lsda-6s` electrodes match the s-only electrode planes |
+| `Au4-Au-Au--Au4` | 10 atoms, one s function on the 8 outer atoms, LANL2DZ on the apex atoms | `ALPHA = 0.02`, `BLPAR1 = BLPAR2 = FCC-s` | the 1-orbital `FCC-s` electrodes (fitted for this s basis and ECP, `BLDAT/fits/Au-FCC-s`) match the s-only electrode planes |
 
 The `.gjf` files substitute links from `../bin` or `../../bin`; change these and `%NProcShared` to
 your installation. ANT takes the job name from the title line of the `.gjf`, which matches the file
@@ -30,9 +30,9 @@ ANT.Gaussian 3.0.0 (commit 7709e49 sources), Gaussian 09 D.01, NVIDIA HPC SDK bu
 | Au9-Au4-Au-Au-Au4-Au9 | 252 | -975.625433 | 17 | -7.9370 | 1.060 | 34 s |
 | Au9-Au4-Au--Au4-Au9 (-3 V) | 243 | -940.559212 | 27 | -8.0060 | 0.069 | 208 s |
 | Au9-Au4--Au-Au4-Au9 (-3 V) | 243 | -940.555680 | 27 | -7.9672 | 0.171 | 215 s |
-| Au4-Au-Au--Au4 (`lsda-6s`, 2 threads) | 52 | -272.550088 | 14 | -2.4688 | 1.553 | 2 s |
+| Au4-Au-Au--Au4 (`FCC-s`) | 52 | -272.526621 | 14 | -2.5120 | 1.578 | 1 s |
 
-The Bethe-lattice Fermi energy is 6.931 eV with `Papacon` and -4.971 eV with `lsda-6s`. All runs terminate normally; the two bias
+The Bethe-lattice Fermi energy is 6.931 eV with `Papacon` and 0 eV with `FCC-s`. All runs terminate normally; the two bias
 runs report 30 and 16 unsuccessful density integrations, the others none.
 
 ## Notes
@@ -46,6 +46,7 @@ runs report 30 and 16 unsuccessful density integrations, the others none.
 - `Au4-Au-Au--Au4` had no `.ant` and the title `Au-nanocontact`. ANT takes the job name from the
   title, so it read no `.ant` and used the 9-orbital default `Papacon`, which stops with `NAOrbs read
   from BL data base not equal to NAOrbs of electrode plane`. The title is now the file name and the
-  new `.ant` selects `lsda-6s`.
+  new `.ant` selects `FCC-s`. With the earlier 1-orbital set `lsda-6s`, now removed, it gave
+  E = -272.550088 a.u., E_F = -2.4688 eV and T(E_F) = 1.553.
 - `P.Au4-Au-Au-Au4.dat` and `P.Au9-Au4-Au-Au4-Au9.dat` are the densities of these runs: a new run in
   this directory starts from them.

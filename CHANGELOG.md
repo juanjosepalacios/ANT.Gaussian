@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Remove the Au set `lsda-6s` (BL079, 1 orbital, Hartree, with an
+  overlap) in favour of `FCC-s`. The inputs that used it now select
+  `FCC-s`: `examples/Au-nanocontacts/Au4-Au-Au--Au4` (rerun: E =
+  -272.526621 a.u., T(E_F) = 1.578 instead of 1.553), `Au-chain/Au4-Au-Au-Au4`
+  (not rerun) and the commented lines of `Au-chain/Au-Au-Au-Au-Au-Au`.
+
+- `examples/benzene/input_Electrodo_Au_3_benzene` (Au-benzene-Au junction):
+  its stored ANT 2.5.0 run had stopped at once (the 1-orbital `lsda-6s`
+  electrodes against a full spd Au basis). Now the contact Au atoms 1-6 and
+  27-32 have the CRENBS basis and ECP (9 orbitals, from
+  `examples/Au-benzene-Au`) with `Papacon` electrodes, the inner Au atoms
+  7-10 and 23-26 LANL2DZ, `conver=7`, `SL = 0.01`, and the optimization
+  `opt(z-matrix,maxcycle=100,loose)` with `IOp(1/7=10000)` (RMS force
+  threshold 0.01 au). The `.ant` has Unix line endings: its trailing
+  carriage-return lines were read by ANT as an empty keyword. The new run
+  is in progress; its outputs are not stored yet.
+
 - New Au Bethe-lattice set `FCC-s` (BL079): one s orbital, orthogonal,
   es = 0 and sss = -2.4412 eV, fitted on a 12-direction Bethe lattice to
   the DOS at E_F of a CRYSTAL23 calculation of bulk fcc Au with the

@@ -1,8 +1,10 @@
 Benzene between Au electrodes, LSDA.
 
-- `input_Electrodo_Au_3_benzene`: the benzene junction. It uses `lsda-6s` Au electrodes and the
-  keywords `MOLGAP`, `MOLBLOCKS`, `IP` and `EA`, which ANT 3.0.0 does not have: the run stops at once
-  with `ERROR - Undefined keyword: MOLGAP`. The stored outputs (`.log`, `T.*.dat`, `.MOA.dat`, the
+- `input_Electrodo_Au_3_benzene`: the benzene junction. Its `.ant` uses the keywords `MOLGAP`,
+  `MOLBLOCKS`, `IP` and `EA`, which ANT 3.0.0 does not have: the run stops at once with
+  `ERROR - Undefined keyword: MOLGAP`. It sets no `BLPAR`, so its electrodes are the default
+  `Papacon`; its 20 Au atoms have one s, one p and one d shell (9 orbitals, with a 68-electron ECP),
+  which fits that 9-orbital set. The stored outputs (`.log`, `T.*.dat`, `.MOA.dat`, the
   `.jpg`) come from ANT 2.5.2 and were not rerun.
 - `Au9-Au4-Au-Au4-Au9`: an Au contact without benzene and without `.ant` (ANT defaults, default
   electrode set `Papacon` of `BLDAT/BL079.dat`). Rerun with ANT.Gaussian 3.0.0 (commit 7709e49

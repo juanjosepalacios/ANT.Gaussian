@@ -36,9 +36,9 @@ three choices of |sss| against the CRYSTAL23 DOS per spin (relative L2 misfit fr
 
 `FCC-s` is A: it reproduces the DOS at E_F, which is what transport sees, with a misfit as small as
 the least-squares one. sss is taken negative (an s bond; the sign does not change the DOS of a Bethe
-lattice) and es = 0 (ANT shifts all on-site energies to put E_F at zero). The existing `lsda-6s` set of
-BL079.dat has sss = -0.0814 Ha = -2.21 eV, close to choice B. `dos_fit.dat` has the CRYSTAL23 and
-`FCC-s` DOS per spin on the CRYSTAL23 grid.
+lattice) and es = 0 (ANT shifts all on-site energies to put E_F at zero). The earlier 1-orbital set
+`lsda-6s` (removed from BL079.dat after this fit) had sss = -0.0814 Ha = -2.21 eV, close to choice
+B. `dos_fit.dat` has the CRYSTAL23 and `FCC-s` DOS per spin on the CRYSTAL23 grid.
 
 The Bethe lattice cannot reproduce the asymmetry of the band: it puts the same weight above and below
 E_F, so the CRYSTAL23 peak at +6.7 eV is missing and the band bottom is 1.5 eV lower. An overlap
@@ -51,7 +51,7 @@ ANT 3.0.0 with `FCC-s` on both electrodes of Au4-Au-Au--Au4 (`LEADDOS`, 13 Novem
 set, finds 12 lattice directions and a Bethe-lattice Fermi energy of exactly 0 eV. Its `Lead1DOS.dat`
 (both spins) divided by 2 agrees with `bethe1.py` at ETA = 0.001 eV to 1e-6 states/eV over -20 to
 +20 eV. The contact converges in 14 cycles to E = -272.526621 a.u., device E_F = -2.5120 eV and
-T(E_F) = 1.578 e^2/h (1.553 with `lsda-6s`).
+T(E_F) = 1.578 e^2/h (1.553 with the earlier `lsda-6s`).
 
 ## Reproducing
 
