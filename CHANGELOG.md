@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Replace the Al `Papacon` set in BL013.dat, of unknown origin, with the
+  orthogonal 2-center fit of Papaconstantopoulos, Handbook of the Band
+  Structure of Elemental Solids, 2nd ed. (2015), Table 7.10, and add the
+  non-orthogonal fit with overlaps as `Papacon-nonortho`. Both keep the s
+  and p first-neighbour terms only, for the minimal sp basis. Rerun the
+  four Al9-Al4-Al-Al-Al4-Al9 examples with the new default set (T(E_F)
+  1.87-1.95 against 1.76-1.92 before), regroup them by structure, as the
+  Ni and Pt examples, and add a case with `Papacon-nonortho` at
+  `OVERLAP = 0.5`, whose SCF ends with the device Fermi level 20 eV too
+  high.
+
 - Rerun the five Pt9-Pt4-Pt-Pt-Pt4-Pt9 examples with the corrected Pt d
   on-site energies and update their outputs and READMEs. The SOC cases
   and the collinear case change little (T(E_F) 4.231, 5.898 and 3.033

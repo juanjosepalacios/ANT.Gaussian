@@ -2,10 +2,69 @@
 ! Al Bethe Lattice parameters
 ! ***************************
 !
-! ***********************************************************
-! *** Papacon TB parameters for valence minimal basis set ***
-! ***********************************************************
+! *********************************************************
+! *** Papacon: orthogonal and non-orthogonal book fits  ***
+! *********************************************************
 !
+BEGINSET
+Papacon
+4 1 3 0
+s
+p
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Al fcc, a = 7.60 bohr, Slater-Koster 2-center parameters,
+! first neighbours only: Table 7.10. The book fit is spd; only its s and p terms
+! are kept, for the minimal sp basis. d and second-neighbour parameters omitted.
+! Orthogonal fit.
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =   0.48220
+ep  =   1.04964
+!
+! Hoppings in Ryd
+!
+sss =  -0.05831
+sps =  -0.09315
+pps =   0.17149
+ppp =  -0.01020
+ENDSET
+!
+BEGINSET
+Papacon-nonortho
+4 1 3 0
+s
+p
+RYD
+! Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd ed.
+! (Springer, 2015), Al fcc, a = 7.60 bohr, Slater-Koster 2-center parameters,
+! first neighbours only: Table 7.10. The book fit is spd; only its s and p terms
+! are kept, for the minimal sp basis. d and second-neighbour parameters omitted.
+! Non-orthogonal fit with overlaps. ANT uses the overlaps only with OVERLAP > 0
+! (OVERLAP = 1 for the book values).
+ISPIN = 1
+!
+! On-site energies in Ryd
+!
+es  =   0.20639
+ep  =   0.58673
+!
+! Hoppings in Ryd
+!
+sss =  -0.05137
+sps =   0.02672
+pps =  -0.06630
+ppp =  -0.02184
+!
+! Overlap parameters
+!
+S_sss =   0.11591
+S_sps =  -0.19400
+S_pps =  -0.31915
+S_ppp =   0.05724
+ENDSET
 !
 ! *******************************************************************************
 ! *** Old Papacon TB parameters for valence minimal basis set without overlap ***
@@ -59,46 +118,4 @@ S_sss =  2.0741E-01
 S_sps = -3.3708E-01 
 S_pps = -3.7204E-01 
 S_ppp =  1.8042E-01 
-ENDSET
-!
-BEGINSET
-Papacon
-4 1 3 0
-s
-p
-RYD
-ISPIN = 1
-!
-! On-site enrgies in Ryd
-!
-es =    8.8428850274405875E-002
-ep =    0.4741417766403869     
-edd =     1.160603369851165     
-edt =     1.096726807993163     
-!
-! Hoppings in Ryd
-!
-sss =   -6.8433169286640938E-002
-sps =   -0.1023488286925596     
-pps =    9.4941116437838886E-002
-ppp =   -4.8761327480330161E-002
-sds =   -4.5901346836469425E-002
-pds =    2.1585958752781016E-002
-pdp =   -5.7462780697749460E-002
-dds =    5.4253334585371435E-002
-ddp =    7.4738712970810353E-002
-ddd =    4.0035279118644844E-002
-! 
-! Overlap parameters
-! 
-S_sss =    8.4646477362927985E-002
-S_sps =    0.1272649251401382     
-S_pps =   -0.1903619564725789     
-S_ppp =    6.0983309741209233E-002
-S_sds =    0.1385968864595994     
-S_pds =   -0.1545687609239824     
-S_pdp =    7.1842480269995406E-002
-S_dds =    0.1587624706222596     
-S_ddp =   -9.5260105979644560E-002
-S_ddd =    6.0332384073878238E-002
 ENDSET
