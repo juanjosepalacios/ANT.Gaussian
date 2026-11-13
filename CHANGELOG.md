@@ -13,6 +13,13 @@
   another, the binary density-matrix format `PBINARY`, the single-s Au set
   `FCC-s`, and the examples rerun with the new parameters.
 
+- HTML manual (`doc/manual_3_g03.html`, index in `doc/ant_g03.html`):
+  add `PBINARY`, `SPINROTATOM`, `ZM`/`BX`/`BY`/`BZ`, `ZMATOM`, `POL` and
+  `TCOMP`, which were only in `doc/keywords.txt`; describe the text and
+  binary density-matrix files in the restart section; and describe the
+  Bethe-lattice sets (book `Papacon`, the CRYSTAL23 fits, `FCC-s`) and
+  their units under `BLPAR1/BLPAR2`, also in `keywords.txt`.
+
 - Remove the Au set `lsda-6s` (BL079, 1 orbital, Hartree, with an
   overlap) in favour of `FCC-s`. The inputs that used it now select
   `FCC-s`: `examples/Au-nanocontacts/Au4-Au-Au--Au4` (rerun: E =

@@ -215,6 +215,14 @@ Default: TYPE1 = BETHE and TYPE2 = BETHE
 * BLPAR1 and BLPAR2 (string)
 Parameters sets of the Bethe lattice for the first and second electrode, respectively 
 (see available options in files BLxxx.dat).
+Papacon is the orthogonal, first-neighbour, 2-center Slater-Koster fit of Papaconstantopoulos,
+Handbook of the Band Structure of Elemental Solids, 2nd ed. (2015), for the elements of the
+examples (Al, Mn, Fe, Ni, Pd, Ag, Pt, Au); Papacon-nonortho is the fit with overlaps, used only with
+OVERLAP > 0. Other sets were fitted to CRYSTAL23 bulk calculations with a given basis, e.g. FCC-sd
+and FCC-spd for Ni and Fe, BCC-sd and BCC-spd for Fe, and FCC-s for Au with one s orbital; their fit
+records are in BLDAT/fits. Each set must have as many orbitals as the electrode atoms it is
+attached to. Energies in a set are in Hartree unless the set gives RYD or EV; each set is read in
+its own unit, whatever the set read before it.
 Default: BLPAR1 = Papacon and BLPAR2 = Papacon
 
 * OVERLAP (real)

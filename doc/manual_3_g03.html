@@ -326,6 +326,16 @@ controls.</p>
   <p>Parameters sets of the Bethe
 lattice for the first and second electrode, respectively (see available
 options in files BLxxx.dat).</p>
+  <p>Papacon is the orthogonal, first-neighbour, 2-center Slater-Koster fit of
+Papaconstantopoulos, Handbook of the Band Structure of Elemental Solids, 2nd
+ed. (2015), for the elements of the examples (Al, Mn, Fe, Ni, Pd, Ag, Pt, Au);
+Papacon-nonortho is the fit with overlaps, used only with OVERLAP &gt; 0. Other
+sets were fitted to CRYSTAL23 bulk calculations with a given basis, e.g. FCC-sd
+and FCC-spd for Ni and Fe, BCC-sd and BCC-spd for Fe, and FCC-s for Au with
+one s orbital; their fit records are in BLDAT/fits. Each set must have as many
+orbitals as the electrode atoms it is attached to.</p>
+  <p>Energies in a set are in Hartree unless the set gives RYD or EV; each set is
+read in its own unit, whatever the set read before it.</p>
   <p>Default: BLPAR1 = Papacon and BLPAR2 = Papacon</p>
 </details>
 <details class="keyword" id="overlap">
@@ -401,6 +411,27 @@ especifications line (not in the scf brackets) is useful to prevent
 GAUSSIAN03/09 from rotating the system and is usually necessary for
 optimizations since GAUSSIAN03/09 likes to change the standard
 orientation from step to step.</p>
+  <p>The density matrix is written to P.job_name.dat (text) or, with
+<a href="#pbinary"><em>PBINARY</em></a>, to P.job_name.bin (binary).
+Elements smaller than 1.0d-12 in magnitude are not written in either format;
+they are read as zero. A restart reads the file of the selected format if it
+is present, otherwise the other one, so a text file can start a PBINARY run
+and the reverse. Files written by earlier versions, with all elements, are
+read as before.</p>
+<details class="keyword" id="pbinary">
+  <summary><em>PBINARY</em> (logical)</summary>
+  <p>Writes the density matrix to P.job_name.bin instead of P.job_name.dat:
+full double precision instead of the 11 significant digits of the text file,
+and several times smaller (48 KB instead of 312 KB for the 90-orbital,
+spin-polarized Ni4-Ni-Ni-Ni4 example).</p>
+  <p>The file is stream binary in the native byte order with 64-bit integers:
+the 8 characters &#x27;ANTPBIN1&#x27;, the shift, the numbers of spins and
+orbitals, the atom and the orbital-within-atom of each orbital, and, for each
+spin, the number of stored elements, a bit mask over the lower triangle
+(i = 1..N, j = 1..i) and the stored values. The PFIX file may be text or
+binary; the format is recognized from the file.</p>
+  <p>Default: PBINARY = .false.</p>
+</details>
 <details class="keyword" id="pfix">
   <summary><em>PFIX</em> (logical)</summary>
   <p>When present, part of a previously computed density matrix can be
@@ -409,7 +440,8 @@ used.</p>
   <p>PFIX</p>
   <p>&#x27;P.old_job_name.dat&#x27;</p>
   <p>where &#x27;P.old_job_name.dat&#x27; is the
-file containing the density matrix you want to use. This is useful,
+file containing the density matrix you want to use (text or binary, see
+<a href="#pbinary"><em>PBINARY</em></a>). This is useful,
 .e.g., to change the basis set on a restricted set of atoms while
 preserving the convergency already achieved in the rest of the system
 (see NFIX).</p>
@@ -587,6 +619,53 @@ the solution converged in the absence of SOC.</p>
   <p>atom number, soc_val_p, soc_val_d, soc_val_f</p>
   <p>Place the atom count on the next line, followed by one record per selected atom: atom_index, p_value, d_value, f_value. Positive shell values replace the corresponding calculated SOC integrals. Unlisted atoms inherit the global SOC_VAL values in effect when the block is read. This input has no cutoff column; use SOCFACATOM for atom-specific cutoffs.</p>
 </details>
+<details class="keyword" id="spinrotatom">
+  <summary><em>SPINROTATOM</em> (integer list)</summary>
+  <p>Rotates the spin quantization axis of selected atoms after
+self-consistency.</p>
+  <p>Syntax:</p>
+  <p>SPINROTATOM</p>
+  <p>#natoms</p>
+  <p>#atom, #theta, #phi</p>
+  <p>with theta in [-180,180] and phi in [-360,360] degrees. The majority spin of
+each listed atom points along n = (sin theta cos phi, sin theta sin phi,
+cos theta); atoms not listed stay along z. The device Hamiltonian is rebuilt in
+the spinor basis: on-site blocks become H_up*(1+n.sigma)/2 +
+H_down*(1-n.sigma)/2, and blocks between two atoms use the average of their two
+projectors. The electrode self-energies stay collinear along z, so rotate only
+atoms that are not coupled directly to the electrodes. Transmission is written
+to T.job_name.SOC.dat; can be combined with SOC and ZM.</p>
+  <p>Warning: the rotation is not self-consistent. It is applied once to the
+converged collinear solution, followed by a new device Fermi search, so the
+rotated moments do not relax: they can keep part of their original direction
+and change size and charge. Use the results as a non-self-consistent estimate.
+To reverse the spin of selected atoms (a true spin flip), use
+<a href="#spinedit"><em>SPINEDIT</em></a> instead, which edits the starting
+density matrix and lets the SCF converge the new spin texture.</p>
+  <p>Default: none (no rotation).</p>
+</details>
+<details class="keyword" id="zm">
+  <summary><em>ZM, BX, BY and BZ</em> (logical, real, real, real)</summary>
+  <p>ZM adds a spin-only Zeeman term after self-consistency, E = muB*B.sigma
+with muB = 5.788e-5 eV/T, using the field (BX, BY, BZ) in tesla on every atom.
+As with SOC, the Hamiltonian is rebuilt in the spinor basis and the device
+Fermi energy is found again; the field does not feed back into the density. A
+field of 1 T splits the spin levels by 0.116 meV. Can be combined with SOC and
+SPINROTATOM. With ZM alone, transmission is written to T.job_name.dat as a
+single spinor block.</p>
+  <p>Default: ZM off, BX = BY = BZ = 0.0.</p>
+</details>
+<details class="keyword" id="zmatom">
+  <summary><em>ZMATOM</em> (integer list)</summary>
+  <p>Atom-by-atom Zeeman fields for ZM, in tesla.</p>
+  <p>Syntax:</p>
+  <p>ZMATOM</p>
+  <p>#natoms</p>
+  <p>#atom, #bx, #by, #bz</p>
+  <p>When ZMATOM is present, atoms not listed get no field (BX, BY and BZ are not
+used).</p>
+  <p>Default: none (BX, BY and BZ apply to all atoms).</p>
+</details>
 <h3>Evaluation parameters</h3>
 <details class="keyword" id="estep">
   <summary><em>ESTEP</em> (real)</summary>
@@ -654,6 +733,21 @@ The default is the easier non-hermitian form \Gamma_L G^\dagger
 \Gamma_R G which is considerably faster for large clusters. The
 diagonalization of both forms yield the same eigenvalues.</p>
   <p>Default: .false. (transmission matrix in non-hermitian form).</p>
+</details>
+<details class="keyword" id="pol">
+  <summary><em>POL</em> (logical)</summary>
+  <p>For spinor calculations (SOC, SCFSOC, SPINROTATOM or ZM), adds a third
+column to the transmission file with the spin polarization of the transmitted
+current along z: T_uu + T_du - T_dd - T_ud, where T_ab is the transmission from
+spin a in the left electrode to spin b in the right electrode. The column holds
+the difference, not the normalized ratio.</p>
+  <p>Default: .false. (off).</p>
+</details>
+<details class="keyword" id="tcomp">
+  <summary><em>TCOMP</em> (logical)</summary>
+  <p>With POL, also writes the four spin components T_uu, T_ud, T_du and T_dd
+after the polarization column.</p>
+  <p>Default: .false. (off).</p>
 </details>
 <details class="keyword" id="rtm-beg-and-rtm-end">
   <summary><em>RTM_BEG and RTM_END</em> (integer)</summary>

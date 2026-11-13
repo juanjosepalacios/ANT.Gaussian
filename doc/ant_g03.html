@@ -78,7 +78,8 @@ matrix, and mixes it with previous cycles (<a href="manual_3_g03.html#alpha"><em
   <li>After convergence, ANT evaluates transmission, densities of states and
 population analyses on a real energy grid (<a href="manual_3_g03.html#ew1-and-ew2"><em>EW1/EW2</em></a>,
 <a href="manual_3_g03.html#estep"><em>ESTEP</em></a>).</li>
-  <li>The converged density matrix is saved as <em>P.job_name.dat</em> and
+  <li>The converged density matrix is saved as <em>P.job_name.dat</em>, or as the smaller,
+full-precision binary <em>P.job_name.bin</em> (<a href="manual_3_g03.html#pbinary"><em>PBINARY</em></a>), and
 is read automatically to restart a calculation, for example to ramp the
 bias or to start a new spin configuration (<a href="manual_3_g03.html#pfix"><em>PFIX</em></a>,
 <a href="manual_3_g03.html#nfix"><em>NFIX</em></a>).</li>
@@ -103,7 +104,9 @@ isolated cluster treated with ANT's own convergence controls.</li>
 <ul>
   <li>Spin-resolved transmission T(E) in equilibrium or at finite bias, at
 zero temperature (<em>T.job_name.dat</em>, or <em>T.job_name.SOC.dat</em>
-with spin-orbit coupling or spin rotation).</li>
+with spin-orbit coupling or spin rotation), with the spin polarization of the current and its four
+spin components in spinor calculations (<a href="manual_3_g03.html#pol"><em>POL</em></a>,
+<a href="manual_3_g03.html#tcomp"><em>TCOMP</em></a>).</li>
   <li>Eigenchannel decomposition of the transmission
 (<a href="manual_3_g03.html#nchannels"><em>NCHANNELS</em></a>, <a href="manual_3_g03.html#htransm"><em>HTRANSM</em></a>) and reduced
 transmission matrix between selected atoms (<em>t.job_name.dat</em>,
@@ -165,10 +168,10 @@ shell and per atom (<a href="manual_3_g03.html#soc-fac-p"><em>SOC_FAC_P/D/F</em>
 <a href="manual_3_g03.html#socfacatom"><em>SOCFACATOM</em></a>, <a href="manual_3_g03.html#soc-val-p"><em>SOC_VAL_P/D/F</em></a>,
 <a href="manual_3_g03.html#socvalatom"><em>SOCVALATOM</em></a>).</li>
   <li>Rotation of the spin quantization axis of selected atoms after self-consistency, without
-relaxing the rotated spins (keyword <em>SPINROTATOM</em>; for a self-consistent spin flip use
+relaxing the rotated spins (<a href="manual_3_g03.html#spinrotatom"><em>SPINROTATOM</em></a>; for a self-consistent spin flip use
 <a href="manual_3_g03.html#spinedit"><em>SPINEDIT</em></a>), and
-Zeeman fields applied to the whole device or to selected atoms (keyword
-<em>ZM</em>).</li>
+Zeeman fields applied to the whole device or to selected atoms
+(<a href="manual_3_g03.html#zm"><em>ZM, BX, BY, BZ</em></a>, <a href="manual_3_g03.html#zmatom"><em>ZMATOM</em></a>).</li>
   <li>Correlation effects: DFT+U (<a href="manual_3_g03.html#dft-u"><em>DFT+U</em></a>) and the interface to
 Dynamical Mean Field Theory through correlated blocks and hybridization
 functions (<a href="manual_3_g03.html#corrblocks"><em>CORRBLOCKS</em></a>, <a href="manual_3_g03.html#hybfunc"><em>HYBFUNC</em></a>,
