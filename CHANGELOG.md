@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Smaller density-matrix files. P.<job>.dat no longer stores elements
+  below 1.0d-12 in magnitude (read as zero; 31% of the Ni4-Ni-Ni-Ni4
+  file, 37.5% for the planar nanographene flake). The new keyword
+  `PBINARY` writes P.<job>.bin instead: stream binary with the atom and
+  orbital labels in a header and, per spin, a bit mask over the lower
+  triangle and the stored values in full double precision (48 KB against
+  312 KB of text and 450 KB in the old format for Ni4-Ni-Ni-Ni4). Reading
+  recognizes the format, a restart takes the selected format or else the
+  other one, and the PFIX file may be either. Old full text files are read
+  as before.
+
 - Add the nanographene example with the new carbon `Papacon` electrode
   (`examples/graphene/nanographene/Papacon`): 170 C atoms, `SL = 0.1`, a
   restart from the density matrix with `nodamp` and the LDOS of the

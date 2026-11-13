@@ -274,6 +274,22 @@ line "scf=(nodamp)" and make sure that the standard orientation of the system is
 the calculation stored in  P.<job_name>.dat. You might also need to add "nosymm" as in "scf(nodamp,nosymm)" if you want 
 to start with an educated guess for magnetic systems with an unusual spin texture.
 
+* The density matrix is written to P.<job_name>.dat (text) or, with PBINARY, to P.<job_name>.bin
+(binary). Elements smaller than 1.0d-12 in magnitude are not written in either format; they are read as
+zero. A restart reads the file of the selected format if present, otherwise the other one, so a text
+file can start a PBINARY run and the reverse. Files written by earlier versions, with all elements, are
+read as before.
+
+* PBINARY (logical)
+Writes the density matrix to P.<job_name>.bin instead of P.<job_name>.dat: full double precision instead
+of the 11 significant digits of the text file, and several times smaller (48 KB instead of 312 KB for
+the 90-orbital, spin-polarized Ni4-Ni-Ni-Ni4 example). The file is stream binary in the native byte
+order with 64-bit integers: the 8 characters 'ANTPBIN1', the shift, the numbers of spins and orbitals,
+the atom and the orbital-within-atom of each orbital, and, for each spin, the number of stored
+elements, a bit mask over the lower triangle (i = 1..N, j = 1..i) and the stored values. The PFIX file
+may be text or binary; the format is recognized from the file.
+Default: PBINARY = .false.
+
 * PFIX (logical)
 When present, part of a previously computed density matrix can be used.
 Syntax: PFIX 

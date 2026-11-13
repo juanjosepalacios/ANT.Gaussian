@@ -395,6 +395,10 @@
   LOGICAL :: LeadDOS = .FALSE. 
   CHARACTER(len=10), PARAMETER :: LeadDOS_keyw = "LEADDOS"  
 
+  ! Write the density matrix to P.<job>.bin (binary, full precision) instead of P.<job>.dat (text)
+  LOGICAL :: PBinary = .FALSE.
+  CHARACTER(len=10), PARAMETER :: PBinary_keyw = "PBINARY"
+
   ! Eigen channel analysis with reduced transmission matrix
   INTEGER :: RedTransmB = 1      
   CHARACTER(len=10), PARAMETER :: RedTransmB_keyw = "RTM_BEG" 
@@ -645,6 +649,8 @@ CONTAINS
        LDOSOutput = .TRUE.
     CASE ( LeadDOS_keyw )
        LeadDOS = .TRUE.
+    CASE ( PBinary_keyw )
+       PBinary = .TRUE.
     CASE ( HTransm_keyw )
        HTransm = .TRUE.
     CASE ( Hamilton_keyw )
@@ -1147,6 +1153,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) RedTransmE_keyw, " = ",RedTransmE
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels
     WRITE(unit=logfile,fmt=*) LeadDOS_keyw, " = ", LeadDOS
+    WRITE(unit=logfile,fmt=*) PBinary_keyw, " = ", PBinary
     WRITE(unit=logfile,fmt=*) PrtHatom_keyw, " = ", PrtHatom
 
     IF (NAtomEl(1)/=0 .and. (NAtomEl(2)==0.and.ElType(2)/='GHOST')) THEN

@@ -46,6 +46,7 @@
   public :: EvaluationOn, SwitchOnEvaluation
   public :: SwitchOnChargeCntr, SwitchOffChargeCntr, SwitchOffSpinLock, SwitchOnSpinLock,OnSigma
   public :: InitDevice, ReadDensMat, ReadFockMat, CleanUpDevice, InitElectrodes, Transport
+  public :: WriteDensMatFile
   public :: ChargeCntr,Electrodes
 
 
@@ -113,6 +114,9 @@
 
   ! Whether device Hamiltonain has been orthogonalized
   logical :: HDOrtho = .false.
+  ! Density-matrix files: elements below PZeroTol are not stored; binary files start with PBinMagic
+  real*8, parameter :: PZeroTol = 1.0d-12
+  character(len=8), parameter :: PBinMagic = 'ANTPBIN1'
   
 !!$OMP THREADPRIVATE(shift)
   contains
@@ -428,6 +432,9 @@
     implicit none
     
     integer :: norb, ni, nj, isp, n, iatom, jatom, is, i, j, ii, jj, AOStart, AO_BEG, AO_END, iorb, jorb, iato, jato
+    integer :: ne, ient
+    integer, dimension(:), allocatable :: eis, eii, ejj, eiat, eior, ejat, ejor
+    real*8, dimension(:), allocatable :: eval
     real*8 :: density, TrP, xxx
     real*8, dimension(NSpin,NAOrbs,NAOrbs) :: PDMod
     real*8, dimension(NAOrbs,NAOrbs) :: PDAux
@@ -448,25 +455,25 @@
     PD=0.0d0
     PDMod=0.0d0
 
-    open(ifu_dm,file=densitymatrix,status='old')
-    read(ifu_dm,*,end=21) shift
-    shift = -shift
-    do i=1,2*NAOrbs*NAOrbs
-       read(ifu_dm,*,end=21)is,ii,jj,density
-       PDMod(is,ii,jj)=density
-       PDMod(is,jj,ii)=density
+    ! Text (P.<job>.dat) or binary (P.<job>.bin) file, see ReadDensMatFile;
+    ! elements not in the file are zero
+    call ReadDensMatFile( densitymatrix, xxx, ne, eis, eii, ejj, eval, eiat, eior, ejat, ejor )
+    shift = -xxx
+    do ient=1,ne
+       if( eis(ient) > NSpin .or. eii(ient) > NAOrbs .or. ejj(ient) > NAOrbs ) cycle
+       PDMod(eis(ient),eii(ient),ejj(ient))=eval(ient)
+       PDMod(eis(ient),ejj(ient),eii(ient))=eval(ient)
     end do
- 21 close (ifu_dm)
 
     if (PFix) then
        write(ifu_log,*) "-------------------------------------------------------------------------------------------"
        write(ifu_log,*) "  ... and using supplementary density matrix from file  ", densitymatrixx
        write(ifu_log,*) "-------------------------------------------------------------------------------------------"
        if (NFix == 0) print *,'Warning ... NFix = 0'
-       open(ifu_dmx,file=densitymatrixx,status='old')
-       read(ifu_dmx,*) xxx   
-       do norb=1,8*NAOrbs*NAOrbs
-          read(ifu_dmx,*,end=22)is,ni,nj,density,iato,iorb,jato,jorb
+       call ReadDensMatFile( densitymatrixx, xxx, ne, eis, eii, ejj, eval, eiat, eior, ejat, ejor )
+       do ient=1,ne
+          is=eis(ient); ni=eii(ient); nj=ejj(ient); density=eval(ient)
+          iato=eiat(ient); iorb=eior(ient); jato=ejat(ient); jorb=ejor(ient)
           do isp=1,NSpin
              i=0
              do iAtom=1,GetNAtoms()
@@ -498,7 +505,6 @@
 11           end do
           end do
        end do
-22     close(ifu_dmx)
        
     end if
   
@@ -597,6 +603,168 @@
     PRINT *, "--------------------------------"
        
   end subroutine ReadDensMat
+
+  !*************************************************************************
+  !* Density-matrix files P.<job>.dat (text) and P.<job>.bin (binary)      *
+  !*                                                                       *
+  !* Both hold the shift of the device Hamiltonian and the lower triangle  *
+  !* of the density matrix of each spin, without the elements smaller than *
+  !* PZeroTol in magnitude (they are read as zero).                        *
+  !* Text: the shift, then one line per element: spin, i, j, P(i,j) and    *
+  !* the atom and orbital-within-atom of i and j.                          *
+  !* Binary (keyword PBINARY; stream, native byte order, 64-bit integers): *
+  !* the 8 characters 'ANTPBIN1', the shift, the number of spins and of    *
+  !* orbitals, the atom and the orbital-within-atom of each orbital, and   *
+  !* for each spin the number of stored elements, a bit mask over the      *
+  !* lower triangle (i = 1..N, j = 1..i, bit k-1 of word (k-1)/64+1 for    *
+  !* the k-th element) and the stored values in full double precision.     *
+  !*************************************************************************
+  subroutine WriteDensMatFile( fname, binary, shift0, D, nsp, norbs, iatom, iorbat )
+    implicit none
+    character(len=*), intent(in) :: fname
+    logical, intent(in) :: binary
+    real*8, intent(in) :: shift0
+    real*8, dimension(:,:,:), intent(in) :: D
+    integer, intent(in) :: nsp, norbs
+    integer, dimension(:), intent(in) :: iatom, iorbat
+    integer :: is, i, j
+    integer(8) :: k, nnz, ntri, nw
+    integer(8), dimension(:), allocatable :: mask
+    real*8, dimension(:), allocatable :: vals
+
+    if( .not. binary )then
+       open(ifu_dm,file=fname,status='replace')
+       write(ifu_dm,*) shift0
+       do is=1,nsp
+          do i=1,norbs
+             do j=1,i
+                if( abs(D(is,i,j)) >= PZeroTol ) &
+                     write(ifu_dm,'(i2,2i6,e18.10,i5,i6,i5,i6)') is,i,j,D(is,i,j),iatom(i),iorbat(i),iatom(j),iorbat(j)
+             end do
+          end do
+       end do
+       close(ifu_dm)
+       return
+    end if
+
+    ntri = int(norbs,8)*int(norbs+1,8)/2
+    nw = (ntri+63)/64
+    allocate( mask(nw), vals(ntri) )
+    open(ifu_dm,file=fname,access='stream',form='unformatted',status='replace')
+    write(ifu_dm) PBinMagic
+    write(ifu_dm) shift0, int(nsp,8), int(norbs,8)
+    write(ifu_dm) (int(iatom(i),8),i=1,norbs), (int(iorbat(i),8),i=1,norbs)
+    do is=1,nsp
+       mask = 0
+       nnz = 0
+       k = 0
+       do i=1,norbs
+          do j=1,i
+             k = k+1
+             if( abs(D(is,i,j)) >= PZeroTol )then
+                mask((k-1)/64+1) = ibset(mask((k-1)/64+1),int(mod(k-1,64_8)))
+                nnz = nnz+1
+                vals(nnz) = D(is,i,j)
+             end if
+          end do
+       end do
+       write(ifu_dm) nnz
+       write(ifu_dm) mask
+       write(ifu_dm) vals(1:nnz)
+    end do
+    close(ifu_dm)
+    deallocate( mask, vals )
+  end subroutine WriteDensMatFile
+
+  !*************************************************************************
+  !* Read a density-matrix file written by WriteDensMatFile, text or       *
+  !* binary (recognized by its first 8 bytes), as a list of ne elements:   *
+  !* spin, i, j, value, and the atom and orbital-within-atom of i and j    *
+  !* (zero in text files without these columns). shift0 is the shift.     *
+  !*************************************************************************
+  subroutine ReadDensMatFile( fname, shift0, ne, eis, eii, ejj, eval, eiat, eior, ejat, ejor )
+    implicit none
+    character(len=*), intent(in) :: fname
+    real*8, intent(out) :: shift0
+    integer, intent(out) :: ne
+    integer, dimension(:), allocatable, intent(out) :: eis, eii, ejj, eiat, eior, ejat, ejor
+    real*8, dimension(:), allocatable, intent(out) :: eval
+    character(len=8) :: magic
+    character(len=256) :: line
+    integer :: ios, is, i, j, n, nlines
+    integer(8) :: ns8, no8, nnz, ntri, nw, k, m
+    integer(8), dimension(:), allocatable :: at8, or8, mask
+    real*8, dimension(:), allocatable :: vals
+    real*8 :: v
+
+    magic = ' '
+    open(ifu_dm,file=fname,access='stream',form='unformatted',status='old',iostat=ios)
+    if( ios /= 0 )then
+       write(ifu_log,*) 'ERROR: cannot open density matrix file ', trim(fname)
+       stop 1
+    end if
+    read(ifu_dm,iostat=ios) magic
+    if( ios == 0 .and. magic == PBinMagic )then
+       read(ifu_dm) shift0, ns8, no8
+       allocate( at8(no8), or8(no8) )
+       read(ifu_dm) at8, or8
+       ntri = no8*(no8+1)/2
+       nw = (ntri+63)/64
+       allocate( mask(nw), vals(ntri) )
+       allocate( eis(ns8*ntri), eii(ns8*ntri), ejj(ns8*ntri), eval(ns8*ntri), &
+            eiat(ns8*ntri), eior(ns8*ntri), ejat(ns8*ntri), ejor(ns8*ntri) )
+       ne = 0
+       do is=1,int(ns8)
+          read(ifu_dm) nnz
+          read(ifu_dm) mask
+          read(ifu_dm) vals(1:nnz)
+          k = 0
+          m = 0
+          do i=1,int(no8)
+             do j=1,i
+                k = k+1
+                if( btest(mask((k-1)/64+1),int(mod(k-1,64_8))) )then
+                   m = m+1
+                   ne = ne+1
+                   eis(ne)=is; eii(ne)=i; ejj(ne)=j; eval(ne)=vals(m)
+                   eiat(ne)=int(at8(i)); eior(ne)=int(or8(i)); ejat(ne)=int(at8(j)); ejor(ne)=int(or8(j))
+                end if
+             end do
+          end do
+       end do
+       close(ifu_dm)
+       deallocate( at8, or8, mask, vals )
+       return
+    end if
+    close(ifu_dm)
+
+    ! Text file: count the element lines, then read them
+    open(ifu_dm,file=fname,status='old')
+    read(ifu_dm,*) shift0
+    nlines = 0
+    do
+       read(ifu_dm,'(A)',iostat=ios) line
+       if( ios /= 0 ) exit
+       if( len_trim(line) > 0 ) nlines = nlines+1
+    end do
+    allocate( eis(nlines), eii(nlines), ejj(nlines), eval(nlines), &
+         eiat(nlines), eior(nlines), ejat(nlines), ejor(nlines) )
+    rewind(ifu_dm)
+    read(ifu_dm,*) shift0
+    ne = 0
+    do n=1,nlines
+       read(ifu_dm,'(A)',iostat=ios) line
+       if( ios /= 0 ) exit
+       if( len_trim(line) == 0 ) cycle
+       ne = ne+1
+       read(line,*,iostat=ios) eis(ne), eii(ne), ejj(ne), eval(ne), eiat(ne), eior(ne), ejat(ne), ejor(ne)
+       if( ios /= 0 )then
+          read(line,*) eis(ne), eii(ne), ejj(ne), eval(ne)
+          eiat(ne)=0; eior(ne)=0; ejat(ne)=0; ejor(ne)=0
+       end if
+    end do
+    close(ifu_dm)
+  end subroutine ReadDensMatFile
 
   !********************************************
   !* Read initial Fock matrix from file F.dat *

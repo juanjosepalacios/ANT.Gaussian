@@ -38,12 +38,13 @@
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg, LDOSOutput,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT, PBinary
   USE constants, ONLY: Hart
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
        SwitchOnEvaluation, SwitchOnSecant, SwitchOffSecant, SwitchOnSpinLock, SwitchOffSpinLock, &
-       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat, ChargeCntr, Electrodes
+       SwitchOnChargeCntr, SwitchOffChargeCntr, transport, CleanUpDevice, SetDevDensMat, ReadFockMat, ChargeCntr, Electrodes, &
+       WriteDensMatFile
 #ifdef G03ROOT
   USE g03Common, ONLY: GetNShell, GetAtm4Sh, Get1stAO4Sh, GetNBasis, GetAN, GetAtmChg, GetAtmCo, GetNAtoms
 #endif
@@ -68,7 +69,9 @@
   INTEGER :: ic, ndim, i, j, info, ii, jj, ispin, acount, AllocErr, ios ,k, iatom, jatom, ntot
   INTEGER, DIMENSION(MaxAtm) :: NAO
 
-  CHARACTER(len=50), SAVE :: densitymatrix, fockmatrix
+  CHARACTER(len=50), SAVE :: densitymatrix, fockmatrix, densread
+  LOGICAL :: fexist
+  INTEGER, DIMENSION(NBasis) :: AtomOfAO, AOInAtom
 
   INTEGER, SAVE :: isw, NCycLeadsOn, NSpin
   INTEGER, SAVE :: ntt, len
@@ -196,8 +199,17 @@
      IF (Mulliken) OPEN(ifu_mul,file='Q.'//trim(jobname)//'.dat',status='unknown')
      IF (LDOSOutput) OPEN(ifu_dos,file='DOS.'//trim(jobname)//'.dat',status='unknown')
 
-     ! Creating density matrix file name
-     densitymatrix='P.' // trim(jobname) // '.dat'
+     ! Density matrix files: written as P.<job>.bin with PBINARY, else P.<job>.dat;
+     ! a restart reads the file of the selected format, or else the other one
+     if( PBinary )then
+        densitymatrix='P.' // trim(jobname) // '.bin'
+        densread='P.' // trim(jobname) // '.dat'
+     else
+        densitymatrix='P.' // trim(jobname) // '.dat'
+        densread='P.' // trim(jobname) // '.bin'
+     end if
+     inquire(file=densitymatrix,exist=fexist)
+     if( fexist ) densread=densitymatrix
      ! Creating Fock matrix file name
      fockmatrix='F.' // trim(jobname) // '.dat'
      !
@@ -251,7 +263,7 @@
      CLOSE(ifu_xyz)
 
      if(FMixing)OPEN(ifu_fm,file=fockmatrix,iostat=ios,status='old')
-     if(.not.FMixing)OPEN(ifu_dm,file=densitymatrix,iostat=ios,status='old')
+     if(.not.FMixing)OPEN(ifu_dm,file=densread,iostat=ios,status='old')
      IF (ios /= 0) THEN
         FInit=.false.
      ELSE
@@ -273,7 +285,7 @@
               end DO
            end DO
         else
-           CALL ReadDensMat(densitymatrix)        
+           CALL ReadDensMat(densread)        
            !
            ! Transform to triangular form
            !
@@ -573,26 +585,17 @@
      ENDDO
      NAO(GetAtm4Sh(GetNShell()))=GetNBasis()-ntot
 
-     ! Write density matrix to file P.' // trim(jobname) // '.dat
+     ! Write density matrix to file P.<job>.dat, or P.<job>.bin with PBINARY
      if (NCycLeadsOn  < 1000) then
-        OPEN(ifu_dm,file=densitymatrix,status='unknown')
-        WRITE(ifu_dm,*)DevShift()
-        DO ispin=1,NSpin
-           i=0
-           do iAtom=1,GetNAtoms()
-              do ii=1,NAO(iAtom)
-                 i=i+1
-                 j=0
-                 do jAtom=1,GetNAtoms() 
-                    do jj=1,NAO(jAtom)
-                       j=j+1
-                       if (i >= j) WRITE(ifu_dm,'(i2,2i6,e18.10,i5,i6,i5,i6)')ispin,i,j,D(ispin,i,j),iAtom,ii,jAtom,jj
-                    end do
-                 end do
-              end do
+        i=0
+        do iAtom=1,GetNAtoms()
+           do ii=1,NAO(iAtom)
+              i=i+1
+              AtomOfAO(i)=iAtom
+              AOInAtom(i)=ii
            end do
         end do
-        close(ifu_dm)
+        CALL WriteDensMatFile( densitymatrix, PBinary, DevShift(), D, NSpin, NBasis, AtomOfAO, AOInAtom )
      end if
      
      if (NCycLeadsOn == 1 .and. PFix .and. .not. FInit) then
