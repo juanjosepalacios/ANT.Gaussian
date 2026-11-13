@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## 3.0.0 - 2026-11-13
+
+- Version 3.0.0. The device Green's functions are several times cheaper:
+  contour integration over single points, OpenBLAS in the NVIDIA build and
+  a restricted S^1/2 Sigma S^1/2 bring the 60-atom Al example from 135 s to
+  42 s on 8 cores and from 570 s to 210 s on 1, with the same results; the
+  SOC and bias integrations and the lesser Green's function follow (Pt9
+  SOC-small 356 -> 119 s, Al9 at 1 V 193 -> 44 s). Bethe-lattice
+  parameters from the Papaconstantopoulos handbook for every element of
+  the examples, a fix of the energy unit of parameter sets read after
+  another, the binary density-matrix format `PBINARY`, the single-s Au set
+  `FCC-s`, and the examples rerun with the new parameters.
 
 - Remove the Au set `lsda-6s` (BL079, 1 orbital, Hartree, with an
   overlap) in favour of `FCC-s`. The inputs that used it now select
@@ -117,14 +128,6 @@
   log (193 -> 63 s on 4 threads), and Pt9 SOC-small at 0.5 V agrees with
   the code before these changes to all printed digits (666 -> 336 s on 4
   threads).
-
-## 3.0.0 - 2026-11-13
-
-- Version 3.0.0: the device Green's functions are several times cheaper.
-  With the three changes below (contour integration over single points,
-  OpenBLAS in the NVIDIA build, restricted S^1/2 Sigma S^1/2), the 60-atom
-  Al example runs in 42 s instead of 135 s on 8 cores and in 210 s instead
-  of 570 s on 1, with the same results.
 
 - Restrict the transformation of the Bethe-lattice self-energies to the
   non-orthogonal basis, S^1/2 Sigma S^1/2, to the rows and columns of
