@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased
+
+- Compute the lesser Green's function (`glesser`, `glesser_SOC`) from the
+  low-rank couplings: Gamma = i(Sigma - Sigma^+) is non-zero only on the
+  orbitals C of the atoms attached to the electrode, or equals
+  S^1/2(:,C) Gamma_C S^1/2(C,:) after the transformation to the
+  non-orthogonal basis, so G Gamma G^+ = W Gamma_C W^+ with the thin
+  W = G S^1/2(:,C) (or the columns C of G), instead of four full complex
+  matrix products per point; an electrode outside its bias window is
+  skipped. `CompSelfEnergies` takes an optional `raw` to return the
+  self-energies before the transformation, and `SigmaNonOrthoOn` decides
+  it in one place. Al9 dzp-Papacon-bias at 1 V: same results, 63 -> 44 s
+  on 4 threads; Pt9 SOC-small at 0.5 V: same results to all printed digits.
+
+- Parallelize the other density-matrix integrations as `IntCompPlane`:
+  `IntCompPlane_SOC`, `IntRealAxis` (bias window) and `IntRealAxis_SOC`
+  now evaluate one quadrature point per OpenMP iteration and the centre
+  point with the first doubling levels in one parallel loop, with the
+  stopping tests applied level by level as before. The four routines
+  share the point generator `GCNestedPoints` (which also fixes the
+  out-of-bounds writes of the abscissa arrays at the point limit in the
+  three routines), `GCSpecLevels` and, for the complex-matrix ones, the
+  evaluator `IntDensityPoints`. Fix the imaginary-charge stopping test of
+  `IntRealAxis_SOC`, which used `CH - qi` instead of `CHI - qi`.
+  Same results as before: Pt9 SOC-small reproduces its example log
+  (356 -> 119 s on 8 threads), Al9 dzp-Papacon-bias at 1 V its example
+  log (193 -> 63 s on 4 threads), and Pt9 SOC-small at 0.5 V agrees with
+  the code before these changes to all printed digits (666 -> 336 s on 4
+  threads).
+
 ## 3.0.0 - 2026-11-13
 
 - Version 3.0.0: the device Green's functions are several times cheaper.

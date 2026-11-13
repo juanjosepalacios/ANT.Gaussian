@@ -1697,6 +1697,10 @@
   !* Compute lesser Green's function *
   !*************************************
   subroutine glesser(z,gless)
+    ! Lesser Green's function G< = i*(f_L G Gamma_L G^+ + f_R G Gamma_R G^+),
+    ! with f_L = theta(E-V/2), f_R = theta(E+V/2). The couplings have low rank
+    ! (CouplingBlock), so each term is W Gc W^+ with the thin W = G*B, and a
+    ! term with f = 0 is not computed.
     use parameters, only: eta, biasvoltage, glue
     use constants, only: c_zero, ui, c_one
 #ifdef PGI
@@ -1706,40 +1710,29 @@
     implicit none
     external zgetrf, zgetri, zgemm     
 
-    integer :: i, j, info, error
-    integer, dimension(NAOrbs) :: ipiv
+    integer :: i, j, info, ncl, ncr
+    integer, dimension(NAOrbs) :: ipiv, idxl, idxr
     complex*16 :: work(4*NAOrbs)
+    real*8 :: fl, fr
 
     complex*16, intent(in) :: z
 
     complex*16, dimension(NAOrbs,NAOrbs), intent(out) :: gless
-    complex*16, dimension(:,:), allocatable :: green,gammar,gammal,sigl,sigr,glessR,glessL
+    complex*16, dimension(:,:), allocatable :: green,sigl,sigr,Gcl,Gcr,W
 
-     allocate(glessR(NAOrbs,NAOrbs),glessL(NAOrbs,NAOrbs),green(NAOrbs,NAOrbs),stat=error)
-     if (error /= 0 ) then 
-        print*,"Problems allocating" 
-        stop
-     end if
-     allocate(sigl(NAOrbs,NAOrbs),sigr(NAOrbs,NAOrbs),gammar(NAOrbs,NAOrbs),gammal(NAOrbs,NAOrbs),stat=error)
-     if (error /= 0 ) then 
-        print*,"Problems allocating" 
-        stop
-     end if
-
-    gammar=c_zero
-    gammal=c_zero
+    allocate( green(NAOrbs,NAOrbs), sigl(NAOrbs,NAOrbs), sigr(NAOrbs,NAOrbs) )
     sigr=c_zero
     sigl=c_zero
 
-    call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
+    ! Self-energies in the basis of the electrodes, their couplings, and then
+    ! the self-energies in the basis of the device
+    call CompSelfEnergies( ispin, z, sigl, sigr, 1, raw=.true. )
     sigr=glue*sigr
     sigl=glue*sigl
-    
-    !************************************************************************
-    !c Coupling matrices                                   
-    !************************************************************************
-    gammar=ui*(sigr-conjg(transpose(sigr)))
-    gammal=ui*(sigl-conjg(transpose(sigl)))
+    call CouplingBlock( sigl, ncl, idxl, Gcl )
+    call CouplingBlock( sigr, ncr, idxr, Gcr )
+    if( SigmaNonOrthoOn(1) ) call SigmaToNonOrtho( sigl )
+    if( SigmaNonOrthoOn(2) ) call SigmaToNonOrtho( sigr )
 
     !************************************************************************
     !c Retarded "Green" function
@@ -1756,23 +1749,24 @@
     !************************************************************************
     !* G< (Gless)
     !************************************************************************
+    fl = theta(dble(z)-biasvoltage/2)
+    fr = theta(dble(z)+biasvoltage/2)
+    gless = c_zero
+    if( fl /= 0.d0 .and. ncl > 0 )then
+       allocate( W(NAOrbs,ncl) )
+       call CouplingColumns( green, ncl, idxl, SigmaNonOrthoOn(1), W )
+       call AddWGcW( W, Gcl, fl, gless )
+       deallocate( W )
+    end if
+    if( fr /= 0.d0 .and. ncr > 0 )then
+       allocate( W(NAOrbs,ncr) )
+       call CouplingColumns( green, ncr, idxr, SigmaNonOrthoOn(2), W )
+       call AddWGcW( W, Gcr, fr, gless )
+       deallocate( W )
+    end if
+    gless = ui*gless
 
-     call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,gammal,NAOrbs,green,NAOrbs, &
-          &           c_zero,gless,NAOrbs)
-     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,green,NAOrbs,gless,NAOrbs, &
-          &           c_zero,glessL,NAOrbs)
-     call zgemm('N','C',NAOrbs,NAOrbs,NAOrbs,c_one,gammar,NAOrbs,green,NAOrbs, &
-          &           c_zero,gless,NAOrbs)
-     call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,green,NAOrbs,gless,NAOrbs, &
-          &           c_zero,glessR,NAOrbs)
-
-     gless=ui*(glessL*theta(dble(z)-biasvoltage/2)+glessR*theta(dble(z)+biasvoltage/2))
-
-     deallocate(glessR,glessL,sigl,sigr,gammar,gammal,stat=error)
-     if (error /= 0 ) then 
-        print*,"Problems deallocating" 
-        stop
-     end if
+    deallocate( green, sigl, sigr, Gcl, Gcr )
 
   end subroutine glesser
 
@@ -1780,6 +1774,8 @@
   !* Compute lesser Green's function  with SOC (doubling the matrices) *
   !*********************************************************************
   subroutine glesser_SOC(z,gless)
+    ! As glesser with SOC (doubled matrices): the couplings are block-diagonal
+    ! in spin, so W = [ G(:,up)*B_up | G(:,down)*B_down ] and Gc = diag(Gc_up, Gc_down).
     use parameters, only: eta, glue, biasvoltage
     use constants, only: c_zero, ui, c_one
 #ifdef PGI
@@ -1789,82 +1785,60 @@
     implicit none
     external zgetrf, zgetri, zgemm     
 
-    integer :: i, j, info, omp_get_thread_num, error
+    integer :: i, j, info
     integer, dimension(DNAOrbs) :: ipiv
     complex*16, dimension(4*DNAOrbs) :: work
     complex*16, intent(in) :: z 
-    complex*16, dimension(NAOrbs,NAOrbs) :: sigl1,sigr1
-    complex*16, dimension(NAOrbs,NAOrbs) :: sigl2,sigr2
     complex*16, dimension(DNAOrbs,DNAOrbs), intent(out) :: gless
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: gammar,gammal
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: sigmar,sigmal
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: green,glessL,glessR
+    complex*16, dimension(:,:), allocatable :: sigl1,sigr1,sigl2,sigr2
+    complex*16, dimension(:,:), allocatable :: sigmar,sigmal,green
+    complex*16, dimension(:,:), allocatable :: Gcl1,Gcl2,Gcr1,Gcr2
+    integer :: ncl1,ncl2,ncr1,ncr2
+    integer, dimension(NAOrbs) :: idxl1,idxl2,idxr1,idxr2
+    real*8 :: fl, fr
 
-!   complex*16, dimension(:,:), allocatable :: green,gammar,gammal,sigl,sigr,glessR,glessL
-
-!    allocate(glessR(NAOrbs,NAOrbs),glessL(NAOrbs,NAOrbs),green(NAOrbs,NAOrbs),stat=error)
-!    if (error /= 0 ) then 
-!       print*,"Problems allocating" 
-!       stop
-!    end if
-!    allocate(sigl(NAOrbs,NAOrbs),sigr(NAOrbs,NAOrbs),gammar(NAOrbs,NAOrbs),gammal(NAOrbs,NAOrbs),stat=error)
-!    if (error /= 0 ) then 
-!       print*,"Problems allocating" 
-!       stop
-!    end if
-
-   
-    ! Initilization 
-    green=c_zero
-    gammar=c_zero
-    gammal=c_zero
+    allocate( sigl1(NAOrbs,NAOrbs), sigr1(NAOrbs,NAOrbs), sigl2(NAOrbs,NAOrbs), sigr2(NAOrbs,NAOrbs) )
+    allocate( sigmar(DNAOrbs,DNAOrbs), sigmal(DNAOrbs,DNAOrbs), green(DNAOrbs,DNAOrbs) )
     sigmar=c_zero
     sigmal=c_zero
-
-
     sigr1=c_zero
     sigl1=c_zero
     sigr2=c_zero
     sigl2=c_zero
 
-    call CompSelfEnergies( 1, z, sigl1, sigr1, 1 )
-   
-    if (NSpin == 2) call CompSelfEnergies( 2, z, sigl2, sigr2, 1 )
+    ! Self-energies in the basis of the electrodes, their couplings, and then
+    ! the self-energies in the basis of the device
+    call CompSelfEnergies( 1, z, sigl1, sigr1, 1, raw=.true. )
+    if (NSpin == 2) then
+       call CompSelfEnergies( 2, z, sigl2, sigr2, 1, raw=.true. )
+    else
+       sigl2 = sigl1
+       sigr2 = sigr1
+    end if
     sigr1=glue*sigr1
     sigl1=glue*sigl1
     sigr2=glue*sigr2
     sigl2=glue*sigl2
-    
-    !************************************************************************
-    !c Coupling matrices                                   
-    !************************************************************************
-    if (NSpin == 2) then
-       do i=1,NAOrbs
-       do j=1,NAOrbs
-          sigmar(i,j)=sigr1(i,j)
-          sigmar(i+NAOrbs,j+NAOrbs)=sigr2(i,j)
-          sigmal(i,j)=sigl1(i,j)
-          sigmal(i+NAOrbs,j+NAOrbs)=sigl2(i,j)
-       end do
-       end do
-    else
-       do i=1,NAOrbs
-       do j=1,NAOrbs
-          sigmar(i,j)=sigr1(i,j)
-          sigmar(i+NAOrbs,j+NAOrbs)=sigr1(i,j)
-          sigmal(i,j)=sigl1(i,j)
-          sigmal(i+NAOrbs,j+NAOrbs)=sigl1(i,j)
-       end do
-       end do
+    call CouplingBlock( sigl1, ncl1, idxl1, Gcl1 )
+    call CouplingBlock( sigl2, ncl2, idxl2, Gcl2 )
+    call CouplingBlock( sigr1, ncr1, idxr1, Gcr1 )
+    call CouplingBlock( sigr2, ncr2, idxr2, Gcr2 )
+    if( SigmaNonOrthoOn(1) )then
+       call SigmaToNonOrtho( sigl1 )
+       call SigmaToNonOrtho( sigl2 )
     end if
-
-    gammar=ui*(sigmar-conjg(transpose(sigmar)))
-    gammal=ui*(sigmal-conjg(transpose(sigmal)))
+    if( SigmaNonOrthoOn(2) )then
+       call SigmaToNonOrtho( sigr1 )
+       call SigmaToNonOrtho( sigr2 )
+    end if
+    sigmar(1:NAOrbs,1:NAOrbs) = sigr1
+    sigmar(NAOrbs+1:DNAOrbs,NAOrbs+1:DNAOrbs) = sigr2
+    sigmal(1:NAOrbs,1:NAOrbs) = sigl1
+    sigmal(NAOrbs+1:DNAOrbs,NAOrbs+1:DNAOrbs) = sigl2
 
     !************************************************************************
     !c Retarded "Green" function
     !************************************************************************
-
     do i=1,DNAOrbs
        do j=1,DNAOrbs
           green(i,j)=(z-shift+ui*eta)*S_SOC(i,j)-H_SOC(i,j)-sigmal(i,j)-sigmar(i,j)
@@ -1874,27 +1848,37 @@
     call zgetrf(DNAOrbs,DNAOrbs,green,DNAOrbs,ipiv,info)
     call zgetri(DNAOrbs,green,DNAOrbs,ipiv,work,4*DNAOrbs,info)
 
-
     !************************************************************************
     !* G< (Gless)
     !************************************************************************
+    fl = theta(dble(z)-biasvoltage/2)
+    fr = theta(dble(z)+biasvoltage/2)
+    gless = c_zero
+    if( fl /= 0.d0 ) call AddLead( ncl1, idxl1, Gcl1, ncl2, idxl2, Gcl2, SigmaNonOrthoOn(1), fl )
+    if( fr /= 0.d0 ) call AddLead( ncr1, idxr1, Gcr1, ncr2, idxr2, Gcr2, SigmaNonOrthoOn(2), fr )
+    gless = ui*gless
 
-     call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one,gammal,DNAOrbs,green,DNAOrbs, &
-          &           c_zero,gless,DNAOrbs)
-     call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one,green,DNAOrbs,gless,DNAOrbs, &
-          &           c_zero,glessL,DNAOrbs)
-     call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one,gammar,DNAOrbs,green,DNAOrbs, &
-          &           c_zero,gless,DNAOrbs)
-     call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one,green,DNAOrbs,gless,DNAOrbs, &
-          &           c_zero,glessR,DNAOrbs)
+    deallocate( sigl1, sigr1, sigl2, sigr2, sigmar, sigmal, green, Gcl1, Gcl2, Gcr1, Gcr2 )
 
-     gless=ui*(glessL*theta(dble(z)-biasvoltage/2)+glessR*theta(dble(z)+biasvoltage/2))
+  contains
 
-!    deallocate(glessR,glessL,sigl,sigr,gammar,gammal,stat=error)
-!    if (error /= 0 ) then 
-!       print*,"Problems deallocating" 
-!       stop
-!    end if
+    subroutine AddLead( nc1, idx1, Gc1, nc2, idx2, Gc2, transform, f )
+      integer, intent(in) :: nc1, nc2
+      integer, dimension(:), intent(in) :: idx1, idx2
+      complex*16, dimension(:,:), intent(in) :: Gc1, Gc2
+      logical, intent(in) :: transform
+      real*8, intent(in) :: f
+      complex*16, dimension(:,:), allocatable :: W, Gc
+      if( nc1+nc2 == 0 ) return
+      allocate( W(DNAOrbs,nc1+nc2), Gc(nc1+nc2,nc1+nc2) )
+      Gc = c_zero
+      Gc(1:nc1,1:nc1) = Gc1
+      Gc(nc1+1:nc1+nc2,nc1+1:nc1+nc2) = Gc2
+      call CouplingColumns( green(:,1:NAOrbs), nc1, idx1, transform, W(:,1:nc1) )
+      call CouplingColumns( green(:,NAOrbs+1:DNAOrbs), nc2, idx2, transform, W(:,nc1+1:nc1+nc2) )
+      call AddWGcW( W, Gc, f, gless )
+      deallocate( W, Gc )
+    end subroutine AddLead
 
   end subroutine glesser_SOC
 
@@ -3799,7 +3783,7 @@
   ! ***********************************
   ! Compute Self energies of electrodes
   ! ***********************************
-  subroutine CompSelfEnergies( spin, cenergy, Sigma1, Sigma2, sgn )
+  subroutine CompSelfEnergies( spin, cenergy, Sigma1, Sigma2, sgn, raw )
     use parameters, only: ElType, DD, UD, DU, Overlap
     use BetheLattice, only: CompSelfEnergyBL, LeadBL 
     use OneDLead, only: CompSelfEnergy1D, Lead1D
@@ -3814,7 +3798,14 @@
     complex*16, intent(in) :: cenergy
     complex*16, dimension(:,:),intent(out) :: Sigma1
     complex*16, dimension(:,:),intent(out) :: Sigma2
+    ! raw = .true.: leave the Bethe-lattice self-energies in the basis of the
+    ! electrode (no S^1/2 * Sigma * S^1/2), see SigmaNonOrthoOn
+    logical, intent(in), optional :: raw
+    logical :: transform
     integer :: is, omp_get_thread_num
+
+    transform = .true.
+    if (present(raw)) transform = .not. raw
     
     !Sigma1=(0.0,0.0)
     !Sigma2=(0.0,0.0)
@@ -3830,7 +3821,7 @@
     case( "BETHE" ) 
        call CompSelfEnergyBL( LeadBL(1), is, cenergy, Sigma1, sgn )
        ! transform to non-orthogonal basis
-       if( Overlap < 0.0 .and. .not. HDOrtho )then
+       if( transform .and. SigmaNonOrthoOn(1) )then
           ! Sigma1 -> S^1/2 * Sigma1 * S^1/2
           call SigmaToNonOrtho( Sigma1 )
        endif
@@ -3850,8 +3841,8 @@
     select case( ElType(2) )
     case( "BETHE" )
        call CompSelfEnergyBL( LeadBL(2), is, cenergy, Sigma2, sgn )
-       ! transform to non-orthogonal basis 
-       if( Overlap < 0.0 .and. .not. HDOrtho )then
+       ! transform to non-orthogonal basis
+       if( transform .and. SigmaNonOrthoOn(2) )then
           ! Sigma2 -> S^1/2 * Sigma2 * S^1/2
           call SigmaToNonOrtho( Sigma2 )
        endif
@@ -3862,6 +3853,48 @@
     end select
   end subroutine CompSelfEnergies
 
+
+  ! *************************************************************************
+  ! Whether the self-energy of electrode lead is transformed to the
+  ! non-orthogonal basis of the device, S^1/2 * Sigma * S^1/2
+  ! *************************************************************************
+  logical function SigmaNonOrthoOn( lead )
+    use parameters, only: ElType, Overlap
+    implicit none
+    integer, intent(in) :: lead
+    SigmaNonOrthoOn = ElType(lead) == "BETHE" .and. Overlap < 0.0 .and. .not. HDOrtho
+  end function SigmaNonOrthoOn
+
+  ! *************************************************************************
+  ! Orbitals idx(1:nc) of the rows and columns of Sigma that are not zero
+  ! (for an electrode self-energy, the orbitals of the attached atoms)
+  ! *************************************************************************
+  subroutine SigmaSupport( Sigma, nc, idx )
+    use constants, only: c_zero
+    implicit none
+    complex*16, dimension(:,:), intent(in) :: Sigma
+    integer, intent(out) :: nc
+    integer, dimension(:), intent(out) :: idx
+    integer :: i, j, n
+    logical, dimension(size(Sigma,1)) :: used
+    n = size(Sigma,1)
+    used = .false.
+    do j=1,n
+       do i=1,n
+          if( Sigma(i,j) /= c_zero )then
+             used(i) = .true.
+             used(j) = .true.
+          end if
+       end do
+    end do
+    nc = 0
+    do i=1,n
+       if( used(i) )then
+          nc = nc+1
+          idx(nc) = i
+       end if
+    end do
+  end subroutine SigmaSupport
 
   ! *************************************************************************
   ! Sigma -> S^1/2 * Sigma * S^1/2 (Bethe-lattice self-energy to the
@@ -3880,27 +3913,11 @@
     external zgemm
 
     complex*16, dimension(:,:), intent(inout) :: Sigma
-    integer :: i, j, nc
+    integer :: nc
     integer, dimension(NAOrbs) :: idx
-    logical, dimension(NAOrbs) :: used
     complex*16, dimension(:,:), allocatable :: SigC, SPHc, SPHr, temp
 
-    used = .false.
-    do j=1,NAOrbs
-       do i=1,NAOrbs
-          if( Sigma(i,j) /= c_zero )then
-             used(i) = .true.
-             used(j) = .true.
-          end if
-       end do
-    end do
-    nc = 0
-    do i=1,NAOrbs
-       if( used(i) )then
-          nc = nc+1
-          idx(nc) = i
-       end if
-    end do
+    call SigmaSupport( Sigma, nc, idx )
     if( nc == 0 ) return
 
     allocate( SigC(nc,nc), SPHc(NAOrbs,nc), SPHr(nc,NAOrbs), temp(nc,NAOrbs) )
@@ -3911,6 +3928,80 @@
     call zgemm('N','N',NAOrbs,NAOrbs,nc,c_one,SPHc,NAOrbs,temp,nc,c_zero,Sigma,NAOrbs)
     deallocate( SigC, SPHc, SPHr, temp )
   end subroutine SigmaToNonOrtho
+
+  ! *************************************************************************
+  ! Coupling of an electrode in compact form, from its self-energy Sigma in the
+  ! basis of the electrode (CompSelfEnergies with raw): the orbitals idx(1:nc)
+  ! where Sigma is not zero and Gc = i*(Sigma(C,C) - Sigma(C,C)^+). The full
+  ! coupling matrix is Gamma = B * Gc * B^T, with B = S^1/2(:,C) when the
+  ! self-energy is transformed to the non-orthogonal basis (S^1/2 is real and
+  ! symmetric) and the unit columns of C otherwise.
+  ! *************************************************************************
+  subroutine CouplingBlock( Sigma, nc, idx, Gc )
+    use constants, only: ui
+    implicit none
+    complex*16, dimension(:,:), intent(in) :: Sigma
+    integer, intent(out) :: nc
+    integer, dimension(:), intent(out) :: idx
+    complex*16, dimension(:,:), allocatable, intent(out) :: Gc
+    call SigmaSupport( Sigma, nc, idx )
+    allocate( Gc(nc,nc) )
+    if( nc > 0 ) Gc = ui*(Sigma(idx(1:nc),idx(1:nc)) - conjg(transpose(Sigma(idx(1:nc),idx(1:nc)))))
+  end subroutine CouplingBlock
+
+  ! *************************************************************************
+  ! W = Gcols * B for CouplingBlock: Gcols * S^1/2(:,C) if transform, else the
+  ! columns C of Gcols. Gcols has NAOrbs columns, W has nc.
+  ! *************************************************************************
+  subroutine CouplingColumns( Gcols, nc, idx, transform, W )
+    use constants, only: c_zero, c_one
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
+    implicit none
+    external zgemm
+    complex*16, dimension(:,:), intent(in) :: Gcols
+    integer, intent(in) :: nc
+    integer, dimension(:), intent(in) :: idx
+    logical, intent(in) :: transform
+    complex*16, dimension(:,:), intent(out) :: W
+    complex*16, dimension(:,:), allocatable :: SPHc
+    integer :: n
+    if( nc == 0 ) return
+    n = size(Gcols,1)
+    if( transform )then
+       allocate( SPHc(NAOrbs,nc) )
+       SPHc = SPH(:,idx(1:nc))
+       call zgemm('N','N',n,nc,NAOrbs,c_one,Gcols,n,SPHc,NAOrbs,c_zero,W,n)
+       deallocate( SPHc )
+    else
+       W(:,1:nc) = Gcols(:,idx(1:nc))
+    end if
+  end subroutine CouplingColumns
+
+  ! *************************************************************************
+  ! acc = acc + f * W * Gc * W^+ (W: n x m, Gc: m x m)
+  ! *************************************************************************
+  subroutine AddWGcW( W, Gc, f, acc )
+    use constants, only: c_zero, c_one
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
+    implicit none
+    external zgemm
+    complex*16, dimension(:,:), intent(in) :: W, Gc
+    real*8, intent(in) :: f
+    complex*16, dimension(:,:), intent(inout) :: acc
+    complex*16, dimension(:,:), allocatable :: T
+    integer :: n, m
+    n = size(W,1)
+    m = size(Gc,1)
+    if( m == 0 .or. f == 0.d0 ) return
+    allocate( T(n,m) )
+    call zgemm('N','N',n,m,m,c_one,W,n,Gc,m,c_zero,T,n)
+    call zgemm('N','C',n,n,m,dcmplx(f,0.d0),T,n,W,n,c_one,acc,n)
+    deallocate( T )
+  end subroutine AddWGcW
 
 
   !
@@ -4192,117 +4283,204 @@
 !        F(): External function to be integrated.                              c
 !        CH:  The value of the integral. Interval [-1,1]                       c
 !ccccccccccccccccccccccccccccccc
+  !*************************************************************************
+  ! Points of the nested Gauss-Chebyshev quadrature of the second kind used by
+  ! the density-matrix integrations (IntCompPlane, IntCompPlane_SOC,
+  ! IntRealAxis, IntRealAxis_SOC), in the transformed variable x of [-1,1].
+  ! Point 1 is the centre (x = 0, weight 1); level lev = 1..NIP adds the pairs
+  ! +x, -x of its 2**(lev-1) new abscissas, with weight sin^4. Level lev is
+  ! used only if the stopping test fails after level lev-1, which gives at
+  ! most 2**(NIP+1)-1 points. first(lev) is the first point of level lev.
+  !*************************************************************************
+  subroutine GCNestedPoints( xpt, wpt, levpt, first )
+    use parameters, only: NIP
+    implicit none
+    real*8, dimension(:), intent(out) :: xpt, wpt
+    integer, dimension(:), intent(out) :: levpt
+    integer, dimension(0:), intent(out) :: first
+    real*8, dimension(2**NIP+1) :: xs, xcc
+    real*8 :: S0, C0, S1, C1, x
+    integer :: n, l, lev, npts
+
+    first(0) = 1
+    npts = 1
+    xpt(1) = 0.d0
+    wpt(1) = 1.d0
+    levpt(1) = 0
+    n = 1
+    S0 = 1
+    C0 = 0
+    do lev=1,NIP
+       first(lev) = npts+1
+       C1 = C0
+       S1 = S0
+       C0 = sqrt((1+C1)*0.5d0)
+       S0 = S1/(C0+C0)
+       xs(1) = S0
+       xcc(1) = C0
+       do l=1,n,2
+          xs(l+2)=xs(l)*C1+xcc(l)*S1
+          xcc(l+2)=xcc(l)*C1-xs(l)*S1
+       end do
+       do l=1,n,2
+          x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
+          npts = npts+1
+          xpt(npts) = x
+          wpt(npts) = xs(l)**4
+          levpt(npts) = lev
+          npts = npts+1
+          xpt(npts) = -x
+          wpt(npts) = xs(l)**4
+          levpt(npts) = lev
+       end do
+       n = n + n + 1
+    end do
+    first(NIP+1) = npts+1
+  end subroutine GCNestedPoints
+
+  !*************************************************************************
+  ! Number of levels of the nested quadrature evaluated together with the
+  ! centre point in one parallel loop: at least 3 (15 points) and enough
+  ! points for all the threads; none on one thread, where it would only add
+  ! work. The levels the stopping test does not reach are discarded.
+  !*************************************************************************
+  integer function GCSpecLevels()
+    use parameters, only: NIP
+    use omp_lib
+    implicit none
+    GCSpecLevels = 0
+    if (omp_get_max_threads() > 1) then
+       GCSpecLevels = 3
+       do while (2**(GCSpecLevels+1)-1 < omp_get_max_threads())
+          GCSpecLevels = GCSpecLevels+1
+       end do
+       GCSpecLevels = min(GCSpecLevels,NIP)
+    end if
+  end function GCSpecLevels
+
+  !*************************************************************************
+  ! Complex-matrix integrands of the density-matrix integrations at the points
+  ! ip1..ip2 in parallel, one point per iteration. kind = 1: gplus0_SOC(sgn)
+  ! (IntCompPlane_SOC), 2: glesser (IntRealAxis), 3: glesser_SOC
+  ! (IntRealAxis_SOC). Each contribution cpt(ip)*G is added to the matrix
+  ! PDL(:,:,min(level,nspec+1)) of its level, and for kind 1 and 3 the real
+  ! and imaginary parts of Tr[contribution*S_SOC] to chlev and chilev.
+  !*************************************************************************
+  subroutine IntDensityPoints(kind,sgn,ip1,ip2,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+    implicit none
+    integer, intent(in) :: kind, sgn, ip1, ip2, nspec
+    complex*16, intent(in) :: Ept(:), cpt(:)
+    integer, intent(in) :: levpt(:)
+    complex*16, intent(inout) :: PDL(:,:,0:)
+    real*8, intent(inout) :: chlev(0:), chilev(0:)
+    integer :: ip, slot, n
+    complex*16 :: tr
+    complex*16, dimension(:,:), allocatable :: green, contrib
+    n = size(PDL,1)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ip,green,contrib,tr,slot)
+    allocate( green(n,n), contrib(n,n) )
+!$OMP DO SCHEDULE(DYNAMIC,1)
+    do ip=ip1,ip2
+       select case( kind )
+       case( 1 )
+          call gplus0_SOC(Ept(ip),green,sgn)
+       case( 2 )
+          call glesser(Ept(ip),green)
+       case( 3 )
+          call glesser_SOC(Ept(ip),green)
+       end select
+       contrib = cpt(ip)*green
+       tr = 0.d0
+       if (kind /= 2) tr = sum(contrib*transpose(S_SOC))
+       slot = min(levpt(ip),nspec+1)
+!$OMP CRITICAL (IntDensity_sum)
+       PDL(:,:,slot) = PDL(:,:,slot) + contrib
+       chlev(levpt(ip)) = chlev(levpt(ip)) + dble(tr)
+       chilev(levpt(ip)) = chilev(levpt(ip)) + dimag(tr)
+!$OMP END CRITICAL (IntDensity_sum)
+    end do
+!$OMP END DO
+    deallocate( green, contrib )
+!$OMP END PARALLEL
+  end subroutine IntDensityPoints
+
 subroutine IntRealAxis(Er,El)
 
-    use constants, only: ui,d_pi,d_zero
+    ! Non-equilibrium density matrix: integral of -i G<(E)/(2 pi) over the bias
+    ! window [Er,El] with the nested Gauss-Chebyshev quadrature (GCNestedPoints).
+    ! The centre point and the first levels are evaluated together in one
+    ! parallel loop; the stopping test, on the real part of every element, is
+    ! applied level by level and the levels it does not reach are discarded.
+
+    use constants, only: ui,d_pi,d_zero,c_zero
     use parameters, only: PAcc, NIP 
-!   USE IFLPORT
-    use omp_lib
+    implicit none
    
     real*8,intent(in) :: Er,El
-    real*8, dimension(2**NIP-1) :: xs,xcc
-    complex*16, dimension(NAOrbs,NAOrbs) :: green
-    complex*16, dimension(NAOrbs,NAOrbs) :: greenp,greenm 
+    real*8, dimension(2**(NIP+1)-1) :: xpt, wpt
+    complex*16, dimension(2**(NIP+1)-1) :: Ept, cpt
+    integer, dimension(2**(NIP+1)-1) :: levpt
+    integer, dimension(0:NIP+1) :: first
+    real*8, dimension(0:NIP) :: chlev, chilev
+    complex*16, dimension(:,:,:), allocatable :: PDL
     complex*16, dimension(NAOrbs,NAOrbs) :: p,q
-    complex*16, dimension(NAOrbs,NAOrbs) :: PDP
-    complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,chunk,M,MM
-    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq
+    integer :: n,i,j,ip,lev,nspec,M,MM
+    real*8 :: rchp,rchq,achq
+    logical :: more
 
-    pi=d_pi
+    call GCNestedPoints( xpt, wpt, levpt, first )
+    do ip=1,first(NIP+1)-1
+       Ept(ip) = edex3(El,Er,xpt(ip))
+       cpt(ip) = -ui*wpt(ip)/(2*d_pi)
+    end do
 
-! Initializing M, n, S0, C0, CH and p
+    nspec = GCSpecLevels()
+    allocate( PDL(NAOrbs,NAOrbs,0:nspec+1) )
+    PDL = c_zero
+    chlev = d_zero
+    chilev = d_zero
+    call IntDensityPoints(2,1,first(0),first(nspec+1)-1,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+    PDOUT(ispin,:,:) = PDL(:,:,0)
+    p = PDOUT(ispin,:,:)
 
     n = 1
-    S0=1
-    C0=0
-    E0=edex3(El,Er,d_zero)
-    call glesser(E0,green)
-    do i=1,NAOrbs
-       do j=1,NAOrbs
-          PDOUT(ispin,i,j) = -ui*green(i,j)/(2*pi)
-          p(i,j) = PDOUT(ispin,i,j)
-        enddo
-    enddo
-! Computing the (2n+1) points quadrature formula ...
-! ... updating q, p, C1, S1, C0, S0, s and c
-1   continue
-    do i=1,NAOrbs
-       do j=1,NAOrbs
-          q(i,j) = p(i,j) + p(i,j)
-          p(i,j) = PDOUT(ispin,i,j) + PDOUT(ispin,i,j)
-       enddo
-    enddo
-    C1 = C0
-    S1 = S0
-    C0 = sqrt((1+C1)*0.5d0)
-    S0 = S1/(2*C0)
-    !s = S0
-    !cc = C0
-    xs(1) = S0
-    xcc(1) = C0
-    do l=1,n,2
-       xs(l+2)=xs(l)*C1+xcc(l)*S1
-       xcc(l+2)=xcc(l)*C1-xs(l)*S1
-    end do
-! ... computing F() at the new points
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp,chunk)
-      PDP=d_zero
-      chunk=max(((n+1)/2)/omp_get_num_threads(),1)
-     !chunk=1
-!$OMP DO SCHEDULE(STATIC,chunk)
-      do l=1,n,2
-         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-         Em=edex3(El,Er,-xx)
-         Ep=edex3(El,Er,xx)
-!!$OMP  PARALLEL DEFAULT(SHARED)
-!!$OMP  SECTIONS
-!!$OMP  SECTION
-           call glesser(Em,greenm)
-!!$OMP  SECTION
-           call glesser(Ep,greenp)
-!!$OMP  END SECTIONS
-!!$OMP  END PARALLEL
-         do i=1,NAOrbs
-            do j=1,NAOrbs
-              pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
-            enddo
-         enddo
-      enddo
-!$OMP END DO NOWAIT
-!$OMP CRITICAL
-       do i = 1,NAOrbs
-          do j = 1,NAOrbs
-             PDOUT(ispin,i,j)=PDOUT(ispin,i,j)+PDP(i,j)
+    lev = 0
+    do
+       q = p + p
+       p = PDOUT(ispin,:,:) + PDOUT(ispin,:,:)
+       lev = lev+1
+       if (lev > nspec) then
+          PDL(:,:,nspec+1) = c_zero
+          call IntDensityPoints(2,1,first(lev),first(lev+1)-1,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+          PDOUT(ispin,:,:) = PDOUT(ispin,:,:) + PDL(:,:,nspec+1)
+       else
+          PDOUT(ispin,:,:) = PDOUT(ispin,:,:) + PDL(:,:,lev)
+       end if
+       ! ... replacing n by 2n+1
+       n = n + n + 1
+       ! Stopping?
+       more = .false.
+       if (n.le.(2**NIP-1)) then
+          do j=1,NAOrbs
+             do i=1,NAOrbs
+                rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
+                rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
+                if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) more = .true.
+             end do
           end do
-       end do
-!$OMP END CRITICAL
-!$OMP END PARALLEL
+       end if
+       if (.not. more) exit
+    end do
+    deallocate( PDL )
 
-! ... replacing n by 2n+1
-      n = n + n + 1
-! Stopping?
-      do i=1,NAOrbs
-         do j=1,NAOrbs
-            rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-           !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
-            rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-           !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
-            if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc.and.n.le.(2**NIP-1)) goto 1
-           !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc.and.n.le.M) goto 1
-         enddo
-      enddo
 ! Test for successfulness and integral final value
       M = 0
       MM = 0
       do i=1,NAOrbs
          do j=1,NAOrbs
             rCHp=dble(PDOUT(ispin,i,j)-p(i,j))
-           !aCHp=dimag(PDOUT(ispin,i,j)-p(i,j))
             rCHq=dble(PDOUT(ispin,i,j)-q(i,j))
-           !aCHq=dimag(PDOUT(ispin,i,j)-q(i,j))
             if (rCHp*rCHp*16.gt.3*(n+1)*abs(rCHq)*PAcc) M = 1
-           !if (aCHp*aCHp*16.gt.3*(n+1)*abs(aCHq)*PAcc) M = 1
             PDOUT(ispin,i,j) = 16*PDOUT(ispin,i,j)/(3*(n+1))
             PDOUT(ispin,i,j) = PDOUT(ispin,i,j)*(El-Er)/2
             aCHq=dabs(dimag(PDOUT(ispin,i,j))) ! test for reality of density matrix diagonal elements
@@ -4327,125 +4505,75 @@ end subroutine IntRealAxis
 !ccccccccccccccccccccccccccccccc
 subroutine IntRealAxis_SOC(Er,El)
 
-    use constants, only: ui,d_pi,d_zero
+    ! As IntRealAxis, with SOC (doubled matrices); the stopping test is on the
+    ! real and imaginary parts of the charge Tr[PDOUT_SOC*S_SOC].
+
+    use constants, only: ui,d_pi,d_zero,c_zero
     use parameters, only: PAcc, NIP
-!   USE IFLPORT
-    use omp_lib
+    implicit none
    
     real*8,intent(in) :: Er,El
-    real*8, dimension(2**NIP-1) :: xs,xcc
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: green
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: greenp,greenm 
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: PDP
-    complex*16 :: E0,Em,Ep
-    integer :: n,i,j,l,k,chunk,M
-    real*8 :: pi,S0,c0,rchp,rchq,xp,c1,s1,s,cc,x,xx,achp,achq,CH,q,CHI,xpi,qi
+    real*8, dimension(2**(NIP+1)-1) :: xpt, wpt
+    complex*16, dimension(2**(NIP+1)-1) :: Ept, cpt
+    integer, dimension(2**(NIP+1)-1) :: levpt
+    integer, dimension(0:NIP+1) :: first
+    real*8, dimension(0:NIP) :: chlev, chilev
+    complex*16, dimension(:,:,:), allocatable :: PDL
+    integer :: n,ip,lev,nspec,M
+    real*8 :: xp,CH,q,CHI,xpi,qi
 
-! M on entry: number of integration points. On exit: error flag
+    call GCNestedPoints( xpt, wpt, levpt, first )
+    do ip=1,first(NIP+1)-1
+       Ept(ip) = edex3(El,Er,xpt(ip))
+       cpt(ip) = -ui*wpt(ip)/(2*d_pi)
+    end do
 
-    pi=d_pi
-
-! Initializing M, n, S0, C0, CH and p
-
-    n = 1
-    S0=1
-    C0=0
-    E0=edex3(El,Er,d_zero)
-    call glesser_SOC(E0,green)
-
-    CH = 0.d0
-    CHI = 0.d0
-    do i=1,DNAOrbs
-       do j=1,DNAOrbs
-          PDOUT_SOC(i,j) = -ui*green(i,j)/(2*pi)
-          CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
-          CHI = CHI + DIMAG(PDOUT_SOC(i,j)*S_SOC(j,i))
-       enddo
-    enddo
- !print*,'CH',CH
-! Computing the (2n+1) points quadrature formula ...
-! ... updating q, p, C1, S1, C0, S0, s and c
+    nspec = GCSpecLevels()
+    allocate( PDL(DNAOrbs,DNAOrbs,0:nspec+1) )
+    PDL = c_zero
+    chlev = d_zero
+    chilev = d_zero
+    call IntDensityPoints(3,1,first(0),first(nspec+1)-1,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+    PDOUT_SOC = PDL(:,:,0)
+    CH = chlev(0)
+    CHI = chilev(0)
 
     xp = CH
     xpi = CHI
-1   q = xp + xp
-    qi = xpi + xpi
-    xp = CH + CH
-    xpi = CHI + CHI
- 
-    C1 = C0
-    S1 = S0
-    C0 = sqrt((1+C1)*0.5d0)
-    S0 = S1/(2*C0)
-    !s = S0
-    !cc = C0
-    xs(1) = S0
-    xcc(1) = C0
-    do l=1,n,2
-       xs(l+2)=xs(l)*C1+xcc(l)*S1
-       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    n = 1
+    lev = 0
+    do
+       q = xp + xp
+       qi = xpi + xpi
+       xp = CH + CH
+       xpi = CHI + CHI
+       lev = lev+1
+       if (lev > nspec) then
+          PDL(:,:,nspec+1) = c_zero
+          call IntDensityPoints(3,1,first(lev),first(lev+1)-1,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+          PDOUT_SOC = PDOUT_SOC + PDL(:,:,nspec+1)
+       else
+          PDOUT_SOC = PDOUT_SOC + PDL(:,:,lev)
+       end if
+       CH = CH + chlev(lev)
+       CHI = CHI + chilev(lev)
+       ! ... replacing n by 2n+1
+       n = n + n + 1
+       ! Stopping?
+       if (n.gt.(2**NIP-1)) exit
+       if (.not.((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc .or. &
+            &    (CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc)) exit
     end do
-! ... computing F() at the new points
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,xx,Em,Ep,greenp,greenm,i,j,pdp,chunk)
-      PDP=d_zero
-      chunk=max(((n+1)/2)/omp_get_num_threads(),1)
-     !chunk=1
-!$OMP DO SCHEDULE(STATIC,chunk)
-      do l=1,n,2
-         xx = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-         Em=edex3(El,Er,-xx)
-         Ep=edex3(El,Er,xx)
-!!$OMP  PARALLEL DEFAULT(SHARED)
-!!$OMP  SECTIONS
-!!$OMP  SECTION
-          call glesser_SOC(Em,greenm)
-!!$OMP  SECTION
-          call glesser_SOC(Ep,greenp)
-!!$OMP  END SECTIONS
-!!$OMP  END PARALLEL
-         do i=1,DNAOrbs
-            do j=1,DNAOrbs
-               pdp(i,j) = pdp(i,j)-ui*(greenm(i,j)+greenp(i,j))*xs(l)**4/(2*pi)
-            enddo
-         enddo
-      enddo
-!$OMP END DO NOWAIT
-!$OMP CRITICAL
-      do i = 1,DNAOrbs
-         do j = 1,DNAOrbs
-            PDOUT_SOC(i,j)=PDOUT_SOC(i,j)+PDP(i,j)
-         end do
-      end do
-!$OMP END CRITICAL
-!$OMP END PARALLEL
+    deallocate( PDL )
 
-! ... replacing n by 2n+1
-    n = n + n + 1
- 
-    CH = 0.d0
-    CHI = 0.d0
-    do i=1,DNAOrbs
-       do j=1,DNAOrbs
-          CH = CH + REAL(PDOUT_SOC(i,j)*S_SOC(j,i))
-          CHI = CHI + DIMAG(PDOUT_SOC(i,j)*S_SOC(j,i))
-       end do
-    enddo
- 
-    ! Stopping?
-    if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1)) goto 1
-    if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CH-qi)*PAcc.and.n.le.(2**NIP-1)) goto 1
     ! Test for successfullness and integral final value
     M = 0
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
     if ((CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc) M = 2
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc .and. (CHI-xpi)*(CHI-xpi)*16.gt.3*(n+1)*abs(CHI-qi)*PAcc) M = 3
  
-    do i=1,DNAOrbs
-       do j=1,DNAOrbs
-          PDOUT_SOC(i,j) = 16*PDOUT_SOC(i,j)/(3*(n+1))
-          PDOUT_SOC(i,j) = PDOUT_SOC(i,j)*(El-Er)/2
-       enddo
-    enddo
+    PDOUT_SOC = 16*PDOUT_SOC/(3*(n+1))
+    PDOUT_SOC = PDOUT_SOC*(El-Er)/2
  
     if (M == 0) write(ifu_log,'(A,i5,A)')' Integration of the non-equilibrium density matrix has needed ',n, ' points'
     if (M == 1) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of real part of the non-equilibrium density matrix using up to',n,' points. Please check ...'
@@ -4453,7 +4581,7 @@ subroutine IntRealAxis_SOC(Er,El)
     if (M == 3) write(ifu_log,'(A,i5,A)')' Unsuccessful integration of the non-equilibrium density matrix using up to',n,' points. Please check ...'
  
     return
-  end subroutine IntRealAxis_SOC     
+  end subroutine IntRealAxis_SOC
 
 !ccccccccccccccccccccccccccccccc
 !c    Numerical integration with the GAUSS-CHEBYSHEV quadrature formula of the  c
@@ -4535,23 +4663,23 @@ subroutine IntRealAxis_SOC(Er,El)
 
     use parameters, only: PAcc, NIP, AdaptiveQuad
     use constants, only: d_pi, d_zero, ui
-    use omp_lib
 
     implicit none
 
     real*8,intent(in) :: rrr, bi, Emi, Eq
 
-    ! Gauss-Chebyshev quadrature of the second kind with nested doubling: level 0 is the
-    ! centre point, level lev (1..NIP) adds 2**lev points, and level lev is computed only
-    ! if the stopping test fails after level lev-1 (at most 2**(NIP+1)-1 points).
-    ! The centre point and the first nspec levels are evaluated together in one parallel
-    ! loop over single points, so that the threads are not idle at the low levels; the
-    ! stopping test is then applied level by level as before, and the levels it does not
+    ! Gauss-Chebyshev quadrature of the second kind with nested doubling
+    ! (GCNestedPoints): level 0 is the centre point, level lev (1..NIP) adds
+    ! 2**lev points, and level lev is computed only if the stopping test fails
+    ! after level lev-1 (at most 2**(NIP+1)-1 points). The centre point and the
+    ! first nspec levels are evaluated together in one parallel loop over single
+    ! points, so that the threads are not idle at the low levels; the stopping
+    ! test is then applied level by level as before, and the levels it does not
     ! reach are discarded.
 
-    real*8 :: a,b,Em,S0,C0,x0,er0,der0,ch,xp,q,C1,S1,x,erp,erm
-    integer :: n,l,M,lev,nspec,npts
-    real*8, dimension(2**NIP+1) :: xs,xcc
+    real*8 :: a,b,Em,der0,er,ch,xp,q
+    integer :: n,M,lev,nspec,ip
+    real*8, dimension(2**(NIP+1)-1) :: xpt, wpt
     complex*16, dimension(2**(NIP+1)-1) :: Ept, cpt   ! energy and weight factor of each point
     integer, dimension(2**(NIP+1)-1) :: levpt          ! level of each point
     integer, dimension(0:NIP+1) :: first               ! first point of each level
@@ -4569,55 +4697,14 @@ subroutine IntRealAxis_SOC(Er,El)
     der0 = 0.5d0*(Em-b)
 
     ! Energies and weights of all the points of all the levels
-    x0 = 0.d0
-    er0 = edex3(Em,b,x0)
-    first(0) = 1
-    npts = 1
-    Ept(1) = rrr*exp(ui*er0)-rrr+Eq
-    cpt(1) = a*der0*ui*rrr*exp(ui*er0)
-    levpt(1) = 0
-    n = 1
-    S0 = 1
-    C0 = 0
-    do lev=1,NIP
-       first(lev) = npts+1
-       C1 = C0
-       S1 = S0
-       C0 = sqrt((1+C1)*0.5d0)
-       S0 = S1/(C0+C0)
-       xs(1) = S0
-       xcc(1) = C0
-       do l=1,n,2
-          xs(l+2)=xs(l)*C1+xcc(l)*S1
-          xcc(l+2)=xcc(l)*C1-xs(l)*S1
-       end do
-       do l=1,n,2
-          x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-          erp = 0.5d0*((Em-b)*x + (Em+b))
-          erm = 0.5d0*(-(Em-b)*x + (Em+b))
-          npts = npts+1
-          Ept(npts) = rrr*exp(ui*erp)-rrr+Eq
-          cpt(npts) = a*der0*xs(l)**4*ui*rrr*exp(ui*erp)
-          levpt(npts) = lev
-          npts = npts+1
-          Ept(npts) = rrr*exp(ui*erm)-rrr+Eq
-          cpt(npts) = a*der0*xs(l)**4*ui*rrr*exp(ui*erm)
-          levpt(npts) = lev
-       end do
-       n = n + n + 1
+    call GCNestedPoints( xpt, wpt, levpt, first )
+    do ip=1,first(NIP+1)-1
+       er = edex3(Em,b,xpt(ip))
+       Ept(ip) = rrr*exp(ui*er)-rrr+Eq
+       cpt(ip) = a*der0*wpt(ip)*ui*rrr*exp(ui*er)
     end do
-    first(NIP+1) = npts+1
 
-    ! Levels evaluated together with the centre point: at least 3 (15 points) and enough
-    ! points for all the threads; none on one thread, where it would only add work
-    nspec = 0
-    if (omp_get_max_threads() > 1) then
-       nspec = 3
-       do while (2**(nspec+1)-1 < omp_get_max_threads())
-          nspec = nspec+1
-       end do
-       nspec = min(nspec,NIP)
-    end if
+    nspec = GCSpecLevels()
 
     ! PDL(:,:,0:nspec) hold the levels evaluated together, PDL(:,:,nspec+1) each later level
     allocate(PDL(NAOrbs,NAOrbs,0:nspec+1))
@@ -4706,120 +4793,76 @@ subroutine IntRealAxis_SOC(Er,El)
   !c        The rest of arguments are neeed by the subrtn. gplus                  c
   !ccccccccccccccccccccccccccccccc
   subroutine IntCompPlane_SOC(sgn,rrr,bi,Emi,Eq)
+
+    ! Equilibrium density matrix with SOC (doubled matrices) on the complex
+    ! contour, retarded (sgn = 1) or advanced (sgn = -1), with the nested
+    ! Gauss-Chebyshev quadrature as IntCompPlane: the centre point and the
+    ! first levels in one parallel loop, the stopping test on the charge
+    ! Re Tr[PD_SOC*S_SOC] level by level.
+
     use parameters, only: PAcc, NIP
     use constants, only: d_pi, d_zero, ui, c_zero
-!   USE IFLPORT
-    use omp_lib
-
     implicit none
 
     integer,intent(in) :: sgn
-    integer :: n,i,j,l,k,chunk, M                                       
-
-    real*8 :: a,b,Em,S0,c0,x0,er0,der0,ch,xp,q,c1,s1,s,cc,x,erp,erm
     real*8,intent(in) :: rrr, bi, Emi, Eq
-    real*8, dimension(2**NIP-1) :: xs,xcc
+    real*8, dimension(2**(NIP+1)-1) :: xpt, wpt
+    complex*16, dimension(2**(NIP+1)-1) :: Ept, cpt
+    integer, dimension(2**(NIP+1)-1) :: levpt
+    integer, dimension(0:NIP+1) :: first
+    real*8, dimension(0:NIP) :: chlev, chilev
+    complex*16, dimension(:,:,:), allocatable :: PDL
+    integer :: n,ip,lev,nspec,M
+    real*8 :: a,b,Em,der0,er,ch,xp,q
 
-    complex*16 :: E0,E
-    complex*16, dimension(2) :: EE
-    complex*16, dimension(DNAOrbs,DNAOrbs) :: green,PDP
-    complex*16, dimension(2,DNAOrbs,DNAOrbs) :: greenn
-
-   !M on entry: number of integration points. On exit: error flag
- 
     a = 1.0/(2.0d0*d_pi)
     b = bi
     Em = Emi
-    PD_SOC = c_zero
-    PDP = c_zero
-   !M = (M-1)*0.5
-    n = 1
-    S0 = 1
-    C0 = 0
-    x0 = 0.d0
-    er0 = edex3(Em,b,x0)
     der0 = 0.5d0*(Em-b)
-    E0 = rrr*exp(ui*er0)-rrr+Eq
-       
-    call gplus0_SOC(E0,green,sgn)
+    call GCNestedPoints( xpt, wpt, levpt, first )
+    do ip=1,first(NIP+1)-1
+       er = edex3(Em,b,xpt(ip))
+       Ept(ip) = rrr*exp(ui*er)-rrr+Eq
+       cpt(ip) = a*rrr*exp(ui*er)*der0*wpt(ip)
+    end do
 
-    CH = 0.d0
+    nspec = GCSpecLevels()
+    allocate( PDL(DNAOrbs,DNAOrbs,0:nspec+1) )
+    PDL = c_zero
+    chlev = d_zero
+    chilev = d_zero
+    call IntDensityPoints(1,sgn,first(0),first(nspec+1)-1,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+    PD_SOC = PDL(:,:,0)
+    CH = chlev(0)
 
-    do i = 1,DNAOrbs
-       do j =1,DNAOrbs
-          PD_SOC(i,j)= PD_SOC(i,j) + a*rrr*exp(ui*er0)*green(i,j)*der0
-          CH = CH + real(PD_SOC(i,j)*S_SOC(j,i))
-       enddo
-    enddo
-    
-   !print*,'ch', 16*CH/(3*(n+1))    
-    
     xp = CH
-1   q = xp + xp
-    xp = CH + CH
-    C1 = C0
-    S1 = S0
-    C0 = sqrt((1+C1)*0.5d0)
-    S0 = S1/(C0+C0)
-    xs(1) = S0
-    xcc(1) = C0
-    do l=1,n,2
-       xs(l+2)=xs(l)*C1+xcc(l)*S1
-       xcc(l+2)=xcc(l)*C1-xs(l)*S1
+    n = 1
+    lev = 0
+    do
+       q = xp + xp
+       xp = CH + CH
+       lev = lev+1
+       if (lev > nspec) then
+          PDL(:,:,nspec+1) = c_zero
+          call IntDensityPoints(1,sgn,first(lev),first(lev+1)-1,Ept,cpt,levpt,nspec,PDL,chlev,chilev)
+          PD_SOC = PD_SOC + PDL(:,:,nspec+1)
+       else
+          PD_SOC = PD_SOC + PDL(:,:,lev)
+       end if
+       CH = CH + chlev(lev)
+       ! ... replacing n by 2n+1
+       n = n + n + 1
+       ! Stopping?
+       if (.not.((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1))) exit
     end do
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,x,erp,erm,EE,greenn,i,j,PDP,chunk,k)
-     PDP=c_zero
-     chunk=max(((n+1)/2)/omp_get_num_threads(),1)
-    !chunk=1
-!$OMP DO SCHEDULE(STATIC,chunk)
-    do l=1,n,2
-    !print*,n
-       !write(ifu_log,*)'thread',omp_get_thread_num(),'l=',l
-       x = 1+0.21220659078919378103*xs(l)*xcc(l)*(3+2*xs(l)*xs(l))-dble(l)/(n+1)
-       erp = 0.5d0*((Em-b)*x + (Em+b))
-       erm = 0.5d0*(-(Em-b)*x + (Em+b))
-       EE(1) = rrr*exp(ui*erp)-rrr+Eq
-       EE(2) = rrr*exp(ui*erm)-rrr+Eq
-       do k=1,2
-          call gplus0_SOC(EE(k),greenn(k,:,:),sgn)    
-       end do
-        
-       do i = 1,DNAOrbs
-          do j = 1,DNAOrbs
-             PDP(i,j) = PDP(i,j)+ a*(rrr*exp(ui*erp)*greenn(1,i,j)*der0+rrr*exp(ui*erm)*greenn(2,i,j)*der0)*xs(l)**4
-          end do
-       end do
-    end do
-!$OMP END DO NOWAIT
-!$OMP CRITICAL
-       do i = 1,DNAOrbs
-          do j = 1,DNAOrbs
-             PD_SOC(i,j)=PD_SOC(i,j)+PDP(i,j)                    
-          end do
-       end do
-!$OMP END CRITICAL
-!$OMP END PARALLEL
-    CH = 0.d0
-    do i=1,DNAOrbs
-       do j=1,DNAOrbs
-          CH = CH + real(PD_SOC(i,j)*S_SOC(j,i))
-       end do
-    enddo
-    !print*,'ch', 16*CH/(3*(n+1))
-    ! ... replacing n by 2n+1
-    n = n + n + 1
-    ! Stopping?
-     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc.and.n.le.(2**NIP-1)) goto 1
+    deallocate( PDL )
+
     ! Test for successfullness and integral final value
     M = 0
     if ((CH-xp)*(CH-xp)*16.gt.3*(n+1)*abs(CH-q)*PAcc) M = 1
     CH = 16*CH/(3*(n+1))
-    do i=1,DNAOrbs
-       do j=1,DNAOrbs
-          PD_SOC(i,j) = sgn*16*PD_SOC(i,j)/(3*(n+1))
-       enddo
-    enddo
-   !print*,'ch', CH
+    PD_SOC = sgn*16*PD_SOC/(3*(n+1))
+
     if (M == 0) then 
        if (sgn == 1) write(ifu_log,'(A,I4,A)')' Integration of the retarded density matrix on the complex plane has needed ',n,' points'
        if (sgn == -1) write(ifu_log,'(A,I4,A)')' Integration of the advanced density matrix on the complex plane has needed ',n,' points'
