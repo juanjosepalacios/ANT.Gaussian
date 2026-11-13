@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- New Au Bethe-lattice set `FCC-s` (BL079): one s orbital, orthogonal,
+  es = 0 and sss = -2.4412 eV, fitted on a 12-direction Bethe lattice to
+  the DOS at E_F of a CRYSTAL23 calculation of bulk fcc Au with the
+  1-electron SHF ECP and the 3-primitive s basis of the s-only Au atoms of
+  the examples. Fit record in `BLDAT/fits/Au-FCC-s`. In ANT the electrode
+  DOS matches the fit model to 1e-6 states/eV; Au4-Au-Au--Au4 gives
+  T(E_F) = 1.578 (1.553 with `lsda-6s`).
+
 - Rerun the Mn, Ag9, Au, Pd and Au-benzene-Au examples with the book
   `Papacon` sets (default electrode set) and store their outputs and a
   README per folder, from scratch with ANT 3.0.0. Au9-Au4-Au-Au4-Au9 loses

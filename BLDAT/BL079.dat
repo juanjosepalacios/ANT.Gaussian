@@ -188,3 +188,26 @@ sss =  -8.1363e-02
 ! Overlap parameters
 S_sss =   3.0698e-01 
 ENDSET
+!
+! ****************************************************************************
+! *** FCC-s: one s orbital, fitted to the CRYSTAL23 6s DOS of bulk fcc Au   ***
+! ****************************************************************************
+!
+BEGINSET
+FCC-s
+1 1 1 0
+s
+EV
+! CRYSTAL23 SVWN, fcc Au a = 4.078 A, the 1-electron SHF ECP and 3-primitive s basis of the
+! s-only Au atoms in examples/Au-nanocontacts/Au4-Au-Au--Au4.gjf. 12-direction Bethe lattice,
+! orthogonal, fitted to reproduce the DOS at E_F (BLDAT/fits/Au-FCC-s/README.md).
+ISPIN = 1
+!
+! On-site energy in eV
+!
+es  =   0.0
+!
+! Hopping in eV
+!
+sss =  -2.4412
+ENDSET
