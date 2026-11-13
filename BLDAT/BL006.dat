@@ -2,12 +2,37 @@
 ! C Bethe Lattice parameters
 ! ***************************
 !
-! ***********************************************************
-! *** Papacon TB parameters for valence minimal basis set ***
-! ***********************************************************
+! *******************************************************************
+! *** Papacon: sp nearest-neighbour parameters for carbon, in eV  ***
+! *******************************************************************
 !
 BEGINSET
 Papacon
+4 1 4 0
+s
+p
+EV
+ISPIN = 1
+!
+! On-site energies in eV
+!
+es  =  -8.0
+ep  =   0.0
+!
+! Hoppings in eV
+!
+sss =  -6.0
+sps =   5.0
+pps =   5.0
+ppp =  -3.0
+ENDSET
+!
+! *****************************************************************
+! *** Papacon set of ANT up to 3.0.0 (Ryd), kept as Papacon-old ***
+! *****************************************************************
+!
+BEGINSET
+Papacon-old
 4 1 4 0
 s
 p

@@ -1426,6 +1426,8 @@ contains
 
     BL%Matrix = .false.
 
+    ! Each set starts in Hartree and with spin 1, whatever the set read before
+    call readline( BL, ifu_bl, ios, reset=.true. )
     do 
        call readline( BL, ifu_bl, ios )       
        nline = nline+1
@@ -1446,13 +1448,16 @@ contains
   !
   ! *** read and evaluate a line from parameter file ***
   ! 
-  subroutine readline( BL, inpfile, ios )
+  subroutine readline( BL, inpfile, ios, reset )
     use constants, only: Hart, Ryd
     implicit none
 
     type(TBetheLattice), intent(inout) :: BL
     integer, intent(in) :: inpfile
     integer, intent(inout) :: ios
+    ! reset = .true.: only restore the defaults of a new set (energies in
+    ! Hartree, spin 1), which otherwise carry over from the set read before
+    logical, intent(in), optional :: reset
     
     character(len=1)  :: eqsign
     character(len=1)  :: comment
@@ -1463,6 +1468,15 @@ contains
     real*8, dimension(MaxDim) :: rvec
 
     integer, save :: ispin = 1
+
+    if( present(reset) )then
+       if( reset )then
+          unit = Hart
+          ispin = 1
+          ios = 0
+          return
+       end if
+    end if
 
     ! Jump comment lines
     read (unit=inpfile,fmt=*,iostat=ios), comment

@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Fix the units and spin of Bethe-lattice parameter sets: `readline`
+  kept the energy unit (`RYD`, `EV`) and the `ISPIN` of the set read
+  before, so a set without a unit keyword (Hartree by default) was read
+  in Ry or eV when the other electrode's set gave `RYD` or `EV`, e.g.
+  `lsda-crenbs` facing a `Papacon` electrode. Each set now starts in
+  Hartree and with spin 1. Sets without a unit keyword: BL001 `Papacon`
+  and `hydrophene1-3`, BL013, BL029, BL046 and BL079 `lsda-crenbs`,
+  BL015 `phosphorous`, BL046 `lsda-crenbs-outp` and `lsda-crenbs-dimer`,
+  BL079 `lsda-6s`, BL083 `Papacon`.
+
+- New carbon `Papacon` (BL006): sp nearest-neighbour parameters in eV,
+  es = -8, ep = 0, sss = -6, sps = 5, pps = 5, ppp = -3. The previous set
+  (Ry) is kept as `Papacon-old`. The graphene `nanographene` example uses
+  it for its Bethe-lattice electrode.
+
 - Bethe-lattice parameters from Papaconstantopoulos, Handbook of the Band
   Structure of Elemental Solids, 2nd ed. (2015), for every element of the
   examples: `Papacon` (orthogonal) and `Papacon-nonortho` (with overlaps),
