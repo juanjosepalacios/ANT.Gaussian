@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- NVIDIA build: link the optimized BLAS/LAPACK of the NVIDIA HPC SDK
+  (OpenBLAS, `liblapack_ilp64`/`libblas_ilp64`) instead of compiling the
+  reference routines of `lapack_blas.f`. The libraries are copied into
+  `obj/` with every Fortran symbol renamed to `antnv_*`, so Gaussian's own
+  BLAS/LAPACK in `l502.exe` (util.a, ATLAS) are untouched, and the new
+  `lapack_blas_nv.F90` keeps the module `lapack_blas` with the same
+  routines. `ANTLAPACK = bundled` in `make.nvidia.in` restores the old
+  build. 60-atom Al example: 84 -> 70 s on 8 cores and 569 -> 448 s on
+  1, with the same results; Ni4-Ni-Ni-Ni4 reproduces its example log.
+
 - Parallelize the contour integration of the device density matrix
   (`IntCompPlane`) over single quadrature points instead of pairs, and
   evaluate the centre point and the first doubling levels (15 points, or

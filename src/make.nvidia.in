@@ -15,3 +15,12 @@ GAUSSLIBS= /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/util.a /home/pa
 
 # Linking flags
 LFLAGS= -Bstatic_pgi -lpthread -lm -lc
+
+# BLAS/LAPACK used by ANT (module lapack_blas):
+#   nvhpc   - optimized OpenBLAS of the NVIDIA HPC SDK (64-bit integers, liblapack_ilp64 and
+#             libblas_ilp64), linked under symbols renamed to antnv_* so that they do not
+#             replace Gaussian's own BLAS/LAPACK in l502.exe (needs nm and objcopy)
+#   bundled - the reference routines of lapack_blas.f
+ANTLAPACK = nvhpc
+# Library directory of the NVIDIA HPC SDK (next to the bin directory of the compiler)
+NVHPCLIB = $(abspath $(dir $(shell which $(F90)))../lib)

@@ -26,8 +26,19 @@ BIN=../bin
 
 include make.nvidia.in
 
+# BLAS/LAPACK: renamed copies of the NVIDIA HPC SDK libraries, or the bundled routines
+ifeq ($(ANTLAPACK),nvhpc)
+LAPACKSRC= lapack_blas_nv.f90
+NVLIBS= ../obj/libantnv_lapack.a ../obj/libantnv_blas.a
+NVLINK= -Wl,--start-group $(NVLIBS) -Wl,--end-group
+else
+LAPACKSRC= lapack_blas.f
+NVLIBS=
+NVLINK=
+endif
+
 # use these sources: 
-SRCS= system.c preproc.F constants.f90 messages.f90 util.f90 g09Common.f90 parameters.f90 antcommon.f90 lapack_blas.f numeric.f90 filemaster.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 SpinRotate.f90 MolMod.f90 Zeeman.f90 device.f90 ANT.f90
+SRCS= system.c preproc.F constants.f90 messages.f90 util.f90 g09Common.f90 parameters.f90 antcommon.f90 $(LAPACKSRC) numeric.f90 filemaster.f90 cluster.f90 ortho.f90 correlation.f90 OneDLead.f90 BetheLattice.f90 SpinOrbit.f90 SpinRotate.f90 MolMod.f90 Zeeman.f90 device.f90 ANT.f90
 # use name of parent directory as library name
 PARDIRNAME=$(shell dirname `pwd`)
 LIBNAME=$(shell basename $(PARDIRNAME))
@@ -62,9 +73,17 @@ $(LIB): $(OBJS)
 	- rm  $(LIB)
 	$(AR) crv $(LIB) $(OBJS)
 
+# NVIDIA HPC SDK BLAS/LAPACK with every Fortran symbol (name ending in _) renamed to antnv_*
+../obj/antnv.map:
+	nm -g --defined-only $(NVHPCLIB)/libblas_ilp64.a $(NVHPCLIB)/liblapack_ilp64.a | awk 'NF==3 && $$3 ~ /_$$/ {print $$3" antnv_"$$3}' | sort -u > $@
+../obj/libantnv_blas.a: ../obj/antnv.map
+	objcopy --redefine-syms=../obj/antnv.map $(NVHPCLIB)/libblas_ilp64.a $@
+../obj/libantnv_lapack.a: ../obj/antnv.map
+	objcopy --redefine-syms=../obj/antnv.map $(NVHPCLIB)/liblapack_ilp64.a $@
+
 # rule for l502.exe
-$(L502): $(OBJS)
-	$(F90) $(CFLAGS) -o $(L502) $(BIN)/ml502.o $(BIN)/l502.a $(BIN)/bdam1.o $(BIN)/caldsu.o $(GAUSSLIBS) $(LIB) $(LFLAGS) 
+$(L502): $(OBJS) $(NVLIBS)
+	$(F90) $(CFLAGS) -o $(L502) $(BIN)/ml502.o $(BIN)/l502.a $(BIN)/bdam1.o $(BIN)/caldsu.o $(GAUSSLIBS) $(LIB) $(NVLINK) $(LFLAGS) 
 
 	chmod o-rwx $(L502)
 
@@ -75,4 +94,5 @@ clean:
 	-rm ./*.f90
 	-rm $(BIN)/l502.exe
 	-rm ../obj/*.o
+	-rm ../obj/antnv.map ../obj/libantnv_*.a
 	-rm ../lib/*.a
