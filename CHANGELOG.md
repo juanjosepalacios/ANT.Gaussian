@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the 60-atom Al16-Al9-Al4-Al-Al-Al4-Al9-Al16 example (LANL2DZ on the
+  28 inner atoms, `Papacon`, `conver=6`): T(E_F) = 2.007, and a timing
+  study on 1-8 cores (570, 320, 189 and 135 s; about 13% serial work).
+
 - Replace the Al `Papacon` set in BL013.dat, of unknown origin, with the
   orthogonal 2-center fit of Papaconstantopoulos, Handbook of the Band
   Structure of Elemental Solids, 2nd ed. (2015), Table 7.10, and add the
