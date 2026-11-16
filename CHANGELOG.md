@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+- Device Fermi search (default DEVMULLER chain): Muller and the secant
+  now see the charge through `device::BoundedCharge`, which never
+  evaluates it outside the device window [max(EMin,-EFMAX),EMax]. The
+  first trial point outside is logged (`Device root search tried shift
+  ...`) and the chain falls through to the next method. Before, a
+  first-cycle secant step on Au chains with 1-atom 1D-lead units
+  (`NATPC1 = NATPC2 = 1`) reached a shift of -2e25 eV, where the 1D Dyson
+  solver failed and ANT died with a segmentation fault. A new case in
+  `tests/test_device_fermi.py` checks the guard; `BRENT.md` describes it.
+  Committed in 1db8bd8 together with the examples below.
+
+- `examples/Au-chain` renamed to `examples/Au-chains`; the Au-Au-Au-Au and
+  Au-Au-Au-Au-Au-Au chains removed. Au8-chain has five new 3.0.0 runs:
+  minimal spd and LANL2DZ (`NATPC = 1`, `NPC = 3`; T(E_F) = 1.971 and
+  1.967) and one s orbital per atom with `NATPC = 1` (`NPC = 2`, 3) and
+  `NATPC = 2` (`NPC = 1`). The 2-atom lead unit opens a gap just below
+  E_F in the one-orbital chain (T(E_F) = 0.143 instead of 1.98).
+
 ## 3.0.0 - 2026-11-13
 
 - Version 3.0.0. The device Green's functions are several times cheaper:
