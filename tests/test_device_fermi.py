@@ -10,7 +10,7 @@ def extract(s,name):
 f=(p/'tests/device_fermi_fixture.f90.in').read_text()
 n=(p/'src/numeric.F90').read_text();s=(p/'src/device.F90').read_text()
 f=f.replace('@NUMERIC@','\n'.join(extract(n,x) for x in ['BracketRoot','BrentRoot','MULLER','SECANT','Bisec']))
-f=f.replace('@DEVICE@','\n'.join(extract(s,x) for x in ['SolveDeviceFermi','SolveDeviceFermiMuller','CompDensMat','CompDensMat_SOC','CompDensMat2','CompDensMat2_SOC']))
+f=f.replace('@DEVICE@','\n'.join(extract(s,x) for x in ['SolveDeviceFermi','SolveDeviceFermiMuller','BoundedCharge','CompDensMat','CompDensMat_SOC','CompDensMat2','CompDensMat2_SOC']))
 fc=os.environ.get('FC','pgf90')
 flags=['-i8','-r8','-recursive','-check','bounds','-qopenmp','-O0'] if Path(fc).name in ('ifx','ifort') else ['-i8','-r8','-Mrecursive','-Mbounds','-mp','-O0']
 with tempfile.TemporaryDirectory() as d:

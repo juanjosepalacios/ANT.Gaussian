@@ -17,6 +17,10 @@ module model
  real*8 :: EMin=-10d0,EMax=10d0,shift=2d0,shiftup=1d0,shiftdown=-1d0
  real*8 :: QAlpha,QBeta,Q_SOC,density(2)=0d0,last=0d0,FermiSteps(4,2)=-1d0
  logical :: SPINLOCK=.false.
+ procedure(real*8), pointer :: BoundCharge => null()
+ real*8 :: BoundLower,BoundUpper
+ logical :: BoundEscaped=.false.
+ integer :: BoundCalls=0
 contains
 @DEVICE@
  real*8 function QTot(x) result(q)
@@ -28,6 +32,12 @@ contains
  if(mode==3) then
   q=-1d0
   if(x>0.123456789123d0) q=1d0
+ endif
+ ! Saturated charge: Muller and secant step far outside [EMin,EMax], where
+ ! the real charge (lead self-energies) cannot be evaluated
+ if(mode==4) then
+  if(x<EMin.or.x>EMax) stop 30
+  q=tanh(8d0*(x-0.4d0))
  endif
  QAlpha=(NCDEl+q)/2d0;QBeta=QAlpha
  end function
@@ -109,4 +119,9 @@ program test
  call CompDensMat(ok)
  if(.not.ok.or.abs(shift-0.4d0)>1d-6.or.last/=shift)stop 24
  print *, 'PASS: EFMAX above the root leaves Brent and DEVMULLER unchanged'
+ EFMax=huge(1d0);mode=4;shift=3d0
+ call CompDensMat(ok)
+ if(.not.ok.or.abs(shift-0.4d0)>1d-6.or.last/=shift)stop 31
+ mode=0
+ print *, 'PASS: DEVMULLER never evaluates the charge outside [EMin,EMax]'
 end program

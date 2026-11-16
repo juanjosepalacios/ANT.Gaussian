@@ -1,5 +1,5 @@
 Hydrogen atomic chains between one-dimensional leads (`TYPE1 = TYPE2 = 1DLEAD`), LSDA/STO-3G. They
-were in `examples/Au-chain`.
+were in `examples/Au-chains`.
 
 Each subdirectory is one atomic structure, named after it; inside it, each subdirectory is one
 variation of the calculation (basis, electrodes, settings), with its own inputs, outputs and

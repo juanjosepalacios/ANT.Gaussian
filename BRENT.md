@@ -8,6 +8,17 @@ the Au4 and Pt9 Bethe-lattice nanocontact comparisons of 2 November 2026.
 Periodic lead Fermi levels use band filling separately; see
 [BAND_FERMI.md](BAND_FERMI.md).
 
+Muller and secant are not bracketed. In the DEVMULLER chain they see the
+charge through `device::BoundedCharge`, which never evaluates it outside
+the device window [max(EMin,-EFMAX),EMax]: the first trial point outside
+it is logged (`Device root search tried shift ...`), returns without
+evaluating, and sends the chain to the next method. Before this guard a
+secant step on the Au-Au-Au-Au-Au-Au chain with 1-atom 1D-lead units
+(`NATPC1 = NATPC2 = 1`, `NPC = 2`) reached a shift of 2e25 eV, where the
+1D Dyson solver failed and the run died with a segmentation fault; with
+it, bisection finds the root in that cycle and Muller converges in all
+later ones.
+
 `device::SolveDeviceFermi` expands a bracket around the current device
 shift, within the existing device bounds, and calls `numeric::BrentRoot`.
 The first search uses an initial half-width of max(0.25 eV, 2*FERMIACC).

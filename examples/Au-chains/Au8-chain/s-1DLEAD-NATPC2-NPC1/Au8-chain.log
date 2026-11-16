@@ -1,0 +1,1632 @@
+ Entering Gaussian System, Link 0=g09
+ Initial command:
+ /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe "/home/palacios/scratch/Gau-1665848.inp" -scrdir="/home/palacios/scratch/"
+ Entering Link 1 = /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l1.exe PID=   1665849.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  AM64L-G09RevD.01 24-Apr-2013
+                16-Nov-2026 
+ ******************************************
+ %mem=2gb
+ %NProcShared=8
+ Will use up to    8 processors via shared memory.
+ %Subst L101 ../../../../bin
+ %Subst L502 ../../../../bin
+ ----------------------------------------------------------------------
+ #p lsda/gen pseudo=read pop=reg Scf=(conver=5,maxcycle=100,dsymm,nodam
+ p)
+ ----------------------------------------------------------------------
+ 1/38=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ 3/5=7,11=2,16=1,17=8,25=1,30=1,74=205/1,2,3;
+ 4//1;
+ 5/5=2,6=5,7=100,17=200,18=-2,38=5/2;
+ 6/28=1/1;
+ 99/5=1,9=1/99;
+ Leave Link    1 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.0
+ (Enter ../../../../bin/l101.exe)
+ ---------
+ Au8-chain
+ ---------
+ Symbolic Z-matrix:
+ Charge =  0 Multiplicity = 1
+ Au                    0.        0.        0. 
+ Au                    0.        0.        3. 
+ Au                    0.        0.        6. 
+ Au                    0.        0.        9. 
+ Au                    0.        0.        12. 
+ Au                    0.        0.        15. 
+ Au                    0.        0.        18. 
+ Au                    0.        0.        21. 
+ 
+ NAtoms=      8 NQM=        8 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1           2           3           4           5           6           7           8
+ IAtWgt=         197         197         197         197         197         197         197         197
+ AtmWgt= 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000 196.9666000
+ NucSpn=           3           3           3           3           3           3           3           3
+ AtZEff=   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
+ NQMom=   54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000  54.7000000
+ NMagM=    0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590   0.1481590
+ AtZNuc=  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000  79.0000000
+ Leave Link  101 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.0
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l202.exe)
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000    0.000000
+      2         79           0        0.000000    0.000000    3.000000
+      3         79           0        0.000000    0.000000    6.000000
+      4         79           0        0.000000    0.000000    9.000000
+      5         79           0        0.000000    0.000000   12.000000
+      6         79           0        0.000000    0.000000   15.000000
+      7         79           0        0.000000    0.000000   18.000000
+      8         79           0        0.000000    0.000000   21.000000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4          5
+     1  Au   0.000000
+     2  Au   3.000000   0.000000
+     3  Au   6.000000   3.000000   0.000000
+     4  Au   9.000000   6.000000   3.000000   0.000000
+     5  Au  12.000000   9.000000   6.000000   3.000000   0.000000
+     6  Au  15.000000  12.000000   9.000000   6.000000   3.000000
+     7  Au  18.000000  15.000000  12.000000   9.000000   6.000000
+     8  Au  21.000000  18.000000  15.000000  12.000000   9.000000
+                    6          7          8
+     6  Au   0.000000
+     7  Au   3.000000   0.000000
+     8  Au   6.000000   3.000000   0.000000
+ Stoichiometry    Au8
+ Framework group  D*H[C*(AuAuAuAu.AuAuAuAu)]
+ Deg. of freedom     4
+ Full point group                 D*H     NOp   8
+ Largest Abelian subgroup         D2H     NOp   8
+ Largest concise Abelian subgroup C2      NOp   2
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1         79           0        0.000000    0.000000   10.500000
+      2         79           0        0.000000    0.000000    7.500000
+      3         79           0        0.000000    0.000000    4.500000
+      4         79           0        0.000000    0.000000    1.500000
+      5         79           0        0.000000    0.000000   -1.500000
+      6         79           0        0.000000    0.000000   -4.500000
+      7         79           0        0.000000    0.000000   -7.500000
+      8         79           0        0.000000    0.000000  -10.500000
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):      0.0000000      0.0067879      0.0067879
+ Leave Link  202 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.0
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l301.exe)
+ General basis read from cards:  (5D, 7F)
+ Centers:       1      2      3      4      5      6      7      8
+ S 3 1.00
+     Exponent=  4.4090000000D-01 Coefficients= -7.4780000000D-01
+     Exponent=  2.6260000000D-01 Coefficients=  8.1760000000D-01
+     Exponent=  6.1700000000D-02 Coefficients=  8.1130000000D-01
+ ****
+ ======================================================================================================
+                                       Pseudopotential Parameters
+ ======================================================================================================
+  Center     Atomic      Valence      Angular      Power
+  Number     Number     Electrons     Momentum     of R      Exponent        Coefficient   SO-Coeffient
+ ======================================================================================================
+    1         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    2         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    3         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    4         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    5         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    6         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    7         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+    8         79            1
+                                      F and up 
+                                                     2        1.0000000        0.00000000    0.00000000
+                                      S - F
+                                                     2        0.9000000       12.02000000    0.00000000
+                                                     2        0.4500000       -2.88400000    0.00000000
+                                      P - F
+                                                     2        0.9000000       -2.81500000    0.00000000
+                                                     2        0.4500000        1.97900000    0.00000000
+                                      D - F
+                                                     2        0.4500000       57.03000000    0.00000000
+                                                     2        0.2250000       -3.46800000    0.00000000
+ ======================================================================================================
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+ There are     4 symmetry adapted cartesian basis functions of AG  symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B1G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B2G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B3G symmetry.
+ There are     0 symmetry adapted cartesian basis functions of AU  symmetry.
+ There are     4 symmetry adapted cartesian basis functions of B1U symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B2U symmetry.
+ There are     0 symmetry adapted cartesian basis functions of B3U symmetry.
+ There are     4 symmetry adapted basis functions of AG  symmetry.
+ There are     0 symmetry adapted basis functions of B1G symmetry.
+ There are     0 symmetry adapted basis functions of B2G symmetry.
+ There are     0 symmetry adapted basis functions of B3G symmetry.
+ There are     0 symmetry adapted basis functions of AU  symmetry.
+ There are     4 symmetry adapted basis functions of B1U symmetry.
+ There are     0 symmetry adapted basis functions of B2U symmetry.
+ There are     0 symmetry adapted basis functions of B3U symmetry.
+     8 basis functions,    24 primitive gaussians,     8 cartesian basis functions
+     4 alpha electrons        4 beta electrons
+       nuclear repulsion energy         2.4241355936 Hartrees.
+ IExCor=  205 DFT=T Ex=S Corr=VWN ExCW=0 ScaHFX=  0.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=      0 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
+ NAtoms=    8 NActive=    8 NUniq=    4 SFac= 4.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned on.
+ Leave Link  301 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.0
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
+ One-electron integrals computed using PRISM.
+ One-electron integral symmetry used in STVInt
+   8 Symmetry operations used in ECPInt.
+ ECPInt:  NShTT=      36 NPrTT=     324 LenC2=      37 LenP2D=     267.
+ LDataN:  DoStor=T MaxTD1= 3 Len=   28
+ NBasis=     8 RedAO= T EigKep=  5.92D-01  NBF=     4     0     0     0     0     4     0     0
+ NBsUse=     8 1.00D-06 EigRej= -1.00D+00 NBFU=     4     0     0     0     0     4     0     0
+ Precomputing XC quadrature grid using
+ IXCGrd= 4 IRadAn=           0 IRanWt=          -1 IRanGd=           0 AccXCQ= 0.00D+00.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Generated NRdTot=       0 NPtTot=           0 NUsed=           0 NTot=          32
+ NSgBfM=     8     8     8     8     8 MxSgAt=     8 MxSgA2=     8.
+ Leave Link  302 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.1
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.0
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l401.exe)
+ ExpMin= 6.17D-02 ExpMax= 4.41D-01 ExpMxC= 4.41D-01 IAcc=2 IRadAn=         4 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       4 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         4 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Harris En= -1.79621534505051    
+ JPrj=0 DoOrth=F DoCkMO=F.
+ Initial guess orbital symmetries:
+       Occupied  (SGG) (SGU) (SGG) (SGU)
+       Virtual   (SGG) (SGU) (SGG) (SGU)
+ The electronic state of the initial guess is 1-SGG.
+ Leave Link  401 at Mon Nov 16 17:44:40 2026, MaxMem=   268435456 cpu:         0.1
+ (Enter ../../../../bin/l502.exe)
+ Closed shell SCF:
+ Using DIIS extrapolation, IDIIS=  1040.
+ Integral symmetry usage will be decided dynamically.
+ Keep J ints in memory in symmetry-blocked form, NReq=865173.
+ IVT=       13767 IEndB=       13767 NGot=   268435456 MDV=   268420832
+ LenX=   268420832 LenY=   268419950
+ Requested convergence on RMS density matrix=1.00D-05 within 100 cycles.
+ Requested convergence on MAX density matrix=1.00D-03.
+ Requested convergence on             energy=1.00D-03.
+ No special actions if energy rises.
+ FoFCou: FMM=F IPFlag=           0 FMFlag=           0 FMFlg1=           0
+         NFxFlg=           0 DoJE=F BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=     600 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=     36 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+
+ Cycle   1  Pass 0  IDiag  1:
+ 
+  ****************************************************************** 
+  ***                                                            *** 
+  ***                      A t o m i s t i c                     *** 
+  ***                      N a n o                               *** 
+  ***                      T r a n s p o r t                     *** 
+  ***                      G 0 9                                 *** 
+  ***                                                            *** 
+  ****************************************************************** 
+  ***                     Version: 3.0.0                         *** 
+  ****************************************************************** 
+  *  Copyright (c) by                                              * 
+  *                                                                * 
+  *  Juan Jose Palacios (1)                                        * 
+  *  David Jacob (2)                                               * 
+  *  Wynand Dednam (5)                                             * 
+  *  Maria Soriano (1,5)                                           * 
+  *  Angel J. Perez-Jimenez (3)                                    * 
+  *  Emilio SanFabian (3)                                          * 
+  *  Jose Antonio Antonio Verges (4)                               * 
+  *  Enrique Louis (5)                                             * 
+  *                                                                * 
+  * (1) Departamento de Fisica de la Materia Condensada            * 
+  *     Universidad Autonoma de Madrid                             * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (2) Theory Department                                          * 
+  *     Max-Planck-Institute for Microstructure Physics            * 
+  *     Halle, 06120 (GERMANY)                                     * 
+  * (3) Departamento de Quimica Fisica                             * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  * (4) Insto. de Ciencias de Materiales de Madrid (ICMM)          * 
+  *     Consejo Superior de Investigacion y Ciencia (CSIC)         * 
+  *     28049 Madrid (SPAIN)                                       * 
+  * (5) Departamento de Fisica Aplicada                            * 
+  *     Universidad de Alicante                                    * 
+  *     03690 Alicante (SPAIN)                                     * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+  ****************************************************************** 
+  *                                                                * 
+  *              Initializing ANT.G09 modules                      * 
+  *                                                                * 
+  ****************************************************************** 
+ 
+ Scanning Au8-chain.ant file for parameter specifications...
+ Done.
+ ****************************
+ Basic calculation parameters
+ ****************************
+ ALPHA      =    1.0000000000000000E-002
+ NPULAY     =                         5
+ CHARGEACC  =    1.0000000000000001E-005  %
+ FERMIACC   =    1.0000000000000001E-005  %
+ PACC       =    9.9999999999999995E-008  %
+ SL         =    1.0000000000000000E-002
+ FULLACC    =   F
+ MAX        =                        15
+ NIP        =                         6
+ 1D lead Fermi search: periodic band filling
+ ADAPTQUAD  =   F
+ QSCAN      =   F
+ BLBRENT    =   T
+ DEVMULLER  =   T
+ SELFACC    =    9.9999999999999995E-007
+ L1DALPHA   =    0.7500000000000000     
+ SMALL      =    0.1000000000000000     
+ SMALLD     =    0.1000000000000000       A
+ BIASVOLT   =     0.000000000000000       V
+ QEXCESS    =     0.000000000000000      electrons
+ ETA        =    1.0000000000000000E-003
+ GAMMA      =    2.9999999999999999E-002
+ GLUE       =     1.000000000000000     
+ FERMISTART =    -5.000000000000000       eV
+ FIXEFERMI  =   F
+ DMIMAG     =   F
+ FMIXING    =   F
+ ************************
+ Bethe lattice parameters
+ ************************
+ TYPE1      = 1DLEAD    
+ TYPE2      = 1DLEAD    
+ BLPAR1     = Papacon             
+ BLPAR2     = Papacon             
+ NATPC1     =                         2
+ NATPC2     =                         2
+ NPC        =                         1
+ NATOMEL1   = ? 
+ NATOMEL2   = ? 
+ OVERLAP    = System Overlap
+ **********************************
+ Spin-resolved transport parameters
+ **********************************
+ SWOFFSPL   =    1.0000000000000000E-003  (SL/10)
+ NSPINLOCK  =                        -1
+ DU         =   F
+ UD         =   F
+ DD         =   F
+ MRSTART    =                         0
+ SPINDEL    =   F
+ SPINEDIT   =                         0
+ SOC        =   F
+ SCFSOC     =   F
+ RCUT                 =     2.000000000000000       Bohr
+ SOC_FAC_P            =     1.000000000000000     
+ SOC_FAC_D            =     1.000000000000000     
+ SOC_FAC_F            =     1.000000000000000     
+ SOCFACATOM =                         0
+ SOC_VAL_P            =     0.000000000000000       eV
+ SOC_VAL_D            =     0.000000000000000       eV
+ SOC_VAL_F            =     0.000000000000000       eV
+ SOCVALATOM           =                         0
+ POL        =   F
+ TCOMP      =   F
+ ZM         =   F
+ BX         =     0.000000000000000       Tesla
+ BY         =     0.000000000000000       Tesla
+ BZ         =     0.000000000000000       Tesla
+ SPINROTATO =                         0
+ ZMATOM     =                         0
+ ***********************
+ Correlations parameters
+ ***********************
+ CORRBLOCKS =                         0
+ PORTHO     =   F
+ HYBFUNC    =   F
+ DFT+U      =   F
+ DIAGCORRBL =   F
+ MOLBLOCKS =                         0
+ UPLUS =     0.000000000000000     
+ *****************
+ Output parameters
+ *****************
+ HAMILTON   =   F
+ MULLIKEN   =   F
+ HTRANSM    =   F
+ ESTEP      =    1.0000000000000000E-002
+ DOSENERGY  =     0.000000000000000     
+ EW1        =    -5.000000000000000     
+ EW2        =     5.000000000000000     
+ LDOS       =   F
+ LDOS_BEG   =                         1
+ LDOS_END   =                         0
+ RTM_BEG    =                         1
+ RTM_END    =                         0
+ NCHANNELS  =                         0
+ LEADDOS    =   F
+ PBINARY    =   F
+ PRTATOM    =                         0
+ -------------------
+ Initializing device
+ -------------------
+ ----------------------------------------------------------
+ Analyzing cluster for the connection of the  Bethe Lattice
+ ----------------------------------------------------------
+ 
+ Atom type of lead 1: Au
+ Atom type of lead 2: Au
+ 
+    1   79   1.    1    1    1
+    2   79   1.    1    2    2
+    3   79   1.    1    3    3
+    4   79   1.    1    4    4
+    5   79   1.    1    5    5
+    6   79   1.    1    6    6
+    7   79   1.    1    7    7
+    8   79   1.    1    8    8
+ 
+  Center of charge:
+   0.000000   0.000000   0.000000
+ 
+  Atoms in left electrode:                        4
+   1  Au   0.000000   0.000000  19.842124
+   2  Au   0.000000   0.000000  14.172946
+   3  Au   0.000000   0.000000   8.503768
+   4  Au   0.000000   0.000000   2.834589
+ 
+  Atoms in molecule:                        0
+ 
+  Atoms in right electrode:                        4
+   5  Au   0.000000   0.000000 -19.842124
+   6  Au   0.000000   0.000000 -14.172946
+   7  Au   0.000000   0.000000  -8.503768
+   8  Au   0.000000   0.000000  -2.834589
+ 
+ ---------------------------------------------------
+ ----- Details on device and contacting atoms ------
+ ---------------------------------------------------
+ NEmbed(1) =                        2
+ NEmbed(2) =                        2
+ Number of electrons in neutral reduced device (NCDEl) =  
+                        4
+ First and last orbital in reduced device
+ NCDAO1 =                         3
+ NCDAO2 =                         6
+ ---------------------------------------------------
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ Defaulting to unpruned grid for atomic number  79.
+ E= -1.82339408399945    
+ DIIS: error= 3.38D-03 at cycle   1 NSaved=   1.
+ NSaved= 1 IEnMin= 1 EnMin= -1.82339408399945     IErMin= 1 ErrMin= 3.38D-03
+ ErrMax= 3.38D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 9.53D-05 BMatP= 9.53D-05
+ IDIUse=3 WtCom= 9.66D-01 WtEn= 3.38D-02
+ Coeff-Com:  0.100D+01
+ Coeff-En:   0.100D+01
+ Coeff:      0.100D+01
+ Gap=     0.026 Goal=   None    Shift=    0.000
+ RMSDP=2.82D-02 MaxDP=1.01D-01              OVMax= 0.00D+00
+
+ Cycle   2  Pass 0  IDiag  1:
+ E= -1.81828242348184     Delta-E=        0.005111660518 Rises=F Damp=F
+ DIIS: error= 9.08D-03 at cycle   2 NSaved=   2.
+ NSaved= 2 IEnMin= 1 EnMin= -1.82339408399945     IErMin= 1 ErrMin= 3.38D-03
+ ErrMax= 9.08D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 6.60D-04 BMatP= 9.53D-05
+ IDIUse=3 WtCom= 9.50D-02 WtEn= 9.05D-01
+ Coeff-Com:  0.730D+00 0.270D+00
+ Coeff-En:   0.823D+00 0.177D+00
+ Coeff:      0.814D+00 0.186D+00
+ Gap=     0.026 Goal=   None    Shift=    0.000
+ RMSDP=1.62D-02 MaxDP=5.41D-02 DE= 5.11D-03 OVMax= 0.00D+00
+
+ Cycle   3  Pass 0  IDiag  1:
+ E= -1.82387592594028     Delta-E=       -0.005593502458 Rises=F Damp=F
+ DIIS: error= 1.96D-03 at cycle   3 NSaved=   3.
+ NSaved= 3 IEnMin= 3 EnMin= -1.82387592594028     IErMin= 3 ErrMin= 1.96D-03
+ ErrMax= 1.96D-03  0.00D+00 EMaxC= 1.00D-01 BMatC= 3.94D-05 BMatP= 9.53D-05
+ IDIUse=3 WtCom= 9.80D-01 WtEn= 1.96D-02
+ Coeff-Com:  0.346D+00-0.374D-01 0.692D+00
+ Coeff-En:   0.333D+00 0.000D+00 0.667D+00
+ Coeff:      0.346D+00-0.367D-01 0.691D+00
+ Gap=     0.026 Goal=   None    Shift=    0.000
+ RMSDP=5.61D-03 MaxDP=2.05D-02 DE=-5.59D-03 OVMax= 0.00D+00
+
+ Cycle   4  Pass 0  IDiag  1:
+ E= -1.82419712132907     Delta-E=       -0.000321195389 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        4
+ -------------------------------------------------------------------------
+ *******************************
+ *    Initializing Lead No.                         1
+ *******************************
+Band Fermi lead  1 k points      256 EF (eV)      -2.56646513 charge residual  -1.5940E-05 previous-EF charge residual   1.7977+308
+Band Fermi lead  1 k points      512 EF (eV)      -2.56643721 charge residual  -1.5237E-05 previous-EF charge residual   1.5856E-05
+EFermi in bulk electrode   1 =    -2.566437
+Band Fermi wall seconds:     0.001567
+ Lead Hamiltonian shifted by -EFermi =     2.566437209732045     
+ *******************************
+ *    Initializing Lead No.                         2
+ *******************************
+Band Fermi lead  2 k points      256 EF (eV)      -2.56646513 charge residual  -1.5940E-05 previous-EF charge residual   1.7977+308
+Band Fermi lead  2 k points      512 EF (eV)      -2.56643721 charge residual  -1.5237E-05 previous-EF charge residual   1.5856E-05
+EFermi in bulk electrode   2 =    -2.566437
+Band Fermi wall seconds:     0.000424
+ Lead Hamiltonian shifted by -EFermi =     2.566437209732045     
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -26.19478683723061     
+ EMax=    30.77154324860079     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Total Integrated Spectral Weight target:      8.00000
+ Spectral-weight tolerance:   4.0000E-05
+ Spectral-weight window: [    -26.1948,      30.7715] eV
+TotCharge/Gaussian quadrature gives    31      7.99982
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:      0.00000
+TotCharge/Gaussian quadrature gives        7.99982
+ TotCharge wall seconds:     0.000730
+ Spectral weight:   7.99981964E+00 ETA tail estimate:   1.8003E-04 quadrature status:   0
+  Spectral-weight check OK
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed    63 points
+Device root search tried shift   3.759286E+01 eV, outside [    -26.1948     30.7715]
+ Warning: MULLER method left the device energy window. Using SECANT.
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device root search tried shift  -9.282202E+02 eV, outside [    -26.1948     30.7715]
+ Warning: SECANT method left the device energy window. Using BISEC.
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed    15 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    15 points
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device BISEC iterations:    15 charge evaluations:    24
+Device BISEC charge residual:   -1.8941265E-04 charge tolerance:    4.0000000E-03 last step (eV):    1.0000000E-03
+Device BISEC wall seconds:     0.033918
+ Fermi energy=    -2.629119 bracket width (eV)=   1.0000E-03
+ Number of alpha electrons:      1.9999053
+ Number of beta electrons:      1.9999053
+ Total number of electrons:      3.9998106
+ DIIS: error= 3.86D-04 at cycle   4 NSaved=   4.
+ NSaved= 4 IEnMin= 4 EnMin= -1.82419712132907     IErMin= 4 ErrMin= 3.86D-04
+ ErrMax= 3.86D-04  0.00D+00 EMaxC= 1.00D-01 BMatC= 1.75D-06 BMatP= 3.94D-05
+ IDIUse=3 WtCom= 9.96D-01 WtEn= 3.86D-03
+ Coeff-Com:  0.821D-01-0.579D-01 0.434D+00 0.542D+00
+ Coeff-En:   0.000D+00 0.000D+00 0.184D-01 0.982D+00
+ Coeff:      0.818D-01-0.577D-01 0.432D+00 0.544D+00
+ RMSDP=6.39D-04 MaxDP=1.27D-03 DE=-3.21D-04 OVMax= 0.00D+00
+
+ Cycle   5  Pass 0  IDiag  1:
+ E= -1.82363551082012     Delta-E=        0.000561610509 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        5
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -8.1801232E-12 charge tolerance:    4.0000000E-04 last step (eV):    8.7059548E-06
+Device MULLER wall seconds:     0.013319
+ Fermi energy=    -2.634659 bracket width (eV)=   8.7060E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=6.31D-04 MaxDP=1.25D-03 DE= 5.62D-04 OVMax= 0.00D+00
+
+ Cycle   6  Pass 0  IDiag  1:
+ E= -1.82308643157928     Delta-E=        0.000549079241 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        6
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -7.9691809E-12 charge tolerance:    4.0000000E-04 last step (eV):    8.6273945E-06
+Device MULLER wall seconds:     0.013227
+ Fermi energy=    -2.640195 bracket width (eV)=   8.6274E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=6.23D-04 MaxDP=1.23D-03 DE= 5.49D-04 OVMax= 0.00D+00
+
+ Cycle   7  Pass 0  IDiag  1:
+ E= -1.82254915797773     Delta-E=        0.000537273602 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        7
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -6.9215744E-12 charge tolerance:    4.0000000E-04 last step (eV):    8.0607731E-06
+Device MULLER wall seconds:     0.013329
+ Fermi energy=    -2.645565 bracket width (eV)=   8.0608E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=6.15D-04 MaxDP=1.22D-03 DE= 5.37D-04 OVMax= 0.00D+00
+
+ Cycle   8  Pass 0  IDiag  1:
+ E= -1.82202337990589     Delta-E=        0.000525778072 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        8
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -6.0289551E-12 charge tolerance:    4.0000000E-04 last step (eV):    7.5353265E-06
+Device MULLER wall seconds:     0.013454
+ Fermi energy=    -2.650776 bracket width (eV)=   7.5353E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ Pulay kick .............
+ RMSDP=5.33D-02 MaxDP=1.03D-01 DE= 5.26D-04 OVMax= 0.00D+00
+
+ Cycle   9  Pass 0  IDiag  1:
+ E= -1.79108131767108     Delta-E=        0.030942062235 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                        9
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed    63 points
+Device MULLER iterations:     2 charge evaluations:     6
+Device MULLER charge residual:    1.4760090E-03 charge tolerance:    4.0000000E-02 last step (eV):    2.8162711E-02
+Device MULLER wall seconds:     0.009928
+ Fermi energy=    -2.853105 bracket width (eV)=   2.8163E-02
+ Number of alpha electrons:      2.0007380
+ Number of beta electrons:      2.0007380
+ Total number of electrons:      4.0014760
+ RMSDP=2.64D-05 MaxDP=5.07D-05 DE= 3.09D-02 OVMax= 0.00D+00
+
+ Cycle  10  Pass 0  IDiag  1:
+ E= -1.79104196073530     Delta-E=        0.000039356936 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       10
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -1.3766766E-13 charge tolerance:    4.0000000E-05 last step (eV):    7.8973081E-07
+Device MULLER wall seconds:     0.021288
+ Fermi energy=    -2.854981 bracket width (eV)=   7.8973E-07
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=2.63D-05 MaxDP=5.00D-05 DE= 3.94D-05 OVMax= 0.00D+00
+
+ Cycle  11  Pass 0  IDiag  1:
+ E= -1.79100037429434     Delta-E=        0.000041586441 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       11
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -1.7763568E-15 charge tolerance:    4.0000000E-05 last step (eV):    8.1526017E-08
+Device MULLER wall seconds:     0.021168
+ Fermi energy=    -2.855583 bracket width (eV)=   8.1526E-08
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=2.59D-05 MaxDP=4.95D-05 DE= 4.16D-05 OVMax= 0.00D+00
+
+ Cycle  12  Pass 0  IDiag  1:
+ E= -1.79095983758656     Delta-E=        0.000040536708 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       12
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -8.8817842E-16 charge tolerance:    4.0000000E-05 last step (eV):    7.7180806E-08
+Device MULLER wall seconds:     0.021108
+ Fermi energy=    -2.856170 bracket width (eV)=   7.7181E-08
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=2.55D-05 MaxDP=4.91D-05 DE= 4.05D-05 OVMax= 0.00D+00
+
+ Cycle  13  Pass 0  IDiag  1:
+ E= -1.79092032086506     Delta-E=        0.000039516722 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       13
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -8.8817842E-16 charge tolerance:    4.0000000E-05 last step (eV):    7.3075088E-08
+Device MULLER wall seconds:     0.021224
+ Fermi energy=    -2.856740 bracket width (eV)=   7.3075E-08
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=2.50D-05 MaxDP=4.86D-05 DE= 3.95D-05 OVMax= 0.00D+00
+
+ Cycle  14  Pass 0  IDiag  1:
+ E= -1.79088179526688     Delta-E=        0.000038525598 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       14
+ -------------------------------------------------------------------------
+ *******************************
+ *    Initializing Lead No.                         1
+ *******************************
+Band Fermi lead  1 k points      256 EF (eV)      -2.90378656 charge residual   9.0385E-09 previous-EF charge residual   1.7977+308
+Band Fermi lead  1 k points      512 EF (eV)      -2.90378446 charge residual   3.3935E-08 previous-EF charge residual   9.0578E-09
+EFermi in bulk electrode   1 =    -2.903784
+Band Fermi wall seconds:     0.000487
+ Lead Hamiltonian shifted by -EFermi =     2.903784457592968     
+ *******************************
+ *    Initializing Lead No.                         2
+ *******************************
+Band Fermi lead  2 k points      256 EF (eV)      -2.90378656 charge residual   9.0385E-09 previous-EF charge residual   1.7977+308
+Band Fermi lead  2 k points      512 EF (eV)      -2.90378446 charge residual   3.3935E-08 previous-EF charge residual   9.0578E-09
+EFermi in bulk electrode   2 =    -2.903784
+Band Fermi wall seconds:     0.000478
+ Lead Hamiltonian shifted by -EFermi =     2.903784457592968     
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -26.20029472639130     
+ EMax=    30.77154324860079     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Total Integrated Spectral Weight target:      8.00000
+ Spectral-weight tolerance:   4.0000E-05
+ Spectral-weight window: [    -26.2003,      30.7715] eV
+TotCharge/Gaussian quadrature gives    31      7.99982
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:      0.00000
+TotCharge/Gaussian quadrature gives        7.99982
+ TotCharge wall seconds:     0.000708
+ Spectral weight:   7.99981965E+00 ETA tail estimate:   1.8024E-04 quadrature status:   0
+  Spectral-weight check OK
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+Device MULLER iterations:     7 charge evaluations:    11
+Device MULLER charge residual:    2.5920599E-11 charge tolerance:    4.0000000E-05 last step (eV):    1.1246493E-07
+Device MULLER wall seconds:     0.021182
+ Fermi energy=    -2.887993 bracket width (eV)=   1.1246E-07
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ Pulay kick .............
+ RMSDP=2.03D-03 MaxDP=4.83D-03 DE= 3.85D-05 OVMax= 0.00D+00
+
+ Cycle  15  Pass 0  IDiag  1:
+ E= -1.78902687597166     Delta-E=        0.001854919295 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       15
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     5 charge evaluations:     9
+Device MULLER charge residual:   -1.7489869E-03 charge tolerance:    4.0000000E-03 last step (eV):    2.0582375E-03
+Device MULLER wall seconds:     0.015188
+ Fermi energy=    -2.918083 bracket width (eV)=   2.0582E-03
+ Number of alpha electrons:      1.9991255
+ Number of beta electrons:      1.9991255
+ Total number of electrons:      3.9982510
+ RMSDP=9.04D-05 MaxDP=1.57D-04 DE= 1.85D-03 OVMax= 0.00D+00
+
+ Problem detected with inexpensive integrals.
+ Switching to full accuracy and repeating last cycle.
+ Cycle  16  Pass 1  IDiag  1:
+ E= -1.78902687597166     Delta-E=        0.000000000000 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       16
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    1.4807038E-07 charge tolerance:    4.0000000E-05 last step (eV):    1.8732656E-05
+Device MULLER wall seconds:     0.013344
+ Fermi energy=    -2.917757 bracket width (eV)=   1.8733E-05
+ Number of alpha electrons:      2.0000001
+ Number of beta electrons:      2.0000001
+ Total number of electrons:      4.0000001
+ RMSDP=1.79D-04 MaxDP=3.12D-04 DE= 0.00D+00 OVMax= 0.00D+00
+
+ Cycle  17  Pass 1  IDiag  1:
+ E= -1.78913409550961     Delta-E=       -0.000107219538 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       17
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    3.2872714E-07 charge tolerance:    4.0000000E-04 last step (eV):    2.7848190E-05
+Device MULLER wall seconds:     0.013320
+ Fermi energy=    -2.917364 bracket width (eV)=   2.7848E-05
+ Number of alpha electrons:      2.0000002
+ Number of beta electrons:      2.0000002
+ Total number of electrons:      4.0000003
+ RMSDP=8.72D-05 MaxDP=1.52D-04 DE=-1.07D-04 OVMax= 0.00D+00
+
+ Cycle  18  Pass 1  IDiag  1:
+ E= -1.78918622835129     Delta-E=       -0.000052132842 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       18
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    2.4191129E-08 charge tolerance:    4.0000000E-05 last step (eV):    7.4778350E-06
+Device MULLER wall seconds:     0.013320
+ Fermi energy=    -2.917160 bracket width (eV)=   7.4778E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=8.62D-05 MaxDP=1.51D-04 DE=-5.21D-05 OVMax= 0.00D+00
+
+ Cycle  19  Pass 1  IDiag  1:
+ E= -1.78923675984220     Delta-E=       -0.000050531491 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       19
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    1.6300004E-08 charge tolerance:    4.0000000E-05 last step (eV):    6.1200219E-06
+Device MULLER wall seconds:     0.013289
+ Fermi energy=    -2.916976 bracket width (eV)=   6.1200E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=8.52D-05 MaxDP=1.49D-04 DE=-5.05D-05 OVMax= 0.00D+00
+
+ Cycle  20  Pass 1  IDiag  1:
+ E= -1.78928574117419     Delta-E=       -0.000048981332 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       20
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    1.0654581E-08 charge tolerance:    4.0000000E-05 last step (eV):    4.9340747E-06
+Device MULLER wall seconds:     0.013331
+ Fermi energy=    -2.916812 bracket width (eV)=   4.9341E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ Pulay kick .............
+ RMSDP=8.48D-03 MaxDP=1.48D-02 DE=-4.90D-05 OVMax= 0.00D+00
+
+ Cycle  21  Pass 1  IDiag  1:
+ E= -1.79451016406353     Delta-E=       -0.005224422889 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       21
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     6 charge evaluations:    10
+Device MULLER charge residual:    3.0915819E-04 charge tolerance:    4.0000000E-03 last step (eV):    8.0590210E-04
+Device MULLER wall seconds:     0.016675
+ Fermi energy=    -2.890015 bracket width (eV)=   8.0590E-04
+ Number of alpha electrons:      2.0001546
+ Number of beta electrons:      2.0001546
+ Total number of electrons:      4.0003092
+ RMSDP=5.50D-05 MaxDP=2.62D-04 DE=-5.22D-03 OVMax= 0.00D+00
+
+ Cycle  22  Pass 1  IDiag  1:
+ E= -1.79439789424640     Delta-E=        0.000112269817 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       22
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     4 charge evaluations:     8
+Device MULLER charge residual:   -3.4410801E-07 charge tolerance:    4.0000000E-05 last step (eV):    4.2378159E-06
+Device MULLER wall seconds:     0.014228
+ Fermi energy=    -2.892191 bracket width (eV)=   4.2378E-06
+ Number of alpha electrons:      1.9999998
+ Number of beta electrons:      1.9999998
+ Total number of electrons:      3.9999997
+ RMSDP=5.35D-05 MaxDP=2.55D-04 DE= 1.12D-04 OVMax= 0.00D+00
+
+ Cycle  23  Pass 1  IDiag  1:
+ E= -1.79428855085183     Delta-E=        0.000109343395 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       23
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     4 charge evaluations:     8
+Device MULLER charge residual:   -9.6324601E-07 charge tolerance:    4.0000000E-05 last step (eV):    1.2974311E-05
+Device MULLER wall seconds:     0.015169
+ Fermi energy=    -2.894268 bracket width (eV)=   1.2974E-05
+ Number of alpha electrons:      1.9999995
+ Number of beta electrons:      1.9999995
+ Total number of electrons:      3.9999990
+ RMSDP=5.19D-05 MaxDP=2.48D-04 DE= 1.09D-04 OVMax= 0.00D+00
+
+ Cycle  24  Pass 1  IDiag  1:
+ E= -1.79418259959134     Delta-E=        0.000105951260 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       24
+ -------------------------------------------------------------------------
+ *******************************
+ *    Initializing Lead No.                         1
+ *******************************
+Band Fermi lead  1 k points      256 EF (eV)      -2.89012508 charge residual  -6.2550E-08 previous-EF charge residual   1.7977+308
+Band Fermi lead  1 k points      512 EF (eV)      -2.89017698 charge residual   1.6662E-07 previous-EF charge residual   2.0023E-06
+Band Fermi lead  1 k points     1024 EF (eV)      -2.89018334 charge residual  -5.2768E-08 previous-EF charge residual   1.7142E-07
+EFermi in bulk electrode   1 =    -2.890183
+Band Fermi wall seconds:     0.000985
+ Lead Hamiltonian shifted by -EFermi =     2.890183339632153     
+ *******************************
+ *    Initializing Lead No.                         2
+ *******************************
+Band Fermi lead  2 k points      256 EF (eV)      -2.89012508 charge residual  -6.2550E-08 previous-EF charge residual   1.7977+308
+Band Fermi lead  2 k points      512 EF (eV)      -2.89017698 charge residual   1.6662E-07 previous-EF charge residual   2.0023E-06
+Band Fermi lead  2 k points     1024 EF (eV)      -2.89018334 charge residual  -5.2768E-08 previous-EF charge residual   1.7142E-07
+EFermi in bulk electrode   2 =    -2.890183
+Band Fermi wall seconds:     0.000975
+ Lead Hamiltonian shifted by -EFermi =     2.890183339632153     
+ -----------------------
+ Estimated Energy Bounds
+ -----------------------
+ EMin=   -26.20029472639130     
+ EMax=    30.77154324860079     
+ -----------------------
+  Total DOS Point Check 
+ -----------------------
+ Total Integrated Spectral Weight target:      8.00000
+ Spectral-weight tolerance:   4.0000E-05
+ Spectral-weight window: [    -26.2003,      30.7715] eV
+TotCharge/Gaussian quadrature gives    31      7.99982
+TotCharge/Gaussian quadrature has converged after  63 steps. Error:      0.00000
+TotCharge/Gaussian quadrature gives        7.99982
+ TotCharge wall seconds:     0.000674
+ Spectral weight:   7.99981966E+00 ETA tail estimate:   1.8020E-04 quadrature status:   0
+  Spectral-weight check OK
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:   -2.7886877E-08 charge tolerance:    4.0000000E-05 last step (eV):    4.1882092E-06
+Device MULLER wall seconds:     0.020550
+ Fermi energy=    -2.886786 bracket width (eV)=   4.1882E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=6.92D-05 MaxDP=3.07D-04 DE= 1.06D-04 OVMax= 0.00D+00
+
+ Cycle  25  Pass 1  IDiag  1:
+ E= -1.79406489021347     Delta-E=        0.000117709378 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       25
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Integration of the density matrix has needed   127 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    1.1404211E-12 charge tolerance:    4.0000000E-05 last step (eV):    1.9932088E-07
+Device MULLER wall seconds:     0.022223
+ Fermi energy=    -2.888174 bracket width (eV)=   1.9932E-07
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ RMSDP=6.72D-05 MaxDP=2.98D-04 DE= 1.18D-04 OVMax= 0.00D+00
+
+ Cycle  26  Pass 1  IDiag  1:
+ E= -1.79395145097468     Delta-E=        0.000113439239 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       26
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    31 points
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+ Unsuccessful integration of the density matrix using up to  127 points. Continue at your own risk ...
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    8.9350749E-13 charge tolerance:    4.0000000E-05 last step (eV):    1.7630243E-07
+Device MULLER wall seconds:     0.019763
+ Fermi energy=    -2.889499 bracket width (eV)=   1.7630E-07
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ Pulay kick .............
+ RMSDP=2.19D-03 MaxDP=9.09D-03 DE= 1.13D-04 OVMax= 0.00D+00
+
+ Cycle  27  Pass 1  IDiag  1:
+ E= -1.79141243358272     Delta-E=        0.002539017392 Rises=F Damp=F
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                       27
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     2 charge evaluations:     6
+Device MULLER charge residual:   -1.2495146E-05 charge tolerance:    4.0000000E-03 last step (eV):    2.4850886E-03
+Device MULLER wall seconds:     0.019060
+ Fermi energy=    -2.907930 bracket width (eV)=   2.4851E-03
+ Number of alpha electrons:      1.9999938
+ Number of beta electrons:      1.9999938
+ Total number of electrons:      3.9999875
+ RMSDP=9.69D-06 MaxDP=2.47D-05 DE= 2.54D-03 OVMax= 0.00D+00
+
+ SCF Done:  E(RS-VWN) =  -1.79141243358     A.U. after   27 cycles
+            NFock= 27  Conv=0.97D-05     -V/T= 2.8561
+ KE= 9.651378557096D-01 PE=-7.441619904529D+00 EE= 2.260934021600D+00
+ -------------------------------------------------------------------------
+ Computing the density matrix at cycle:                     1000
+ -------------------------------------------------------------------------
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed    31 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed    63 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     2 charge evaluations:     6
+Device MULLER charge residual:   -9.9640296E-12 charge tolerance:    4.0000000E-03 last step (eV):    1.2217248E-06
+Device MULLER wall seconds:     0.014943
+ Fermi energy=    -2.907921 bracket width (eV)=   1.2217E-06
+ Number of alpha electrons:      2.0000000
+ Number of beta electrons:      2.0000000
+ Total number of electrons:      4.0000000
+ 
+ ****************************************** 
+ *                                        * 
+ *        ANT.G09 final analysis          * 
+ *                                        * 
+ ****************************************** 
+ 
+ -------------------------------------
+ ---  Self-consistent Hamiltonian  ---
+ -------------------------------------
+ ---------
+ Left lead
+ ---------
+ Atom:   1   -2.971444
+ Atom:   2   -2.854153
+ Atom:   3   -2.809764
+ Atom:   4   -2.809603
+ ----------
+ Right lead
+ ----------
+ Atom:   5   -2.809603
+ Atom:   6   -2.809764
+ Atom:   7   -2.854153
+ Atom:   8   -2.971444
+ ANT OpenMP maximum threads:      8
+ 
+ --------------------------------
+ --- Calculating Transmission ---
+ ---  (and DOS if required)   ---
+ --------------------------------
+ 
+ *******************************
+ *    Initializing Lead No.                         1
+ *******************************
+Band Fermi lead  1 k points      256 EF (eV)      -2.94858718 charge residual  -1.2922E-05 previous-EF charge residual   1.7977+308
+Band Fermi lead  1 k points      512 EF (eV)      -2.94855918 charge residual  -1.2480E-05 previous-EF charge residual   1.2920E-05
+EFermi in bulk electrode   1 =    -2.948559
+Band Fermi wall seconds:     0.000374
+ Lead Hamiltonian shifted by -EFermi =     2.948559176585968     
+ *******************************
+ *    Initializing Lead No.                         2
+ *******************************
+Band Fermi lead  2 k points      256 EF (eV)      -2.94858718 charge residual  -1.2922E-05 previous-EF charge residual   1.7977+308
+Band Fermi lead  2 k points      512 EF (eV)      -2.94855918 charge residual  -1.2480E-05 previous-EF charge residual   1.2920E-05
+EFermi in bulk electrode   2 =    -2.948559
+Band Fermi wall seconds:     0.000374
+ Lead Hamiltonian shifted by -EFermi =     2.948559176585968     
+ ------------------------
+ Integrating density matrix to find device Fermi energy
+ ------------------------
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+ Integration of the density matrix has needed   127 points
+Device MULLER iterations:     3 charge evaluations:     7
+Device MULLER charge residual:    9.4011233E-05 charge tolerance:    4.0000000E-03 last step (eV):    1.0152246E-03
+Device MULLER wall seconds:     0.015106
+ Fermi energy=    -2.926926 bracket width (eV)=   1.0152E-03
+ Number of alpha electrons:      2.0000470
+ Number of beta electrons:      2.0000470
+ Total number of electrons:      4.0000940
+ ANT transport analysis wall seconds:       0.2152
+ -------------------------------------
+ ---  Mulliken population analysis ---
+ -------------------------------------
+ ----------------------
+ Charges in electrode 1
+ ----------------------
+ Atom:   1  El.dens:  0.9472
+ Atom:   2  El.dens:  0.9939
+ Atom:   3  El.dens:  1.0044
+ Atom:   4  El.dens:  0.9956
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 1:    3.941114534358706     
+ ---------------------------------------------------------
+ ----------------------------------------------------
+ Total num. of electrons in molecule:    0.000000000000000     
+ ----------------------------------------------------
+ ----------------------
+ Charges in electrode 2
+ ----------------------
+ Atom:   5  El.dens:  0.9956
+ Atom:   6  El.dens:  1.0044
+ Atom:   7  El.dens:  0.9939
+ Atom:   8  El.dens:  0.9472
+ ---------------------------------------------------------
+ Total num. of electrons in electrode 2:    3.941114534358705     
+ ---------------------------------------------------------
+  ----------------- End of ANT.G09 ------------------- 
+ Leave Link  502 at Mon Nov 16 17:44:41 2026, MaxMem=   268435456 cpu:         4.5
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l601.exe)
+ Copying SCF densities to generalized density rwf, IOpCl= 0 IROHF=0.
+
+ **********************************************************************
+
+            Population analysis using the SCF density.
+
+ **********************************************************************
+
+ Orbital symmetries:
+       Occupied  (SGG) (SGU) (SGG) (SGU)
+       Virtual   (SGG) (SGU) (SGG) (SGU)
+ The electronic state is 1-SGG.
+ Alpha  occ. eigenvalues --   -0.13762  -0.13294  -0.12317  -0.10663
+ Alpha virt. eigenvalues --   -0.08077  -0.03589   0.02498   0.08822
+     Molecular Orbital Coefficients:
+                           1         2         3         4         5
+                       (SGG)--O  (SGU)--O  (SGG)--O  (SGU)--O  (SGG)--V
+     Eigenvalues --    -0.13762  -0.13294  -0.12317  -0.10663  -0.08077
+   1 1   Au 1S          0.11068   0.22294   0.34419   0.45660   0.50730
+   2 2   Au 1S          0.23125   0.37462   0.36498   0.16886  -0.15648
+   3 3   Au 1S          0.32620   0.35400   0.02449  -0.37667  -0.43622
+   4 4   Au 1S          0.36868   0.13713  -0.35949  -0.28047   0.32040
+   5 5   Au 1S          0.36868  -0.13713  -0.35949   0.28047   0.32040
+   6 6   Au 1S          0.32620  -0.35400   0.02449   0.37667  -0.43622
+   7 7   Au 1S          0.23125  -0.37462   0.36498  -0.16886  -0.15648
+   8 8   Au 1S          0.11068  -0.22294   0.34419  -0.45660   0.50730
+                           6         7         8
+                       (SGU)--V  (SGG)--V  (SGU)--V
+     Eigenvalues --    -0.03589   0.02498   0.08822
+   1 1   Au 1S          0.49452  -0.41860  -0.24672
+   2 2   Au 1S         -0.49683   0.64932   0.47026
+   3 3   Au 1S          0.00504  -0.56814  -0.62957
+   4 4   Au 1S          0.50415   0.22230   0.71842
+   5 5   Au 1S         -0.50415   0.22230  -0.71842
+   6 6   Au 1S         -0.00504  -0.56814   0.62957
+   7 7   Au 1S          0.49683   0.64932  -0.47026
+   8 8   Au 1S         -0.49452  -0.41860   0.24672
+     Density Matrix:
+                           1         2         3         4         5
+   1 1   Au 1S          0.80899
+   2 2   Au 1S          0.43143   0.72118
+   3 3   Au 1S         -0.11386   0.42369   0.73535
+   4 4   Au 1S         -0.19631  -0.07320   0.42398   0.72462
+   5 5   Au 1S          0.04029  -0.20072  -0.08317   0.42784   0.72462
+   6 6   Au 1S          0.11995   0.02099  -0.19771  -0.08317   0.42398
+   7 7   Au 1S         -0.01806   0.12590   0.02099  -0.20072  -0.07320
+   8 8   Au 1S         -0.08170  -0.01806   0.11995   0.04029  -0.19631
+                           6         7         8
+   6 6   Au 1S          0.73535
+   7 7   Au 1S          0.42369   0.72118
+   8 8   Au 1S         -0.11386   0.43143   0.80899
+    Full Mulliken population analysis:
+                           1         2         3         4         5
+   1 1   Au 1S          0.80899
+   2 2   Au 1S          0.13830   0.72118
+   3 3   Au 1S         -0.00152   0.13582   0.73535
+   4 4   Au 1S         -0.00002  -0.00098   0.13591   0.72462
+   5 5   Au 1S          0.00000  -0.00002  -0.00111   0.13715   0.72462
+   6 6   Au 1S          0.00000   0.00000  -0.00002  -0.00111   0.13591
+   7 7   Au 1S          0.00000   0.00000   0.00000  -0.00002  -0.00098
+   8 8   Au 1S          0.00000   0.00000   0.00000   0.00000  -0.00002
+                           6         7         8
+   6 6   Au 1S          0.73535
+   7 7   Au 1S          0.13582   0.72118
+   8 8   Au 1S         -0.00152   0.13830   0.80899
+     Gross orbital populations:
+                           1
+   1 1   Au 1S          0.94575
+   2 2   Au 1S          0.99431
+   3 3   Au 1S          1.00444
+   4 4   Au 1S          0.99556
+   5 5   Au 1S          0.99556
+   6 6   Au 1S          1.00444
+   7 7   Au 1S          0.99431
+   8 8   Au 1S          0.94575
+          Condensed to atoms (all electrons):
+               1          2          3          4          5          6
+     1  Au   0.808987   0.138301  -0.001521  -0.000017   0.000000   0.000000
+     2  Au   0.138301   0.721178   0.135821  -0.000978  -0.000018   0.000000
+     3  Au  -0.001521   0.135821   0.735353   0.135914  -0.001111  -0.000017
+     4  Au  -0.000017  -0.000978   0.135914   0.724620   0.137150  -0.001111
+     5  Au   0.000000  -0.000018  -0.001111   0.137150   0.724620   0.135914
+     6  Au   0.000000   0.000000  -0.000017  -0.001111   0.135914   0.735353
+     7  Au   0.000000   0.000000   0.000000  -0.000018  -0.000978   0.135821
+     8  Au   0.000000   0.000000   0.000000   0.000000  -0.000017  -0.001521
+               7          8
+     1  Au   0.000000   0.000000
+     2  Au   0.000000   0.000000
+     3  Au   0.000000   0.000000
+     4  Au  -0.000018   0.000000
+     5  Au  -0.000978  -0.000017
+     6  Au   0.135821  -0.001521
+     7  Au   0.721178   0.138301
+     8  Au   0.138301   0.808987
+ Mulliken charges:
+               1
+     1  Au   0.054250
+     2  Au   0.005695
+     3  Au  -0.004440
+     4  Au   0.004439
+     5  Au   0.004439
+     6  Au  -0.004440
+     7  Au   0.005695
+     8  Au   0.054250
+ Sum of Mulliken charges =   0.11989
+ Mulliken charges with hydrogens summed into heavy atoms:
+               1
+     1  Au   0.054250
+     2  Au   0.005695
+     3  Au  -0.004440
+     4  Au   0.004439
+     5  Au   0.004439
+     6  Au  -0.004440
+     7  Au   0.005695
+     8  Au   0.054250
+ Electronic spatial extent (au):  <R**2>=           1375.6904
+ Charge=              0.1199 electrons
+ Dipole moment (field-independent basis, Debye):
+    X=              0.0000    Y=              0.0000    Z=              0.0000  Tot=              0.0000
+ Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=            -38.0544   YY=            -38.0544   ZZ=             41.3695
+   XY=              0.0000   XZ=             -0.0000   YZ=              0.0000
+ Traceless Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=            -26.4746   YY=            -26.4746   ZZ=             52.9493
+   XY=              0.0000   XZ=             -0.0000   YZ=              0.0000
+ Octapole moment (field-independent basis, Debye-Ang**2):
+  XXX=             -0.0000  YYY=              0.0000  ZZZ=              0.0000  XYY=             -0.0000
+  XXY=              0.0000  XXZ=              0.0000  XZZ=              0.0000  YZZ=              0.0000
+  YYZ=              0.0000  XYZ=              0.0000
+ Hexadecapole moment (field-independent basis, Debye-Ang**3):
+ XXXX=           -113.9191 YYYY=           -113.9191 ZZZZ=            244.2864 XXXY=              0.0000
+ XXXZ=              0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=             -0.0000
+ ZZZY=              0.0000 XXYY=            -37.9730 XXZZ=          -1782.3607 YYZZ=          -1782.3607
+ XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=              0.0000
+ N-N= 2.424135593636D+00 E-N=-7.441627453519D+00  KE= 9.651378557096D-01
+ Symmetry AG   KE= 5.274001119973D-01
+ Symmetry B1G  KE= 0.000000000000D+00
+ Symmetry B2G  KE= 0.000000000000D+00
+ Symmetry B3G  KE= 0.000000000000D+00
+ Symmetry AU   KE= 0.000000000000D+00
+ Symmetry B1U  KE= 4.377377437123D-01
+ Symmetry B2U  KE= 0.000000000000D+00
+ Symmetry B3U  KE= 0.000000000000D+00
+ Orbital energies and kinetic energies (alpha):
+                                 1                 2
+   1         (SGG)--O         -0.137624          0.101168
+   2         (SGU)--O         -0.132940          0.109602
+   3         (SGG)--O         -0.123168          0.124050
+   4         (SGU)--O         -0.106634          0.145640
+   5         (SGG)--V         -0.080767          0.176692
+   6         (SGU)--V         -0.035891          0.218998
+   7         (SGG)--V          0.024985          0.271383
+   8         (SGU)--V          0.088218          0.322494
+ Total kinetic energy from orbitals= 9.609202279154D-01
+ No NMR shielding tensors so no spin-rotation constants.
+ Leave Link  601 at Mon Nov 16 17:44:41 2026, MaxMem=   268435456 cpu:         0.1
+ (Enter /home/palacios/Gaussian/Gaussian09/Rev.D01/nvidia/g09/l9999.exe)
+ 1\1\GINC-LIAN\SP\RSVWN\Gen\Au8\PALACIOS\16-Nov-2026\0\\#p lsda/gen pse
+ udo=read pop=reg Scf=(conver=5,maxcycle=100,dsymm,nodamp)\\Au8-chain\\
+ 0,1\Au,0,0.,0.,0.\Au,0,0.,0.,3.\Au,0,0.,0.,6.\Au,0,0.,0.,9.\Au,0,0.,0.
+ ,12.\Au,0,0.,0.,15.\Au,0,0.,0.,18.\Au,0,0.,0.,21.\\Version=AM64L-G09Re
+ vD.01\State=1-SGG\HF=-1.7914124\RMSD=9.692e-06\Dipole=0.,0.,0.\Quadrup
+ ole=-19.6832489,-19.6832489,39.3664979,0.,0.,0.\PG=D*H [C*(Au1Au1Au1Au
+ 1.Au1Au1Au1Au1)]\\@
+
+
+ ONLY THE DAY DAWNS TO WHICH YOU ARE AWAKE.
+
+                                 -- THOREAU
+ Job cpu time:       0 days  0 hours  0 minutes  4.9 seconds.
+ File lengths (MBytes):  RWF=      5 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 09 at Mon Nov 16 17:44:41 2026.

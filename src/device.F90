@@ -118,6 +118,13 @@
   real*8, parameter :: PZeroTol = 1.0d-12
   character(len=8), parameter :: PBinMagic = 'ANTPBIN1'
   
+  ! Unbracketed device root search (SolveDeviceFermiMuller): the charge
+  ! function, the shift window and whether a trial point has left it
+  procedure(real*8), pointer :: BoundCharge => null()
+  real*8 :: BoundLower, BoundUpper
+  logical :: BoundEscaped = .false.
+  integer :: BoundCalls = 0
+
 !!$OMP THREADPRIVATE(shift)
   contains
 
@@ -1245,8 +1252,12 @@
 
   ! Default chain (DEVMULLER): Muller from guess+-1 eV, then secant, then
   ! bisection over [EMin,EMax]. A failed method falls through when it hits
-  ! the iteration limit or leaves [EMin,EMax]. The accepted root is evaluated
-  ! last, as in SolveDeviceFermi, so the density matches the reported energy.
+  ! the iteration limit or tries a point outside [EMin,EMax]. Muller and
+  ! secant are unbracketed, so they see the charge through BoundedCharge, which
+  ! never evaluates it outside the device window: far outside it the lead
+  ! self-energies fail (a secant step reached -2e25 eV on a 1D-lead chain).
+  ! The accepted root is evaluated last, as in SolveDeviceFermi, so the
+  ! density matches the reported energy.
   subroutine SolveDeviceFermiMuller(charge,guess,qtol,root,width)
     use numeric, only: SECANT,MULLER,BISEC
     use parameters, only: FermiAcc,MaxIterations => Max,EFMax
@@ -1262,21 +1273,32 @@
     character(len=6) :: method
     started=omp_get_wtime()
     lower=max(EMin,-EFMax)
+    BoundCharge=>charge
+    BoundLower=lower;BoundUpper=EMax
     E0=guess-1d0;E1=guess;E2=guess+1d0
     method='MULLER'
-    call MULLER(charge,E0,E1,E2,FermiAcc,qtol,MaxIterations,E3,DE,k,cond)
-    calls=k+3
-    if(k==MaxIterations.or.E3<lower.or.E3>EMax.or..not.ieee_is_finite(E3)) then
-       print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+    BoundEscaped=.false.
+    BoundCalls=0
+    call MULLER(BoundedCharge,E0,E1,E2,FermiAcc,qtol,MaxIterations,E3,DE,k,cond)
+    if(BoundEscaped.or.k==MaxIterations.or.E3<lower.or.E3>EMax.or..not.ieee_is_finite(E3)) then
+       if(BoundEscaped) then
+          print *, 'Warning: MULLER method left the device energy window. Using SECANT.'
+       else
+          print *, 'Warning: MULLER method failed to find root. Using SECANT.'
+       end if
        E0=guess-1d0;E2=guess+1d0
        method='SECANT'
-       call SECANT(charge,E0,E2,FermiAcc,qtol,MaxIterations,E3,DE,cond,k)
-       calls=calls+k+2
-       if(k==MaxIterations.or.E3<lower.or.E3>EMax.or..not.ieee_is_finite(E3)) then
-          print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+       BoundEscaped=.false.
+       call SECANT(BoundedCharge,E0,E2,FermiAcc,qtol,MaxIterations,E3,DE,cond,k)
+       if(BoundEscaped.or.k==MaxIterations.or.E3<lower.or.E3>EMax.or..not.ieee_is_finite(E3)) then
+          if(BoundEscaped) then
+             print *, 'Warning: SECANT method left the device energy window. Using BISEC.'
+          else
+             print *, 'Warning: SECANT method failed to find root. Using BISEC.'
+          end if
           method='BISEC'
           E3=BISEC(charge,lower,EMax,FermiAcc,5*MaxIterations,k)
-          calls=calls+k+3
+          BoundCalls=BoundCalls+k+3
           DE=FermiAcc
           if(k>=5*MaxIterations) then
              print *, 'ERROR: device MULLER, SECANT and BISEC searches all failed'
@@ -1288,6 +1310,7 @@
     root=E3
     width=abs(DE)
     residual=charge(root)
+    calls=BoundCalls
     write(ifu_log,'(A,A,A,I5,A,I5)') 'Device ',trim(method),' iterations: ',k, &
          ' charge evaluations: ',calls+1
     write(ifu_log,'(A,A,A,ES16.7,A,ES16.7,A,ES16.7)') 'Device ',trim(method),' charge residual: ', &
@@ -1295,6 +1318,26 @@
     write(ifu_log,'(A,A,A,F12.6)') 'Device ',trim(method),' wall seconds: ',omp_get_wtime()-started
     call flush(ifu_log)
   end subroutine SolveDeviceFermiMuller
+
+  ! The charge of SolveDeviceFermiMuller inside [BoundLower,BoundUpper];
+  ! outside it, or once a point has left it, returns 0 without evaluating
+  ! and marks the method as failed. A module procedure, not an internal
+  ! one, because MULLER and SECANT take F without an explicit interface.
+  real*8 function BoundedCharge(x)
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    real*8,intent(in) :: x
+    BoundedCharge=0d0
+    if(BoundEscaped) return
+    if(.not.ieee_is_finite(x).or.x<BoundLower.or.x>BoundUpper) then
+       BoundEscaped=.true.
+       write(ifu_log,'(A,ES14.6,A,2F12.4,A)') 'Device root search tried shift ',x, &
+            ' eV, outside [',BoundLower,BoundUpper,']'
+       return
+    end if
+    BoundCalls=BoundCalls+1
+    BoundedCharge=BoundCharge(x)
+  end function BoundedCharge
 
   subroutine CompDensMat(ADDP)
     use parameters, only: ChargeAcc,QExcess,FixEFermi,FermiStart

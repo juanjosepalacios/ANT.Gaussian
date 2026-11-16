@@ -1,6 +1,6 @@
 Au nanocontacts between Bethe-lattice electrodes, LSDA. Unless noted, the electrodes are the book
 `Papacon` set of `BLDAT/BL079.dat` (the default Au set) and the basis is a minimal spd set with a
-68-electron ECP. Au chains between 1D leads are in [../Au-chain](../Au-chain/README.md).
+68-electron ECP. Au chains between 1D leads are in [../Au-chains](../Au-chains/README.md).
 
 Each subdirectory is one atomic structure, named after it; inside it, each subdirectory is one
 variation of the calculation (basis, electrodes, settings), with its own inputs, outputs and
