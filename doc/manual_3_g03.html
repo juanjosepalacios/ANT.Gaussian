@@ -550,6 +550,7 @@ either be maintained (1), reversed (-1), or erased (0).</p>
   <p>Sets a post-SCF spin-orbit coupling calculation. The transmission, polarization, and DOS are computed adding SOC to
 the solution converged in the absence of SOC.</p>
   <p>This evaluates SOC effects using the density converged without SOC. It is useful for comparing transport with and without SOC on the same underlying scalar-relativistic SCF solution. Use SCFSOC when SOC must also feed back into the self-consistent density.</p>
+  <p>Calibrated SOC factors: <a href="SOC_database.pdf">SOC_database.pdf</a> (A. Garc&iacute;a-Mart&iacute;nez, W. Dednam, S. Pakdel and J. J. Palacios, <em>SOC corrected Gaussian basis sets for electronic transport calculations in ANT.Gaussian</em>, 2026) gives, for Au, Ag, Pt, W, Pb, Bi, Sb, Al and Cu, a basis set and pseudopotential in GAUSSIAN format with its <em>SOC_FAC_P/D/F</em> and <em>RCUT</em>, calibrated against two-component CRYSTAL23 bands, and the resulting band structures. The factors are valid only with the basis set, pseudopotential and <em>RCUT</em> listed with them.</p>
   <p>Default: .false.</p>
 </details>
 <details class="keyword" id="scfsoc">
@@ -563,24 +564,28 @@ the solution converged in the absence of SOC.</p>
   <summary><em>SOC_FAC_P</em> (real)</summary>
   <p>Global SOC multiplicative factor for all p orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
   <p>This scales the calculated SOC integrals for the p shells globally. It does not change the basis functions or activate SOC by itself; request SOC (and SCFSOC as well for the self-consistent variant). SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_P replaces the calculated shell coupling rather than scaling it.</p>
+  <p>Calibrated values for several elements, each with its basis set, pseudopotential and <em>RCUT</em>: <a href="SOC_database.pdf">SOC_database.pdf</a>.</p>
   <p>Default: 1.0</p>
 </details>
 <details class="keyword" id="soc-fac-d">
   <summary><em>SOC_FAC_D</em> (real)</summary>
   <p>Global SOC multiplicative factor for all d orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
   <p>This scales the calculated SOC integrals for the d shells globally. It does not change the basis functions or activate SOC by itself; request SOC (and SCFSOC as well for the self-consistent variant). SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_D replaces the calculated shell coupling rather than scaling it.</p>
+  <p>Calibrated values for several elements, each with its basis set, pseudopotential and <em>RCUT</em>: <a href="SOC_database.pdf">SOC_database.pdf</a>.</p>
   <p>Default: 1.0</p>
 </details>
 <details class="keyword" id="soc-fac-f">
   <summary><em>SOC_FAC_F</em> (real)</summary>
   <p>Global SOC multiplicative factor for all f orbitals due to lack of nodal structure in basis set. A value of 1.0 gives the exact SOC value as obtained from the integral.</p>
   <p>This scales the calculated SOC integrals for the f shells globally. It does not change the basis functions or activate SOC by itself; request SOC (and SCFSOC as well for the self-consistent variant). SOCFACATOM provides site-dependent factors, while a positive SOC_VAL_F replaces the calculated shell coupling rather than scaling it.</p>
+  <p>Calibrated values for several elements, each with its basis set, pseudopotential and <em>RCUT</em>: <a href="SOC_database.pdf">SOC_database.pdf</a>.</p>
   <p>Default: 1.0</p>
 </details>
 <details class="keyword" id="rcut">
   <summary><em>RCUT</em> (real)</summary>
   <p>Global cutoff for Yukawa nuclear screened potential.</p>
   <p>This controls the screening model used when evaluating atomic SOC integrals. It changes the calculated SOC strength rather than setting a numerical quadrature accuracy. SOCFACATOM allows atom-specific cutoff values when different sites require different screening parameters.</p>
+  <p>The calibrated SOC factors of <a href="SOC_database.pdf">SOC_database.pdf</a> each come with the <em>RCUT</em> they were fitted with.</p>
   <p>Default: 2.0</p>
 </details>
 <details class="keyword" id="socfacatom">
