@@ -2879,7 +2879,7 @@
     do ispin=1,NSpin
 
        open(333,file='tempDOS',status='unknown')
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
@@ -2894,7 +2894,7 @@
           call gplus0(cenergy,Green)
 
           ! Mulliken DOS 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP CRITICAL
 #endif
           SG = matmul( SD, green )
@@ -2922,13 +2922,13 @@
           if (NSpin .eq. 1) write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))/d_pi,i=imin,imax)
           if (NSpin .eq. 2) write(333,3333) energy,(DOS*(-1)**(ispin+1))/2,((AtomDOS(j)*(-1)**(ispin+1))/2,j=LDOS_Beg,LDOS_End),(-dimag(SG(i,i))*(-1)**(ispin+1)/(2*d_pi),i=imin,imax)
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END CRITICAL
 #endif
 
        end do ! End of energy loop
       
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
@@ -2964,7 +2964,7 @@
       
       open(333,file='tempDOS',status='unknown')
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
@@ -2978,7 +2978,7 @@
             !call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
              call gplus0_SOC(cenergy,DGreen,1)
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP CRITICAL
 #endif
 
@@ -3004,11 +3004,11 @@
           call flush(333)
           write(333,3333) energy,DOS,(AtomDOS(j),j=LDOS_Beg,LDOS_End),((-dimag(DSG(i,i))/(2*d_pi)-dimag(DSG(i+NAOrbs,i+NAOrbs)))/(2*d_pi),i=imin,imax)
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END CRITICAL
 #endif
        end do ! End of energy loop
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
@@ -3196,7 +3196,7 @@
       open(334,file='tempT',status='unknown')
       if (LDOSOutput ) open(333,file='tempDOS',status='unknown')
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal,T,temp) FIRSTPRIVATE(nsteps)
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
@@ -3231,7 +3231,7 @@
              call zgemm('N','N',NAOrbs,NAOrbs,NAOrbs,c_one,temp,  NAOrbs,GammaL,NAOrbs,c_zero,T,   NAOrbs)
           end if
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP CRITICAL
 #endif
           ! Mulliken DOS 
@@ -3298,11 +3298,11 @@
           call flush(334)
           write(334,1002)energy,trans,(tn(i),i=NAOrbs,NAOrbs-NChannels+1,-1)
           
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END CRITICAL
 #endif
        end do ! End of energy loop
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
@@ -3353,7 +3353,7 @@
       
        wcount = 0  ! Issue warning of failure in transmission just once
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
 !$OMP DO SCHEDULE(STATIC,10)
 #endif
@@ -3371,7 +3371,7 @@
           call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
           call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP CRITICAL
 #endif
 
@@ -3562,11 +3562,11 @@
              write(334,1002)energy,trans,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
           end if
 
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END CRITICAL
 #endif
        end do ! End of energy loop
-#ifdef PGI
+#if defined(PGI) || defined(INTEL)
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
