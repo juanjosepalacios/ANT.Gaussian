@@ -1,7 +1,7 @@
 Nanographene flake (170 C atoms) with a carbon Bethe-lattice electrode around its edge, spin-polarized
 LSDA, and the local DOS of an atom at the centre of the flake.
 
-The structure and inputs are those of `examples/graphene/nanographene.gjf` and `.ant`, with
+The structure and inputs are those of [`../Papacon-SL0.01`](../Papacon-SL0.01/README.md) (`nanographene.gjf` and `.ant`), with
 `SL = 0.1` instead of `1.0d-2`. The first electrode is a Bethe lattice with the default carbon set
 `Papacon` of `BLDAT/BL006.dat` (sp, in eV: es = -8, ep = 0, sss = -6, sps = 5, pps = 5,
 ppp = -3); the second is a ghost (`TYPE2 = GHOST`), so there is no transmission. ANT attaches the

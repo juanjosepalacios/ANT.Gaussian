@@ -1,13 +1,18 @@
-Benzene between Au electrodes, LSDA.
+Benzene between Au electrodes, LSDA. The Au contact without benzene is now
+[../Au-nanocontacts/Au9-Au4-Au-Au4-Au9/spd-Papacon-noant](../Au-nanocontacts/Au9-Au4-Au-Au4-Au9/spd-Papacon-noant/README.md).
 
-- `input_Electrodo_Au_3_benzene`: the benzene junction. Its `.ant` uses the keywords `MOLGAP`,
-  `MOLBLOCKS`, `IP` and `EA`, which ANT 3.0.0 does not have: the run stops at once with
-  `ERROR - Undefined keyword: MOLGAP`. It sets no `BLPAR`, so its electrodes are the default
-  `Papacon`; its 20 Au atoms have one s, one p and one d shell (9 orbitals, with a 68-electron ECP),
-  which fits that 9-orbital set. The stored outputs (`.log`, `T.*.dat`, `.MOA.dat`, the
-  `.jpg`) come from ANT 2.5.2 and were not rerun.
-- `Au9-Au4-Au-Au4-Au9`: an Au contact without benzene and without `.ant` (ANT defaults, default
-  electrode set `Papacon` of `BLDAT/BL079.dat`). Rerun with ANT.Gaussian 3.0.0 (commit 7709e49
-  sources), 8 threads, 13 November 2026: 256 basis functions, E = -1041.523349 a.u. after 37 cycles,
-  device E_F = -8.0632 eV, T(E_F) = 2.333 e^2/h, normal termination. Outputs:
-  `Au9-Au4-Au-Au4-Au9.log` and `T.Au9-Au4-Au-Au4-Au9.dat`.
+Each subdirectory is one atomic structure, named after it; inside it, each subdirectory is one
+variation of the calculation (basis, electrodes, settings), with its own inputs, outputs and
+README. The files keep the name of the system.
+
+- [input_Electrodo_Au_3_benzene/](input_Electrodo_Au_3_benzene/README.md): benzene between two Au
+  tips, 32 atoms
+  - [spd-Papacon/](input_Electrodo_Au_3_benzene/spd-Papacon/README.md)
+  - [spd-Papacon-opt/](input_Electrodo_Au_3_benzene/spd-Papacon-opt/README.md)
+
+The stored outputs come from ANT 2.5.x. spd-Papacon does not run with ANT.Gaussian 3.0.0
+(removed keywords); spd-Papacon-opt has been rebuilt for 3.0.0, but its new run is not stored yet.
+
+The `.gjf` files substitute links from `../../../../bin`; change this and `%NProcShared` to your
+installation. ANT takes the job name from the title line of the `.gjf`, which matches the file
+names.

@@ -1,7 +1,7 @@
 How the `FCC-s` Au Bethe-lattice set in `BLDAT/BL079.dat` was made: a CRYSTAL23 calculation of bulk
 fcc Au with one s orbital and one electron per atom, and a fit of a single-orbital Bethe lattice to
 its DOS. Use the set with `BLPAR1/2 = FCC-s` for electrode atoms that carry only the s basis below,
-as the outer atoms of `examples/Au-nanocontacts/Au4-Au-Au--Au4.gjf`.
+as the outer atoms of `examples/Au-nanocontacts/Au4-Au-Au--Au4/s-FCC-s/Au4-Au-Au--Au4.gjf`.
 
 ## Basis and ECP
 

@@ -1,52 +1,50 @@
-Au nanocontacts between Bethe-lattice electrodes, LSDA, with the book `Papacon` set of
-`BLDAT/BL079.dat` (the default electrode set).
+Au nanocontacts between Bethe-lattice electrodes, LSDA. Unless noted, the electrodes are the book
+`Papacon` set of `BLDAT/BL079.dat` (the default Au set) and the basis is a minimal spd set with a
+68-electron ECP. Au chains between 1D leads are in [../Au-chain](../Au-chain/README.md).
 
-## Jobs
+Each subdirectory is one atomic structure, named after it; inside it, each subdirectory is one
+variation of the calculation (basis, electrodes, settings), with its own inputs, outputs and
+README. The files keep the name of the system.
 
-| Job | Structure | `.ant` settings | Notes |
-|---|---|---|---|
-| `Au4-Au-Au-Au4` | 10 atoms | `ALPHA = 0.02` | starts from `P.Au4-Au-Au-Au4.dat` if present |
-| `Au9-Au4-Au-Au4-Au9` | 27 atoms, one apex atom | `SL = 1.0d-3`, `OVERLAP = -1.0` | starts from `P.Au9-Au4-Au-Au4-Au9.dat` if present |
-| `Au9-Au4-Au-Au-Au4-Au9` | 28 atoms | none (no `.ant`, defaults) | |
-| `Au9-Au4-Au--Au4-Au9`, `Au9-Au4--Au-Au4-Au9` | 27 atoms with a gap on either side of the apex atom | `BIASVOLT = -3.0`, `SL = 1.0d-3`, `MULLIKEN` | |
-| `Au4-Au` | 5 atoms | ghost electrodes | not rerun; no Bethe lattice |
-| `Au4-Au-Au--Au4` | 10 atoms, one s function on the 8 outer atoms, LANL2DZ on the apex atoms | `ALPHA = 0.02`, `BLPAR1 = BLPAR2 = FCC-s` | the 1-orbital `FCC-s` electrodes (fitted for this s basis and ECP, `BLDAT/fits/Au-FCC-s`) match the s-only electrode planes |
+- [Au4-Au-Au-Au4/](Au4-Au-Au-Au4/README.md): 10 atoms, two 4-atom layers joined by two apex atoms
+  - [spd-Papacon/](Au4-Au-Au-Au4/spd-Papacon/README.md)
+  - [s-FCC-s/](Au4-Au-Au-Au4/s-FCC-s/README.md)
+- [Au4-Au-Au--Au4/](Au4-Au-Au--Au4/README.md): the same 10 atoms with a gap between the apex atoms
+  - [s-FCC-s/](Au4-Au-Au--Au4/s-FCC-s/README.md)
+- [Au4-Au/](Au4-Au/README.md): 5 atoms, one 4-atom layer and an apex atom
+  - [spd-ghost/](Au4-Au/spd-ghost/README.md)
+- [Au9-Au4-Au-Au4-Au9/](Au9-Au4-Au-Au4-Au9/README.md): 27 atoms, one apex atom
+  - [spd-Papacon/](Au9-Au4-Au-Au4-Au9/spd-Papacon/README.md)
+  - [spd-Papacon-noant/](Au9-Au4-Au-Au4-Au9/spd-Papacon-noant/README.md)
+- [Au9-Au4-Au-Au-Au4-Au9/](Au9-Au4-Au-Au-Au4-Au9/README.md): 28 atoms, two apex atoms
+  - [spd-Papacon/](Au9-Au4-Au-Au-Au4-Au9/spd-Papacon/README.md)
+- [Au9-Au4-Au--Au4-Au9/](Au9-Au4-Au--Au4-Au9/README.md) and
+  [Au9-Au4--Au-Au4-Au9/](Au9-Au4--Au-Au4-Au9/README.md): 27 atoms with a gap on either side of the
+  apex atom, at -3 V
+  - [spd-Papacon-bias/](Au9-Au4-Au--Au4-Au9/spd-Papacon-bias/README.md)
+  - [spd-Papacon-bias/](Au9-Au4--Au-Au4-Au9/spd-Papacon-bias/README.md)
 
-The `.gjf` files substitute links from `../bin` or `../../bin`; change these and `%NProcShared` to
-your installation. ANT takes the job name from the title line of the `.gjf`, which matches the file
-names here.
+The `.gjf` files substitute links from `../../../../bin`; change this and `%NProcShared` to your
+installation. ANT takes the job name from the title line of the `.gjf`, which matches the file
+names.
 
 ## Results
 
-ANT.Gaussian 3.0.0 (commit 7709e49 sources), Gaussian 09 D.01, NVIDIA HPC SDK build, 4 threads,
-13 November 2026, from scratch (the stored `P` files were not used). The outputs are
-`<job>.log`, `T.<job>.dat` (E - E_F from -3 to 3 eV), `<job>.xyz`, and for the bias jobs
-`Q.<job>.dat` (Mulliken charges).
+ANT.Gaussian 3.0.0 (commit 7709e49 sources), Gaussian 09 D.01, NVIDIA HPC SDK build, 4 threads
+(8 for spd-Papacon-noant), 13 November 2026, from scratch.
 
-| Job | Basis functions | SCF energy (a.u.) | Cycles | Device E_F (eV) | T(E_F) (e^2/h) | Wall time |
-|---|---|---|---|---|---|---|
-| Au4-Au-Au-Au4 | 90 | -348.018120 | 12 | -8.3298 | 1.261 | 5 s |
-| Au9-Au4-Au-Au4-Au9 | 256 | -1041.555335 | 16 | -8.0647 | 2.335 | 125 s |
-| Au9-Au4-Au-Au-Au4-Au9 | 252 | -975.625433 | 17 | -7.9370 | 1.060 | 34 s |
-| Au9-Au4-Au--Au4-Au9 (-3 V) | 243 | -940.559212 | 27 | -8.0060 | 0.069 | 208 s |
-| Au9-Au4--Au-Au4-Au9 (-3 V) | 243 | -940.555680 | 27 | -7.9672 | 0.171 | 215 s |
-| Au4-Au-Au--Au4 (`FCC-s`) | 52 | -272.526621 | 14 | -2.5120 | 1.578 | 1 s |
+| System / variation | Basis functions | Device E_F (eV) | T(E_F) (e^2/h) |
+|---|---|---|---|
+| [Au4-Au-Au-Au4/spd-Papacon](Au4-Au-Au-Au4/spd-Papacon/README.md) | 90 | -8.3298 | 1.261 |
+| [Au4-Au-Au--Au4/s-FCC-s](Au4-Au-Au--Au4/s-FCC-s/README.md) | 52 | -2.5120 | 1.578 |
+| [Au9-Au4-Au-Au4-Au9/spd-Papacon](Au9-Au4-Au-Au4-Au9/spd-Papacon/README.md) | 256 | -8.0647 | 2.335 |
+| [Au9-Au4-Au-Au4-Au9/spd-Papacon-noant](Au9-Au4-Au-Au4-Au9/spd-Papacon-noant/README.md) | 256 | -8.0632 | 2.333 |
+| [Au9-Au4-Au-Au-Au4-Au9/spd-Papacon](Au9-Au4-Au-Au-Au4-Au9/spd-Papacon/README.md) | 252 | -7.9370 | 1.060 |
+| [Au9-Au4-Au--Au4-Au9/spd-Papacon-bias](Au9-Au4-Au--Au4-Au9/spd-Papacon-bias/README.md) | 243 | -8.0060 | 0.069 |
+| [Au9-Au4--Au-Au4-Au9/spd-Papacon-bias](Au9-Au4--Au-Au4-Au9/spd-Papacon-bias/README.md) | 243 | -7.9672 | 0.171 |
 
-The Bethe-lattice Fermi energy is 6.931 eV with `Papacon` and 0 eV with `FCC-s`. All runs terminate normally; the two bias
-runs report 30 and 16 unsuccessful density integrations, the others none.
+The Bethe-lattice Fermi energy is 6.931 eV with `Papacon` and 0 eV with `FCC-s`. The device Fermi
+energies are on the energy scale of the electrodes.
 
-## Notes
-
-- The previous outputs came from ANT 2.5.2 with the earlier Au `Papacon` set (book values with `edd`
-  and `edt` swapped). For Au4-Au-Au-Au4 the stored log had a Bethe-lattice Fermi energy of 2.709 eV,
-  E = -347.701106 a.u. and T(E_F) = 0.862; the differences also include all the changes to ANT
-  since 2.5.2.
-- `Au9-Au4-Au-Au4-Au9.ant` had `PFIX` with `P.Au9-Au4-Au-Au4-Au9.dat0`, which is not in the
-  repository; the `PFIX` lines are removed.
-- `Au4-Au-Au--Au4` had no `.ant` and the title `Au-nanocontact`. ANT takes the job name from the
-  title, so it read no `.ant` and used the 9-orbital default `Papacon`, which stops with `NAOrbs read
-  from BL data base not equal to NAOrbs of electrode plane`. The title is now the file name and the
-  new `.ant` selects `FCC-s`. With the earlier 1-orbital set `lsda-6s`, now removed, it gave
-  E = -272.550088 a.u., E_F = -2.4688 eV and T(E_F) = 1.553.
-- `P.Au4-Au-Au-Au4.dat` and `P.Au9-Au4-Au-Au4-Au9.dat` are the densities of these runs: a new run in
-  this directory starts from them.
+The previous outputs came from ANT 2.5.2 with the earlier Au `Papacon` set (book values with `edd`
+and `edt` swapped).

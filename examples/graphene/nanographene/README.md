@@ -7,6 +7,5 @@ files keep the name of the system.
 - [Papacon/](Papacon/README.md): carbon `Papacon` electrode (BL006, in eV), `SL = 0.1`, and the
   local DOS of atom 81 at the centre of the flake from a restart. The flake comes out essentially
   non-magnetic (atomic spins below 0.005).
-
-The original inputs, `../nanographene.gjf` and `../nanographene.ant`, are those of this structure
-with `SL = 1.0d-2`.
+- [Papacon-SL0.01/](Papacon-SL0.01/README.md): the original input of this structure, with
+  `SL = 1.0d-2`. Not run.
