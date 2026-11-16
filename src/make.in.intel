@@ -7,10 +7,10 @@
 PREPROC= -DDEFMAXSHL=250000 -DDEFMAXATM=250000 -DDEFMAXTIT=100 -DDEFMAXRTE=4000
 
 # Compilation flags.
-CFLAGS= -i8 -r8 '-mcmodel=medium' -auto -axAVX -static-intel -static-libgcc -no-prec-div -fpp3 -ftz -pad -mkl -openmp -O2 -unroll
+CFLAGS= -i8 -r8 -auto -axAVX -static-intel -static-libgcc -no-prec-div -fpp -ftz -pad -qmkl -qopenmp -O2 -unroll
 
 # Extra libs from Gaussian needed for compiling/linking ANT
-GAUSSLIBS= /home/palacios/Gaussian09/intel/v.D01/g09/util.a
+GAUSSLIBS= /home/palacios/Gaussian/Gaussian09/Rev.D01/intel/g09/util.a
 
 # Linking flags
 LFLAGS= -lpthread -lm -lc
