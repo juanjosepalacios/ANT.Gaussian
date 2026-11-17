@@ -1,7 +1,7 @@
 Ag nanocontact Ag16-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16-nogap (60 atoms) between Bethe-lattice electrodes,
 LSDA.
 
-The tunnel junction [Ag16-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16](../Ag16-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16/README.md)
+The tunnel junction [Ag16-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16-gapped](../Ag16-Ag9-Ag4-Ag-Ag-Ag4-Ag9-Ag16-gapped/README.md)
 with the gap closed: each half is moved 2.5 A towards the centre, so the apex atoms sit on the axis
 at z = +-1.5 A, 3 A apart, as in [Ag9-Ag4-Ag-Ag-Ag4-Ag9](../Ag9-Ag4-Ag-Ag-Ag4-Ag9/README.md). The
 16-, 9- and 4-atom layers are at z = +-7.5, +-5.5 and +-3.5 A (fcc stacking with a = 4.00 A). The
