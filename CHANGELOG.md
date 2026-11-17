@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.1.0 - 2026-11-17
 
 - OpenMP: the loops in `device.F90` and `OneDLead.F90` that used static
   scheduling (Fermi-search charge integrals, transmission and LDOS energy
