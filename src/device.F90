@@ -1536,7 +1536,7 @@
         QAlpha = d_zero; QBeta = d_zero
         do ispin=1,NSpin
 !$OMP PARALLEL PRIVATE(Ei,dEdx,GD)
-!$OMP DO
+!$OMP DO SCHEDULE(DYNAMIC)
            do i=1,np
               Ei = 2.0d0*EMax*x(i)
               if( x(i) > 0.5d0 ) Ei = 0.5d0*EMax/(1.0d0-x(i))
@@ -1624,7 +1624,7 @@
         call gauleg(0.d0,d_pi,x(1:np),w(1:np),np)
 
 !$OMP PARALLEL PRIVATE(GDR)
-!$OMP DO
+!$OMP DO SCHEDULE(DYNAMIC)
         do i=1,np
            call gplus0_SOC( R*exp(ui*x(i))-R, GDR, 1 )        
     !print*,'x(i)',i,x(i),GDR(1,1)
@@ -1667,7 +1667,7 @@
         call gauleg(0.0d0,-d_pi,x(1:np),w(1:np),np)
 
 !$OMP PARALLEL PRIVATE(GDA)
-!$OMP DO
+!$OMP DO SCHEDULE(DYNAMIC)
         do i=1,np           
             call gplus0_SOC(R*exp(ui*(x(i)))-R, GDA, -1)
     !print*,'x(i)',i,x(i),GDA(1,1)
@@ -1764,7 +1764,7 @@
         call gauleg(0.0d0,2.0d0,x(1:2*np),w(1:2*np),2*np)
 
 !$OMP PARALLEL PRIVATE(Ei,dEdx,GD,DPD)
-!$OMP DO
+!$OMP DO SCHEDULE(DYNAMIC)
         do i=1,np
            Ei = 2.0d0*EMax*x(i)
            if( x(i) > 0.5d0 ) Ei = 0.5d0*EMax/(1.0d0-x(i))
@@ -2881,7 +2881,7 @@
        open(333,file='tempDOS',status='unknown')
 #if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal) 
-!$OMP DO SCHEDULE(STATIC,10)
+!$OMP DO SCHEDULE(DYNAMIC,1)
 #endif
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
@@ -2966,7 +2966,7 @@
 
 #if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal) 
-!$OMP DO SCHEDULE(STATIC,10)
+!$OMP DO SCHEDULE(DYNAMIC,1)
 #endif
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
@@ -3198,7 +3198,7 @@
 
 #if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,green,gammar,gammal,T,temp) FIRSTPRIVATE(nsteps)
-!$OMP DO SCHEDULE(STATIC,10)
+!$OMP DO SCHEDULE(DYNAMIC,1)
 #endif
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
@@ -3355,7 +3355,7 @@
 
 #if defined(PGI) || defined(INTEL)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
-!$OMP DO SCHEDULE(STATIC,10)
+!$OMP DO SCHEDULE(DYNAMIC,1)
 #endif
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
@@ -3743,7 +3743,7 @@
 
     do ispin=1,NSpin
 !$OMP PARALLEL PRIVATE(En,zn,GD)
-!$OMP DO
+!$OMP DO SCHEDULE(DYNAMIC)
        do n=1,nmax
           En = EMesh(n)
           zn = En
@@ -4290,7 +4290,7 @@
        ! Each point writes its own slot; sum in quadrature order afterward.
        ! This preserves the serial accumulation order across thread counts.
 !$omp parallel do default(none) shared(n,x,w,contribution,E0,R) private(j) &
-!$omp& if(parallel_charge) schedule(static)
+!$omp& if(parallel_charge) schedule(dynamic)
        do j=1,n
           contribution(j) = w(j)*DDOS( E0, R, x(j) )
        end do
@@ -4363,7 +4363,7 @@
           call gauleg(d_zero,d_pi,x(1:n),w(1:n),n)
 
 #ifdef INTEL
-!$omp parallel do private(j) reduction(+:q) default(shared)
+!$omp parallel do private(j) reduction(+:q) default(shared) schedule(dynamic)
 #endif
           do j=1,n
              q = q + w(j)*DDOS( E0, R, x(j) )
@@ -4842,7 +4842,7 @@ subroutine IntRealAxis_SOC(Er,El)
       real*8 :: radius,eq
       radius=context(1);eq=context(2);spin=int(context(3))
       info=0
-!$omp parallel do default(shared) private(j) if(.not.omp_in_parallel()) schedule(static)
+!$omp parallel do default(shared) private(j) if(.not.omp_in_parallel()) schedule(dynamic)
       do j=1,npoint
          call AdaptiveDensityPoint(x(j),radius,eq,spin,y(:,j),point_status(j))
       end do

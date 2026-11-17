@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- OpenMP: the loops in `device.F90` and `OneDLead.F90` that used static
+  scheduling (Fermi-search charge integrals, transmission and LDOS energy
+  loops, `AdaptiveDensityBatch`, `CompPD`, `CompSpinPD`, `CompHybFunc`,
+  1D-lead charge and band loops) now use dynamic scheduling, so threads
+  on the slower E-cores of hybrid CPUs do not hold the others back. On an
+  i9-13900KF (8 P-cores, 16 E-cores) whole runs are about 1% faster and
+  the transport analysis about 10% faster at 16-24 threads; energies are
+  unchanged. 24 threads is the fastest setting there (Pt9 SOC-small 73 s
+  against 99 s at 8); runs with 16 or more threads need an explicit
+  `%mem`, since Gaussian's default 256 MB stops `l502` in PrsMar.
+
 - Examples: remove `H-chain/H6-chain` (its device Fermi search fails with
   `Root is not bracketed`) and `Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-Papacon-sd`
   (its `Papacon-sd` parameter set is no longer in `BLDAT/BL028.dat`).

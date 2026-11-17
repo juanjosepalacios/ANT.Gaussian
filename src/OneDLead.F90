@@ -924,7 +924,7 @@ contains
       real*8 :: E0,R,value
       E0=context(1);R=context(2)
       info=0
-!$omp parallel do default(shared) private(j,spin,node_info,value) if(.not.omp_in_parallel()) schedule(static)
+!$omp parallel do default(shared) private(j,spin,node_info,value) if(.not.omp_in_parallel()) schedule(dynamic)
       do j=1,npoint
          y(1,j)=0d0;point_status(j)=0
          do spin=1,NXSpin
@@ -1022,7 +1022,7 @@ contains
        do ispin=1,NXSpin
           ! Each point owns its Green function and self-energy scratch. Preserve
           ! serial summation order to keep adaptive refinement reproducible.
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(j) IF(parallel_charge) SCHEDULE(STATIC)
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(j) IF(parallel_charge) SCHEDULE(DYNAMIC)
           do j=1,n
              contribution(j) = w(j)*ChargePoint1D(ispin, x(j), E0, R)
           end do
@@ -1145,7 +1145,7 @@ contains
     do level=1,9
        allocate(bands(L1D%NPCAO,nk,L1D%NSpin),status(nk),overlap_min(nk))
        overlap_min=huge(0d0)
-!$omp parallel do default(shared) private(j,k) schedule(static)
+!$omp parallel do default(shared) private(j,k) schedule(dynamic)
        do j=1,nk
           k=2d0*pi*(dble(j)-0.5d0)/nk
           call LeadBandPoint(L1D,k,bands(:,j,:),status(j),overlap_min(j))
