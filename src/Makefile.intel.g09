@@ -30,16 +30,12 @@ MKLPATH= ${MKLROOT}/lib
 MKLINCLUDE=${MKLROOT}/include
 INTELLIBS= -Wl,--start-group ${MKLPATH}/libmkl_intel_ilp64.a ${MKLPATH}/libmkl_core.a ${MKLPATH}/libmkl_intel_thread.a -Wl,--end-group
 
-# The reference-LAPACK DSYEVD that Gaussian bundles in util.a fails on every call when Gaussian
-# is built with ifx ("DSYEVD-2 returned Info=..."), and the DSYEV fallback returns NaN for
-# symmetry blocks. MKL's DSYEVD object is linked ahead of util.a to replace it in l502.exe.
-# The stock links (l401, ...) have the same problem, and the bundled DGESDD fails the same way
-# ("GSVD: received Info=1 from GESDD", then "Error in orthogonal basis" in l302). Fix the
-# Gaussian install itself with
-#   ar d util.a dsyevd.o dgesdd.o dbdsdc.o dstedc.o; ranlib util.a
-# and relink every link that contains dsyevd_ or dgesdd_ with
-#   `set-mflags x` -f bsd/g09.make `set-mflags` lNNN.exe
-# (also ANT's modified l101.exe and l103.exe, built the same way by the install script).
+# Gaussian 09 must be built with -fp-speculation=safe added to RUNF77 in bsd/i386.make. With
+# ifx's default -fp-speculation=fast, the dlaed4 and dlasd4 that Gaussian bundles in util.a fail,
+# so DSYEVD ("DSYEVD-2 returned Info=...", then NaN for symmetry blocks) and DGESDD ("GSVD:
+# received Info=1 from GESDD", then "Error in orthogonal basis" in l302) fail in every link.
+# MKL's DSYEVD object is linked ahead of util.a, which protects l502.exe on a Gaussian built
+# without the flag.
 MKLDSYEVD=../obj/mkl_dsyevd.o
 
 include make.in

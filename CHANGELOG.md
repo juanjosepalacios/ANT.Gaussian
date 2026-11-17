@@ -14,18 +14,25 @@
   `-static-intel`, the `-lm -lc` it had broke the link (hidden symbol
   `__connect`).
 
-- Intel build: `l502.exe` links MKL's DSYEVD ahead of Gaussian's `util.a`.
-  The reference-LAPACK DSYEVD that Gaussian bundles fails on every call in
-  the ifx Gaussian 09 (`DSYEVD-2 returned Info=...`), and its DSYEV
-  fallback returns NaN for symmetry blocks. So every symmetric input
-  died in the first SCF cycle (Ag9-Ag4-Ag-Ag-Ag4-Ag9: "Logic error in
-  AufBlk"). Inputs with `symmetry=none`, like the Ag16 junctions, still
-  converged. The stock links have the same bug (`l401` gave a NaN Harris
-  guess for Al9-Al4-Al-Al-Al4-Al9), and the bundled DGESDD fails too
-  (`l302`: "Error in orthogonal basis" for Au9-Au4-Au-Au-Au4-Au9). The
-  comment in `Makefile.intel.g09` shows how to remove `dsyevd.o`,
-  `dgesdd.o`, `dbdsdc.o` and `dstedc.o` from Gaussian's `util.a` and
-  relink the affected links, including ANT's `l101.exe` and `l103.exe`.
+- Intel build: compile with `-fp-speculation=safe` (`make.in`,
+  `make.in.intel`), and build Gaussian 09 with it too (`RUNF77` in
+  `bsd/i386.make`). With ifx's default `-fp-speculation=fast`, the
+  secular-equation solvers that Gaussian bundles in `util.a`, `dlaed4`
+  (DSYEVD) and `dlasd4` (DGESDD), fail: DSYEVD returns `DSYEVD-2 returned
+  Info=...` for N above about 50, and its DSYEV fallback gives NaN for
+  symmetry blocks. So every symmetric input died in the first SCF cycle
+  (Ag9-Ag4-Ag-Ag-Ag4-Ag9: "Logic error in AufBlk"); `l401` gave a NaN
+  Harris guess for Al9-Al4-Al-Al-Al4-Al9, and `l302` stopped with "Error
+  in orthogonal basis" for Au9-Au4-Au-Au-Au4-Au9 (DGESDD). The same flag
+  also gave wrong CNDO, INDO and `int=am1/pm3/pm3mm` energies in Gaussian
+  test 0189. `-no-prec-div` and `-ftz` are not involved. The rebuilt
+  Gaussian matches the NVIDIA build on Gaussian tests 0000-0199 and runs
+  them about 10% slower than the broken build. ANT runs take 12-16% longer
+  (Pt9 SOC-small 86 -> 99 s, Ag16 nogap SOC+bias 432 -> 500 s), all of it
+  in the Gaussian part of `l502`; `-axCORE-AVX2` was slower
+  still on an i9-13900KF, so `-axAVX` stays. `l502.exe` also links MKL's
+  DSYEVD ahead of `util.a`, which protects it on a Gaussian built without
+  the flag.
 
 - Device Fermi search (default DEVMULLER chain): Muller and the secant
   now see the charge through `device::BoundedCharge`, which never
