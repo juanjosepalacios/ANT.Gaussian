@@ -22,7 +22,7 @@ MAKE=make
 F90=pgf90
 CC=gcc
 AR=ar
-BIN=../bin
+BIN=../bin/nvidia
 
 include make.nvidia.in
 

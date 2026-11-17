@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+- Examples: remove `H-chain/H6-chain` (its device Fermi search fails with
+  `Root is not bracketed`) and `Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-Papacon-sd`
+  (its `Papacon-sd` parameter set is no longer in `BLDAT/BL028.dat`).
+  The doll-FCC-spd README no longer compares with it.
+
+- Intel (ifx) build is the default: `bin/l101.exe` and `bin/l502.exe` are
+  now the Intel builds for the ifx Gaussian 09 D.01, and
+  `Makefile.nvidia.g09` writes to `bin/nvidia/`. `src/make.in` holds the
+  Intel flags, and `make.in.intel` links with `-lpthread` only: with
+  `-static-intel`, the `-lm -lc` it had broke the link (hidden symbol
+  `__connect`).
+
+- Intel build: `l502.exe` links MKL's DSYEVD ahead of Gaussian's `util.a`.
+  The reference-LAPACK DSYEVD that Gaussian bundles fails on every call in
+  the ifx Gaussian 09 (`DSYEVD-2 returned Info=...`), and its DSYEV
+  fallback returns NaN for symmetry blocks. So every symmetric input
+  died in the first SCF cycle (Ag9-Ag4-Ag-Ag-Ag4-Ag9: "Logic error in
+  AufBlk"). Inputs with `symmetry=none`, like the Ag16 junctions, still
+  converged. The stock links have the same bug (`l401` gave a NaN Harris
+  guess for Al9-Al4-Al-Al-Al4-Al9), and the bundled DGESDD fails too
+  (`l302`: "Error in orthogonal basis" for Au9-Au4-Au-Au-Au4-Au9). The
+  comment in `Makefile.intel.g09` shows how to remove `dsyevd.o`,
+  `dgesdd.o`, `dbdsdc.o` and `dstedc.o` from Gaussian's `util.a` and
+  relink the affected links, including ANT's `l101.exe` and `l103.exe`.
+
 - Device Fermi search (default DEVMULLER chain): Muller and the secant
   now see the charge through `device::BoundedCharge`, which never
   evaluates it outside the device window [max(EMin,-EFMAX),EMax]. The

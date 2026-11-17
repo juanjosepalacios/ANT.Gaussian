@@ -13,4 +13,4 @@ CFLAGS= -i8 -r8 -auto -axAVX -static-intel -static-libgcc -no-prec-div -fpp -ftz
 GAUSSLIBS= /home/palacios/Gaussian/Gaussian09/Rev.D01/intel/g09/util.a
 
 # Linking flags
-LFLAGS= -lpthread -lm -lc
+LFLAGS= -lpthread

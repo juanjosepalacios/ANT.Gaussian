@@ -11,7 +11,6 @@ outputs and README. The files keep the name of the system.
   - [LANL1MB-Papacon-F/](Ni9-Ni4-Ni-Ni-Ni4-Ni9/LANL1MB-Papacon-F/README.md)
   - [LANL1MB-Papacon-AF/](Ni9-Ni4-Ni-Ni-Ni4-Ni9/LANL1MB-Papacon-AF/README.md)
   - [CRENBS-spd-F/](Ni9-Ni4-Ni-Ni-Ni4-Ni9/CRENBS-spd-F/README.md)
-  - [doll-Papacon-sd/](Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-Papacon-sd/README.md)
   - [doll-FCC-spd/](Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-FCC-spd/README.md)
 
 `Papacon` is the orthogonal first-neighbour Slater-Koster fit of ferromagnetic fcc Ni from
@@ -29,8 +28,7 @@ contact all refer to Gaussian's frame. The Bethe-lattice d on-site energies (`ed
 3z^2-r^2, `edt` on xy, xz and yz) are also set in that fixed frame, so the cubic axes of the
 electrodes must lie along X, Y and Z.
 
-- Ni4-Ni-Ni-Ni4/LANL1MB-Papacon, Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-Papacon-sd and
-  Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-FCC-spd are reoriented:
+- Ni4-Ni-Ni-Ni4/LANL1MB-Papacon and Ni9-Ni4-Ni-Ni-Ni4-Ni9/doll-FCC-spd are reoriented:
   X = y_in, Y = x_in, Z = -z_in. The transport axis stays on Z, but reversed, so the Ni4 field
   `Bz = 20.0` points along -z_in.
 - The LANL1MB-Papacon-F, LANL1MB-Papacon-AF and CRENBS-spd-F Ni9 cases give `nosymm` on the route

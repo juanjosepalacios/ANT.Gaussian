@@ -30,6 +30,18 @@ MKLPATH= ${MKLROOT}/lib
 MKLINCLUDE=${MKLROOT}/include
 INTELLIBS= -Wl,--start-group ${MKLPATH}/libmkl_intel_ilp64.a ${MKLPATH}/libmkl_core.a ${MKLPATH}/libmkl_intel_thread.a -Wl,--end-group
 
+# The reference-LAPACK DSYEVD that Gaussian bundles in util.a fails on every call when Gaussian
+# is built with ifx ("DSYEVD-2 returned Info=..."), and the DSYEV fallback returns NaN for
+# symmetry blocks. MKL's DSYEVD object is linked ahead of util.a to replace it in l502.exe.
+# The stock links (l401, ...) have the same problem, and the bundled DGESDD fails the same way
+# ("GSVD: received Info=1 from GESDD", then "Error in orthogonal basis" in l302). Fix the
+# Gaussian install itself with
+#   ar d util.a dsyevd.o dgesdd.o dbdsdc.o dstedc.o; ranlib util.a
+# and relink every link that contains dsyevd_ or dgesdd_ with
+#   `set-mflags x` -f bsd/g09.make `set-mflags` lNNN.exe
+# (also ANT's modified l101.exe and l103.exe, built the same way by the install script).
+MKLDSYEVD=../obj/mkl_dsyevd.o
+
 include make.in
 
 # use these sources: 
@@ -69,9 +81,13 @@ $(ANTLIB): $(OBJS)
 	- rm  $(ANTLIB)
 	$(AR) crv $(ANTLIB) $(OBJS)
 
+# MKL's DSYEVD, extracted from the ILP64 interface library
+$(MKLDSYEVD):
+	cd ../obj && ar x $(MKLPATH)/libmkl_intel_ilp64.a _dsyevd.o && mv _dsyevd.o mkl_dsyevd.o
+
 # rule for l502.exe
-$(L502): $(OBJS)
-	$(F90) $(CFLAGS) -o $(L502) $(BIN)/ml502.o $(BIN)/l502.a $(BIN)/bdam1.o $(BIN)/caldsu.o -L$(MKLPATH) $(GAUSSLIBS) $(ANTLIB) $(INTELLIBS) $(LFLAGS) 
+$(L502): $(OBJS) $(MKLDSYEVD)
+	$(F90) $(CFLAGS) -o $(L502) $(BIN)/ml502.o $(BIN)/l502.a $(BIN)/bdam1.o $(BIN)/caldsu.o $(MKLDSYEVD) -L$(MKLPATH) $(GAUSSLIBS) $(ANTLIB) $(INTELLIBS) $(LFLAGS) 
 
 	chmod o-rwx $(L502)
 
