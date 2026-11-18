@@ -27,230 +27,139 @@
 
   implicit none
 
+  ! S^1/2 and S^-1/2 of the whole device for Mol_Sub
+  real*8, allocatable, save :: SPPFull(:,:), SPNFull(:,:)
+
 contains
 
-subroutine Mol_Sub(HD,SD,PD,shift)
+!
+! Molecular gap correction (UPLUS, MOLBLOCKS).
+!
+! The whole device is Loewdin-orthogonalized, H' = S^-1/2 H S^-1/2 and
+! P' = S^1/2 P S^1/2, so the molecule's orbitals are orthogonal to the
+! electrode orbitals and their occupations lie between 0 and 1. For each
+! molecular block (atoms CorrBegM..CorrEndM) the block of H' is diagonalized,
+! H'_mm = C e C^T, and each molecular orbital i is shifted by
+!
+!    d_i = -UPlus*(n_i - 1/2),   n_i = (C^T P'_mm C)_ii,
+!
+! so filled orbitals move down and empty ones up by UPlus/2 and the
+! HOMO-LUMO gap opens by about UPlus. In the AO basis H gets
+! S^1/2 [C diag(d) C^T]_mm S^1/2. Transport calls this every SCF cycle with
+! the density of the previous cycle, so the gap, the charge on the molecule
+! and the Fermi level are self-consistent. With verbose (final analysis) the
+! orbitals between EW1 and EW2 are listed.
+!
+subroutine Mol_Sub(HD,SD,PD,shift,verbose)
 
 use parameters, only: EW1, EW2
-use parameters, only: NCorrBlM, CorrBegM, CorrEndM,Uplus
-use numeric, only: RMatPow,RSDiag
+use parameters, only: NCorrBlM, CorrBegM, CorrEndM, Uplus
+use numeric, only: RMatPow, RSDiag
 use constants
 use Cluster, only : hiaorbno, loaorbno
 
 implicit none
 
-real*8, dimension(:,:,:),intent(inout) :: HD 
+real*8, dimension(:,:,:), intent(inout) :: HD
+real*8, dimension(:,:,:), intent(in) :: PD
+real*8, dimension(:,:), intent(in) :: SD
 real*8, intent(in) :: shift
-real*8, dimension(:,:,:),intent(in) :: PD
-real*8, dimension(:,:),intent(in) :: SD
+logical, intent(in) :: verbose
 
-integer :: NHyb,info,n,i,j,ispin,CBeg,CEnd,l,k,NSpin
-real*8, allocatable :: HD_M(:,:),eigenval(:),XD_M(:,:),SPN_M(:,:),e_PD(:,:)
-real*8, allocatable :: XD_MU(:,:),eu_PD(:,:),HD_Mu(:,:),SPP_M(:,:),ICh(:,:)
-real*8, dimension(size(HD,2),size(HD,3)) :: HD_A
-real*8 :: E_H,E_L,E_Lu,E_Hu
-real*8 :: suma
+integer :: NAO, NHyb, info, i, ispin, NSpin, l, CBeg, CEnd, iHOMO, iLUMO
+real*8, allocatable :: C(:,:), PM(:,:), V(:,:), W(:,:), eval(:), occ(:), dE(:)
+real*8 :: QMol
 
 NSpin = size(HD,1)
+NAO = size(SD,1)
 
-!if (IP == EA) print*, "War: IP = EA", IP,EA
+! S^1/2 and S^-1/2 of the whole device (the overlap does not change)
+if (.not. allocated(SPPFull)) then
+  allocate( SPPFull(NAO,NAO), SPNFull(NAO,NAO) )
+  call RMatPow( SD, 0.5d0, SPPFull )
+  call RMatPow( SD, -0.5d0, SPNFull )
+end if
 
-do l = 1,NCorrBlM !Molecular Correlated Blocks
+do l = 1, NCorrBlM
   CBeg = loaorbno(CorrBegM(l))
   CEnd = hiaorbno(CorrEndM(l))
+  NHyb = CEnd - CBeg + 1
 
-print *
-print *, "----------------------------------------------"
-print *, "--- Molecular Gap Correction    ---"
-print *, "----------------------------------------------"
-print *
+  allocate( C(NHyb,NHyb), PM(NHyb,NHyb), V(NHyb,NHyb), W(NAO,NHyb), eval(NHyb), occ(NHyb), dE(NHyb) )
 
-NHyb = (CEnd-CBeg) + 1
-
-print *, " Correlated block dimension = ", nhyb,"Beg_basis function = ",CBeg &
-,"End_basis function = ", CEnd
-print *, "----------------------------------------------"
-
-allocate(HD_M(NHyb,NHyb),SPP_M(NHyb,NHyb),ICh(Nspin,NHyb))
-allocate(XD_M(nhyb,nhyb),SPN_M(NHyb,NHyb))
-allocate(e_PD(NHyb,NHyb),XD_Mu(nhyb,nhyb),eu_PD(NHyb,NHyb),HD_Mu(NHyb,NHyb))
-
-print*, "Orthogonalization of correlated block"
-  print *, "----------------------------------------------"
-  call RMatPow( SD(CBeg:CEnd,CBeg:CEnd), -0.5d0, SPN_M )
-  call RMatPow( SD(CBeg:CEnd,CBeg:CEnd), 0.5d0, SPP_M )
-
-do ispin=1,NSpin !spin loop
-
-print*, "Spin =", ispin
-
-  HD_A = HD(ispin,:,:)
-
-  e_PD = matmul(PD(ispin,CBeg:CEnd,CBeg:CEnd),SD(CBeg:CEnd,CBeg:CEnd)) !Charge Matrix
-
-  HD_M = HD_A(cBeg:CEnd,cBeg:CEnd) 
-
-  HD_M = matmul( SPN_M, HD_M )
-  HD_M = matmul( HD_M, SPN_M ) 
-
-!---------------------------------------------------------------------------
-! Obtain the molecular Coefficient 
-! We have print the coefficient to study the molecular orbitals.
-!-------------------------------------------------------------------------
-
-  allocate( eigenval(nhyb))
-
-  info = 0
-  call RSDiag( HD_M, eigenval, info ) 
-
-  if (info /= 0 ) print*, "Warning, INFO /= ", info
-  
-  ! Charge Molecular Matrix
-  e_PD = matmul(transpose(HD_M),matmul(e_PD,HD_M)) 
-
-   XD_M = HD_M
-
- !do i=1,nhyb
- !  do j=1,nhyb
- !    XD_M(i,j) = XD_M(i,j)*XD_M(i,j)
- !  end do
- !end do
-
-  print *, "--------------------------------------------------------------------"
-  print *, "--------- Print Norm. Atomic Composition near the Fermi Level   ----"
-  do i = 1, NHyb
-   !if (eigenval(i)+shift <= 0.0) ICh(ispin,i)=d_one
-   !if (eigenval(i)+shift > 0.0) ICh(ispin,i)=d_zero
-    if (i < NHyb) then
-      if (eigenval(i)+shift <= 0.0 .and. eigenval(i+1)+shift > 0.0) then
-        E_H = eigenval(i)
-        E_L = eigenval(i+1)
-        if (ispin > 1) then
-          if (E_H < E_Hu) E_H = E_Hu
-          if (E_L > E_Lu) E_L = E_Lu
-        end if
-        print *, "--------------------- HOMO and LUMO Located ---------------------"
-        write(6,'(A20,F20.10,A20,F20.10)'), "E(HOMO) - \mu = ", E_H+shift, "E(LUMO) - \mu= ", E_L+shift
-        print *, "-----------------------------------------------------------------"
-      end if
+  do ispin = 1, NSpin
+    ! Molecular orbitals of the molecule's block of the orthogonalized H
+    W = matmul( HD(ispin,:,:), SPNFull(:,CBeg:CEnd) )
+    C = matmul( SPNFull(CBeg:CEnd,:), W )
+    call RSDiag( C, eval, info )
+    if (info /= 0) then
+      print '(A,I3,A,I2,A,I6)', " Mol_Sub: diagonalization failed for molecular block ", l, &
+           ", spin ", ispin, ", INFO = ", info
+      cycle
     end if
-    if (eigenval(i)+shift > EW1 .and. eigenval(i)+shift < EW2) then
-     !print *, "----------------------------------------------"
-      write(6, '(A20,I6,A20,F20.10,A20,F20.10,A20,F20.10)') "Mol. Orb. = ",i,"Eigenvalue - \mu = ",eigenval(i)+shift, "ne = ", &
-       &(2.0d0/NSpin)*e_PD(i,i), "nh = ", (2.0d0/NSpin)*(1.0d0-e_PD(i,i))
-     !print *, "----------------------------------------------"
-      do j=1,nhyb
-       !write(6, '(I6,10F20.10)') j, XD_M(j,i)*100
+
+    ! Occupations of the molecular orbitals (per spin)
+    W = matmul( PD(ispin,:,:), SPPFull(:,CBeg:CEnd) )
+    PM = matmul( SPPFull(CBeg:CEnd,:), W )
+    PM = matmul( transpose(C), matmul( PM, C ) )
+    do i = 1, NHyb
+      occ(i) = PM(i,i)
+    end do
+    QMol = (2.0d0/NSpin)*sum(occ)
+    if (QMol < 1.0d-6) then
+      print '(A,I3,A)', " Mol_Sub: no density on molecular block ", l, " yet, no gap correction"
+      cycle
+    end if
+
+    dE = -UPlus*(occ - 0.5d0)
+
+    ! HOMO and LUMO of the corrected levels, which can reorder the orbitals
+    ! (an occupied orbital can sit above mu before its shift)
+    iHOMO = 0; iLUMO = 0
+    do i = 1, NHyb
+      if (eval(i)+dE(i)+shift <= d_zero) then
+        if (iHOMO == 0) then
+          iHOMO = i
+        else if (eval(i)+dE(i) > eval(iHOMO)+dE(iHOMO)) then
+          iHOMO = i
+        end if
+      else
+        if (iLUMO == 0) then
+          iLUMO = i
+        else if (eval(i)+dE(i) < eval(iLUMO)+dE(iLUMO)) then
+          iLUMO = i
+        end if
+      end if
+    end do
+    if (iHOMO > 0 .and. iLUMO > 0) then
+      write(6,'(A,I3,A,I2,A,I4,A,F9.4,A,F9.4,A,I4,A,F9.4,A,F9.4,A,F10.5)') " Molecular block", l, " spin", ispin, &
+           ":  HOMO (MO", iHOMO, ") - mu =", eval(iHOMO)+dE(iHOMO)+shift, " (DFT", eval(iHOMO)+shift, &
+           ")  LUMO (MO", iLUMO, ") - mu =", eval(iLUMO)+dE(iLUMO)+shift, " (DFT", eval(iLUMO)+shift, &
+           ")  N =", QMol
+    else
+      write(6,'(A,I3,A,I2,A,F10.5)') " Molecular block", l, " spin", ispin, &
+           ":  no molecular orbital crosses mu,  N =", QMol
+    end if
+
+    if (verbose) then
+      print '(A)', "     MO   e - mu (eV)   corrected (eV)          n"
+      do i = 1, NHyb
+        if (eval(i)+shift > EW1 .and. eval(i)+shift < EW2) &
+          write(6,'(I7,2F16.8,F12.6)') i, eval(i)+shift, eval(i)+dE(i)+shift, (2.0d0/NSpin)*occ(i)
       end do
     end if
+
+    ! H <- H + S^1/2 [C diag(dE) C^T]_mm S^1/2
+    do i = 1, NHyb
+      V(:,i) = C(:,i)*dE(i)
+    end do
+    V = matmul( V, transpose(C) )
+    W = matmul( SPPFull(:,CBeg:CEnd), V )
+    HD(ispin,:,:) = HD(ispin,:,:) + matmul( W, SPPFull(CBeg:CEnd,:) )
   end do
 
- !XD_M = HD_M 
-  
-  HD_M = HD_A(cBeg:CEnd,cBeg:CEnd) 
-
-  HD_M = matmul( SPN_M, HD_M )
-  HD_M = matmul( HD_M, SPN_M )  
-
-  HD_M = matmul(transpose(XD_M),matmul(HD_M,XD_M)) 
-
-  suma = 0.0d0
-  do i=1,Nhyb
-   suma = suma + ((2.0d0/NSpin)*e_Pd(i,i))
-  end do
-  print*, "Total electron Charge in Molecule = ", suma
-
-  suma = 0.0d0
-  do i=1,Nhyb
-   suma = suma + ((2.0d0/NSpin)*(1.0d0-e_Pd(i,i)))
-  end do
-  print*, "Total hole Charge in Molecule =  = ", suma
-
-  ! Print Molecular Orbital
- !if (ispin == 1)  open (7,file=trim(jobname)//'.MOA.dat')
- !if (ispin == 2)  open (7,file=trim(jobname)//'.MOB.dat')
- !Do J=0,nhyb
- !  if (J == 0) then
- !    write (7,*) (eigenval(i), i=1,nhyb)
- !  else
- !    call flush(7)
- !    write (7,*) (XD_M(j,i), i=1,nhyb)
- !  end if
- !END DO
-  deallocate(eigenval)
-  close(7)
-
-  if (ispin == 1) then
-    HD_Mu = HD_M
-    XD_Mu = XD_M
-    eu_PD = e_PD
-    E_Lu = E_L
-    E_Hu = E_H
-  end if
-  
-  If (ispin == 2 .or. NSpin == 1) then !Evaluation IF
-
-   !G_h = E_H - IP
-   !G_e = EA - E_L
-
-   !G_h =abs(IP) 
-   !G_e =abs(EA) 
-   !print *, "-------------Energy Parameters -------------------------------------------------------"
-   !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L, "IP = ", IP, "EA = ", EA
-   !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10,A20,F20.10)') "E_H = ", E_H, "E_L = ", E_L
-   !write(6,'(A20,F20.10,A20,F20.10,A20,F20.10)') "G_h = ", G_h, "G_e = ", G_e, "New Gap =", G_h+G_e + E_L-E_H
-   !write(6,'(A20,F20.10)') "Chemical Potential = ", -shift
-   !print *, "--------------------------------------------------------------------------------------"
-
-    do k = 1,Nspin
-
-      HD_A(cBeg:CEnd,cBeg:CEnd)=d_zero
-     !if (ForIntCh) then
-     !  do i=1,nhyb
-     !    if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - G_h*ICh(k,i) + G_e*(d_one-ICh(k,i))
-     !    if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - G_h*ICh(k,i) + G_e*(d_one-ICh(k,i))
-     !  end do
-     !else
-     !  do i=1,nhyb
-!    !    print*, "HD B = ", i,HD_M(i,j)+shift
-     !    if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - G_h*eu_PD(i,i) + G_e*(d_one-eu_PD(i,i))
-     !    if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - G_h*e_PD(i,i) + G_e*(d_one-e_PD(i,i))
-!    !    print*, "HD A = ", i,HD_A(i+CBeg-1,j+CBeg-1)+shift
-     !  end do 
-     !end if
-
-     ! Charging energy correction
-        do i=1,nhyb
-!         print*, "HD B = ", i,HD_M(i,j)+shift
-          if (k == 1) HD_A(i+CBeg-1,i+CBeg-1) = HD_Mu(i,i) - Uplus*(eu_PD(i,i)- 0.5) 
-          if (k == 2) HD_A(i+CBeg-1,i+CBeg-1) = HD_M(i,i) - Uplus*(e_PD(i,i) - 0.5)
-!         print*, "HD A = ", i,HD_A(i+CBeg-1,j+CBeg-1)+shift
-        end do 
-
-      if (k == 1) then
-        HD_Mu = matmul(XD_Mu,matmul(HD_A(cBeg:CEnd,cBeg:CEnd),transpose(XD_Mu)))
-        HD_Mu = matmul(SPP_M,matmul(HD_Mu,SPP_M))
-        HD_A(cBeg:CEnd,cBeg:CEnd) = HD_Mu
-      else
-        HD_M = matmul(XD_M,matmul(HD_A(cBeg:CEnd,cBeg:CEnd),transpose(XD_M)))
-        HD_M = matmul(SPP_M,matmul(HD_M,SPP_M))  
-        HD_A(cBeg:CEnd,cBeg:CEnd) = HD_M
-      end if
-
-      HD(k,cBeg:CEnd,cBeg:CEnd) = HD_A(cBeg:CEnd,cBeg:CEnd)
-
-    end do ! K loop
-  end if ! Evaluation IF
-end do !spin loop
-
-print *, "----------------------------------------------"
-print*, " End - Molecular transformation"
-print *, "----------------------------------------------"
-
-deallocate(HD_M,XD_M,SPN_M,e_PD,ICh)
-deallocate(HD_Mu,XD_Mu,eu_PD,SPP_M)
-
-end do !Molecular correlated Bolcks
+  deallocate( C, PM, V, W, eval, occ, dE )
+end do
 
 end subroutine Mol_Sub
 

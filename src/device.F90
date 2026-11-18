@@ -943,7 +943,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOSOutput, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC
+                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC, NCorrBlM
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use constants, only: c_zero
@@ -970,7 +970,11 @@
     integer :: i,j,is, info, AllocErr, iatom, jatom, Atom
 
     HD = F          !Fock matrix coming from Gaussian goes into device Hamiltonian
-    
+
+    ! Molecular gap correction (UPLUS, MOLBLOCKS) with the density of the previous
+    ! cycle, before the SOC Hamiltonian, the Fermi search and the new density
+    if (UPlus > 0.0d0 .and. NCorrBlM > 0) call Mol_Sub(HD,SD,PD,shift,Evaluation)
+
     if (SCFSOC) then
        H_SOC= c_zero
        print*,'Building the Hamiltonian + SOC + Zeeman'
@@ -1074,7 +1078,6 @@
        print *, "****************************************** "
        print *
 
-       if (UPlus > 0.0) call Mol_Sub(HD,SD,PD,shift)
        if( POrtho )then
           allocate( OD(NAorbs,NAOrbs), STAT=AllocErr )
           if( AllocErr /= 0 ) then

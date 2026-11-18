@@ -803,6 +803,17 @@ Hubbard interaction term (U and J) is put onto each correlated block
 which is treated within Hartree-Fock.</p>
   <p>Define the correlated orbital blocks and their U and J values with CORRBLOCKS. The correction acts on the selected subspaces, so verify the orbital indices and monitor their occupations during self-consistency. Different choices of correlated subspace can change the resulting solution.</p>
 </details>
+<details class="keyword" id="molblocks">
+  <summary><em>MOLBLOCKS</em></summary>
+  <p>Defines the molecules whose HOMO-LUMO gap <em>UPLUS</em> corrects. Syntax:</p>
+  <p>&lt;num_molblocks&gt;<br>&lt;atom_beg&gt; &lt;atom_end&gt;<br>...</p>
+  <p>where &lt;atom_beg&gt; and &lt;atom_end&gt; are the first and last atoms of each molecule in the device.</p>
+</details>
+<details class="keyword" id="uplus">
+  <summary><em>UPLUS</em> (real, eV, default 0)</summary>
+  <p>Molecular gap correction for the MOLBLOCKS molecules. In every SCF cycle the device is L&ouml;wdin-orthogonalized, the molecule&#x27;s block of the Hamiltonian is diagonalized, and each molecular orbital i is shifted by &minus;UPLUS&middot;(n<sub>i</sub> &minus; 1/2), where n<sub>i</sub> (between 0 and 1) is its occupation per spin in the previous cycle. Filled orbitals move down and empty ones up by UPLUS/2, so the gap opens by about UPLUS, and the density, the charge on the molecule and the Fermi level follow self-consistently.</p>
+  <p>Each cycle logs the HOMO and LUMO relative to the Fermi level, before and after the shift; the final analysis also lists the orbitals between EW1 and EW2. Strongly hybridized orbitals with n<sub>i</sub> near 1/2 hardly move.</p>
+</details>
 <details class="keyword" id="hybfunc">
   <summary><em>HYBFUNC</em> (logical)</summary>
   <p>Requests the calculation of the

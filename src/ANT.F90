@@ -38,7 +38,7 @@
 !**********************************************************************************************************************
   USE Parameters, ONLY: SL, SwOffSPL, alpha, Read_Parameters, Write_Parameters, NSpinLock, npulay
   USE Parameters, ONLY: ChargeAcc,ChargeA,FermiAcc,FermiA,PAcc,PA,FullAcc,RedTransmB,RedTransmE,ElType,LDOS_Beg, LDOSOutput,LDOS_End
-  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, FMixing, SOC, ROT, PBinary
+  USE Parameters, ONLY: Mulliken, Hamilton, PFix, DFTU, UPlus, FMixing, SOC, ROT, PBinary
   USE constants, ONLY: Hart
   USE preproc
   USE device, ONLY: InitDevice, DevFockMat, DevDensMat, ReadDensMat, LeadsOn, DevShift, SwitchOnLeads, &
@@ -562,11 +562,11 @@
      ! End Pulay accelaration
 
      !     
-     ! For DFT+U calculations the damped density matrix has
-     ! to be fed back to device module in order to calculate
-     ! the correct DFT+U potential in the next step 
+     ! For DFT+U and the molecular gap correction (UPLUS) the damped density
+     ! matrix has to be fed back to the device module, so that the next cycle
+     ! computes the +U potential from it
      !  
-     if( DFTU )then
+     if( DFTU .or. UPlus > 0.0d0 )then
         do ispin=1,NSpin
            do i=1,NBasis
               do j=1,NBasis

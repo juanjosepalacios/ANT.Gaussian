@@ -1,5 +1,53 @@
 # Changelog
 
+## Unreleased
+
+- Molecular gap correction (`UPLUS`, `MOLBLOCKS`) is now self-consistent.
+  `device::Transport` calls `Mol_Sub` every SCF cycle, right after the
+  Gaussian Fock matrix is copied into `HD`, so the Fermi search, the new
+  density and an `SCFSOC` Hamiltonian all see it; before, it was applied
+  only in the final analysis, so it changed `T(E)` but never the density.
+  `ANT.F90` feeds the mixed density back to the device for `UPLUS`, as it
+  does for `DFT+U`. Each molecular orbital is shifted by
+  `-UPLUS*(n_i - 1/2)`, with `n_i` now taken from the Loewdin
+  orthogonalization of the whole device, which keeps it between 0 and 1.
+  The old `C^T (P S) C` occupations, and a Loewdin orthogonalization of the
+  molecule's block alone, both let `n_i` exceed 1 because the molecule's
+  orbitals stay non-orthogonal to the gold basis; self-consistently that
+  pulled charge onto the molecule without bound (benzene between Au tips:
+  42.6 -> 55.8 electrons over 114 cycles). With the whole-device
+  orthogonalization and `UPLUS = 2` the same run keeps 41.7 electrons on
+  benzene, converges in 29 cycles like the uncorrected run, and opens the
+  HOMO-LUMO gap from 4.95 to 6.86 eV; T(E_F) drops from 0.115 to 0.095.
+  Each cycle logs the HOMO and LUMO before and after the shift, and the
+  final analysis lists the orbitals between EW1 and EW2. `UPLUS` and
+  `MOLBLOCKS` are documented in `keywords.txt` and the HTML manual.
+
+- Examples: new `Al-benzene-Al/Al-benzene-Al-axis`, the benzene of
+  Al-benzene-Al turned so that its plane contains the C3 transport axis
+  (one C-C bond facing each tip, apex gap 8.69 A), with restricted and
+  unrestricted (`ublyp`, `guess=mix`) runs with and without `UPLUS = 2`.
+  `Al-benzene-Al/sp-Papacon-NEMBED10` removed: it only wrote out ANT's
+  default electrode settings for `sp-Papacon` and stored no outputs; the
+  Bethe-lattice tutorial in `doc/manual_2_g03.html` now uses the
+  `sp-Papacon` inputs. The Al-benzene-Al READMEs cite `BLDAT/BL013.dat`
+  (Al) instead of `BL026.dat`.
+
+- Examples: new `Al-triangulene-Al`, [4]triangulene (C33H15, S = 3/2
+  when isolated) in place of the benzene of `Al-benzene-Al-axis`, its plane
+  containing the transport axis (apex gap 16.09 A; `build.py` builds the
+  geometry), spin-unrestricted from a quartet guess with `NIP = 7`, with
+  and without `UPLUS = 2`. In the junction the flake gives about two
+  electrons to the Al and keeps about one unpaired spin.
+
+- Examples: new `Al-C60-Al`, C60 with a hexagon facing each Al apex (apex
+  gap 10.62 A; `build.py` builds the geometry and the basis input),
+  LANL2DZ with a CRENBS sp basis on the Al planes coupled to the Bethe
+  lattice, spin-unrestricted with and without `UPLUS = 2`. The C60 takes
+  about one electron; without the correction it stays nonmagnetic with
+  the t1u LUMO at E_F (T(E_F) = 1.38 per spin); with `UPLUS = 2` it
+  carries about one unpaired spin and T(E_F) drops to 0.04 / 0.02.
+
 ## 3.1.0 - 2026-11-17
 
 - OpenMP: the loops in `device.F90` and `OneDLead.F90` that used static

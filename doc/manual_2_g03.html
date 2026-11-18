@@ -160,13 +160,15 @@ electrode 2 is the lower tip and comes last. The coordinates run from high
 to low z. It is the atom ordering and boundary geometry, rather than the
 sign of the coordinate axis, that identify the electrode ends.</p>
 <p>Download the complete
-<a href="../examples/Al-benzene-Al/Al-benzene-Al/sp-Papacon-NEMBED10/Al-benzene-Al-bethe.gjf">Gaussian input,
-Al-benzene-Al-bethe.gjf</a>. It preserves all coordinates, the BLYP functional,
-the explicit Al valence basis/ECP and the C/H STO-3G basis from the existing
-example. Replace <em>/path/to/ANT.Gaussian/bin</em> in the two %Subst lines
-with your installation path. The title line is <em>Al-benzene-Al-bethe</em>,
-so use the matching
-<a href="../examples/Al-benzene-Al/Al-benzene-Al/sp-Papacon-NEMBED10/Al-benzene-Al-bethe.ant">Al-benzene-Al-bethe.ant</a>:</p>
+<a href="../examples/Al-benzene-Al/Al-benzene-Al/sp-Papacon/Al-benzene-Al.gjf">Gaussian input,
+Al-benzene-Al.gjf</a>. It contains all coordinates, the BLYP functional,
+the explicit Al valence basis/ECP and the C/H STO-3G basis. Its two %Subst
+lines point to <em>../../../../bin</em>, the repository's <em>bin</em>
+directory seen from the example; change them if you run it elsewhere. The
+title line is <em>Al-benzene-Al</em>, so ANT reads
+<a href="../examples/Al-benzene-Al/Al-benzene-Al/sp-Papacon/Al-benzene-Al.ant">Al-benzene-Al.ant</a>,
+which holds only <em>ALPHA = 0.02</em>. Written out, the electrode settings
+ANT then uses are:</p>
 <pre>TYPE1 = BETHE
 TYPE2 = BETHE
 BLPAR1 = Papacon
@@ -181,7 +183,7 @@ ALPHA = 0.02
 <em>NEMBED1/2 = 10</em> select only their outermost planes for attachment.
 The Papacon Al parameter set is present in <em>BLDAT/BL013.dat</em>.
 </p>
-<p>Inspect the generated <em>Al-benzene-Al-bethe.xyz</em> and log to confirm
+<p>These are the defaults, so adding them to the .ant changes nothing. Inspect the generated <em>Al-benzene-Al.xyz</em> and log to confirm
 attachment at atoms 1-10 and 43-52. See
 <a href="manual_3_g03.html#type1-and-type2">TYPE1/TYPE2</a>,
 <a href="manual_3_g03.html#blpar1-and-blpar2">BLPAR1/BLPAR2</a> and

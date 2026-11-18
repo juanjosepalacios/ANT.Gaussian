@@ -594,6 +594,23 @@ repulsion and <J> Hund's rule coupling for the correlated block.
 Requests a DFT+U calculation where a Hubbard interaction term (U and J) is put onto each correlated block
 which is treated within Hartree-Fock.
 
+* MOLBLOCKS
+Defines the molecules whose HOMO-LUMO gap UPLUS corrects. Syntax:
+<num_molblocks>
+<atom_beg> <atom_end>
+...
+where <atom_beg> and <atom_end> are the first and last atoms of each molecule in the device.
+
+* UPLUS (real, eV, default 0)
+Molecular gap correction for the MOLBLOCKS molecules. In every SCF cycle the device is
+Loewdin-orthogonalized, the molecule's block of the Hamiltonian is diagonalized, and each molecular
+orbital i is shifted by -UPLUS*(n_i - 1/2), where n_i (between 0 and 1) is its occupation per spin in
+the previous cycle. Filled
+orbitals move down and empty ones up by UPLUS/2, so the gap opens by about UPLUS, and the density,
+the charge on the molecule and the Fermi level follow self-consistently. Each cycle logs the HOMO
+and LUMO relative to the Fermi level, before and after the shift; the final analysis also lists the
+orbitals between EW1 and EW2. Strongly hybridized orbitals with n_i near 1/2 hardly move.
+
 * HYBFUNC (logical)
 Requests the calculation of the hybridization function for each correlated block which serves as an input
 for an impurity solver calculation. A mesh file "mesh.dat" needs to be present specifiying the energy 
