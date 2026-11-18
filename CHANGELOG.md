@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.2.0 - 2026-11-18
 
 - Molecular gap correction (`UPLUS`, `MOLBLOCKS`) is now self-consistent.
   `device::Transport` calls `Mol_Sub` every SCF cycle, right after the
