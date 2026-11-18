@@ -26,7 +26,7 @@ img p {margin:0;padding:0;}
 #subnavigation ul li {margin-left:9px;padding-top:9px;padding-bottom:7px;}
 #subnavigation ul li a {padding-left:25px;}
 
-#content {background-image:url(images/line_vert.gif);background-repeat:repeat-y;float:left;width:480px;margin-left:24px;padding-left:24px;line-height:16px;margin-top:12px;padding-bottom:45px;}
+#content {background-image:url(line_vert.gif);background-repeat:repeat-y;float:left;width:480px;margin-left:24px;padding-left:24px;line-height:16px;margin-top:12px;padding-bottom:45px;}
 
 #footer {font-size:9px;text-align:center;margin-right:14px;padding-bottom:10px;text-decoration:none;color:#BBBEC7;}
 #footer a {text-decoration:none;color:#BBBEC7;}
