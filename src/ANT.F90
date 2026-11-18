@@ -231,6 +231,7 @@
            PRINT *, "ESF/Error: could not allocate memory for D(:,:,:), DD(:,:,:,:),DDD(:,:,:)"
            STOP
         END IF
+        D=0.0d0
         DD=0.0
         DDD=0.0
      end if
@@ -287,14 +288,18 @@
         else
            CALL ReadDensMat(densread)        
            !
-           ! Transform to triangular form
+           ! D is used as a full square matrix (mixing, Pulay, UPLUS/DFT+U
+           ! feedback to the device): fill both triangles. MT gets the lower
+           ! triangle for Gaussian
            !
            acount = 1
            DO i=1,NBasis
               DO j=1,i
                  D(1,i,j)=DevDensMat(1,i,j)
+                 D(1,j,i)=D(1,i,j)
                  MT(1,acount)=D(1,i,j)
                  IF(UHF) D(2,i,j) = DevDensMat(2,i,j)
+                 IF(UHF) D(2,j,i) = D(2,i,j)
                  IF(UHF) MT(2,acount) = D(2,i,j)
                  acount = acount +1
               ENDDO

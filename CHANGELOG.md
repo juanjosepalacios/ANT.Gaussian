@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- Restart from a density matrix file (`P.<job>.dat` or `P.<job>.bin`):
+  `ANT.F90` copied only the lower triangle of the density read by
+  `ReadDensMat` into `D`, so the upper triangle kept whatever the
+  allocation left in it (in practice zero). `D` is used as a full square
+  matrix: it is mixed with the new density, stored for the Pulay
+  extrapolation and fed back to the device for `DFT+U` and, since 3.2.0,
+  for `UPLUS`. In the first cycles after a restart the molecular gap
+  correction therefore saw a half-filled density. In a glycerol junction
+  restarted with `UPLUS = 2` (neutral molecule about 49.5 electrons) the
+  per-cycle "Molecular block" line gave N = 49.49 in the first cycle and
+  43.4-43.6 in the next three; a two-cycle run with `UPLUS = 0.001` ended
+  at 43.46. Runs started without a density file were not affected (that
+  branch already filled both triangles). `D` is now set to zero after
+  allocation and the restart fills both triangles for both spins.
+
 ## 3.2.0 - 2026-11-18
 
 - Molecular gap correction (`UPLUS`, `MOLBLOCKS`) is now self-consistent.
