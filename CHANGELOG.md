@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+- New keyword `FULLPOL`: the full spin polarization vector (Px, Py, Pz) of
+  the transmitted current in one run, for spinor calculations (`SOC`,
+  `SCFSOC`, `SPINROTATOM` or `ZM`). `POL` gives only the z component; the
+  x and y components need the spin-off-diagonal blocks of G, which `POL`'s
+  block products never use. `FULLPOL` inserts the Pauli matrices in the
+  Caroli formula at the right electrode,
+  `P_a = Re Tr[sigma_a Gamma_R G^r Gamma_L G^a]`, the spin of the
+  electrons arriving in the drain (the definition TransCalc uses). It costs
+  one extra matrix product per energy, reusing the Gamma_L G^a product of
+  the transmission, done outside the OpenMP critical section. Px, Py and
+  Pz are written after the `POL`/`TCOMP` columns and
+  before the eigen-channels, unnormalized like `POL`; Pz equals the `POL`
+  column. Output without `FULLPOL` is unchanged. `tests/test_fullpol.py`
+  checks the traces against dense Pauli-matrix products, T against the
+  existing Caroli trace, Pz against the `POL` formula, the sign of each
+  axis, and that a global spin rotation rotates (Px, Py, Pz).
+  Note for users: x, y and z are Gaussian's standard orientation unless the
+  route has `nosymm`.
+
 - Fix: restarting from a saved density matrix (`P.<job>.dat`) filled only
   the lower triangle of D. With `DFTU` or `UPLUS` the full D is fed back to
   the device, so the first cycles after a restart started from a corrupted

@@ -41,6 +41,7 @@ end program
 cases=[
  ('none','ALPHA = 0.02\n',True,'SOC        =  F'),
  ('soc-only','SOC\n',True,'SOC        =  T'),
+ ('fullpol-without-soc','FULLPOL\n',True,'FULLPOL    =  T'),
  ('soc-with-modifiers','SOC\nSCFSOC\nSOC_FAC_P = 2.0\nRCUT = 1.5\nSOC_VAL_D = 0.05\nSOCFACATOM\n1\n3, 1.0, 2.0, 0.0, 1.0\nSOCVALATOM\n1\n4, 0.0, 0.1, 0.0\n',True,'SCFSOC     =  T'),
  ('soc-after-scfsoc','SCFSOC\nSOC\n',True,'SCFSOC     =  T'),
  ('scfsoc','SCFSOC\n',False,'ERROR: SCFSOC requires SOC'),
