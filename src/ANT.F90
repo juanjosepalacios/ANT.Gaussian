@@ -290,11 +290,15 @@
            ! Transform to triangular form
            !
            acount = 1
+           ! Fill both triangles of D: with DFTU or UPLUS the full D is fed
+           ! back to the device after mixing
            DO i=1,NBasis
               DO j=1,i
                  D(1,i,j)=DevDensMat(1,i,j)
+                 D(1,j,i)=D(1,i,j)
                  MT(1,acount)=D(1,i,j)
                  IF(UHF) D(2,i,j) = DevDensMat(2,i,j)
+                 IF(UHF) D(2,j,i) = D(2,i,j)
                  IF(UHF) MT(2,acount) = D(2,i,j)
                  acount = acount +1
               ENDDO

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Fix: restarting from a saved density matrix (`P.<job>.dat`) filled only
+  the lower triangle of D. With `DFTU` or `UPLUS` the full D is fed back to
+  the device, so the first cycles after a restart started from a corrupted
+  density (about 10 electrons per spin missing on C60), recovered only at
+  the `ALPHA` mixing rate. Both triangles are now filled. Note that with a
+  small `ALPHA` the damped density changes little per cycle and Gaussian's
+  default `conver` test can pass right after a restart; use
+  `scf=(conver=7)` when restarting.
+
 - Examples: the molecular junctions are grouped by molecule.
   `examples/benzene` holds `Al-benzene-Al`, `Al-benzene-Al-axis` and
   `input_Electrodo_Au_3_benzene` (formerly under `examples/Al-benzene-Al`
