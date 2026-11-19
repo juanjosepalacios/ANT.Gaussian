@@ -2,7 +2,7 @@
 # Basis: LANL2DZ (with its ECP on Al) everywhere except the outermost Al plane of each tip,
 # which touches the Bethe lattice and gets the minimal CRENBS-type sp basis with the
 # Christiansen-Ermler ECP10CE, the basis of the Papacon Al parameters.
-# Usage: python3 build.py ../../Al-benzene-Al/Al-benzene-Al/sp-Papacon/Al-benzene-Al.gjf Al-C60-Al.gjf Al-C60-Al.xyz
+# Usage: python3 build.py ../../benzene/Al-benzene-Al/sp-Papacon/Al-benzene-Al.gjf Al-C60-Al.gjf Al-C60-Al.xyz
 import math, re, sys, itertools
 dist = lambda p, q: sum((x-y)**2 for x, y in zip(p, q))**0.5
 phi = (1+5**0.5)/2

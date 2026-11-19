@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+- Examples: the molecular junctions are grouped by molecule.
+  `examples/benzene` holds `Al-benzene-Al`, `Al-benzene-Al-axis` and
+  `input_Electrodo_Au_3_benzene` (formerly under `examples/Al-benzene-Al`
+  and `examples/Au-benzene-Au`); `examples/triangulene` and `examples/C60`
+  hold `Al-triangulene-Al` and `Al-C60-Al`. Links in the examples and in
+  `doc/manual_2_g03.html` follow the new paths.
+
+- Examples: new Au junctions `benzene/Au-benzene-Au-axis`,
+  `triangulene/Au-triangulene-Au` and `C60/Au-C60-Au`: the Al structures
+  with the tips rescaled to Au, `Papacon` Au electrodes (`BLDAT/BL079.dat`),
+  the CRENBS spd basis on the Au planes coupled to the Bethe lattice and
+  LANL2DZ elsewhere, spin-unrestricted BLYP with and without `UPLUS = 2`.
+  With `UPLUS = 2` the triangulene keeps about two unpaired spins and the
+  junction is almost fully spin-polarized at E_F; benzene and C60 stay
+  nonmagnetic, and the C60 takes no electron from the Au.
+
 ## 3.2.0 - 2026-11-18
 
 - Molecular gap correction (`UPLUS`, `MOLBLOCKS`) is now self-consistent.

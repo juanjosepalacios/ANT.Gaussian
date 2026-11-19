@@ -2,7 +2,7 @@
 and ECP on Al and STO-3G on C and H, between `Papacon` Bethe-lattice electrodes (`BLDAT/BL013.dat`).
 340 basis functions.
 
-The structure follows [../../Al-benzene-Al/Al-benzene-Al-axis](../../Al-benzene-Al/Al-benzene-Al-axis/README.md):
+The structure follows [../../benzene/Al-benzene-Al-axis](../../benzene/Al-benzene-Al-axis/README.md):
 the molecule replaces the benzene, with its plane containing the C3 transport axis (z). `build.py`
 builds the flake with C-C 1.42 A and C-H 1.09 A (no geometry optimization), centres its carbons on
 the axis with the C3 median of the triangle along z (a corner C-H towards electrode 1, a zigzag edge

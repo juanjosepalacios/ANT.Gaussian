@@ -1,0 +1,8 @@
+ALPHA = 0.02
+NIP = 7
+EW1 = -5
+EW2 = 5
+MOLBLOCKS
+1
+21,68
+UPLUS = 2

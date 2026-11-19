@@ -2,7 +2,7 @@ Au9-Au4-Au-Au4-Au9 (27 atoms) without `.ant`: ANT defaults, with the default ele
 of `BLDAT/BL079.dat`. The input differs from [../spd-Papacon](../spd-Papacon/README.md) only in
 having no `nosymm` on the route line.
 
-This run was in `examples/Au-benzene-Au`, as the Au contact without benzene.
+This run was in `examples/Au-benzene-Au` (now `examples/benzene`), as the Au contact without benzene.
 
 ## Outputs
 

@@ -3,7 +3,7 @@ electrodes (`BLDAT/BL013.dat`). 780 basis functions.
 
 `build.py` builds the C60 as a truncated icosahedron with all C-C bonds 1.44 A (no geometry
 optimization), with a hexagon facing each apex on the transport axis (z), and takes the Al tips of
-[../../Al-benzene-Al/Al-benzene-Al/sp-Papacon](../../Al-benzene-Al/Al-benzene-Al/sp-Papacon/README.md),
+[../../benzene/Al-benzene-Al/sp-Papacon](../../benzene/Al-benzene-Al/sp-Papacon/README.md),
 moving each rigidly along z until the nearest C is 2.50 A from its apex (2.05 A from the apex to
 the hexagon plane). The apex gap is 10.62 A. Atoms 1-20 and 81-100 are the Al tips, 21-80 the C60.
 
