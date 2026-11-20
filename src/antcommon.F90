@@ -41,6 +41,7 @@
   integer, parameter :: ifu_msh = 107
   integer, parameter :: ifu_hyb = 108
   integer, parameter :: ifu_ac  = 109
+  integer, parameter :: ifu_wbl = 110
 
   integer, parameter :: ifu_bl  = 20
 

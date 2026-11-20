@@ -943,7 +943,7 @@
   !***************************
   subroutine Transport(F,ADDP) 
     use parameters, only: RedTransmB, RedTransmE, ElType, HybFunc, POrtho, DFTU, DiagCorrBl, DMImag, LDOS_Beg, LDOSOutput, LDOS_End, &
-                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC, NCorrBlM
+                          NSpinEdit, SpinEdit, SOC, ROT, ZM, PrtHatom, UPlus, SCFSOC, NCorrBlM, WBL
     use numeric, only: RMatPow, RSDiag
     use cluster, only: LoAOrbNo, HiAOrbNo
     use constants, only: c_zero
@@ -1107,6 +1107,7 @@
        IF (ElType(1) /= "GHOST" .and. ElType(2) /= "GHOST") THEN            
           IF( RedTransmE >= RedTransmB  ) call EigenChannelAnalysis
           call transmission
+          IF( WBL ) call WBLTransmission
        END IF
        
        !
@@ -3734,6 +3735,329 @@
     P(2) = dble( (0.0d0,1.0d0)*(tud - tdu) )
     P(3) = dble( tuu - tdd )
   end subroutine FullPolTraces
+
+  !*****************************************************************************
+  !* WBL: transmission in the wide-band limit of the molecule's embedding       *
+  !* (WBL.md), defined in the Loewdin basis (H' = S^-1/2 H S^-1/2), where the  *
+  !* energy enters as z*I and the molecule-electrode coupling is energy         *
+  !* independent. Everything outside the molecule, i.e. the electrode atoms of  *
+  !* the cluster and the Bethe lattice, is frozen at E_F:                       *
+  !*   G'_WBL(z) = [ G'^-1(E_F) + z P_M ]^-1,  z = E - E_F,                     *
+  !*   T_WBL(z)  = Tr[ Gamma'_L(E_F) G'_WBL^a Gamma'_R(E_F) G'_WBL^r ]          *
+  !* with X' = S^-1/2 X S^-1/2 and P_M the identity on the Loewdin orbitals of  *
+  !* the molecule atoms. The molecule M is ANT's own partition of the cluster   *
+  !* (the atoms between the two electrodes, see NATOMEL1/NATOMEL2). Written to  *
+  !* T.<job>.WBL.dat in the format of the T file. Called after transmission;    *
+  !* collinear runs only.                                                       *
+  !*****************************************************************************
+  subroutine WBLTransmission
+    use parameters, only: NChannels, HTransm, EW1, EW2, EStep, eta, glue, SOC, ROT, ZM, SCFSOC
+    use cluster, only: NALead, NAMol, LoAOrbNo, HiAOrbNo
+    use constants, only: c_zero, d_zero, ui
+    use numeric, only: CMatPow, CHDiag, CDiag, sort, RMatPow
+    use omp_lib
+    implicit none
+
+    integer :: n, nsteps, i, j, m1, m2, iEF, info, AllocErr
+    integer, dimension(:), allocatable :: ipiv
+    complex*16, dimension(:,:), allocatable :: GInv0, GamL0, GamR0, GamLT0, sigl, sigr, G, T, tmp, XL
+    complex*16, dimension(:), allocatable :: work, ctn
+    real*8, dimension(:), allocatable :: tn
+    real*8, dimension(:,:), allocatable :: TW, SmH
+    real*8 :: energy, fac, TNorm, TWBL, TMol, TDir, HLR, SLR, wstart
+    complex*16 :: z
+
+    if (SOC .or. ROT .or. ZM .or. SCFSOC) then
+       write(ifu_log,*) 'WARNING: WBL is not implemented with SOC/SCFSOC/SPINROTATOM/ZM; no WBL file written'
+       return
+    end if
+    if (NAMol() < 1) then
+       write(ifu_log,*) 'WARNING: WBL needs a molecule between the electrodes; none found, no WBL file written'
+       return
+    end if
+    ! molecule orbitals: one contiguous range between the two electrodes
+    m1 = LoAOrbNo(NALead(1)+1)
+    m2 = HiAOrbNo(NALead(1)+NAMol())
+    if (m1 == 1 .or. m2 == NAOrbs) then
+       write(ifu_log,*) 'WARNING: WBL needs electrode atoms on both sides of the molecule', &
+            ' (see NATOMEL1/NATOMEL2); no WBL file written'
+       return
+    end if
+
+    wstart = omp_get_wtime()
+    write(ifu_log,'(A,I6,A,I6,A,I6,A,I6)') ' WBL: molecule atoms ', NALead(1)+1, ' to ', NALead(1)+NAMol(), &
+         ', orbitals ', m1, ' to ', m2
+    fac = 1.0d0
+    if (NSpin == 1) fac = 2.0d0
+    nsteps = (EW2-EW1)/EStep + 1
+    iEF = minloc( abs( (/ (EW1+EStep*(n-1), n=1,nsteps) /) ), 1 )
+
+    allocate( GInv0(NAOrbs,NAOrbs), GamL0(NAOrbs,NAOrbs), GamR0(NAOrbs,NAOrbs), GamLT0(NAOrbs,NAOrbs), &
+              sigl(NAOrbs,NAOrbs), sigr(NAOrbs,NAOrbs), G(NAOrbs,NAOrbs), T(NAOrbs,NAOrbs), tmp(NAOrbs,NAOrbs), &
+              ipiv(NAOrbs), work(4*NAOrbs), tn(NAOrbs), ctn(NAOrbs), TW(nsteps,2+NChannels), &
+              XL(NAOrbs,NAOrbs), SmH(NAOrbs,NAOrbs), STAT=AllocErr )
+    if( AllocErr /= 0 ) stop
+    ! Loewdin transformation S^-1/2, the same for both spins
+    call RMatPow( SD, -0.5d0, SmH )
+    XL = dcmplx( SmH )
+    deallocate( SmH )
+    open(ifu_wbl, file='T.'//trim(jobname)//'.WBL.dat', status='unknown')
+
+    do ispin=1,NSpin
+
+       !*********************************************************************
+       !* Frozen quantities at E_F (z = 0), built as in gplus               *
+       !*********************************************************************
+       z = c_zero
+       sigl = c_zero
+       sigr = c_zero
+       call CompSelfEnergies( ispin, z, sigl, sigr, 1 )
+       sigr = glue*sigr
+       sigl = glue*sigl
+       GamR0 = ui*(sigr-conjg(transpose(sigr)))
+       GamL0 = ui*(sigl-conjg(transpose(sigl)))
+       do j=1,NAOrbs
+          do i=1,NAOrbs
+             GInv0(i,j) = (z-shift+ui*eta)*SD(i,j)-HD(ispin,i,j)-sigl(i,j)-sigr(i,j)
+          end do
+       end do
+       ! to the Loewdin basis: GInv0' = (-shift + i eta) I - H' - Sigma'(0), Gamma' = S^-1/2 Gamma S^-1/2;
+       ! T is basis independent, so T_WBL(E_F) is still the normal T(E_F)
+       call WBLLowdin( NAOrbs, XL, GInv0, tmp )
+       call WBLLowdin( NAOrbs, XL, GamL0, tmp )
+       call WBLLowdin( NAOrbs, XL, GamR0, tmp )
+       if (HTransm) then
+          call CMatPow( GamL0, 0.5d0, GamLT0 )
+       else
+          GamLT0 = GamL0
+       end if
+
+       !*********************************************************************
+       !* Checks at E_F: normal T from gplus against T_WBL; the molecule-   *
+       !* only form and the direct electrode-electrode transmission         *
+       !*********************************************************************
+       call gplus( z, G, sigr, sigl )
+       if (HTransm) then
+          call CMatPow( sigl, 0.5d0, tmp )
+          sigl = tmp
+       end if
+       call WBLTransMat( NAOrbs, HTransm, sigl, sigr, G, T, tmp )
+       TNorm = d_zero
+       do i=1,NAOrbs
+          TNorm = TNorm + dble(T(i,i))
+       end do
+       call WBLGreen( NAOrbs, m1, m2, 0.0d0, GInv0, G, ipiv, work, info )
+       call WBLTransMat( NAOrbs, HTransm, GamLT0, GamR0, G, T, tmp )
+       TWBL = d_zero
+       do i=1,NAOrbs
+          TWBL = TWBL + dble(T(i,i))
+       end do
+       write(ifu_log,'(A,I1,A,ES22.14,A,ES22.14,A,ES10.2)') ' WBL check E_F spin ', ispin, ':  T normal =', fac*TNorm, &
+            '  T WBL =', fac*TWBL, '  rel.diff =', abs(TWBL-TNorm)/max(abs(TNorm),1.0d-300)
+       call WBLMoleculeOnly( NAOrbs, m1, m2, GInv0, GamL0, GamR0, G, TMol, TDir, info )
+       HLR = d_zero
+       SLR = d_zero
+       do j=m2+1,NAOrbs
+          do i=1,m1-1
+             HLR = max( HLR, abs(HD(ispin,i,j)) )
+             SLR = max( SLR, abs(SD(i,j)) )
+          end do
+       end do
+       write(ifu_log,'(A,I1,A,ES22.14,A,ES10.2)') ' WBL E_F spin ', ispin, &
+            ':  molecule-only Tr[Gamma_eff,L G_MM^a Gamma_eff,R G_MM^r] =', fac*TMol, &
+            '  rel.diff to T normal =', abs(TMol-TNorm)/max(abs(TNorm),1.0d-300)
+       write(ifu_log,'(A,I1,A,ES14.6,A,ES12.4,A,ES12.4)') ' WBL E_F spin ', ispin, &
+            ':  direct electrode-electrode T without molecule =', fac*TDir, '   AO max|H(L,R)| =', HLR, '   max|S(L,R)| =', SLR
+
+       !*********************************************************************
+       !* Energy loop: one inversion and three or four ZGEMMs per point,    *
+       !* reading only the shared frozen matrices; no CRITICAL needed       *
+       !*********************************************************************
+       TW = d_zero
+#if defined(PGI) || defined(INTEL)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,i,info,energy,G,T,tmp,ipiv,work,tn,ctn) FIRSTPRIVATE(nsteps)
+!$OMP DO SCHEDULE(DYNAMIC,1)
+#endif
+       do n=1,nsteps
+          energy = EW1+EStep*(n-1)
+          call WBLGreen( NAOrbs, m1, m2, energy, GInv0, G, ipiv, work, info )
+          call WBLTransMat( NAOrbs, HTransm, GamLT0, GamR0, G, T, tmp )
+          TW(n,1) = energy
+          do i=1,NAOrbs
+             TW(n,2) = TW(n,2) + dble(T(i,i))
+          end do
+          TW(n,2) = fac*TW(n,2)
+          ! eigenchannels: the NChannels largest eigenvalues, sorted at each energy
+          if( NChannels > 0 )then
+             if( HTransm ) then
+                call CHDiag( T, tn, info )
+             else
+                call CDiag( T, ctn, info )
+                do i=1,NAOrbs
+                   tn(i) = dble( ctn(i) )
+                end do
+                call sort(NAOrbs,tn)
+             end if
+             do i=1,NChannels
+                TW(n,2+i) = tn(NAOrbs-i+1)
+             end do
+          end if
+       end do
+#if defined(PGI) || defined(INTEL)
+!$OMP END DO
+!$OMP END PARALLEL
+#endif
+
+       do n=1,nsteps
+          write(ifu_wbl,1002) (TW(n,i),i=1,2+NChannels)
+       end do
+       write(ifu_wbl,*)'   '
+       call flush(ifu_wbl)
+
+       ! the energy loop against the normal T at the grid point nearest E_F
+       ! (equal to rounding only when that point is E_F)
+       z = dcmplx( EW1+EStep*(iEF-1) )
+       call gplus( z, G, sigr, sigl )
+       if (HTransm) then
+          call CMatPow( sigl, 0.5d0, tmp )
+          sigl = tmp
+       end if
+       call WBLTransMat( NAOrbs, HTransm, sigl, sigr, G, T, tmp )
+       TNorm = d_zero
+       do i=1,NAOrbs
+          TNorm = TNorm + dble(T(i,i))
+       end do
+       TNorm = fac*TNorm
+       write(ifu_log,'(A,I1,A,F10.5,A,ES22.14,A,ES22.14,A,ES10.2)') ' WBL check grid spin ', ispin, ': E-E_F =', &
+            EW1+EStep*(iEF-1), '  T normal =', TNorm, '  T WBL =', TW(iEF,2), &
+            '  rel.diff =', abs(TW(iEF,2)-TNorm)/max(abs(TNorm),1.0d-300)
+
+    end do ! spin
+
+    close(ifu_wbl)
+    deallocate( GInv0, GamL0, GamR0, GamLT0, sigl, sigr, G, T, tmp, ipiv, work, tn, ctn, TW, XL )
+    write(ifu_log,'(A,F12.4)') ' WBL transmission wall seconds: ', omp_get_wtime()-wstart
+
+1002 format(f10.5,10000E14.5)
+  end subroutine WBLTransmission
+
+  ! A -> X A X (X = S^-1/2, symmetric): to the Loewdin basis
+  subroutine WBLLowdin( n, X, A, tmp )
+    use constants, only: c_one, c_zero
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
+    implicit none
+    external zgemm
+    integer, intent(in) :: n
+    complex*16, dimension(n,n), intent(in) :: X
+    complex*16, dimension(n,n), intent(inout) :: A
+    complex*16, dimension(n,n), intent(out) :: tmp
+
+    call zgemm('N','N',n,n,n,c_one, X,  n, A, n, c_zero, tmp, n)
+    call zgemm('N','N',n,n,n,c_one, tmp,n, X, n, c_zero, A,   n)
+  end subroutine WBLLowdin
+
+  ! WBL Green function at z = E - E_F in the Loewdin basis:
+  ! G' = [ GInv0' + z P_M ]^-1, the energy only on the molecule orbitals m1..m2
+  subroutine WBLGreen( n, m1, m2, z, GInv0, G, ipiv, work, info )
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif
+    implicit none
+    external zgetrf, zgetri
+    integer, intent(in) :: n, m1, m2
+    real*8, intent(in) :: z
+    complex*16, dimension(n,n), intent(in) :: GInv0
+    complex*16, dimension(n,n), intent(out) :: G
+    integer, dimension(n), intent(out) :: ipiv
+    complex*16, dimension(4*n), intent(out) :: work
+    integer, intent(out) :: info
+    integer :: i
+
+    G = GInv0
+    do i=m1,m2
+       G(i,i) = G(i,i) + z
+    end do
+    call zgetrf(n,n,G,n,ipiv,info)
+    call zgetri(n,G,n,ipiv,work,4*n,info)
+  end subroutine WBLGreen
+
+  ! Transmission matrix with the same expressions as in transmission:
+  ! HTRANSM off: T = Gamma_L G^a Gamma_R G^r (GamLT = Gamma_L)
+  ! HTRANSM on:  T = Gamma_L^1/2 G^a Gamma_R G^r Gamma_L^1/2 (GamLT = Gamma_L^1/2)
+  subroutine WBLTransMat( n, htr, GamLT, GamR, G, T, tmp )
+    use constants, only: c_one, c_zero
+#ifdef PGI
+    use lapack_blas, only: zgemm
+#endif
+    implicit none
+    external zgemm
+    integer, intent(in) :: n
+    logical, intent(in) :: htr
+    complex*16, dimension(n,n), intent(in) :: GamLT, GamR, G
+    complex*16, dimension(n,n), intent(out) :: T, tmp
+
+    if( .not. htr )then
+       call zgemm('N','C',n,n,n,c_one, GamLT,n, G,    n, c_zero, T,   n)
+       call zgemm('N','N',n,n,n,c_one, T,    n, GamR, n, c_zero, tmp, n)
+       call zgemm('N','N',n,n,n,c_one, tmp,  n, G,    n, c_zero, T,   n)
+    else
+       call zgemm('N','C',n,n,n,c_one, GamLT,n, G,    n, c_zero, tmp, n)
+       call zgemm('N','N',n,n,n,c_one, tmp,  n, GamR, n, c_zero, T,   n)
+       call zgemm('N','N',n,n,n,c_one, T,    n, G,    n, c_zero, tmp, n)
+       call zgemm('N','N',n,n,n,c_one, tmp,  n, GamLT,n, c_zero, T,   n)
+    end if
+  end subroutine WBLTransMat
+
+  ! Diagnostics at E_F (traces per spin, no spin factor), from G = GInv0^-1 and
+  ! the electrode block g_E = GInv0(E,E)^-1, E = all orbitals outside m1..m2:
+  ! TMol = Tr[Gamma_eff,L G_MM^a Gamma_eff,R G_MM^r], Gamma_eff,X = W g_E Gamma_X g_E^+ W^+,
+  !        W = GInv0(M,E): the molecule-only form, exact (up to eta) only if the two electrodes
+  !        do not couple to each other directly;
+  ! TDir = Tr[Gamma_L g_E^a Gamma_R g_E^r]: direct transmission without the molecule
+  subroutine WBLMoleculeOnly( n, m1, m2, GInv0, GamL, GamR, G, TMol, TDir, info )
+#ifdef PGI
+    use lapack_blas, only: zgetri, zgetrf
+#endif
+    implicit none
+    external zgetrf, zgetri
+    integer, intent(in) :: n, m1, m2
+    complex*16, dimension(n,n), intent(in) :: GInv0, GamL, GamR, G
+    real*8, intent(out) :: TMol, TDir
+    integer, intent(out) :: info
+    complex*16, dimension(:,:), allocatable :: gE, X, GeL, GeR, GMM, M
+    complex*16, dimension(:), allocatable :: work
+    integer, dimension(:), allocatable :: idxE, ipiv
+    integer :: i, nE, nM
+
+    nM = m2-m1+1
+    nE = n-nM
+    allocate( idxE(nE), ipiv(nE), work(4*nE) )
+    idxE = (/ (i, i=1,m1-1), (i, i=m2+1,n) /)
+    allocate( gE(nE,nE), X(nM,nE), GeL(nM,nM), GeR(nM,nM), GMM(nM,nM), M(nM,nM) )
+    gE = GInv0(idxE,idxE)
+    call zgetrf(nE,nE,gE,nE,ipiv,info)
+    call zgetri(nE,gE,nE,ipiv,work,4*nE,info)
+    X = matmul( GInv0(m1:m2,idxE), gE )
+    GeL = matmul( X, matmul( GamL(idxE,idxE), conjg(transpose(X)) ) )
+    GeR = matmul( X, matmul( GamR(idxE,idxE), conjg(transpose(X)) ) )
+    GMM = G(m1:m2,m1:m2)
+    M = matmul( matmul( GeL, conjg(transpose(GMM)) ), matmul( GeR, GMM ) )
+    TMol = 0.0d0
+    do i=1,nM
+       TMol = TMol + dble(M(i,i))
+    end do
+    deallocate( X, M )
+    allocate( X(nE,nE), M(nE,nE) )
+    X = matmul( GamL(idxE,idxE), conjg(transpose(gE)) )
+    M = matmul( X, matmul( GamR(idxE,idxE), gE ) )
+    TDir = 0.0d0
+    do i=1,nE
+       TDir = TDir + dble(M(i,i))
+    end do
+    deallocate( gE, X, GeL, GeR, GMM, M, idxE, ipiv, work )
+  end subroutine WBLMoleculeOnly
 !--------------------------------------------------------------------------------
   subroutine CompHybFunc
   !

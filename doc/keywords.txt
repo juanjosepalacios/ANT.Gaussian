@@ -541,6 +541,24 @@ in the non-hermitian or hermitian form, see keyword HTRANSM) is diagonalized and
 eigenvalues (i.e. the eigenchannel transmissions) are printed.
 Default: NCHANNELS = 0 (eigenchannel calculation off).
 
+* WBL (logical)
+Writes T.job_name.WBL.dat: the transmission in the wide-band limit of the
+molecule's embedding, from the same converged H and S. Everything outside the
+molecule (the electrode atoms of the cluster and the Bethe lattice) is frozen
+at E_F. It is defined in the Loewdin basis (H' = S^-1/2 H S^-1/2), where the
+energy enters as (E - E_F) I and the molecule-electrode coupling does not
+depend on energy: G'^-1(E) = G'^-1(E_F) + (E - E_F) P_M, P_M the identity on
+the Loewdin orbitals of the molecule atoms, with Gamma_L and Gamma_R at E_F.
+It separates the electrode DOS from the molecular levels in the slope of
+T(E), e.g. for the Seebeck coefficient, and is meaningful near E_F only. The
+molecule is ANT's partition of the cluster (the atoms between the two
+electrodes, see NATOMEL1 and NATOMEL2). The full device matrices are kept, so
+direct electrode-electrode coupling is included. At E_F it equals the normal T
+(checked in the log). Same format as T.job_name.dat, including NCHANNELS
+eigenvalues. Collinear runs only (ignored with a warning for SOC, SCFSOC,
+SPINROTATOM and ZM). See WBL.md.
+Default: .false. (off).
+
 * LEADDOS (logical)
 Prints out the DOS of the Bethe lattice. Output files: Lead1DOS.dat, Lead2DOS.dat
 Default: .false. (off).

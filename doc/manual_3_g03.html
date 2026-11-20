@@ -723,6 +723,28 @@ see keyword HTRANSM) is diagonalized and the NCHANNELS
 largest eigenvalues (i.e. the eigenchannel transmissions) are printed.</p>
   <p>Default: NCHANNELS = 0 (eigenchannel calculation off).</p>
 </details>
+<details class="keyword" id="wbl">
+  <summary><em>WBL</em> (logical)</summary>
+  <p>Writes T.job_name.WBL.dat: the transmission in the wide-band limit of the
+molecule's embedding, from the same converged H and S. Everything outside the
+molecule (the electrode atoms of the cluster and the Bethe lattice) is frozen
+at E<sub>F</sub>. It is defined in the L&ouml;wdin basis
+(H&prime; = S<sup>-1/2</sup> H S<sup>-1/2</sup>), where the energy enters as
+(E - E<sub>F</sub>) I and the molecule-electrode coupling does not depend on
+energy: G&prime;<sup>-1</sup>(E) = G&prime;<sup>-1</sup>(E<sub>F</sub>) + (E - E<sub>F</sub>) P<sub>M</sub>,
+P<sub>M</sub> the identity on the L&ouml;wdin orbitals of the molecule atoms,
+with &Gamma;<sub>L</sub> and &Gamma;<sub>R</sub> at E<sub>F</sub>. It separates the
+electrode DOS from the molecular levels in the slope of T(E), for example for
+the Seebeck coefficient, and is meaningful near E<sub>F</sub> only.</p>
+  <p>The molecule is ANT's partition of the cluster: the atoms between the two
+electrodes, see <a href="#natomel1-and-natomel2">NATOMEL1 and NATOMEL2</a>. The
+full device matrices are kept, so direct coupling between the two electrodes
+is included. At E<sub>F</sub> it equals the normal T (checked in the log). The
+file has the format of T.job_name.dat, including the NCHANNELS eigenvalues.
+Collinear runs only: ignored with a warning for SOC, SCFSOC, SPINROTATOM and
+ZM. The formulation is in WBL.md.</p>
+  <p>Default: .false. (off).</p>
+</details>
 <details class="keyword" id="leaddos">
   <summary><em>LEADDOS</em> (logical)</summary>
   <p>Prints out the DOS of the Bethe
