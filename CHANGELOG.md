@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.3.0 - 2026-11-20
 
 - New keyword `FULLPOL`: the full spin polarization vector (Px, Py, Pz) of
   the transmitted current in one run, for spinor calculations (`SOC`,
