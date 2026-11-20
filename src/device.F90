@@ -3061,7 +3061,7 @@
     use cluster, only : hiaorbno, loaorbno
     use constants, only: c_one, c_zero, d_zero, d_pi
     use parameters, only: NChannels,HTransm,EW1,EW2,EStep,LDOS_Beg, LDOSOutput,LDOS_End, DOSEnergy, SOC, ROT, FermiAcc, QExcess, &
-                          ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, SCFSOC
+                          ChargeAcc, DMIMAG, ElType, ZM, POL, TCOMP, SCFSOC, FULLPOL
     use numeric, only: CMatPow, CHDiag, CDiag, sort, MULLER, RMatPow
     use preproc, only: MaxAtm
     use OneDlead, only: CleanUp1DLead
@@ -3096,6 +3096,9 @@
     real*8, dimension(:),allocatable   :: tchan1,tchan2
     complex*16   :: T_uu,T_dd,T_ud,T_du
     real*8   :: polar,trans2
+    complex*16, dimension(:,:), allocatable :: DX
+    real*8   :: transF, PolVec(3)
+    integer  :: ncolT
     real*8 :: transport_start
     logical :: ADDP
     
@@ -3152,6 +3155,10 @@
           allocate(GreenTC_DD(NAOrbs,NAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
          !DGreenTC=c_zero      
        end if 
+! matrix for the full polarization vector
+       if (FULLPOL) then
+          allocate(DX(DNAOrbs,DNAOrbs), STAT=AllocErr);if( AllocErr /= 0 ) stop
+       end if
 
        call spin_orbit
        
@@ -3357,7 +3364,7 @@
        wcount = 0  ! Issue warning of failure in transmission just once
 
 #if defined(PGI) || defined(INTEL)
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp) 
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(n,cenergy,energy,Dgreen,Dgammar,Dgammal,DT,Dtemp,DX,PolVec,transF) 
 !$OMP DO SCHEDULE(DYNAMIC,1)
 #endif
        do n=1,nsteps
@@ -3371,8 +3378,13 @@
           !*********************************************************************
           call gplus_SOC(cenergy,DGreen,DGammaR,DGammaL,1)
           call zgemm('N','C',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGammaL,DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
+          ! Full polarization vector: X = G^r (GammaL G^a), reusing GammaL G^a before DT is overwritten
+          if (FULLPOL) call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DGreen, DNAOrbs, DT, DNAOrbs, c_zero, DX, DNAOrbs)
           call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, DT,     DNAOrbs, DGammaR, DNAOrbs, c_zero, Dtemp, DNAOrbs)
           call zgemm('N','N',DNAOrbs,DNAOrbs,DNAOrbs,c_one, Dtemp,  DNAOrbs, DGreen,  DNAOrbs, c_zero, DT,    DNAOrbs)
+
+          ! P_a = Re Tr[sigma_a GammaR X]
+          if (FULLPOL) call FullPolTraces( NAOrbs, DGammaR, DX, transF, PolVec )
 
 #if defined(PGI) || defined(INTEL)
 !$OMP CRITICAL
@@ -3554,8 +3566,24 @@
 
           end if !end if of polatization
 
+          if (FULLPOL) then
+             if (dabs(transF-trans) >= 1.0d-10 .and. wcount < 1) then
+                print*,'Warning in the transmission with FULLPOL: T from the drain trace differs by ', dabs(transF-trans)
+                wcount = wcount + 1
+             end if
+          end if
+
           call flush(334)
-          if (POL) then
+          if (FULLPOL) then
+             ! Px, Py, Pz go after the POL/TCOMP columns, before the eigen-channels
+             if (POL .and. TCOMP) then
+                 write(334,1002)energy,trans2,polar,real(T_uu),real(T_ud),real(T_du),real(T_dd),(PolVec(i),i=1,3),(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             else if (POL) then
+                 write(334,1002)energy,trans2,polar,(PolVec(i),i=1,3),(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             else
+                 write(334,1002)energy,trans,(PolVec(i),i=1,3),(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
+             end if
+          else if (POL) then
              if  (.not. TCOMP) then
                  write(334,1002)energy,trans2,polar,(Dtn(i),i=DNAOrbs,DNAOrbs-NChannels+1,-1)
              else
@@ -3594,6 +3622,12 @@
 
   ! Reordering in energy for nice T output
        
+       ! columns per line: E, T, [POL], [TCOMP x4 with POL], [FULLPOL x3], channels
+       ncolT = 2 + NChannels
+       if (POL) ncolT = ncolT + 1
+       if (POL .and. TCOMP) ncolT = ncolT + 4
+       if (FULLPOL) ncolT = ncolT + 3
+
        do n=1,nsteps
           energy=EW1+EStep*(n-1)
           rewind(334)
@@ -3601,22 +3635,8 @@
           read(334,*)energ
           if (dabs(energy-energ) < 0.000001) then
              backspace(334)
-             if (POL) then
-                if (.not. TCOMP) then 
-                    read(334,1002) (xxx(j),j=1,3+NChannels)
-                else    
-                    read(334,1002) (xxx(j),j=1,7+NChannels)
-                end if
-             end if          
-             if (.not. POL) read(334,1002) (xxx(j),j=1,2+NChannels)
-             if (POL) then 
-                if (.not. TCOMP) then 
-                    write(ifu_tra,1002) (xxx(j),j=1,3+NChannels)
-                else    
-                    write(ifu_tra,1002) (xxx(j),j=1,7+NChannels)
-                end if
-             end if                 
-             if (.not. POL) write(ifu_tra,1002) (xxx(j),j=1,2+NChannels)
+             read(334,1002) (xxx(j),j=1,ncolT)
+             write(ifu_tra,1002) (xxx(j),j=1,ncolT)
              exit
           end if
           end do
@@ -3654,6 +3674,7 @@
           deallocate(GreenTC_DU)      
           deallocate(GreenTC_DD)      
        end if 
+       if (FULLPOL) deallocate(DX)
     else 
         deallocate(GammaL)
         deallocate(GammaR)
@@ -3677,6 +3698,42 @@
 3333 format(f10.5,10000E14.5)
 
   end subroutine transmission
+
+  !*****************************************************************************
+  !* FULLPOL: spin-resolved Caroli traces read at the right (drain) electrode   *
+  !* M = GammaR X with X = G^r GammaL G^a, spinor basis [all up ; all down]     *
+  !* T = Re Tr M and P_a = Re Tr[(sigma_a x 1) M], a = x, y, z (not divided by T)*
+  !* Only the diagonals of the four spin blocks of M are needed: O(n^2)         *
+  !*****************************************************************************
+  subroutine FullPolTraces( n, GammaR, X, T, P )
+    implicit none
+    integer, intent(in) :: n
+    complex*16, dimension(2*n,2*n), intent(in) :: GammaR, X
+    real*8, intent(out) :: T
+    real*8, dimension(3), intent(out) :: P
+    complex*16 :: tuu, tud, tdu, tdd
+    integer :: i, k
+
+    ! t_ab = Tr of the (a,b) spin block of M (rows spin a, columns spin b)
+    tuu = (0.0d0,0.0d0)
+    tud = (0.0d0,0.0d0)
+    tdu = (0.0d0,0.0d0)
+    tdd = (0.0d0,0.0d0)
+    do i=1,n
+       do k=1,2*n
+          tuu = tuu + GammaR(i,k)*X(k,i)
+          tud = tud + GammaR(i,k)*X(k,i+n)
+          tdu = tdu + GammaR(i+n,k)*X(k,i)
+          tdd = tdd + GammaR(i+n,k)*X(k,i+n)
+       end do
+    end do
+
+    ! Tr[sigma M] = sum_ab sigma(a,b) t_ba, sigma_y = [[0,-i],[i,0]]
+    T    = dble( tuu + tdd )
+    P(1) = dble( tud + tdu )
+    P(2) = dble( (0.0d0,1.0d0)*(tud - tdu) )
+    P(3) = dble( tuu - tdd )
+  end subroutine FullPolTraces
 !--------------------------------------------------------------------------------
   subroutine CompHybFunc
   !

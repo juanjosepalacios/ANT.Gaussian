@@ -564,6 +564,24 @@ With POL, also writes the four spin components T_uu, T_ud, T_du and T_dd
 after the polarization column.
 Default: .false. (off)
 
+* FULLPOL (logical)
+For spinor calculations (SOC, SCFSOC, SPINROTATOM or ZM), adds three columns
+to the transmission file with the full spin polarization vector of the
+transmitted current, Px, Py and Pz:
+P_a = Re Tr[sigma_a Gamma_R G^r Gamma_L G^a], a = x, y, z,
+the spin of the electrons arriving in the right electrode (sigma_a, the Pauli
+matrices, act on spin only). Like POL, the columns hold the unnormalized
+values; divide by T for the polarization ratio. Pz equals the POL column. The
+three columns go after the POL and TCOMP columns, when those are given, and
+before the eigen-channels. x, y and z are the axes of the coordinates Gaussian
+passes to ANT: the standard orientation unless the route has nosymm. Use
+nosymm to compare Px and Py with directions in the input geometry. The
+electrode self-energies stay spin-diagonal along z, so with spin-polarized
+electrodes and SPINROTATOM on the contact atoms the electrode magnetization
+and the contact moments are not collinear. Like POL, it is ignored in
+collinear calculations, whose two spin blocks already give T_up and T_down.
+Default: .false. (off)
+
 * RTM_BEG and RTM_END (integer)
 Perform eigenchannel analysis with reduced transmission matrix [see PRB 73, 075429 (2006)] on atoms from 
 atom RTM_BEG to atom RTM_END

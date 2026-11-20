@@ -754,6 +754,26 @@ the difference, not the normalized ratio.</p>
 after the polarization column.</p>
   <p>Default: .false. (off).</p>
 </details>
+<details class="keyword" id="fullpol">
+  <summary><em>FULLPOL</em> (logical)</summary>
+  <p>For spinor calculations (SOC, SCFSOC, SPINROTATOM or ZM), adds three
+columns to the transmission file with the full spin polarization vector of the
+transmitted current, Px, Py and Pz:
+P_a = Re Tr[&sigma;_a &Gamma;_R G<sup>r</sup> &Gamma;_L G<sup>a</sup>], a = x, y, z,
+the spin of the electrons arriving in the right electrode (&sigma;_a, the Pauli
+matrices, act on spin only). Like POL, the columns hold the unnormalized
+values; divide by T for the polarization ratio. Pz equals the POL column. The
+three columns go after the POL and TCOMP columns, when those are given, and
+before the eigen-channels.</p>
+  <p>x, y and z are the axes of the coordinates Gaussian passes to ANT: the
+standard orientation unless the route has <em>nosymm</em>. Use <em>nosymm</em>
+to compare Px and Py with directions in the input geometry. The electrode
+self-energies stay spin-diagonal along z, so with spin-polarized electrodes and
+SPINROTATOM on the contact atoms the electrode magnetization and the contact
+moments are not collinear. Like POL, it is ignored in collinear calculations,
+whose two spin blocks already give T_up and T_down.</p>
+  <p>Default: .false. (off).</p>
+</details>
 <details class="keyword" id="rtm-beg-and-rtm-end">
   <summary><em>RTM_BEG and RTM_END</em> (integer)</summary>
   <p>Perform eigenchannel analysis

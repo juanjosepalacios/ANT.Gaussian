@@ -318,6 +318,10 @@
   ! Print all components of transmission
   LOGICAL :: tcomp = .FALSE. 
   CHARACTER(len=10), PARAMETER :: TCOMP_keyw = "TCOMP"    
+
+  ! FULLPOL: full spin-polarization vector (Px, Py, Pz) of the transmission
+  LOGICAL :: fullpol = .FALSE. 
+  CHARACTER(len=10), PARAMETER :: FULLPOL_keyw = "FULLPOL"    
   
   ! Atom spin orientation manipulation of initial guess
   INTEGER :: NSpinRotAtom = 0
@@ -693,6 +697,8 @@ CONTAINS
        pol = .true.  
     CASE ( TCOMP_keyw )   
        tcomp = .true.                             
+    CASE ( FULLPOL_keyw )   
+       fullpol = .true.                             
     CASE ( ZM_keyw )   
        ZM = .true.                          
     CASE ( SpinDel_keyw )
@@ -1108,6 +1114,7 @@ CONTAINS
     end if 
     WRITE(unit=logfile,fmt=*) POL_keyw, " = ", pol     
     WRITE(unit=logfile,fmt=*) TCOMP_keyw, " = ", tcomp         
+    WRITE(unit=logfile,fmt=*) FULLPOL_keyw, " = ", fullpol         
     WRITE(unit=logfile,fmt=*) ZM_keyw, " = ", ZM
     WRITE(unit=logfile,fmt=*) Bx_keyw, " = ", BX, " Tesla"
     WRITE(unit=logfile,fmt=*) By_keyw, " = ", BY, " Tesla"
