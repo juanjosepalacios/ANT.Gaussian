@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+- New keyword `WBL`: writes `T.<job>.WBL.dat`, the transmission in the
+  wide-band limit of the molecule's embedding, from the same converged H and
+  S. Everything outside the molecule (the electrode atoms of the cluster and
+  the Bethe lattice) is frozen at E_F. It is defined in the Loewdin basis,
+  where the energy enters as (E - E_F) I and the molecule-electrode coupling
+  is energy independent: G'^-1(E) = G'^-1(E_F) + (E - E_F) P_M, with the
+  Gammas at E_F. (An AO-basis form with (E - E_F) S_MM also froze the overlap
+  part of the coupling and gave spurious sharp peaks in compressed
+  junctions.) This separates the electrode DOS from the molecular levels in
+  the slope of T(E), the Seebeck coefficient. The molecule is ANT's own
+  partition of the cluster (the atoms between the two electrodes, set with
+  `NATOMEL1`/`NATOMEL2`). The full device matrices are kept, so direct
+  electrode-electrode coupling, large with diffuse metal basis functions, is
+  included; a molecule-only embedding formula misses it. T_WBL equals the
+  normal T at E_F, checked in the log. Collinear runs only. The new
+  `WBLTransmission` runs after `transmission` with its own OpenMP energy loop
+  (one inversion and a few ZGEMMs per energy, no critical section);
+  `transmission` itself is unchanged. `tests/test_wbl.py` checks the E_F
+  identity, T_WBL against dense and Schur-complement references, that it is
+  the same for two AO representations of one orthogonal model, the channel
+  bound, and the molecule-only diagnostic. Formulation and usage: `WBL.md`.
+
 ## 3.3.0 - 2026-11-20
 
 - New keyword `FULLPOL`: the full spin polarization vector (Px, Py, Pz) of

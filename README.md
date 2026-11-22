@@ -38,6 +38,9 @@ with a final charge check and density evaluation at the accepted root.
 
 For an opt-in integration alternative, see [adaptive contour quadrature](ADAPTIVE_QUADRATURE.md).
 
+To separate the electrode DOS from the molecule in the Seebeck coefficient, see
+[the wide-band-limit transmission](WBL.md) (keyword WBL).
+
 See [band filling](BAND_FERMI.md),
 [Dyson mixing benchmarks](DYSON_MIXING.md) and
 [the keyword reference](doc/keywords.txt). Historical release notes follow.

@@ -1,0 +1,295 @@
+module constants
+ implicit none
+ complex*16,parameter :: c_one=(1d0,0d0), c_zero=(0d0,0d0)
+end module
+
+module wbl_mod
+ implicit none
+contains
+@DEVICE@
+end module
+
+program test_wbl
+ use wbl_mod
+ implicit none
+ ! device: left electrode 1..3, molecule 4..5, right electrode 6..8
+ integer,parameter :: n=8, m1=4, m2=5
+ complex*16,parameter :: ci=(0d0,1d0), c0=(0d0,0d0), c1=(1d0,0d0)
+ real*8,parameter :: shift=-0.4d0, eta=1d-6
+ real*8 :: H(n,n),S(n,n),S2(n,n),Id(n,n),zs(3),z,T,Tref,TW,TW2,Tmol,Tdir,tol,Tmax
+ complex*16,dimension(n,n) :: SigL0,SigR0,SigL,SigR,GL0,GR0,GInv0,G,Gref,Tm,tmp,P,GMM,X,Xh
+ complex*16,dimension(n,n) :: Gi1,GL1,GR1,GLh1,Gi2,GL2,GR2,GLh2,Hp,GiA,GLA,GRA
+ complex*16 :: work(4*n)
+ integer :: ipiv(n),i,k,info,fails
+ fails=0
+ tol=1d-9
+ zs=(/-0.35d0,0.12d0,0.5d0/)
+ Id=0d0
+ do i=1,n
+  Id(i,i)=1d0
+ end do
+ P=c0;P(4,4)=c1;P(5,5)=c1
+
+ call device(H,S,.true.)
+ call sigmas(0d0,SigL0,SigR0)
+ GL0=ci*(SigL0-conjg(transpose(SigL0)))
+ GR0=ci*(SigR0-conjg(transpose(SigR0)))
+ GInv0=(-shift+ci*eta)*S-H-SigL0-SigR0
+ ! the Loewdin quantities, built as in WBLTransmission
+ call spow(S,-0.5d0,X)
+ call lowdin(X,GInv0,GL0,GR0,Gi1,GL1,GR1,GLh1)
+
+ ! (a) at E_F the WBL T is the normal T(E_F), in both T forms
+ Gref=GInv0;call inv(Gref)
+ Tref=caroli(GL0,GR0,Gref)
+ call WBLGreen(n,m1,m2,0d0,Gi1,G,ipiv,work,info)
+ call WBLTransMat(n,.false.,GL1,GR1,G,Tm,tmp)
+ call check('T WBL(E_F) = T normal(E_F)',abs(tr(Tm)-Tref),fails,tol*Tref)
+ call WBLTransMat(n,.true.,GLh1,GR1,G,Tm,tmp)
+ call check('HTRANSM form at E_F',abs(tr(Tm)-Tref),fails,tol*Tref)
+ ! the Loewdin basis is orthogonal: GInv0' = (-shift + i eta) I - H' - Sigma'
+ Hp=-Gi1-matmul(X,matmul(SigL0+SigR0,X))+(-shift+ci*eta)*Id
+ call check('Loewdin GInv0 has metric I',maxval(abs(Hp-matmul(X,matmul(H*c1,X)))),fails,tol*maxval(abs(H)))
+
+ ! a second AO representation of the same orthogonal model, with three times
+ ! the molecule-electrode overlap: H2 = S2^1/2 H' S2^1/2, Sigma2 likewise
+ call device(H,S,.true.)
+ S2=S
+ S2(1:3,4:5)=3d0*S2(1:3,4:5);S2(4:5,1:3)=3d0*S2(4:5,1:3)
+ S2(6:8,4:5)=3d0*S2(6:8,4:5);S2(4:5,6:8)=3d0*S2(4:5,6:8)
+ call spow(S2,0.5d0,Xh)
+ GiA=matmul(Xh,matmul(Gi1,Xh))
+ GLA=matmul(Xh,matmul(GL1,Xh));GRA=matmul(Xh,matmul(GR1,Xh))
+ call spow(S2,-0.5d0,X)
+ call lowdin(X,GiA,GLA,GRA,Gi2,GL2,GR2,GLh2)
+
+ do k=1,3
+  z=zs(k)
+  ! (b) against a dense reference [GInv0' + z P_M]^-1
+  Gref=Gi1+z*P;call inv(Gref)
+  TW=caroli(GL1,GR1,Gref)
+  call WBLGreen(n,m1,m2,z,Gi1,G,ipiv,work,info)
+  call WBLTransMat(n,.false.,GL1,GR1,G,Tm,tmp)
+  call check('WBL against dense [GInv0'' + z P_M]^-1',abs(tr(Tm)-TW),fails,tol*TW)
+  call WBLTransMat(n,.true.,GLh1,GR1,G,Tm,tmp)
+  call check('WBL HTRANSM form',abs(tr(Tm)-TW),fails,tol*TW)
+  ! (c) Schur complement: G'_MM = [z + A'_MM(0) - A'_ME g'_E A'_EM]^-1, electrodes at E_F
+  call schur(z,Gi1,GMM)
+  call check('molecule block = frozen embedding Schur form',maxval(abs(G(4:5,4:5)-GMM(1:2,1:2))),fails, &
+             tol*maxval(abs(G(4:5,4:5))))
+  ! (d) WBL depends only on the orthogonal model, not on the AO overlap
+  call WBLGreen(n,m1,m2,z,Gi2,G,ipiv,work,info)
+  call WBLTransMat(n,.false.,GL2,GR2,G,Tm,tmp)
+  call check('same T_WBL with 3x the molecule-electrode overlap',abs(tr(Tm)-TW),fails,1d-7*TW)
+  ! control: the AO form [GInv0 + z S_MM]^-1 is not invariant
+  Gref=GInv0+z*matmul(P,matmul(S*c1,P));call inv(Gref)
+  TW2=caroli(GL0,GR0,Gref)
+  Gref=GiA+z*matmul(P,matmul(S2*c1,P));call inv(Gref)
+  call check('control: AO form depends on the overlap', &
+             merge(1d0,0d0,abs(caroli(GLA,GRA,Gref)-TW2)<1d-4*TW2),fails,tol)
+  ! the normal T(z), with Sigma(z) and the electrodes at z, differs: WBL removes a real energy dependence
+  call sigmas(z,SigL,SigR)
+  Gref=(z-shift+ci*eta)*S-H-SigL-SigR;call inv(Gref)
+  T=caroli(ci*(SigL-conjg(transpose(SigL))),ci*(SigR-conjg(transpose(SigR))),Gref)
+  call check('normal T(z) differs from WBL',merge(1d0,0d0,abs(T-TW)<1d-4*T),fails,tol)
+ end do
+
+ ! (e) a physical scattering problem: T_WBL <= number of open channels (3 per electrode)
+ Tmax=0d0
+ do k=-200,200
+  call WBLGreen(n,m1,m2,0.01d0*k,Gi2,G,ipiv,work,info)
+  call WBLTransMat(n,.false.,GL2,GR2,G,Tm,tmp)
+  Tmax=max(Tmax,tr(Tm))
+ end do
+ call check('T_WBL <= 3 channels on [-2,2] eV',max(0d0,Tmax-3d0),fails,tol)
+
+ ! (f) molecule-only diagnostic (orthogonal device): exact when the electrodes are uncoupled ...
+ call device(H,S,.false.)
+ GInv0=(-shift+ci*eta)*Id-H-SigL0-SigR0
+ G=GInv0;call inv(G)
+ Tref=caroli(GL0,GR0,G)
+ call WBLMoleculeOnly(n,m1,m2,GInv0,GL0,GR0,G,Tmol,Tdir,info)
+ call check('uncoupled electrodes: no direct electrode-electrode T',abs(Tdir),fails,tol*Tref)
+ ! the eta broadening of the electrode block enters g_E and g_E^+ differently: agreement is O(eta)
+ call check('uncoupled electrodes: molecule-only form = T(E_F)',abs(Tmol-Tref),fails,1d-4*Tref)
+ ! ... and wrong when they couple directly (the reason for keeping the full matrices)
+ call device(H,S,.true.)
+ GInv0=(-shift+ci*eta)*Id-H-SigL0-SigR0
+ G=GInv0;call inv(G)
+ Tref=caroli(GL0,GR0,G)
+ call WBLMoleculeOnly(n,m1,m2,GInv0,GL0,GR0,G,Tmol,Tdir,info)
+ call check('coupled electrodes: direct T > 0',merge(1d0,0d0,Tdir<1d-6),fails,tol)
+ call check('coupled electrodes: molecule-only form misses T(E_F)',merge(1d0,0d0,abs(Tmol-Tref)<1d-3*Tref),fails,tol)
+
+ if(fails>0) then
+  print *,'ERROR: ',fails,' WBL checks failed'
+  stop 1
+ end if
+ print *,'All WBL checks passed'
+
+contains
+
+ subroutine check(name,err,fails,tol)
+  character(*),intent(in) :: name
+  real*8,intent(in) :: err,tol
+  integer,intent(inout) :: fails
+  if(err>tol .or. err/=err) then
+   print *,'FAIL: ',name,err
+   fails=fails+1
+  else
+   print *,'PASS: ',name,err
+  end if
+ end subroutine
+
+ real*8 function tr(A)
+  complex*16,intent(in) :: A(:,:)
+  integer :: i
+  tr=0d0
+  do i=1,size(A,1)
+   tr=tr+dble(A(i,i))
+  end do
+ end function
+
+ ! Tr[Gamma_L G^a Gamma_R G^r], dense
+ real*8 function caroli(GL,GR,G)
+  complex*16,intent(in),dimension(n,n) :: GL,GR,G
+  caroli=tr(matmul(matmul(matmul(GL,conjg(transpose(G))),GR),G))
+ end function
+
+ real*8 function rnd(k)
+  integer,intent(in) :: k
+  rnd=sin(12.9898d0*k+78.233d0*mod(k*k,97))
+ end function
+
+ ! real symmetric H and SPD S on left electrode | molecule | right electrode;
+ ! lr=.false. removes every H and S element between 1..3 and 6..8
+ subroutine device(H,S,lr)
+  real*8,intent(out) :: H(n,n),S(n,n)
+  logical,intent(in) :: lr
+  integer :: i,j
+  do j=1,n
+   do i=1,n
+    H(i,j)=rnd(i+n*j)+rnd(j+n*i)
+    S(i,j)=0.08d0*(rnd(3*i+5*j)+rnd(3*j+5*i))
+   end do
+   S(j,j)=1d0
+  end do
+  if(.not.lr) then
+   H(1:3,6:8)=0d0;H(6:8,1:3)=0d0
+   S(1:3,6:8)=0d0;S(6:8,1:3)=0d0
+  end if
+ end subroutine
+
+ ! energy-dependent lead self-energies, one-pole forms:
+ ! Sigma_L diagonal on 1..3, Sigma_R a full positive block on 6..8
+ subroutine sigmas(z,SL,SR)
+  real*8,intent(in) :: z
+  complex*16,intent(out),dimension(n,n) :: SL,SR
+  complex*16 :: g
+  integer :: i,j
+  SL=c0;SR=c0
+  do i=1,3
+   g=1d0/(z-shift-0.3d0*i+(0d0,1.2d0))
+   SL(i,i)=(0.6d0+0.1d0*i)**2*g
+  end do
+  ! a a^T + 0.3: positive definite coupling, so Gamma_R >= 0
+  g=1d0/(z-shift+0.2d0+(0d0,0.9d0))
+  do j=6,8
+   do i=6,8
+    SR(i,j)=0.1d0*i*0.1d0*j*g
+   end do
+   SR(j,j)=SR(j,j)+0.3d0*g
+  end do
+ end subroutine
+
+ ! S^a for real SPD S, as a complex matrix (LAPACK dsyev)
+ subroutine spow(S,a,X)
+  real*8,intent(in) :: S(n,n),a
+  complex*16,intent(out) :: X(n,n)
+  real*8 :: U(n,n),w(n),wk(3*n),D(n,n)
+  integer :: i,info
+  external dsyev
+  U=S
+  call dsyev('V','U',n,U,n,w,wk,3*n,info)
+  if(info/=0 .or. minval(w)<=0d0) stop 'spow: S not positive definite'
+  D=0d0
+  do i=1,n
+   D(i,i)=w(i)**a
+  end do
+  X=matmul(U,matmul(D,transpose(U)))
+ end subroutine
+
+ ! Hermitian A^1/2 (LAPACK zheev), for the HTRANSM Gamma_L^1/2
+ subroutine hsqrt(A,R)
+  complex*16,intent(in) :: A(n,n)
+  complex*16,intent(out) :: R(n,n)
+  complex*16 :: U(n,n),wk(3*n),D(n,n)
+  real*8 :: w(n),rw(3*n)
+  integer :: i,info
+  external zheev
+  U=A
+  call zheev('V','U',n,U,n,w,wk,3*n,rw,info)
+  D=c0
+  do i=1,n
+   D(i,i)=sqrt(max(w(i),0d0))
+  end do
+  R=matmul(U,matmul(D,conjg(transpose(U))))
+ end subroutine
+
+ ! GInv0, Gamma_L, Gamma_R to the Loewdin basis with the WBLLowdin kernel, and Gamma_L'^1/2
+ subroutine lowdin(X,Gi,GLa,GRa,Gio,GLo,GRo,GLho)
+  complex*16,intent(in),dimension(n,n) :: X,Gi,GLa,GRa
+  complex*16,intent(out),dimension(n,n) :: Gio,GLo,GRo,GLho
+  complex*16 :: w(n,n),a(n,n)
+  a=Gi;call WBLLowdin(n,X,a,w);Gio=a
+  a=GLa;call WBLLowdin(n,X,a,w);GLo=a
+  a=GRa;call WBLLowdin(n,X,a,w);GRo=a
+  call hsqrt(GLo,GLho)
+ end subroutine
+
+ ! G'_MM via the Schur complement of the frozen electrodes, Loewdin basis
+ subroutine schur(z,Gi,GMM)
+  real*8,intent(in) :: z
+  complex*16,intent(in) :: Gi(n,n)
+  complex*16,intent(out) :: GMM(n,n)
+  complex*16 :: gE(6,6),AME(2,6),AEM(6,2),A(2,2)
+  integer :: ie(6)
+  ie=(/1,2,3,6,7,8/)
+  gE=Gi(ie,ie)
+  call invk(gE,6)
+  AME=Gi(4:5,ie)
+  AEM=Gi(ie,4:5)
+  A=Gi(4:5,4:5)-matmul(AME,matmul(gE,AEM))
+  A(1,1)=A(1,1)+z;A(2,2)=A(2,2)+z
+  call invk(A,2)
+  GMM=c0
+  GMM(1:2,1:2)=A
+ end subroutine
+
+ subroutine inv(A)
+  complex*16,intent(inout) :: A(n,n)
+  call invk(A,n)
+ end subroutine
+
+ ! Gauss-Jordan inversion with partial pivoting, independent of LAPACK
+ subroutine invk(A,m)
+  integer,intent(in) :: m
+  complex*16,intent(inout) :: A(m,m)
+  complex*16 :: B(m,2*m),row(2*m),piv
+  integer :: i,k,p
+  B=c0;B(:,1:m)=A
+  do i=1,m
+   B(i,m+i)=c1
+  end do
+  do k=1,m
+   p=k-1+maxloc(abs(B(k:m,k)),1)
+   row=B(k,:);B(k,:)=B(p,:);B(p,:)=row
+   piv=B(k,k);B(k,:)=B(k,:)/piv
+   do i=1,m
+    if(i/=k) B(i,:)=B(i,:)-B(i,k)*B(k,:)
+   end do
+  end do
+  A=B(:,m+1:2*m)
+ end subroutine
+
+end program

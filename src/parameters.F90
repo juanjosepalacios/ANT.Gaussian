@@ -394,6 +394,11 @@
   ! Number of eigen channels to print out ( 0 = No diagonalization of T )
   INTEGER :: NChannels = 0     
   CHARACTER(len=10), PARAMETER :: NChannels_keyw = "NCHANNELS"
+
+  ! WBL: extra transmission in the wide-band limit of the molecule's embedding
+  ! (everything outside the molecule frozen at E_F), written to T.<job>.WBL.dat
+  LOGICAL :: WBL = .FALSE.
+  CHARACTER(len=10), PARAMETER :: WBL_keyw = "WBL"
   
   ! Print out Bulk DOS
   LOGICAL :: LeadDOS = .FALSE. 
@@ -657,6 +662,8 @@ CONTAINS
        PBinary = .TRUE.
     CASE ( HTransm_keyw )
        HTransm = .TRUE.
+    CASE ( WBL_keyw )
+       WBL = .TRUE.
     CASE ( Hamilton_keyw )
        Hamilton = .TRUE.
     CASE ( Mulliken_keyw )
@@ -1159,6 +1166,7 @@ CONTAINS
     WRITE(unit=logfile,fmt=*) RedTransmB_keyw, " = ",RedTransmB
     WRITE(unit=logfile,fmt=*) RedTransmE_keyw, " = ",RedTransmE
     WRITE(unit=logfile,fmt=*) NChannels_keyw, " = ", NChannels
+    WRITE(unit=logfile,fmt=*) WBL_keyw, " = ", WBL
     WRITE(unit=logfile,fmt=*) LeadDOS_keyw, " = ", LeadDOS
     WRITE(unit=logfile,fmt=*) PBinary_keyw, " = ", PBinary
     WRITE(unit=logfile,fmt=*) PrtHatom_keyw, " = ", PrtHatom
