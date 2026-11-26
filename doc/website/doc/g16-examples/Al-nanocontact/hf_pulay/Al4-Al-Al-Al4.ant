@@ -1,0 +1,15 @@
+alpha = 0.5d0
+NPULAY = 5
+FERMIACC = 1.0d-6
+CHARGEACC = 1.0d-6
+PACC = 1.0d-10
+MAX = 20
+SL = 1.0d-4
+LEADDOS = True
+Overlap = -1.0
+NCOREAO1 = 5
+NCOREAO2 = 5
+BLOrbMap
+4
+6 7 8 9
+6 7 8 9

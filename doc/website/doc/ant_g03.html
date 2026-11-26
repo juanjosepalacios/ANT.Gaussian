@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Overview · ANT</title><link href="docs.css?v=20261126-home" rel="stylesheet"/><script defer="" src="docs.js?v=20261126-context"></script></head><body>
+<header class="section-header"><a class="home-link" href="../index.html">← ANT website</a><nav aria-label="ANT shared documentation sections"><a aria-current="page" href="ant_g03.html">Overview</a><a href="manual_1_g03.html">Installation instructions</a><a href="manual_3_g03.html">Keyword reference</a><a href="input_files_g03.html">Input files</a><a href="publications_g03.html">Publication and citation</a><a href="examples_g03.html">Example outputs</a></nav></header>
+<div class="layout"><main><p class="eyebrow">Atomistic NanoTransport</p><h1>Overview</h1><div class="doc-content"><h2>ANT.Gaussian09 and ANT.Gaussian16</h2>
+<p>ANT combines Gaussian electronic-structure calculations with Landauer and non-equilibrium Green’s function methods to study electron transport through atomically defined junctions. Both interfaces follow the same physical division: a central scattering region and explicit electrode atoms are described with a quantum-chemical Hamiltonian, while semi-infinite electrodes enter through model self-energies. The resulting open-system density is used in a self-consistent electronic-structure calculation.</p>
+<p>The two codes differ in how ANT communicates with Gaussian and controls the calculation. ANT.Gaussian09 is integrated into modified Gaussian09 executables; ANT.Gaussian16 uses a Python driver, GauOpen and the PyANT Fortran extension.</p>
+<div style="overflow-x:auto"><table><thead><tr><th></th><th>ANT.Gaussian09</th><th>ANT.Gaussian16</th></tr></thead><tbody>
+<tr><th>Interface</th><td>ANT is linked into Gaussian09’s modified L502; a modified L101 reads the job name.</td><td>ANT-Gau-Open drives Gaussian16 through GauOpen and calls ANT through the PyANT extension.</td></tr>
+<tr><th>Installation</th><td>Requires a source-built Gaussian09 and compatible Fortran toolchain to prepare and link the modified executables.</td><td>Requires Gaussian16, GauOpen, a supported Python environment and a compiled PyANT extension.</td></tr>
+<tr><th>Running a calculation</th><td>Run Gaussian with the ANT executables selected using the input’s %Subst directives.</td><td>Run <code>ant-gau-open INPUT_FILE [OPTIONS]</code>, optionally through <code>poetry run</code>.</td></tr>
+<tr><th>SCF control</th><td>The modified Gaussian SCF calls ANT to replace the density matrix after pre-convergence.</td><td>The Python driver orchestrates Gaussian Fock-matrix updates, ANT density calculations and density mixing.</td></tr>
+<tr><th>Input and controls</th><td>Gaussian geometry/basis input plus the job’s ANT parameter file.</td><td>Gaussian input and ANT parameters, with additional command-line controls for the model, mixing, convergence, Gaussian cores and memory.</td></tr>
+<tr><th>Restart workflow</th><td>Uses ANT saved-density files and the restart controls described below.</td><td>The Python interface includes restart handling through Gaussian binary archive files.</td></tr>
+<tr><th>Availability</th><td>Public repository, GPL-3.0.</td><td>Prototype, proprietary, private repository available to authorised users.</td></tr>
+</tbody></table></div>
+<p><a href="manual_1_g03.html">Install ANT.Gaussian09 →</a> · <a href="g16-installation.html?v=2">Install ANT.Gaussian16 and view command-line options →</a></p>
+<h2>Transport workflow</h2>
+<ol><li>Prepare the junction geometry, basis and electrode model, and obtain an initial electronic density with Gaussian.</li><li>Connect the model electrodes and calculate the open-system density with ANT.</li><li>Update the electronic Hamiltonian with Gaussian and iterate the density until convergence.</li><li>Evaluate transmission, densities of states and the analyses supported by the selected implementation.</li></ol>
+<img alt="Central device region between left and right electrodes" src="images/LDR.jpg"/><img alt="Bethe-lattice electrodes attached to an atomistic junction" src="images/bl-scheme.jpg"/>
+<h2>Features and implementation details</h2>
+<p>The physical framework is shared, but the two repositories are developed separately. The detailed features, keyword defaults and output filenames below describe the current ANT.Gaussian09 implementation (3.3.0); they should not be taken as a guarantee that every feature is implemented identically in the PyANT version supplied with ANT.Gaussian16. For Gaussian16-specific execution and SCF options, use its <a href="g16-installation.html#command-line-options">command-line reference</a>.</p>
+<p><strong>How a calculation proceeds:</strong></p>
+<ul>
+<li>GAUSSIAN starts its usual SCF for the cluster. When its density
+convergence reaches <a href="manual_3_g03.html#sl"><em>SL</em></a>, ANT connects the electrodes and takes over
+the density matrix in every following cycle.</li>
+<li>In each cycle ANT finds the device Fermi level that gives the right
+number of electrons, integrates the Green's function to build the density
+matrix, and mixes it with previous cycles (<a href="manual_3_g03.html#alpha"><em>ALPHA</em></a>,
+<a href="manual_3_g03.html#npulay"><em>NPULAY</em></a>, or Fock-matrix mixing with <a href="manual_3_g03.html#fmixing"><em>FMIXING</em></a>).</li>
+<li>After convergence, ANT evaluates transmission, densities of states and
+population analyses on a real energy grid (<a href="manual_3_g03.html#ew1-and-ew2"><em>EW1/EW2</em></a>,
+<a href="manual_3_g03.html#estep"><em>ESTEP</em></a>).</li>
+<li>The converged density matrix is saved as <em>P.job_name.dat</em>, or as the smaller,
+full-precision binary <em>P.job_name.bin</em> (<a href="manual_3_g03.html#pbinary"><em>PBINARY</em></a>), and
+is read automatically to restart a calculation, for example to ramp the
+bias or to start a new spin configuration (<a href="manual_3_g03.html#pfix"><em>PFIX</em></a>,
+<a href="manual_3_g03.html#nfix"><em>NFIX</em></a>).</li>
+</ul>
+<p><strong>Electrode models</strong> (<a href="manual_3_g03.html#type1-and-type2"><em>TYPE1/TYPE2</em></a>):</p>
+<ul>
+<li><em>BETHE</em>: a parametrized Bethe lattice attached to the outer
+electrode atoms, with tight-binding parameter sets for many elements in
+<em>BLDAT</em> (<a href="manual_3_g03.html#blpar1-and-blpar2"><em>BLPAR1/BLPAR2</em></a>,
+<a href="manual_3_g03.html#nembed1-and-nembed2"><em>NEMBED1/NEMBED2</em></a>, <a href="manual_3_g03.html#glue"><em>GLUE</em></a>).</li>
+<li><em>1DLEAD</em>: periodic one-dimensional leads built from the
+Hamiltonian and overlap of repeated units in the cluster itself
+(<a href="manual_3_g03.html#natpc1-and-natpc2"><em>NATPC1/NATPC2</em></a>). Their Fermi levels come from
+periodic band filling and their self-energies from an iterative Dyson
+solution (<a href="manual_3_g03.html#selfacc"><em>SELFACC</em></a>, <a href="manual_3_g03.html#l1dalpha"><em>L1DALPHA</em></a>).</li>
+<li><em>GHOST</em>: no electrode on that side; two GHOST electrodes give an
+isolated cluster treated with ANT's own convergence controls.</li>
+</ul>
+<p><strong>Basic functionality:</strong></p>
+<ul>
+<li>Spin-resolved transmission T(E) in equilibrium or at finite bias, at
+zero temperature (<em>T.job_name.dat</em>, or <em>T.job_name.SOC.dat</em>
+with spin-orbit coupling or spin rotation), with the spin polarization of the current and its four
+spin components in spinor calculations (<a href="manual_3_g03.html#pol"><em>POL</em></a>,
+<a href="manual_3_g03.html#tcomp"><em>TCOMP</em></a>), and the full spin polarization vector
+(Px, Py, Pz) in one run (<a href="manual_3_g03.html#fullpol"><em>FULLPOL</em></a>).</li>
+<li>Eigenchannel decomposition of the transmission
+(<a href="manual_3_g03.html#nchannels"><em>NCHANNELS</em></a>, <a href="manual_3_g03.html#htransm"><em>HTRANSM</em></a>) and reduced
+transmission matrix between selected atoms (<em>t.job_name.dat</em>,
+<a href="manual_3_g03.html#rtm-beg-and-rtm-end"><em>RTM_BEG/RTM_END</em></a>).</li>
+<li>Total density of states and DOS projected on selected atoms and
+orbitals (<em>DOS.job_name.dat</em>, <a href="manual_3_g03.html#ldos"><em>LDOS</em></a>,
+<a href="manual_3_g03.html#ldos-beg-and-ldos-end"><em>LDOS_BEG/LDOS_END</em></a>,
+<a href="manual_3_g03.html#dosenergy"><em>DOSENERGY</em></a>), and bulk DOS of the electrodes
+(<em>Lead1DOS.dat</em>, <em>Lead2DOS.dat</em>, <a href="manual_3_g03.html#leaddos"><em>LEADDOS</em></a>).</li>
+<li>Mulliken charge and spin population analysis (<em>Q.job_name.dat</em>,
+<a href="manual_3_g03.html#mulliken"><em>MULLIKEN</em></a>) and average on-site energies of the atoms
+(<em>V.job_name.dat</em>, keyword <em>HAMILTON</em>), useful to follow the
+potential drop at finite bias.</li>
+<li>Finite bias voltage with a self-consistent non-equilibrium density
+(<a href="manual_3_g03.html#biasvolt"><em>BIASVOLT</em></a>) and gating through an excess charge
+(<a href="manual_3_g03.html#qexcess"><em>QEXCESS</em></a>).</li>
+</ul>
+<p><strong>Numerical methods:</strong></p>
+<ul>
+<li>Density matrix from a complex-contour integration of the Green's
+function, plus a real-axis integration over the bias window at finite bias.
+The default Gauss-Chebyshev quadrature is controlled by
+<a href="manual_3_g03.html#pacc"><em>PACC</em></a> and a maximum number of points; the experimental
+adaptive Gauss-Kronrod quadrature (<a href="manual_3_g03.html#adaptquad"><em>ADAPTQUAD</em></a>) checks every
+density-matrix element.</li>
+<li>Integration bounds EMin/EMax are verified by a spectral-weight check
+whose tolerance follows <a href="manual_3_g03.html#chargeacc"><em>CHARGEACC</em></a>.</li>
+<li>Device Fermi search by Muller, secant and bisection, or by safeguarded
+Brent with an enforced charge residual
+(<a href="manual_3_g03.html#devmuller-and-devbrent"><em>DEVMULLER/DEVBRENT</em></a>, <a href="manual_3_g03.html#fermiacc"><em>FERMIACC</em></a>,
+<a href="manual_3_g03.html#chargeacc"><em>CHARGEACC</em></a>). An upper bound on the Fermi energy
+(<a href="manual_3_g03.html#efmax"><em>EFMAX</em></a>) and a diagnostic scan of the charge around a rejected
+root (<a href="manual_3_g03.html#qscan"><em>QSCAN</em></a>) are available. Bethe-lattice Fermi levels use
+Brent by default (<a href="manual_3_g03.html#blbrent-and-blsecant"><em>BLBRENT/BLSECANT</em></a>).</li>
+<li><a href="manual_3_g03.html#eta"><em>ETA</em></a> broadens every device state, including states that do
+not couple to the electrodes, so that such levels can be partially occupied.</li>
+<li>Tolerances are relaxed in early SCF cycles and tightened as the
+calculation converges, unless <a href="manual_3_g03.html#fullacc"><em>FULLACC</em></a> keeps them at their
+input values from the start.</li>
+<li>OpenMP parallelization of the energy integrations (set
+<em>%NProcShared</em> and <em>OMP_NUM_THREADS</em> to the same value).</li>
+<li>Progress messages in the log mark each stage, for example the start of
+every density-matrix integration and Fermi search.</li>
+</ul>
+<p><strong>Advanced features:</strong></p>
+<ul>
+<li>Spin manipulation directives to build self-consistent solutions with
+tailored spin textures: reversing the magnetization from a given atom
+(<a href="manual_3_g03.html#mrstart"><em>MRSTART</em></a>), editing or deleting atomic spins
+(<a href="manual_3_g03.html#spinedit"><em>SPINEDIT</em></a>, <a href="manual_3_g03.html#spindel"><em>SPINDEL</em></a>), magnetic boundary
+conditions of the electrodes (<a href="manual_3_g03.html#ud-du-dd"><em>UD/DU/DD</em></a>), fixed electron
+numbers (<a href="manual_3_g03.html#nalpha-and-nbeta"><em>NALPHA/NBETA</em></a>) and spin locking during the
+first cycles (<a href="manual_3_g03.html#nspinlock"><em>NSPINLOCK</em></a>).</li>
+<li>Spin-orbit coupling after self-consistency (<a href="manual_3_g03.html#soc"><em>SOC</em></a>) or within
+the SCF cycle (<a href="manual_3_g03.html#scfsoc"><em>SCFSOC</em></a>), with scaling factors and values per
+shell and per atom (<a href="manual_3_g03.html#soc-fac-p"><em>SOC_FAC_P/D/F</em></a>,
+<a href="manual_3_g03.html#socfacatom"><em>SOCFACATOM</em></a>, <a href="manual_3_g03.html#soc-val-p"><em>SOC_VAL_P/D/F</em></a>,
+<a href="manual_3_g03.html#socvalatom"><em>SOCVALATOM</em></a>). Calibrated SOC factors with their basis sets and
+pseudopotentials for Au, Ag, Pt, W, Pb, Bi, Sb, Al and Cu: <a href="SOC_database.pdf">SOC_database.pdf</a>.</li>
+<li>Rotation of the spin quantization axis of selected atoms after self-consistency, without
+relaxing the rotated spins (<a href="manual_3_g03.html#spinrotatom"><em>SPINROTATOM</em></a>; for a self-consistent spin flip use
+<a href="manual_3_g03.html#spinedit"><em>SPINEDIT</em></a>), and
+Zeeman fields applied to the whole device or to selected atoms
+(<a href="manual_3_g03.html#zm"><em>ZM, BX, BY, BZ</em></a>, <a href="manual_3_g03.html#zmatom"><em>ZMATOM</em></a>).</li>
+<li>Correlation effects: DFT+U (<a href="manual_3_g03.html#dft-u"><em>DFT+U</em></a>) and the interface to
+Dynamical Mean Field Theory through correlated blocks and hybridization
+functions (<a href="manual_3_g03.html#corrblocks"><em>CORRBLOCKS</em></a>, <a href="manual_3_g03.html#hybfunc"><em>HYBFUNC</em></a>,
+<a href="manual_3_g03.html#portho"><em>PORTHO</em></a>, <a href="manual_3_g03.html#diagcorrbl"><em>DIAGCORRBL</em></a>).</li>
+</ul>
+<p>Worked examples (Al, Au, Ni, Pt and other nanocontacts, molecules and
+graphene) are distributed in the <em>examples</em> directory; see also the
+<a href="manual_g03.html">Manual</a> and the
+<a href="examples_g03.html">Examples</a> page.</p>
+<h2>Implementation and parallelism</h2><p>The ANT transport engine is written in Fortran. ANT.Gaussian09 supplies Intel and NVIDIA/PGI build configurations and uses OpenMP in its numerical work. ANT.Gaussian16 wraps a Fortran engine as PyANT and provides optional OpenMP support at build time. Compiler requirements and parallel settings depend on the interface; follow the corresponding installation guide.</p>
+<h2>Developers and contributors</h2><u>Current developers<br/>
+<br/>
+</u>
+<ul>
+<li> <strong>J. J. Palacios</strong>, Dpto. de Fisica de la Materia
+Condensada and Condensed Matter Physics Institute (IFIMAC), Universidad Autonoma de Madrid, Madrid 28049, Spain. </li>
+<li> <strong>D. Jacob</strong>, Theory Department,
+Max-Planck-Institute for Microstructure Physics, Halle, 06120
+(GERMANY). </li>
+<li>
+<span>M. Soriano, </span>
+Institut de la Matiére Condensée et des Nanosciences (IMCN), Nanoscopic Physics (NAPS),
+Université Catholique de Louvain (UCL), Belgium.</li>
+<li> <strong>C. Salgado</strong>, Dpto. de Fisica de la Materia
+Condensada, Universidad Autonoma de Madrid, Madrid 28049, Spain. </li>
+<li> <strong>W. Dednam</strong>, Dept. of Physics, University of South Africa, Johannesburg 1710, South Africa. </li>
+<ul>
+<span>Former </span><u>developers</u>
+<li><br/>
+<strong></strong></li>
+<strong> </strong>
+<li><strong><strong>A. J. Perez-Jimenez</strong>,
+    <span>Dpto. de Quimica-Fisica,
+Universidad de Alicante, Spain</span>. </strong></li>
+<strong> <br/>
+</strong>
+<li><strong><strong>E. Louis</strong>,<span> Dpto. de
+Fisica Aplicada, Universida de Alicante, Spain. </span></strong></li>
+<strong> <br/>
+</strong>
+<li><strong> <strong>E. SanFabian</strong>, <span>Dpto. de
+Quimica-Fisica, Universidad de Alicante, Spain. </span></strong></li>
+<strong> <br/>
+</strong>
+<li><strong> <strong>J. A. Verges</strong>, <span>Dpto. de Fisica Teorica de la
+Materia Condensada,
+Instituto de Ciencia de Materiales de Madrid, CSIC, Spain.</span></strong></li>
+</ul>
+</ul><h2>Distribution and contact</h2><ol>
+<li>1- Contact <a href="http://www.simune.eu"><span><strong>SIMUNE Atomistics</strong></span>
+</a></li>
+<li><br/>
+</li>
+<li>2- Contact <strong>Juan
+Jose
+Palacios</strong> <br/>
+</li>
+<li><br/>
+</li>
+<ol>
+<div><span><strong>     </strong></span><span><strong> 
+
+
+
+
+    </strong></span><span></span><strong><br/>
+<span>      
+Departamento
+de
+Fisica
+de
+la Materia Condensada</span><br/>
+<span>      
+Facultad
+de
+Ciencias</span><br/>
+<span>      
+Universidad
+Autonoma
+de
+Madrid,
+E-28049, Spain<br/>
+juanjose.palacios@uam.es<br/>
+</span></strong></div>
+<strong> </strong>
+</ol>
+</ol>
+</div><nav aria-label="Documentation pages" class="pager"><span></span><span><a href="manual_1_g03.html">Gaussian09 installation →</a> · <a href="g16-installation.html?v=2">Gaussian16 installation →</a></span></nav></main></div>
+<footer>ANT — Atomistic NanoTransport · <a href="../index.html">Back to ANT</a></footer></body></html>

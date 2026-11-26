@@ -89,3 +89,7 @@ Main new Features:
 - Added the possibility of fixing the Fermi energy and let the charge be
 - whatever it may be
 ********************************************************************************
+
+## Local ANT website
+
+Open [doc/website/index.html](doc/website/index.html) in your browser. No server is required. Bundled documentation, figures and example inputs work offline; external repositories and package downloads require internet access.

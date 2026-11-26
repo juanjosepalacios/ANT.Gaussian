@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Installation instructions · ANT</title><link href="docs.css?v=20261126-home" rel="stylesheet"/><script defer="" src="docs.js?v=20261126-context"></script></head><body>
+<header class="section-header"><a class="home-link" href="../index.html">← ANT website</a><nav aria-label="ANT.Gaussian09 sections"><a href="ant_g03.html">Overview</a><a aria-current="page" href="manual_1_g03.html">Installation instructions</a><a href="manual_3_g03.html">Keyword reference</a><a href="input_files_g03.html">Input files</a><a href="publications_g03.html">Publication and citation</a><a href="examples_g03.html">Example outputs</a></nav></header>
+<div class="layout"><main><p class="eyebrow">Atomistic NanoTransport</p><h1>Installation instructions</h1><p><strong>Choose your interface:</strong> <a href="manual_1_g03.html">ANT.Gaussian09 installation</a> · <a href="g16-installation.html?v=2">ANT.Gaussian16 installation</a></p><div class="doc-content">
+<p>These instructions describe ANT.Gaussian09 <strong>3.3.0</strong>. Reviewed against the source repository on 26 November 2026. Local compiler and Gaussian paths must be configured before building.</p>
+<h2>Requirements</h2>
+<ul><li>A Linux/UNIX build environment with Bash, Make, Git and archive tools.</li><li>A working, source-built Gaussian09 installation, with its source files, libraries, build tools and <code>g09/make.log</code> available.</li><li>A compatible Fortran compiler: the current build files provide Intel <code>ifx</code> or NVIDIA/PGI <code>pgf90</code> configurations. Use a toolchain compatible with your Gaussian build.</li><li>Intel builds require Intel oneMKL and <code>icx</code>. The default NVIDIA configuration uses the HPC SDK ILP64 BLAS/LAPACK libraries, plus <code>nm</code> and <code>objcopy</code>; a bundled reference-library option is also provided.</li></ul>
+<h2>1. Get the source</h2>
+<pre><code>git clone https://github.com/juanjosepalacios/ANT.Gaussian.git
+cd ANT.Gaussian
+mkdir -p bin obj lib
+git rev-parse HEAD</code></pre>
+<p>Record the commit with your calculation results. The repository is named <code>ANT.Gaussian</code>; it supplies the ANT.Gaussian09 code.</p>
+<h2>2. Prepare the Gaussian interface</h2>
+<p>Load your Gaussian and compiler environments so that <code>gau-cpp</code>, <code>gau-fsplit</code> and <code>set-mflags</code> are available. For Gaussian09 revision D.01, the repository provides <code>install/install.g09.D01</code>. Inspect and edit this script before running it: its <code>g09root</code> and <code>F90</code> values are examples from the developer’s machine. Here, <code>g09root</code> is the directory containing <code>g09/</code>.</p>
+<pre><code>cd install
+# Edit install.g09.D01 for your Gaussian installation and compiler.
+bash install.g09.D01
+cd ../src</code></pre>
+<p>The script modifies Gaussian interface sources, builds <code>l101.exe</code> and <code>l103.exe</code>, and prepares <code>ml502.o</code>, <code>l502.a</code>, <code>bdam1.o</code> and <code>caldsu.o</code> in <code>bin/</code>. It also generates <code>src/make.in</code> from Gaussian’s build settings. Check these outputs and the build log before continuing. Other Gaussian revisions may require adjustments to the extraction script; the repository also contains <code>install.g09.1</code> and <code>install.g09.2</code>, which must be inspected for compatibility.</p>
+<p>A failure while attempting to link the intermediate Gaussian <code>l502.exe</code> may occur before ANT itself is linked. Do not ignore errors generally: verify that every required interface object and archive was produced successfully.</p>
+<h2>3. Select and configure a build</h2>
+<h3>Intel ifx</h3>
+<p>Edit <code>src/Makefile.intel.g09</code> and the generated <code>src/make.in</code>. Set <code>MKLROOT</code>, compiler paths, <code>GAUSSLIBS</code> and compiler/linker flags for your machine. <code>make.in.intel</code> is an example configuration, with machine-specific paths.</p>
+<p>Keep Gaussian-compatible integer sizes and preprocessor dimensions. The supplied configuration uses <code>-i8 -r8</code> and MKL’s ILP64 interface. The Makefile documents the need for <code>-fp-speculation=safe</code> in Gaussian’s Intel build (<code>RUNF77</code> in <code>bsd/i386.make</code>), to avoid failures in Gaussian’s bundled eigensolver and SVD routines. Its MKL DSYEVD link workaround protects the ANT link only; it does not repair other Gaussian executables.</p>
+<pre><code>make -f Makefile.intel.g09</code></pre>
+<p>The ANT executable is written to <code>bin/l502.exe</code>.</p>
+<h3>NVIDIA / PGI</h3>
+<p>Edit <code>src/Makefile.nvidia.g09</code> and <code>src/make.nvidia.in</code>. Set the compiler, Gaussian library paths, target CPU flags and <code>NVHPCLIB</code> for your installation. The default <code>ANTLAPACK=nvhpc</code> uses renamed HPC SDK ILP64 library symbols to avoid replacing Gaussian’s own BLAS/LAPACK routines. Set <code>ANTLAPACK=bundled</code> to use the bundled reference routines instead.</p>
+<p>This Makefile uses <code>BIN=../bin/nvidia</code>. Create that directory and place the matching NVIDIA-built interface products there: <code>ml502.o</code>, <code>l502.a</code>, <code>bdam1.o</code>, <code>caldsu.o</code>, <code>l101.exe</code> and, when needed, <code>l103.exe</code>. The D.01 preparation script writes to <code>bin/</code>, so its products must be placed in the directory selected by the Makefile. Do not mix Intel and NVIDIA objects.</p>
+<pre><code># From src/, after configuring the paths and interface products:
+mkdir -p ../bin/nvidia
+make -f Makefile.nvidia.g09</code></pre>
+<p>The ANT executable is written to <code>bin/nvidia/l502.exe</code>. Build serially: the supplied Makefiles do not declare all Fortran module dependencies. Use separate checkouts for different toolchains to keep generated sources and objects separate.</p>
+<h2>4. Configure and run</h2>
+<pre><code>export ANT=/absolute/path/to/ANT.Gaussian
+export OMP_NUM_THREADS=4
+export MKL_NUM_THREADS=1
+export OMP_DYNAMIC=FALSE
+export OMP_STACKSIZE=2G
+ulimit -s unlimited</code></pre>
+<p>Use the same thread count in Gaussian’s <code>%NProcShared</code> and <code>OMP_NUM_THREADS</code>. The stack setting is a starting point; larger systems may require adjustment.</p>
+<p>In the Gaussian input, point both substituted links to the directory containing your newly built executables. For the Intel configuration, for example:</p>
+<pre><code>%NProcShared=4
+%Subst L101 /absolute/path/to/ANT.Gaussian/bin
+%Subst L502 /absolute/path/to/ANT.Gaussian/bin</code></pre>
+<p>For the NVIDIA configuration, use <code>/absolute/path/to/ANT.Gaussian/bin/nvidia</code>. Keep the remaining Gaussian input and corresponding <code>.ant</code> file together as described in <a href="input_files_g03.html">Input files</a>.</p>
+<h2>5. Verify the installation</h2>
+<p>Run a small example from the repository in a separate working directory. Update its <code>%Subst</code> paths, check normal Gaussian termination and the ANT messages in the log, and inspect the expected transmission/DOS output. Compare with an appropriate reference using the same basis, electrode data and numerical settings. Executables already present in a checkout are not evidence of a successful local build.</p>
+<p>For compilation failures, inspect Gaussian’s <code>make.log</code> and check compiler compatibility, preprocessor dimensions, integer sizes, library paths and missing interface objects. Rebuild with the selected Makefile after correcting the configuration; do not remove required ABI or OpenMP flags indiscriminately.</p>
+<p>Source references: <a href="https://github.com/juanjosepalacios/ANT.Gaussian/blob/master/README.md">README</a>, <a href="https://github.com/juanjosepalacios/ANT.Gaussian/tree/master/install">installation scripts</a>, <a href="https://github.com/juanjosepalacios/ANT.Gaussian/tree/master/src">Makefiles and configuration</a>, and <a href="https://github.com/juanjosepalacios/ANT.Gaussian/blob/master/OPENMP.md">OpenMP notes</a>. This guide was checked against commit <code>7dc0b17</code>; a fresh Gaussian build was not performed as part of this documentation update.</p>
+</div><nav aria-label="Documentation pages" class="pager"><a href="ant_g03.html">← Overview</a><a href="manual_3_g03.html">Keyword reference →</a></nav></main></div>
+<footer>ANT — Atomistic NanoTransport · <a href="../index.html">Back to ANT</a></footer></body></html>

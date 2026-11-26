@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Bethe lattice input file · ANT</title><link href="docs.css?v=20261126-home" rel="stylesheet"/><script defer="" src="docs.js?v=20261126-context"></script></head><body>
+<header class="section-header"><a class="home-link" href="../index.html">← ANT website</a><nav aria-label="ANT.Gaussian09 sections"><a href="ant_g03.html">Overview</a><a href="manual_1_g03.html">Installation instructions</a><a href="manual_3_g03.html">Keyword reference</a><a aria-current="page" href="input_files_g03.html">Input files</a><a href="publications_g03.html">Publication and citation</a><a href="examples_g03.html">Example outputs</a></nav></header>
+<div class="layout"><main><p class="eyebrow">Atomistic NanoTransport</p><h1>Bethe lattice input file</h1><div class="doc-content">
+<hr/>The tight-binding parameters for the Bethe Lattice are read from
+files which are stored in the subdirectory BLDAT. The file names
+are <em>BLnnn.dat</em> where <em>nnn</em> specifies the atomic number
+of the electrode's material, i.e. 028 for Ni,
+013 for Al etc. So far only parameter files for H, C, Al, Ni, Co, Fe,
+Mn, Cu, Pt, Pd,
+Au, and Pb exist, but feel free to add the ones you need. <br/>
+<br/>
+Each file may
+contain
+several sets
+of parameters specified by a given name (see examples below) which you
+pass to the keyword
+BLPAR1(2) in the input file <em>&lt;job_name&gt;.ini</em>.
+The notation used is the standard Slater-Koster notation and the
+default units are Hartrees. When Rydbergs are used instead, one should
+add the word RYD in the parameters set. Parameters
+sets can be obtained, for
+instance, from http://cst-www.nrl.navy.mil/bind. <br/>
+<br/>
+The number of orbitals
+and order of the shells used for the atoms belonging to the crystalline
+region in the electrodes, at least for those to be connected to
+branches of the Bethe lattice (see Gaussian09 input file), should
+match
+that of the parameters set chosen. Typically a minimal
+basis set<span> s p d</span> is used,
+although larger basis sets can also be used if a
+larger set of parameters is defined). No need to say that a good match
+between these parameters and the functional used in the calculation is
+desirable.
+When a set of parameters is non-orthogonal, i.e., it contains overlap
+parameters, some care must be exercised (see keyword <em>OVERLAP</em>
+in <em>&lt;job_name&gt;.ini</em> input file).<br/>
+<br/>
+<strong>Examples: <br/>
+<a href="manual_4_g03_ex1.html"> Gold: BL079.dat</a> <br/>
+<a href="manual_4_g03_ex2.html"> Nickel: BL028.dat</a></strong><br/>
+<br/>
+<div>  </div>
+</div><nav aria-label="Documentation pages" class="pager"><a href="manual_3_g03.html">← Keyword reference</a><a href="publications_g03.html">Publication and citation →</a></nav></main></div>
+<footer>ANT — Atomistic NanoTransport · <a href="../index.html">Back to ANT</a></footer></body></html>

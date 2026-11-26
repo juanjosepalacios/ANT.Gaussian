@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Nickel Bethe lattice parameters · ANT</title><link href="docs.css?v=20261126-home" rel="stylesheet"/><script defer="" src="docs.js?v=20261126-context"></script></head><body>
+<header class="section-header"><a class="home-link" href="../index.html">← ANT website</a><nav aria-label="ANT.Gaussian09 sections"><a href="ant_g03.html">Overview</a><a href="manual_1_g03.html">Installation instructions</a><a href="manual_3_g03.html">Keyword reference</a><a aria-current="page" href="input_files_g03.html">Input files</a><a href="publications_g03.html">Publication and citation</a><a href="examples_g03.html">Example outputs</a></nav></header>
+<div class="layout"><main><p class="eyebrow">Atomistic NanoTransport</p><h1>Nickel Bethe lattice parameters</h1><div class="doc-content">
+<hr/><strong>BL028.dat</strong>: This file contains two sets of <span>s p d</span> tight-binding parameters for
+Ni with and
+without overlap. Notice the duplication in each case to account for
+magnetic splitting.<br/>
+<br/>
+! ***************************<br/>
+! Ni Bethe Lattice parameters<br/>
+! ***************************<br/>
+!<br/>
+! *****************************************<br/>
+! *** Papacon orthogonal TB parameters  ***<br/>
+! *****************************************<br/>
+!  <br/>
+BEGINSET<br/>
+Papacon-ortho<br/>
+9 2 10 0<br/>
+s<br/>
+p<br/>
+d<br/>
+!<br/>
+! *** 1. Spin-up parameters in Ryd (!) ***<br/>
+!<br/>
+RYD<br/>
+ISPIN = 1<br/>
+es  = 1.00243<br/>
+ep  = 1.42873<br/>
+edd = 0.48986<br/>
+edt = 0.49574<br/>
+!<br/>
+sss = -0.09034<br/>
+sps =  0.14060<br/>
+sds = -0.03958<br/>
+pps =  0.23271<br/>
+ppp =  0.02788<br/>
+pds = -0.05056<br/>
+pdp =  0.02550<br/>
+dds = -0.03128<br/>
+ddp =  0.02215<br/>
+ddd = -0.00660<br/>
+!<br/>
+! *** 2. Spin-down parameters in Ryd (!) ***<br/>
+!<br/>
+ISPIN = 2<br/>
+es  = 0.99207<br/>
+ep  = 1.39786<br/>
+edd = 0.54495<br/>
+edt = 0.54881<br/>
+!<br/>
+sss = -0.08866<br/>
+sps =  0.13251<br/>
+sds = -0.04149<br/>
+pps =  0.22424<br/>
+ppp =  0.03210<br/>
+pds = -0.05295<br/>
+pdp =  0.02850<br/>
+dds = -0.03310<br/>
+ddp =  0.02284<br/>
+ddd = -0.00665<br/>
+ENDSET<br/>
+!<br/>
+! *********************************************<br/>
+! *** Papacon non-orthogonal TB parameters  ***<br/>
+! *********************************************<br/>
+!<br/>
+BEGINSET<br/>
+Papacon<br/>
+9 2 10 0<br/>
+s<br/>
+p<br/>
+d<br/>
+RYD<br/>
+ISPIN
+=            1<br/>
+!<br/>
+! On-site enrgies in Ryd<br/>
+!<br/>
+es =    0.1056093448686473     <br/>
+ep =    0.9105458345776812     <br/>
+edd =   -12.4333420050839312E-002<br/>
+edt =   -12.4333420050839312E-002<br/>
+!<br/>
+! Hoppings in Ryd<br/>
+!<br/>
+sss =   -0.1030332419052912     <br/>
+sps =   -8.3352517514460338E-002<br/>
+pps =    0.2547689359497468     <br/>
+ppp =    5.3884809349807323E-003<br/>
+sds =   -3.7607911533326481E-002<br/>
+pds =    5.5496810342579250E-002<br/>
+pdp =   -2.3485409083813549E-002<br/>
+dds =   -3.4820425342845902E-002<br/>
+ddp =    2.5599190083128160E-002<br/>
+ddd =   -5.6870005292460890E-003<br/>
+ISPIN
+=            2<br/>
+!<br/>
+! On-site energies in Ryd<br/>
+!<br/>
+es =    0.1350694887335478     <br/>
+ep =    0.9292122342500587     <br/>
+edd =   -1.9697235493986081E-002<br/>
+edt =   -1.9697235493986081E-002<br/>
+!<br/>
+! Hoppings in Ryd<br/>
+!<br/>
+sss =   -0.1030332419052912     <br/>
+sps =   -8.3352517514460338E-002<br/>
+pps =    0.2547689359497468     <br/>
+ppp =    5.3884809349807323E-003<br/>
+sds =   -3.7607911533326481E-002<br/>
+pds =    5.5496810342579250E-002<br/>
+pdp =   -2.3485409083813549E-002<br/>
+dds =   -3.4820425342845902E-002<br/>
+ddp =    2.5599190083128160E-002<br/>
+ddd =   -5.6870005292460890E-003<br/>
+! <br/>
+! Overlap parameters<br/>
+! <br/>
+S_sss =    0.1817704879067281     <br/>
+S_sps =    3.0471350185594841E-002<br/>
+S_pps =   -0.2113661658526804     <br/>
+S_ppp =    8.9658546077930623E-002<br/>
+S_sds =    8.1324419773221734E-004<br/>
+S_pds =    2.9995797509112254E-002<br/>
+S_pdp =    9.9776143600185812E-003<br/>
+S_dds =    2.4512922333620475E-003<br/>
+S_ddp =   -2.2269541560923778E-002<br/>
+S_ddd =    6.7977240753691373E-003<br/>
+ENDSET<br/>
+<br/>
+<div>  </div>
+</div><nav aria-label="Documentation pages" class="pager"><a href="manual_3_g03.html">← Keyword reference</a><a href="publications_g03.html">Publication and citation →</a></nav></main></div>
+<footer>ANT — Atomistic NanoTransport · <a href="../index.html">Back to ANT</a></footer></body></html>
