@@ -1,5 +1,26 @@
 # ANT.Gaussian (3.3.0)
 
+ANT.Gaussian09 combines Gaussian09 electronic-structure calculations with ANT’s Landauer and non-equilibrium Green’s function transport framework. This repository contains the Gaussian09 implementation; its repository name remains **ANT.Gaussian**.
+
+## Website and documentation
+
+Visit the [ANT website](https://juanjosepalacios.github.io/ANT/) for ANT.Gaussian09, ANT.Gaussian16 and the upcoming ANT.Crystal.
+
+| Section | Online | Local copy |
+| --- | --- | --- |
+| Overview | [Read](https://juanjosepalacios.github.io/ANT/doc/ant_g03.html) | [Open](doc/website/doc/ant_g03.html) |
+| Installation instructions | [Read](https://juanjosepalacios.github.io/ANT/doc/manual_1_g03.html) | [Open](doc/website/doc/manual_1_g03.html) |
+| Keyword reference | [Read](https://juanjosepalacios.github.io/ANT/doc/manual_3_g03.html) | [Open](doc/website/doc/manual_3_g03.html) |
+| Input files | [Read](https://juanjosepalacios.github.io/ANT/doc/input_files_g03.html) | [Open](doc/website/doc/input_files_g03.html) |
+| Publication and citation | [Read](https://juanjosepalacios.github.io/ANT/doc/publications_g03.html) | [Open](doc/website/doc/publications_g03.html) |
+| Example outputs | [Read](https://juanjosepalacios.github.io/ANT/doc/examples_g03.html) | [Open](doc/website/doc/examples_g03.html) |
+
+To browse locally, open **[doc/website/index.html](doc/website/index.html)** in a web browser after cloning or pulling this repository. No server is required. Bundled pages, figures and example inputs work offline; external repositories and package downloads require internet access. The local website is a snapshot and is updated separately from code changes.
+
+ANT.Gaussian16 uses a separate Python/GauOpen interface and has its own installation, input-file and output-example pages. Its source repository remains private. The shared overview and keyword reference explain the relationship between both implementations.
+
+## Version and source history
+
 ********************************************************************************
 Release versions are recorded in VERSION. See CHANGELOG.md for release notes.
 For exact source history use Git commits; release tags identify snapshots.
@@ -90,6 +111,3 @@ Main new Features:
 - whatever it may be
 ********************************************************************************
 
-## Local ANT website
-
-Open [doc/website/index.html](doc/website/index.html) in your browser. No server is required. Bundled documentation, figures and example inputs work offline; external repositories and package downloads require internet access.
